@@ -7,10 +7,10 @@ import 'package:islami_hayat/l10n/app_localizations.dart';
 final class QuranReaderPage extends StatefulWidget {
   QuranReaderPage({
     super.key,
-    QuranReaderRepository? repository,
+    QuranReaderDataSource? repository,
   }) : repository = repository ?? QuranReaderRepository();
 
-  final QuranReaderRepository repository;
+  final QuranReaderDataSource repository;
 
   @override
   State<QuranReaderPage> createState() => _QuranReaderPageState();
