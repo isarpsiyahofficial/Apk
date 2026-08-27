@@ -32,6 +32,16 @@ jobs:
       - name: Generate clean Android runner for build verification
         run: flutter create --platforms=android --project-name islami_hayat .
 
+      - name: Apply hardened Android manifest and backup policy
+        run: |
+          mkdir -p android/app/src/main/res/xml
+          cp android_hardening/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+          cp android_hardening/backup_rules.xml android/app/src/main/res/xml/backup_rules.xml
+          cp android_hardening/data_extraction_rules.xml android/app/src/main/res/xml/data_extraction_rules.xml
+
+      - name: Audit Android security policy
+        run: python3 scripts/audit_android_security.py
+
       - name: Install dependencies
         run: flutter pub get
 
