@@ -28,9 +28,62 @@ void main() {
 
       expect(results, hasLength(1));
       expect(results.single.key, '2:255');
+      expect(results.single.surahDisplayName, 'Al-Baqara');
       expect(results.single.arabic, isNotEmpty);
       expect(results.single.translation, isNotNull);
       expect(results.single.translation, isNotEmpty);
+    });
+
+    test('Turkish sura-name search tolerates common local spelling', () async {
+      final bakara = await repository.search(
+        languageCode: 'tr',
+        query: 'Bakara',
+        limit: 5,
+      );
+      expect(bakara, isNotEmpty);
+      expect(bakara.first.key, '2:1');
+      expect(bakara.first.surahDisplayName, 'Al-Baqara');
+
+      final fatiha = await repository.search(
+        languageCode: 'tr',
+        query: 'Fatiha',
+        limit: 5,
+      );
+      expect(fatiha, isNotEmpty);
+      expect(fatiha.first.key, '1:1');
+
+      final yasin = await repository.search(
+        languageCode: 'tr',
+        query: 'Yasin',
+        limit: 5,
+      );
+      expect(yasin, isNotEmpty);
+      expect(yasin.first.key, '36:1');
+    });
+
+    test('Arabic sura-name search uses verified Arabic metadata', () async {
+      final results = await repository.search(
+        languageCode: 'ar',
+        query: 'البقرة',
+        limit: 5,
+      );
+
+      expect(results, isNotEmpty);
+      expect(results.first.key, '2:1');
+      expect(results.first.surahDisplayName, 'البقرة');
+      expect(results.first.translation, isNull);
+    });
+
+    test('English transliterated sura-name search opens its first ayah', () async {
+      final results = await repository.search(
+        languageCode: 'en',
+        query: 'Al-Baqara',
+        limit: 5,
+      );
+
+      expect(results, isNotEmpty);
+      expect(results.first.key, '2:1');
+      expect(results.first.surahDisplayName, 'Al-Baqara');
     });
 
     test('Turkish keyword search uses the verified bundled meal locally', () async {
