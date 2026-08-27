@@ -6,6 +6,7 @@ import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/profile/presentation/sources_licenses_page.dart';
 import 'package:islami_hayat/features/quran/data/quran_reader_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
+import 'package:islami_hayat/features/quran/data/quran_reflection_note_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_structure_metadata.dart';
 import 'package:islami_hayat/features/quran/data/quran_verse_user_state_repository.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
@@ -16,16 +17,20 @@ final class QuranReaderPage extends StatefulWidget {
     QuranReaderDataSource? repository,
     QuranReadingProgressRepository? progressRepository,
     QuranVerseUserStateDataSource? verseUserStateRepository,
+    QuranReflectionNoteDataSource? reflectionNoteRepository,
   }) : repository = repository ?? QuranReaderRepository(),
        progressRepository =
            progressRepository ??
            QuranReadingProgressRepository(SecurePrivateUserStore()),
        verseUserStateRepository =
-           verseUserStateRepository ?? QuranVerseUserStateRepository();
+           verseUserStateRepository ?? QuranVerseUserStateRepository(),
+       reflectionNoteRepository =
+           reflectionNoteRepository ?? QuranReflectionNoteRepository();
 
   final QuranReaderDataSource repository;
   final QuranReadingProgressRepository progressRepository;
   final QuranVerseUserStateDataSource verseUserStateRepository;
+  final QuranReflectionNoteDataSource reflectionNoteRepository;
 
   @override
   State<QuranReaderPage> createState() => _QuranReaderPageState();
@@ -45,6 +50,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
   bool _progressReady = false;
   bool _collectionMutationInFlight = false;
   QuranVerseUserState _verseUserState = const QuranVerseUserState.empty();
+  Map<String, String> _reflectionNotes = const <String, String>{};
 
   int get _selectedJuz => quranJuzForPosition(
     surah: _selectedSurah,
@@ -72,6 +78,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
   Future<void> _restorePrivateState() async {
     QuranReadingProgress progress;
     QuranVerseUserState verseUserState;
+    Map<String, String> reflectionNotes;
     try {
       progress = await widget.progressRepository.load();
     } on QuranReadingProgressFormatException {
@@ -88,9 +95,15 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
     try {
       verseUserState = await widget.verseUserStateRepository.load();
     } catch (_) {
-      // Favorite/bookmark storage is convenience state and must never block the
-      // separately verified Quran dataset from loading.
       verseUserState = const QuranVerseUserState.empty();
+    }
+
+    try {
+      reflectionNotes = await widget.reflectionNoteRepository.loadNotes();
+    } catch (_) {
+      // Personal notes are convenience state. Storage failure must not block or
+      // alter the separately verified Quran text.
+      reflectionNotes = const <String, String>{};
     }
 
     if (!mounted) return;
@@ -99,6 +112,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
       _savedAyah = progress.ayah;
       _quranScale = progress.quranScale;
       _verseUserState = verseUserState;
+      _reflectionNotes = reflectionNotes;
       _progressReady = true;
       _loadSelectedChapter();
     });
@@ -164,6 +178,8 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
         ayah: ayah,
       );
       if (mounted) setState(() => _verseUserState = state);
+    } catch (_) {
+      // Private collection state failure must not affect Quran reading.
     } finally {
       if (mounted) setState(() => _collectionMutationInFlight = false);
     }
@@ -178,8 +194,96 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
         ayah: ayah,
       );
       if (mounted) setState(() => _verseUserState = state);
+    } catch (_) {
+      // Private collection state failure must not affect Quran reading.
     } finally {
       if (mounted) setState(() => _collectionMutationInFlight = false);
+    }
+  }
+
+  Future<void> _openReflectionNote(int surah, int ayah) async {
+    final l10n = AppLocalizations.of(context);
+    final id = quranVerseUserDataId(surah: surah, ayah: ayah);
+    final existing = _reflectionNotes[id] ?? '';
+    final controller = TextEditingController(text: existing);
+    final result = await showDialog<_ReflectionNoteAction>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          existing.isEmpty
+              ? l10n.quranReflectionNote
+              : l10n.quranEditReflectionNote,
+        ),
+        content: TextField(
+          key: const ValueKey('quran-reflection-note-field'),
+          controller: controller,
+          autofocus: true,
+          minLines: 4,
+          maxLines: 8,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            hintText: l10n.quranReflectionNoteHint,
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          if (existing.isNotEmpty)
+            TextButton(
+              key: const ValueKey('quran-reflection-note-delete'),
+              onPressed: () => Navigator.of(dialogContext).pop(
+                const _ReflectionNoteAction.delete(),
+              ),
+              child: Text(l10n.quranReflectionNoteDelete),
+            ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.quranReflectionNoteCancel),
+          ),
+          FilledButton(
+            key: const ValueKey('quran-reflection-note-save'),
+            onPressed: () => Navigator.of(dialogContext).pop(
+              _ReflectionNoteAction.save(controller.text),
+            ),
+            child: Text(l10n.quranReflectionNoteSave),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (result == null || !mounted) return;
+
+    try {
+      if (result.delete) {
+        await widget.reflectionNoteRepository.deleteNote(
+          surah: surah,
+          ayah: ayah,
+        );
+        if (!mounted) return;
+        setState(() {
+          _reflectionNotes = Map<String, String>.unmodifiable(
+            Map<String, String>.of(_reflectionNotes)..remove(id),
+          );
+        });
+      } else {
+        await widget.reflectionNoteRepository.saveNote(
+          surah: surah,
+          ayah: ayah,
+          text: result.text ?? '',
+        );
+        if (!mounted) return;
+        final next = Map<String, String>.of(_reflectionNotes);
+        if ((result.text ?? '').trim().isEmpty) {
+          next.remove(id);
+        } else {
+          next[id] = result.text!;
+        }
+        setState(() => _reflectionNotes = Map<String, String>.unmodifiable(next));
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.quranReflectionNoteSaveFailed)),
+      );
     }
   }
 
@@ -399,6 +503,10 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final verse = chapter.verses[index];
+                final verseId = quranVerseUserDataId(
+                  surah: verse.surah,
+                  ayah: verse.ayah,
+                );
                 final isSaved = verse.ayah == _savedAyah;
                 final isFavorite = _verseUserState.isFavorite(
                   surah: verse.surah,
@@ -408,6 +516,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                   surah: verse.surah,
                   ayah: verse.ayah,
                 );
+                final hasNote = _reflectionNotes.containsKey(verseId);
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
@@ -460,6 +569,23 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                               isBookmarked
                                   ? Icons.bookmark_rounded
                                   : Icons.bookmark_border_rounded,
+                            ),
+                          ),
+                          IconButton(
+                            key: ValueKey(
+                              'quran-note-${verse.surah}-${verse.ayah}',
+                            ),
+                            tooltip: hasNote
+                                ? l10n.quranEditReflectionNote
+                                : l10n.quranReflectionNote,
+                            onPressed: () => _openReflectionNote(
+                              verse.surah,
+                              verse.ayah,
+                            ),
+                            icon: Icon(
+                              hasNote
+                                  ? Icons.sticky_note_2_rounded
+                                  : Icons.note_add_outlined,
                             ),
                           ),
                           IconButton(
@@ -517,4 +643,12 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
       },
     );
   }
+}
+
+final class _ReflectionNoteAction {
+  const _ReflectionNoteAction.save(this.text) : delete = false;
+  const _ReflectionNoteAction.delete() : text = null, delete = true;
+
+  final String? text;
+  final bool delete;
 }
