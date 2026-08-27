@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:islami_hayat/core/content/content_integrity.dart';
@@ -171,7 +170,7 @@ final class CanonicalQuranDataset {
 }
 
 final class CanonicalQuranAssetLoader {
-  const CanonicalQuranAssetLoader({this.bundle = rootBundle});
+  CanonicalQuranAssetLoader({AssetBundle? bundle}) : bundle = bundle ?? rootBundle;
 
   final AssetBundle bundle;
 
