@@ -1,3 +1,15 @@
+enum ContentType {
+  quranVerse,
+  translation,
+  dua,
+  dhikr,
+  divineName,
+  religiousDay,
+  prophetBiography,
+  historyEvent,
+  editorial,
+}
+
 enum ContentReviewStatus {
   draft,
   research,
@@ -67,6 +79,8 @@ class LocalizedReligiousText {
 class ReligiousContentRecord {
   const ReligiousContentRecord({
     required this.id,
+    required this.type,
+    required this.sourceStatus,
     required this.version,
     required this.reviewStatus,
     required this.certainty,
@@ -77,6 +91,8 @@ class ReligiousContentRecord {
   });
 
   final String id;
+  final ContentType type;
+  final ReligiousSourceClass sourceStatus;
   final int version;
   final ContentReviewStatus reviewStatus;
   final CertaintyLevel certainty;
@@ -86,7 +102,9 @@ class ReligiousContentRecord {
   final String? reviewer;
 
   bool get canEnterProductionDataset =>
+      id.trim().isNotEmpty &&
       reviewStatus == ContentReviewStatus.published &&
+      sourceStatus != ReligiousSourceClass.unknown &&
       text.isComplete &&
       sources.isNotEmpty &&
       version > 0;
