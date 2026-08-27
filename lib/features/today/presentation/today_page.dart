@@ -2,18 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
+import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
+import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
 class TodayPage extends StatefulWidget {
   TodayPage({
     super.key,
     QuranReadingProgressRepository? quranProgressRepository,
+    DailyVerseDataSource? dailyVerseRepository,
+    this.now,
     this.onContinueQuran,
+    this.onOpenDailyVerse,
   }) : quranProgressRepository = quranProgressRepository ??
-            QuranReadingProgressRepository(SecurePrivateUserStore());
+            QuranReadingProgressRepository(SecurePrivateUserStore()),
+       dailyVerseRepository = dailyVerseRepository ?? DailyVerseRepository();
 
   final QuranReadingProgressRepository quranProgressRepository;
+  final DailyVerseDataSource dailyVerseRepository;
+  final DateTime Function()? now;
   final VoidCallback? onContinueQuran;
+  final Future<void> Function(QuranAddress address)? onOpenDailyVerse;
 
   @override
   State<TodayPage> createState() => _TodayPageState();
@@ -21,11 +30,15 @@ class TodayPage extends StatefulWidget {
 
 class _TodayPageState extends State<TodayPage> {
   late Future<QuranReadingProgress?> _progressFuture;
+  late DateTime _today;
+  Future<DailyVerse>? _dailyVerseFuture;
+  String? _dailyVerseLanguage;
 
   @override
   void initState() {
     super.initState();
     _progressFuture = widget.quranProgressRepository.loadSaved();
+    _today = widget.now?.call() ?? DateTime.now();
   }
 
   @override
@@ -37,6 +50,23 @@ class _TodayPageState extends State<TodayPage> {
     )) {
       _progressFuture = widget.quranProgressRepository.loadSaved();
     }
+    if (!identical(oldWidget.dailyVerseRepository, widget.dailyVerseRepository) ||
+        oldWidget.now != widget.now) {
+      _today = widget.now?.call() ?? DateTime.now();
+      _dailyVerseFuture = null;
+      _dailyVerseLanguage = null;
+    }
+  }
+
+  Future<DailyVerse> _dailyVerseFor(String languageCode) {
+    if (_dailyVerseFuture == null || _dailyVerseLanguage != languageCode) {
+      _dailyVerseLanguage = languageCode;
+      _dailyVerseFuture = widget.dailyVerseRepository.forDate(
+        date: _today,
+        languageCode: languageCode,
+      );
+    }
+    return _dailyVerseFuture!;
   }
 
   @override
@@ -44,6 +74,7 @@ class _TodayPageState extends State<TodayPage> {
     final width = MediaQuery.sizeOf(context).width;
     final padding = AppBreakpoints.horizontalPadding(width);
     final l10n = AppLocalizations.of(context);
+    final languageCode = Localizations.localeOf(context).languageCode;
 
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(padding, 28, padding, 44),
@@ -55,10 +86,25 @@ class _TodayPageState extends State<TodayPage> {
             subtitle: l10n.todaySubtitle,
           ),
           const SizedBox(height: 36),
-          _EditorialBlock(
-            eyebrow: l10n.dailyVerseTitle,
-            icon: Icons.menu_book_outlined,
-            body: l10n.contentPending,
+          FutureBuilder<DailyVerse>(
+            future: _dailyVerseFor(languageCode),
+            builder: (context, snapshot) {
+              final verse = snapshot.data;
+              if (snapshot.connectionState != ConnectionState.done ||
+                  snapshot.hasError ||
+                  verse == null) {
+                return _EditorialBlock(
+                  eyebrow: l10n.dailyVerseTitle,
+                  icon: Icons.menu_book_outlined,
+                  body: l10n.contentPending,
+                );
+              }
+              return _DailyVerseBlock(
+                eyebrow: l10n.dailyVerseTitle,
+                verse: verse,
+                onTap: widget.onOpenDailyVerse,
+              );
+            },
           ),
           const SizedBox(height: 22),
           _EditorialBlock(
@@ -124,6 +170,103 @@ class _Header extends StatelessWidget {
           const SizedBox(height: 10),
           Text(subtitle, style: Theme.of(context).textTheme.bodyLarge),
         ],
+      ),
+    );
+  }
+}
+
+class _DailyVerseBlock extends StatelessWidget {
+  const _DailyVerseBlock({
+    required this.eyebrow,
+    required this.verse,
+    required this.onTap,
+  });
+
+  final String eyebrow;
+  final DailyVerse verse;
+  final Future<void> Function(QuranAddress address)? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      button: onTap != null,
+      child: InkWell(
+        key: const ValueKey('daily-verse-card'),
+        onTap: onTap == null
+            ? null
+            : () {
+                onTap!(verse.address);
+              },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 22),
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: theme.dividerColor),
+              bottom: BorderSide(color: theme.dividerColor),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Icon(
+                  Icons.menu_book_outlined,
+                  size: 22,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      eyebrow.toUpperCase(),
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: theme.colorScheme.primary,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      verse.arabic,
+                      key: const ValueKey('daily-verse-arabic'),
+                      textDirection: TextDirection.rtl,
+                      textAlign: TextAlign.start,
+                      style: theme.textTheme.titleLarge?.copyWith(height: 1.9),
+                    ),
+                    if (verse.translation case final translation?) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        translation,
+                        key: const ValueKey('daily-verse-translation'),
+                        style: theme.textTheme.bodyLarge?.copyWith(height: 1.55),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    Text(
+                      verse.sourceLabel,
+                      key: const ValueKey('daily-verse-source'),
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (onTap != null) ...[
+                const SizedBox(width: 12),
+                const Padding(
+                  padding: EdgeInsets.only(top: 2),
+                  child: Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
