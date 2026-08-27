@@ -40,11 +40,14 @@ class VerifiedMealSource {
 }
 
 abstract final class VerifiedMealSources {
+  // QuranEnc's UI displays a leading "V", while the official API metadata and
+  // generated canonical datasets expose the raw version values below. Runtime
+  // verification pins the API value exactly; presentation may add "V".
   static const turkish = VerifiedMealSource(
     locale: 'tr',
     translationKey: 'turkish_rwwad',
     publisher: 'Rowad Tercüme Merkezi',
-    version: 'V1.0.4',
+    version: '1.0.4',
     canonicalSha256: 'a0c001b1e690cc022351d55b9951a7410fde4a6266638766c553fa91f401b1b7',
     surahCount: 114,
     ayahCount: 6236,
@@ -54,7 +57,7 @@ abstract final class VerifiedMealSources {
     locale: 'en',
     translationKey: 'english_rwwad',
     publisher: 'Rowwad Translation Center',
-    version: 'V1.0.19',
+    version: '1.0.19',
     canonicalSha256: '24c81ccfa5818e417b96f3b457955d34308a95d006a65c894ac69eaba580a3c0',
     surahCount: 114,
     ayahCount: 6236,
