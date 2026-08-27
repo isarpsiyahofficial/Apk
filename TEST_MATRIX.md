@@ -15,16 +15,16 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 |---|---|---|---|---|
 | R01 | Dar telefon | 320×568 / 360×640 | PASS | `app_shell_responsive_test.dart`: 320×640, overflow yok, bottom navigation |
 | R02 | Modern telefon | 390×844 | PASS | `app_shell_responsive_test.dart`: 390×844, bottom navigation |
-| R03 | Büyük telefon | 430×932 | TODO | |
+| R03 | Büyük telefon | 430×932 | PASS | `app_shell_responsive_test.dart`: 430×932 compact shell, overflow yok |
 | R04 | Küçük tablet/fold geniş | 600–839 px | PASS | 599/600 ve 839 breakpoint sınır testleri; rail yok |
 | R05 | Tablet portrait | 840–1199 px | PASS | 840 sınır testi + 1024 px tablet rail testi |
 | R06 | 4:3 tablet | 1024×1366 benzeri | PASS | 1024×768 4:3 landscape shell testi, overflow yok |
-| R07 | BlueStacks/desktop window | 1280×720 | TODO | |
+| R07 | BlueStacks/desktop window | 1280×720 | PASS | `app_shell_responsive_test.dart`: 1280×720 16:9 rail + overflow kontrolü |
 | R08 | BlueStacks wide | 1920×1080 | PASS | 1920×1080 rail + overflow kontrolü |
 | R09 | 16:10 landscape | 1280×800 | PASS | 1280×800 rail + overflow kontrolü |
 | R10 | Büyük font scale | 1.3–2.0 | PASS | 360×800, text scale 1.6, shell overflow yok |
-| R11 | Orientation change | portrait ↔ landscape | TODO | |
-| R12 | Keyboard inset | text input ekranları | TODO | |
+| R11 | Orientation change | portrait ↔ landscape | PASS | 430×932 portrait → 932×430 landscape; nav → rail, exception yok |
+| R12 | Keyboard inset | text input ekranları | PASS | 390×844 + 320px bottom view inset; compact shell exception yok |
 
 **Beklenti:** `<840px` alt navigation; `>=840px` rail/adaptif geniş ekran. Overflow, kesilmiş dini metin, kontrolsüz satır genişliği veya navigation çakışması FAIL.
 
@@ -61,6 +61,8 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 | D12 | İslam tarihi iki kaynak/certainty | TODO | |
 | D13 | Yasak kesin para/aşk/şifa iddiaları sıfır | TODO | |
 | D14 | Yazım/imla native TR/EN/AR review | TODO | |
+
+**Altyapı kanıtı:** `content_governance_test.dart` production dataset için `published` statüsü, TR/EN/AR tamlığı ve kaynak zorunluluğunu; `source_manifest_test.dart` source/license/hash ve final reusable Canva asset kapılarını test eder. Bu altyapı PASS olması gerçek içerik satırlarını otomatik olarak D01–D14 PASS yapmaz.
 
 ## D. FREE / PRO / reklam / billing
 
@@ -108,6 +110,8 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 | S15 | FREE/Rewarded/PRO access matrix | TODO | |
 | S16 | PRO tüm final tasarımlarda reklamsız | TODO | |
 
+**Altyapı kanıtı:** `VisualAssetManifestEntry.canBeFinalReusableBackground` ve `source_manifest_test.dart`, lisans/redistribution/export hakkı olmayan, Canva-AI veya Pro reusable adayların final background statüsüne geçmesini engeller. 100 gerçek asset tek tek doğrulanmadan S01–S03 PASS değildir.
+
 ## F. Gizlilik / güvenlik
 
 | ID | Senaryo | Durum | Kanıt |
@@ -128,9 +132,9 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 
 | ID | Senaryo | Durum | Kanıt |
 |---|---|---|---|
-| B01 | `flutter gen-l10n` | PASS | Flutter CI run #10, `Generate localizations` success on `a64b992` |
-| B02 | `flutter analyze --fatal-infos --fatal-warnings` | PASS | Flutter CI run #10, `Analyze` success on `a64b992` |
-| B03 | `flutter test` | PASS | Flutter CI run #10, `Test` success on `a64b992` |
+| B01 | `flutter gen-l10n` | PASS | Flutter CI run #25, latest implementation HEAD `9bf8f70`, localization generation success |
+| B02 | `flutter analyze --fatal-infos --fatal-warnings` | PASS | Flutter CI run #25, latest implementation HEAD `9bf8f70`, analyzer success |
+| B03 | `flutter test` | PASS | Flutter CI run #25, latest implementation HEAD `9bf8f70`, expanded responsive + content/source manifest tests success |
 | B04 | Android debug build | TODO | |
 | B05 | Android release AAB | TODO | |
 | B06 | Android release APK gerektiğinde | TODO | |
