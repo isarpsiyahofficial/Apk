@@ -120,10 +120,10 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 | P02 | Ham soru ad payload = 0 | TODO | reklam entegrasyonu sonrası |
 | P03 | Ham soru analytics/crash log = 0 | TODO | |
 | P04 | Yerel hassas veri encryption | PASS | `SecurePrivateUserStore` + secure-storage testleri; Android build PASS |
-| P05 | Auto Backup hassas veri kontrolü | PASS | `allowBackup=false`; backup/data-extraction root/file/database/sharedpref/external exclude; Android Debug CI #32 source audit PASS |
+| P05 | Auto Backup hassas veri kontrolü | PASS | `allowBackup=false`; backup/data-extraction root/file/database/sharedpref/external exclude; Android Debug CI source audit PASS |
 | P06 | Clipboard/share note leak = 0 | TODO | |
 | P07 | Release debug log = 0 | TODO | release log audit ayrı yapılacak |
-| P08 | Location permission = 0 | PASS | Debug CI #32 + Release CI #3 final APK permission audit |
+| P08 | Location permission = 0 | PASS | Android Debug + Release CI final APK permission audit |
 | P09 | Microphone permission = 0 | PASS | aynı final APK audit |
 | P10 | Camera permission = 0 | PASS | aynı final APK audit |
 | P11 | Contacts/accounts permission = 0 | PASS | aynı final APK audit |
@@ -132,23 +132,30 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 
 | ID | Senaryo | Durum | Kanıt |
 |---|---|---|---|
-| B01 | `flutter gen-l10n` | PASS | Flutter CI #99, HEAD `d310c72a2c0cee2a379c7209434a4343ac480996` |
-| B02 | fatal analyzer | PASS | Flutter CI #99; Release CI #3 analyze PASS |
-| B03 | `flutter test` | PASS | Flutter CI #99; Release CI #3: 47 tests PASS |
-| B04 | Android debug build | PASS | Android Debug CI #32; source hardening + final APK permission audit PASS |
-| B05 | Android release AAB verification build | PASS | Release CI #3: `app-release.aab` 45.5 MB |
-| B06 | Android release APK verification build | PASS | Release CI #3: `app-release.apk` 45.5 MB |
-| B07 | APK install/launch gerçek cihaz/emülatör | TODO | artifact build PASS; install/launch açık |
+| B01 | `flutter gen-l10n` | PASS | Flutter CI #123, HEAD `ed5ab4a0d7aae637d8d74859805d7ffda2405903` |
+| B02 | fatal analyzer | PASS | Flutter CI #123; Android Release CI #14 analyze PASS |
+| B03 | `flutter test` | PASS | Flutter CI #123; Android Release CI #14 tests PASS |
+| B04 | Android debug build | PASS | Android Debug CI #56 |
+| B05 | Android release AAB verification build | PASS | Android Release CI #14 |
+| B06 | Android release APK verification build | PASS | Android Release CI #14 |
+| B07 | APK install/launch gerçek cihaz/emülatör | PASS | Android Emulator Smoke #5, HEAD `ed5ab4a0d7aae637d8d74859805d7ffda2405903`: install success + process + MainActivity + fatal-crash scan PASS |
 | B08 | Final production artifact SHA-256 | TODO | verification hashes mevcut; production signing/final dataset sonrası yeniden üretilecek |
 | B09 | Privacy/Terms/Sources URLs | TODO | |
 | B10 | Store TR/EN/AR screenshots/copy | TODO | |
 
-### Release-verification kanıtı — CI #3
+### Release-verification kanıtı
 
-- AAB SHA-256: `782ef7b4adf8f982ea7d959419e313eef9dcd707a17542b4ed7a32dd8b3117be`
-- APK SHA-256: `0a9cee20120d690b9c3816aa535556fff63ab8e380f4c79ed774d9439f1f8c64`
-- Release APK birleşik izinleri: `INTERNET` + Android dynamic-receiver internal permission; yasak hassas izin yok.
-- Verification artifact: `android-release-verification`, GitHub artifact ID `9640211631`, geçici CI kanıtıdır; final mağaza artifacti değildir.
+- Release APK/AAB verification CI hattı PASS durumundadır; bunlar production signing/final dataset öncesi geçici doğrulama artifactleridir.
+- Release APK birleşik izin auditinde yasak hassas izin bulunmamaktadır.
+- B08 yalnız production signing ve final dataset sonrası üretilen exact artifact hash ile kapatılacaktır.
+
+### Emulator smoke kanıtı — CI #5
+
+- Debug APK emülatöre `adb install -r` ile başarıyla kurulmuştur.
+- Uygulama prosesi başlatılmış ve PID doğrulanmıştır.
+- `com.example.islami_hayat/.MainActivity` gerçek ActivityManager state içinde doğrulanmıştır.
+- Launch sonrası logcat fatal crash taraması temizdir.
+- Önceki iki smoke hatasının uygulama crash'i değil CI harness kaynaklı olduğu loglarla ayrıştırılmıştır: `/bin/sh` pipefail uyumsuzluğu ve `am start -W` cold-start timeout beklentisi giderilmiştir.
 
 ## Final kuralı
 
