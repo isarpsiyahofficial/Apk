@@ -11,7 +11,7 @@ Future<void> _pumpUntilFound(
     if (finder.evaluate().isNotEmpty) return;
     await tester.pump(const Duration(milliseconds: 50));
   }
-  throw TestFailure('Timed out waiting for ${finder.description}');
+  throw TestFailure('Timed out waiting for expected widget');
 }
 
 Future<void> _openQuran(
