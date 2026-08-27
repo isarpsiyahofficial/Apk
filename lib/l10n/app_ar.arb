@@ -20,16 +20,22 @@
   "quickExplore": "اكتشف",
   "continueQuranTitle": "متابعة قراءة القرآن",
   "continueQuranPosition": "السورة {surah}، الآية {ayah}",
-  "@continueQuranPosition": {
-    "placeholders": {
-      "surah": {"type": "int"},
-      "ayah": {"type": "int"}
-    }
-  },
+  "@continueQuranPosition": {"placeholders": {"surah": {"type": "int"}, "ayah": {"type": "int"}}},
   "quranTitle": "القرآن الكريم",
   "quranSubtitle": "اقرأ وابحث وتعرّف إلى المصادر.",
   "quranSurahLabel": "السورة",
   "quranJuzLabel": "الجزء",
+  "quranReadTab": "قراءة",
+  "quranSearchTab": "بحث",
+  "quranSearchTitle": "البحث في القرآن",
+  "quranSearchSubtitle": "ابحث في الترجمة الموثقة للغة المختارة، أو انتقل مباشرة إلى موضع مثل 2:255.",
+  "quranSearchLabel": "كلمة أو رقم السورة والآية",
+  "quranSearchHint": "مثال: رحمة أو 2:255",
+  "quranSearchAction": "بحث",
+  "quranSearchNoResults": "لم يُعثر على آية مطابقة.",
+  "quranSearchOpenVerse": "فتح الآية",
+  "quranSearchOpenFailed": "تعذّر فتح الآية. لم يتغير موضع القراءة المحفوظ.",
+  "quranSearchPrivacyNote": "يعمل البحث على الجهاز. لا يُرسل استعلامك إلى أي خدمة خارجية.",
   "quranFontSmaller": "تصغير خط القرآن",
   "quranFontLarger": "تكبير خط القرآن",
   "quranOpenSources": "فتح مصادر القرآن وتراخيصه",
