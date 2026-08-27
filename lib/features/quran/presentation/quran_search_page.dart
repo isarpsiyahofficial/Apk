@@ -135,6 +135,13 @@ final class _QuranSearchPageState extends State<QuranSearchPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      if (result.surahDisplayName case final surahName?) ...[
+                        Text(
+                          surahName,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 2),
+                      ],
                       Text(
                         l10n.continueQuranPosition(result.surah, result.ayah),
                         style: Theme.of(context).textTheme.labelLarge,
