@@ -28,7 +28,10 @@ void main() {
       sourcesLabel: 'Kaynaklar ve Lisanslar',
     );
 
-    expect(find.textContaining('Tanzil Project'), findsOneWidget);
+    expect(
+      find.text('Tanzil Project — Uthmani Quran Text v1.1'),
+      findsOneWidget,
+    );
     expect(find.textContaining('CC BY 3.0'), findsOneWidget);
     expect(find.text('https://tanzil.net/'), findsOneWidget);
   });
@@ -41,7 +44,10 @@ void main() {
       sourcesLabel: 'Sources & Licenses',
     );
 
-    expect(find.textContaining('Tanzil Project'), findsOneWidget);
+    expect(
+      find.text('Tanzil Project — Uthmani Quran Text v1.1'),
+      findsOneWidget,
+    );
     expect(find.textContaining('CC BY 3.0'), findsOneWidget);
   });
 
@@ -55,7 +61,10 @@ void main() {
 
     final context = tester.element(find.text('المصادر والتراخيص').last);
     expect(Directionality.of(context), TextDirection.rtl);
-    expect(find.textContaining('مشروع تنزيل'), findsOneWidget);
+    expect(
+      find.text('مشروع تنزيل — نص القرآن بالرسم العثماني، الإصدار 1.1'),
+      findsOneWidget,
+    );
     expect(find.textContaining('CC BY 3.0'), findsOneWidget);
   });
 
