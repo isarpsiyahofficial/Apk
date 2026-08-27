@@ -3,6 +3,8 @@ import 'package:islami_hayat/core/storage/user_data_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_verse_user_state_repository.dart';
 
 abstract interface class QuranReflectionNoteDataSource {
+  Future<Map<String, String>> loadNotes();
+
   Future<String?> loadNote({required int surah, required int ayah});
 
   Future<void> saveNote({
@@ -21,6 +23,16 @@ final class QuranReflectionNoteRepository
             UserDataRepository(SecurePrivateUserStore());
 
   final UserDataRepository _userDataRepository;
+
+  @override
+  Future<Map<String, String>> loadNotes() async {
+    final snapshot = await _userDataRepository.load();
+    final result = <String, String>{};
+    for (final entry in snapshot.notes.entries) {
+      if (_isCanonicalQuranNoteId(entry.key)) result[entry.key] = entry.value;
+    }
+    return Map<String, String>.unmodifiable(result);
+  }
 
   @override
   Future<String?> loadNote({required int surah, required int ayah}) async {
@@ -69,5 +81,19 @@ final class QuranReflectionNoteRepository
         entitlementCache: snapshot.entitlementCache,
       ),
     );
+  }
+}
+
+bool _isCanonicalQuranNoteId(String id) {
+  final parts = id.split(':');
+  if (parts.length != 3 || parts.first != 'quran') return false;
+  final surah = int.tryParse(parts[1]);
+  final ayah = int.tryParse(parts[2]);
+  if (surah == null || ayah == null) return false;
+  try {
+    quranVerseUserDataId(surah: surah, ayah: ayah);
+    return true;
+  } on RangeError {
+    return false;
   }
 }
