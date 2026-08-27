@@ -7,6 +7,7 @@ import 'package:islami_hayat/features/profile/presentation/sources_licenses_page
 import 'package:islami_hayat/features/quran/data/quran_reader_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_structure_metadata.dart';
+import 'package:islami_hayat/features/quran/data/quran_verse_user_state_repository.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
 final class QuranReaderPage extends StatefulWidget {
@@ -14,13 +15,17 @@ final class QuranReaderPage extends StatefulWidget {
     super.key,
     QuranReaderDataSource? repository,
     QuranReadingProgressRepository? progressRepository,
+    QuranVerseUserStateDataSource? verseUserStateRepository,
   }) : repository = repository ?? QuranReaderRepository(),
        progressRepository =
            progressRepository ??
-           QuranReadingProgressRepository(SecurePrivateUserStore());
+           QuranReadingProgressRepository(SecurePrivateUserStore()),
+       verseUserStateRepository =
+           verseUserStateRepository ?? QuranVerseUserStateRepository();
 
   final QuranReaderDataSource repository;
   final QuranReadingProgressRepository progressRepository;
+  final QuranVerseUserStateDataSource verseUserStateRepository;
 
   @override
   State<QuranReaderPage> createState() => _QuranReaderPageState();
@@ -38,6 +43,8 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
   double _quranScale = 1;
   bool _restoreStarted = false;
   bool _progressReady = false;
+  bool _collectionMutationInFlight = false;
+  QuranVerseUserState _verseUserState = const QuranVerseUserState.empty();
 
   int get _selectedJuz => quranJuzForPosition(
     surah: _selectedSurah,
@@ -53,7 +60,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
 
     if (!_restoreStarted) {
       _restoreStarted = true;
-      unawaited(_restoreProgress());
+      unawaited(_restorePrivateState());
       return;
     }
 
@@ -62,8 +69,9 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
     }
   }
 
-  Future<void> _restoreProgress() async {
+  Future<void> _restorePrivateState() async {
     QuranReadingProgress progress;
+    QuranVerseUserState verseUserState;
     try {
       progress = await widget.progressRepository.load();
     } on QuranReadingProgressFormatException {
@@ -74,9 +82,15 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
       }
       progress = QuranReadingProgress.initial();
     } catch (_) {
-      // Quran progress is private convenience state. A platform storage failure
-      // must never prevent the separately verified Quran dataset from loading.
       progress = QuranReadingProgress.initial();
+    }
+
+    try {
+      verseUserState = await widget.verseUserStateRepository.load();
+    } catch (_) {
+      // Favorite/bookmark storage is convenience state and must never block the
+      // separately verified Quran dataset from loading.
+      verseUserState = const QuranVerseUserState.empty();
     }
 
     if (!mounted) return;
@@ -84,6 +98,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
       _selectedSurah = progress.surah;
       _savedAyah = progress.ayah;
       _quranScale = progress.quranScale;
+      _verseUserState = verseUserState;
       _progressReady = true;
       _loadSelectedChapter();
     });
@@ -137,6 +152,34 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
       await _persistProgress();
     } catch (_) {
       if (mounted) setState(() => _savedAyah = previous);
+    }
+  }
+
+  Future<void> _toggleFavorite(int surah, int ayah) async {
+    if (_collectionMutationInFlight) return;
+    setState(() => _collectionMutationInFlight = true);
+    try {
+      final state = await widget.verseUserStateRepository.toggleFavorite(
+        surah: surah,
+        ayah: ayah,
+      );
+      if (mounted) setState(() => _verseUserState = state);
+    } finally {
+      if (mounted) setState(() => _collectionMutationInFlight = false);
+    }
+  }
+
+  Future<void> _toggleBookmark(int surah, int ayah) async {
+    if (_collectionMutationInFlight) return;
+    setState(() => _collectionMutationInFlight = true);
+    try {
+      final state = await widget.verseUserStateRepository.toggleBookmark(
+        surah: surah,
+        ayah: ayah,
+      );
+      if (mounted) setState(() => _verseUserState = state);
+    } finally {
+      if (mounted) setState(() => _collectionMutationInFlight = false);
     }
   }
 
@@ -357,6 +400,14 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
               itemBuilder: (context, index) {
                 final verse = chapter.verses[index];
                 final isSaved = verse.ayah == _savedAyah;
+                final isFavorite = _verseUserState.isFavorite(
+                  surah: verse.surah,
+                  ayah: verse.ayah,
+                );
+                final isBookmarked = _verseUserState.isBookmarked(
+                  surah: verse.surah,
+                  ayah: verse.ayah,
+                );
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
@@ -375,6 +426,44 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                           ),
                           IconButton(
                             key: ValueKey(
+                              'quran-favorite-${verse.surah}-${verse.ayah}',
+                            ),
+                            tooltip: isFavorite
+                                ? l10n.quranRemoveFavorite
+                                : l10n.quranAddFavorite,
+                            onPressed: _collectionMutationInFlight
+                                ? null
+                                : () => _toggleFavorite(
+                                    verse.surah,
+                                    verse.ayah,
+                                  ),
+                            icon: Icon(
+                              isFavorite
+                                  ? Icons.favorite_rounded
+                                  : Icons.favorite_border_rounded,
+                            ),
+                          ),
+                          IconButton(
+                            key: ValueKey(
+                              'quran-bookmark-${verse.surah}-${verse.ayah}',
+                            ),
+                            tooltip: isBookmarked
+                                ? l10n.quranRemoveBookmark
+                                : l10n.quranAddBookmark,
+                            onPressed: _collectionMutationInFlight
+                                ? null
+                                : () => _toggleBookmark(
+                                    verse.surah,
+                                    verse.ayah,
+                                  ),
+                            icon: Icon(
+                              isBookmarked
+                                  ? Icons.bookmark_rounded
+                                  : Icons.bookmark_border_rounded,
+                            ),
+                          ),
+                          IconButton(
+                            key: ValueKey(
                               'quran-save-position-${verse.surah}-${verse.ayah}',
                             ),
                             tooltip: isSaved
@@ -385,8 +474,8 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                                 : () => _saveReadingPosition(verse.ayah),
                             icon: Icon(
                               isSaved
-                                  ? Icons.bookmark_rounded
-                                  : Icons.bookmark_border_rounded,
+                                  ? Icons.play_circle_fill_rounded
+                                  : Icons.play_circle_outline_rounded,
                             ),
                           ),
                         ],
