@@ -46,6 +46,7 @@ abstract interface class QuranReaderDataSource {
   Future<QuranReaderChapter> loadChapter({
     required String languageCode,
     int surah = 1,
+    int startAyah = 1,
   });
 }
 
@@ -75,9 +76,14 @@ final class QuranReaderRepository implements QuranReaderDataSource {
   Future<QuranReaderChapter> loadChapter({
     required String languageCode,
     int surah = 1,
+    int startAyah = 1,
   }) async {
     if (surah < 1 || surah > canonicalQuranSuraCount) {
       throw RangeError.range(surah, 1, canonicalQuranSuraCount, 'surah');
+    }
+    final chapterAyahCount = canonicalQuranAyahCountForSura(surah);
+    if (startAyah < 1 || startAyah > chapterAyahCount) {
+      throw RangeError.range(startAyah, 1, chapterAyahCount, 'startAyah');
     }
 
     final quran = await _quranLoader.load();
@@ -89,7 +95,9 @@ final class QuranReaderRepository implements QuranReaderDataSource {
     }
 
     final verses = <QuranReaderVerse>[];
-    for (final ayah in quran.ayahs.where((item) => item.sura == surah)) {
+    for (final ayah in quran.ayahs.where(
+      (item) => item.sura == surah && item.ayah >= startAyah,
+    )) {
       final mealVerse = meal?.verse(ayah.sura, ayah.ayah);
       verses.add(
         QuranReaderVerse(
@@ -102,8 +110,13 @@ final class QuranReaderRepository implements QuranReaderDataSource {
       );
     }
 
-    if (verses.length != canonicalQuranAyahCountForSura(surah)) {
-      throw StateError('Verified Quran chapter $surah is structurally incomplete');
+    final expectedVisibleAyahs = chapterAyahCount - startAyah + 1;
+    if (verses.length != expectedVisibleAyahs ||
+        verses.first.ayah != startAyah ||
+        verses.last.ayah != chapterAyahCount) {
+      throw StateError(
+        'Verified Quran chapter $surah is structurally incomplete from ayah $startAyah',
+      );
     }
 
     return QuranReaderChapter(
