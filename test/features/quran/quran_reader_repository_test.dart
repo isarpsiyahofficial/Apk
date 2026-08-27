@@ -34,5 +34,32 @@ void main() {
         throwsRangeError,
       );
     });
+
+    test('loads exact Juz 2 start at Al-Baqara 2:142', () async {
+      final chapter = await repository.loadChapter(
+        languageCode: 'ar',
+        surah: 2,
+        startAyah: 142,
+      );
+
+      expect(chapter.surah, 2);
+      expect(chapter.verses, hasLength(145));
+      expect(chapter.verses.first.surah, 2);
+      expect(chapter.verses.first.ayah, 142);
+      expect(chapter.verses.last.surah, 2);
+      expect(chapter.verses.last.ayah, 286);
+      expect(chapter.mealSource, isNull);
+    });
+
+    test('rejects an impossible start ayah before loading Quran assets', () async {
+      await expectLater(
+        repository.loadChapter(
+          languageCode: 'ar',
+          surah: 1,
+          startAyah: 8,
+        ),
+        throwsRangeError,
+      );
+    });
   });
 }
