@@ -26,5 +26,13 @@
   "dhikrSubtitle": "Sayaç, zikir rehberi ve niyetine göre keşif.",
   "profileTitle": "Ben",
   "profileSubtitle": "Ayarlar, favoriler, geçmiş ve Premium.",
+  "sourcesLicensesTitle": "Kaynaklar ve Lisanslar",
+  "sourcesLicensesSubtitle": "Dini metinlerin ve üçüncü taraf varlıkların kaynaklarını incele.",
+  "quranSourceTitle": "Kur’an Arapça Metni",
+  "quranSourceName": "Tanzil Project — Uthmani Quran Text v1.1",
+  "quranSourceLicense": "Creative Commons Attribution 3.0 (CC BY 3.0). Metin değiştirilmeden kullanılır; Tanzil Project kaynak gösterimi korunur.",
+  "quranSourceStatus": "Production kaynağı exact-byte SHA-256 doğrulamasından geçmeden uygulamada güvenilir metin olarak gösterilmez.",
+  "sourceTransparencyTitle": "Kaynak şeffaflığı",
+  "sourceTransparencyBody": "Meal, hadis, dua, zikir, tarih ve peygamber içerikleri kendi kaynak ve inceleme durumlarıyla ayrı ayrı kaydedilir. Belirsiz bilgi kesinmiş gibi sunulmaz.",
   "comingSoon": "Bu bölüm şartname sırasıyla hazırlanıyor."
 }
