@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
+import 'package:islami_hayat/features/quran/presentation/quran_memorization_page.dart';
 import 'package:islami_hayat/features/quran/presentation/quran_reader_page.dart';
 import 'package:islami_hayat/features/quran/presentation/quran_search_page.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
@@ -22,6 +23,7 @@ final class QuranHubPage extends StatefulWidget {
 final class _QuranHubPageState extends State<QuranHubPage> {
   int _mode = 0;
   int _readerGeneration = 0;
+  int _memorizationGeneration = 0;
 
   Future<void> _openVerse(QuranSearchResult result) async {
     final l10n = AppLocalizations.of(context);
@@ -34,6 +36,7 @@ final class _QuranHubPageState extends State<QuranHubPage> {
       setState(() {
         _mode = 0;
         _readerGeneration += 1;
+        _memorizationGeneration += 1;
       });
     } catch (_) {
       if (!mounted) return;
@@ -41,6 +44,18 @@ final class _QuranHubPageState extends State<QuranHubPage> {
         SnackBar(content: Text(l10n.quranSearchOpenFailed)),
       );
     }
+  }
+
+  void _selectMode(int value) {
+    if (_mode == value) return;
+    setState(() {
+      _mode = value;
+      if (value == 2) {
+        // Recreate the memorization page whenever the mode is entered so it
+        // always uses the latest explicitly saved reading position.
+        _memorizationGeneration += 1;
+      }
+    });
   }
 
   @override
@@ -64,11 +79,14 @@ final class _QuranHubPageState extends State<QuranHubPage> {
                   icon: const Icon(Icons.search),
                   label: Text(l10n.quranSearchTab),
                 ),
+                ButtonSegment<int>(
+                  value: 2,
+                  icon: const Icon(Icons.school_outlined),
+                  label: Text(l10n.quranMemorizeTab),
+                ),
               ],
               selected: {_mode},
-              onSelectionChanged: (value) {
-                setState(() => _mode = value.first);
-              },
+              onSelectionChanged: (value) => _selectMode(value.first),
               showSelectedIcon: false,
             ),
           ),
@@ -84,6 +102,10 @@ final class _QuranHubPageState extends State<QuranHubPage> {
               QuranSearchPage(
                 repository: widget.searchRepository,
                 onOpenVerse: _openVerse,
+              ),
+              QuranMemorizationPage(
+                key: ValueKey('quran-memorize-$_memorizationGeneration'),
+                progressRepository: widget.progressRepository,
               ),
             ],
           ),
