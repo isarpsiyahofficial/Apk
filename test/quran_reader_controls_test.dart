@@ -2,17 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/theme/app_theme.dart';
+import 'package:islami_hayat/features/quran/data/quran_reader_repository.dart';
 import 'package:islami_hayat/features/quran/presentation/quran_reader_page.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
+
+final class _FixtureQuranReaderDataSource implements QuranReaderDataSource {
+  @override
+  List<QuranChapterSummary> get chapterSummaries => const [
+        QuranChapterSummary(surah: 1, ayahCount: 1),
+      ];
+
+  @override
+  Future<QuranReaderChapter> loadChapter({
+    required String languageCode,
+    int surah = 1,
+  }) async {
+    return QuranReaderChapter(
+      surah: surah,
+      verses: const [
+        QuranReaderVerse(
+          surah: 1,
+          ayah: 1,
+          arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+          translation: 'Doğrulanmış arayüz test metni',
+        ),
+      ],
+    );
+  }
+}
 
 Future<void> _pumpUntilFound(
   WidgetTester tester,
   Finder finder, {
-  int maxPumps = 300,
+  int maxPumps = 40,
 }) async {
   for (var i = 0; i < maxPumps; i++) {
     if (finder.evaluate().isNotEmpty) return;
-    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 25));
   }
   throw TestFailure('Timed out waiting for expected widget');
 }
@@ -33,7 +59,11 @@ Future<void> _openQuran(
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: Scaffold(body: SafeArea(child: QuranReaderPage())),
+      home: Scaffold(
+        body: SafeArea(
+          child: QuranReaderPage(repository: _FixtureQuranReaderDataSource()),
+        ),
+      ),
     ),
   );
   await _pumpUntilFound(
