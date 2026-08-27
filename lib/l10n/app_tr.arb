@@ -28,6 +28,8 @@
   },
   "quranTitle": "Kur’an-ı Kerim",
   "quranSubtitle": "Oku, ara ve kaynaklarıyla incele.",
+  "quranSurahLabel": "Sure",
+  "quranJuzLabel": "Cüz",
   "quranFontSmaller": "Kur’an yazısını küçült",
   "quranFontLarger": "Kur’an yazısını büyüt",
   "quranOpenSources": "Kur’an kaynaklarını ve lisanslarını aç",
