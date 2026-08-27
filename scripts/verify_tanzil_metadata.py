@@ -3,8 +3,8 @@
 
 The application keeps structural pointers separate from the immutable Quran
 text. This verifier downloads Tanzil quran-data.xml, validates its 30 juz
-starts, and compares them byte-for-byte at the numeric tuple level with the
-Dart runtime constants. Any drift fails CI.
+starts, and compares them at the numeric tuple level with the Dart runtime
+constants. Any drift fails CI.
 """
 from __future__ import annotations
 
@@ -21,6 +21,10 @@ OFFICIAL_METADATA_URL = "https://tanzil.net/res/text/metadata/quran-data.xml"
 USER_AGENT = "IslamiHayat-QuranMetadataVerifier/1.0 (+https://tanzil.net)"
 DART_PATTERN = re.compile(
     r"QuranJuzStart\(juz:\s*(\d+),\s*surah:\s*(\d+),\s*ayah:\s*(\d+)\)"
+)
+DART_LIST_PATTERN = re.compile(
+    r"const\s+List<QuranJuzStart>\s+canonicalQuranJuzStarts\s*=\s*\[(.*?)\];",
+    re.DOTALL,
 )
 
 
@@ -62,7 +66,11 @@ def parse_xml_juz_starts(payload: bytes) -> list[tuple[int, int, int]]:
 
 def parse_dart_juz_starts(path: Path) -> list[tuple[int, int, int]]:
     text = path.read_text(encoding="utf-8")
-    return [tuple(map(int, match)) for match in DART_PATTERN.findall(text)]
+    list_match = DART_LIST_PATTERN.search(text)
+    if list_match is None:
+        raise ValueError("Could not find canonicalQuranJuzStarts in Dart source")
+    list_body = list_match.group(1)
+    return [tuple(map(int, match)) for match in DART_PATTERN.findall(list_body)]
 
 
 def validate(starts: list[tuple[int, int, int]]) -> None:
