@@ -8,14 +8,17 @@ void main() {
     Size size, {
     Locale? locale,
     double textScaleFactor = 1,
+    EdgeInsets viewInsets = EdgeInsets.zero,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     tester.platformDispatcher.textScaleFactorTestValue = textScaleFactor;
+    tester.view.viewInsets = viewInsets;
 
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    addTearDown(tester.view.resetViewInsets);
 
     await tester.pumpWidget(IslamiHayatApp(locale: locale));
     await tester.pumpAndSettle();
@@ -32,6 +35,15 @@ void main() {
 
   testWidgets('modern phone width uses bottom navigation', (tester) async {
     await pumpAtSize(tester, const Size(390, 844));
+
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(NavigationRail), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('430x932 large modern phone remains compact and overflow-free',
+      (tester) async {
+    await pumpAtSize(tester, const Size(430, 932));
 
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.byType(NavigationRail), findsNothing);
@@ -78,11 +90,47 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('16:9 1280x720 emulator remains overflow-free with rail',
+      (tester) async {
+    await pumpAtSize(tester, const Size(1280, 720));
+
+    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('wide BlueStacks-style viewport remains bounded and uses rail',
       (tester) async {
     await pumpAtSize(tester, const Size(1920, 1080));
 
     expect(find.byType(NavigationRail), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('orientation change swaps compact navigation to rail cleanly',
+      (tester) async {
+    await pumpAtSize(tester, const Size(430, 932));
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(NavigationRail), findsNothing);
+
+    tester.view.physicalSize = const Size(932, 430);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keyboard inset does not break compact phone shell',
+      (tester) async {
+    await pumpAtSize(
+      tester,
+      const Size(390, 844),
+      viewInsets: const EdgeInsets.only(bottom: 320),
+    );
+
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(NavigationRail), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
