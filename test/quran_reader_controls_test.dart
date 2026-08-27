@@ -17,11 +17,11 @@ Future<void> _pumpUntilFound(
 Future<void> _openQuran(
   WidgetTester tester, {
   required Locale locale,
-  required String quranLabel,
 }) async {
   await tester.pumpWidget(IslamiHayatApp(locale: locale));
-  await _pumpUntilFound(tester, find.text(quranLabel));
-  await tester.tap(find.text(quranLabel).last);
+  final quranNavigation = find.byKey(const ValueKey('nav-quran'));
+  await _pumpUntilFound(tester, quranNavigation);
+  await tester.tap(quranNavigation);
   await _pumpUntilFound(
     tester,
     find.byKey(const ValueKey('quran-surah-selector')),
@@ -32,11 +32,7 @@ void main() {
   testWidgets('Quran reader exposes accessible font controls and sources', (
     tester,
   ) async {
-    await _openQuran(
-      tester,
-      locale: const Locale('tr'),
-      quranLabel: 'Kur’an',
-    );
+    await _openQuran(tester, locale: const Locale('tr'));
 
     expect(find.byKey(const ValueKey('quran-surah-selector')), findsOneWidget);
     expect(find.byKey(const ValueKey('quran-font-smaller')), findsOneWidget);
@@ -61,11 +57,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await _openQuran(
-      tester,
-      locale: const Locale('ar'),
-      quranLabel: 'القرآن',
-    );
+    await _openQuran(tester, locale: const Locale('ar'));
 
     expect(find.byKey(const ValueKey('quran-font-smaller')), findsOneWidget);
     expect(find.byKey(const ValueKey('quran-font-larger')), findsOneWidget);
