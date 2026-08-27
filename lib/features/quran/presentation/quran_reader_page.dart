@@ -53,10 +53,9 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
   }
 
   void _changeQuranScale(double delta) {
-    final next = (_quranScale + delta).clamp(
-      _minQuranScale,
-      _maxQuranScale,
-    );
+    final next = (_quranScale + delta)
+        .clamp(_minQuranScale, _maxQuranScale)
+        .toDouble();
     if (next == _quranScale) return;
     setState(() => _quranScale = next);
   }
