@@ -105,10 +105,19 @@ final class QuranReadingProgressRepository {
 
   final PrivateUserStore _store;
 
-  Future<QuranReadingProgress> load() async {
+  /// Returns null when the user has never persisted a Quran reading position.
+  /// Corrupted persisted data still fails closed by throwing a format exception.
+  Future<QuranReadingProgress?> loadSaved() async {
     final encoded = await _store.read(storageKey);
-    if (encoded == null) return QuranReadingProgress.initial();
+    if (encoded == null) return null;
+    return _decode(encoded);
+  }
 
+  Future<QuranReadingProgress> load() async {
+    return await loadSaved() ?? QuranReadingProgress.initial();
+  }
+
+  QuranReadingProgress _decode(String encoded) {
     try {
       final decoded = jsonDecode(encoded);
       if (decoded is! Map<String, dynamic>) {
