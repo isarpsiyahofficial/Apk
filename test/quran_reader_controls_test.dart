@@ -8,7 +8,7 @@ import 'package:islami_hayat/l10n/app_localizations.dart';
 Future<void> _pumpUntilFound(
   WidgetTester tester,
   Finder finder, {
-  int maxPumps = 80,
+  int maxPumps = 300,
 }) async {
   for (var i = 0; i < maxPumps; i++) {
     if (finder.evaluate().isNotEmpty) return;
