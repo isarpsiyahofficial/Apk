@@ -74,17 +74,21 @@ void main() {
     final dailyCard = find.byKey(const ValueKey('daily-verse-card'));
     expect(dailyCard, findsOneWidget);
     await tester.tap(dailyCard);
-    await tester.pumpAndSettle();
+
+    // The Quran reader intentionally performs asynchronous asset loading after
+    // navigation, so pumpAndSettle is not the correct synchronization primitive
+    // here. Two controlled frames are enough to complete the in-memory progress
+    // write and rebuild the AppShell with the Quran tab selected.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
     final saved = await progressRepository.loadSaved();
     expect(saved, isNotNull);
     expect(saved!.surah, 2);
     expect(saved.ayah, 286);
 
-    final quranDestination = tester.widget<NavigationDestination>(
-      find.byKey(const ValueKey('nav-quran')),
-    );
-    expect(quranDestination.label, 'Kur’an');
+    final navigationBar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+    expect(navigationBar.selectedIndex, 1);
     expect(find.byKey(const ValueKey('daily-verse-card')), findsNothing);
   });
 }
