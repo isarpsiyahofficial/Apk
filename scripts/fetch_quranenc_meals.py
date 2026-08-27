@@ -39,13 +39,26 @@ def _json(raw: bytes, url: str):
         raise ValueError(f"Invalid UTF-8 JSON from {url}: {exc}") from exc
 
 
+def _unwrap_list(payload, *, context: str) -> list:
+    """Accept documented arrays or known QuranEnc wrapper objects only."""
+    if isinstance(payload, list):
+        return payload
+    if isinstance(payload, dict):
+        for key in ("result", "data", "translations"):
+            value = payload.get(key)
+            if isinstance(value, list):
+                return value
+        raise ValueError(
+            f"{context}: unsupported object wrapper; keys={sorted(payload.keys())}"
+        )
+    raise ValueError(f"{context}: expected array/object, got {type(payload).__name__}")
+
+
 def _translation_metadata(locale: str, source: dict[str, str]) -> dict:
     url = f"{API_BASE}/translations/list/{source['language']}?localization={locale}"
     raw = _get(url)
-    payload = _json(raw, url)
-    if not isinstance(payload, list):
-        raise ValueError("Translation list must be a JSON array")
-    matches = [item for item in payload if item.get("key") == source["key"]]
+    payload = _unwrap_list(_json(raw, url), context="translation list")
+    matches = [item for item in payload if isinstance(item, dict) and item.get("key") == source["key"]]
     if len(matches) != 1:
         raise ValueError(f"Expected exactly one metadata row for {source['key']}, found {len(matches)}")
     item = matches[0]
@@ -74,15 +87,15 @@ def fetch_translation(locale: str) -> tuple[dict, dict]:
     for sura in range(1, EXPECTED_SURAS + 1):
         url = f"{API_BASE}/translation/sura/{source['key']}/{sura}"
         raw = _get(url)
-        payload = _json(raw, url)
-        if not isinstance(payload, list):
-            raise ValueError(f"Sura {sura} response is not an array")
+        payload = _unwrap_list(_json(raw, url), context=f"sura {sura}")
         expected_count = AYAH_COUNTS[sura - 1]
         if len(payload) != expected_count:
             raise ValueError(f"Sura {sura}: expected {expected_count} ayahs, found {len(payload)}")
         response_hashes.append({"sura": sura, "url": url, "sha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw)})
 
         for expected_aya, row in enumerate(payload, start=1):
+            if not isinstance(row, dict):
+                raise ValueError(f"Sura {sura} row {expected_aya}: expected object")
             try:
                 row_sura = int(row["sura"])
                 row_aya = int(row["aya"])
