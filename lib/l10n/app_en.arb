@@ -12,6 +12,8 @@
   "dailyDuaTitle": "Dua of the Day",
   "historyTodayTitle": "Today in Islamic History",
   "contentPending": "Verified content is being prepared.",
+  "trustedContentErrorTitle": "Content could not be verified",
+  "trustedContentErrorBody": "This religious content did not pass its integrity check. The text is hidden to preserve reliability.",
   "quickTopicSearch": "Explore a Topic",
   "quickDuas": "Duas",
   "quickDhikr": "Dhikr",
