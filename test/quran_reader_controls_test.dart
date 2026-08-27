@@ -30,8 +30,8 @@ final class _MemoryPrivateStore implements PrivateUserStore {
 final class _FixtureQuranReaderDataSource implements QuranReaderDataSource {
   @override
   List<QuranChapterSummary> get chapterSummaries => const [
-        QuranChapterSummary(surah: 1, ayahCount: 2),
-      ];
+    QuranChapterSummary(surah: 1, ayahCount: 2),
+  ];
 
   @override
   Future<QuranReaderChapter> loadChapter({
@@ -116,9 +116,11 @@ void main() {
     );
 
     expect(find.byKey(const ValueKey('quran-surah-selector')), findsOneWidget);
+    expect(find.byKey(const ValueKey('quran-juz-selector')), findsOneWidget);
     expect(find.byKey(const ValueKey('quran-font-smaller')), findsOneWidget);
     expect(find.byKey(const ValueKey('quran-font-larger')), findsOneWidget);
     expect(find.byKey(const ValueKey('quran-open-sources')), findsOneWidget);
+    expect(find.text('Cüz'), findsOneWidget);
 
     await tester.ensureVisible(find.byKey(const ValueKey('quran-font-larger')));
     await tester.tap(find.byKey(const ValueKey('quran-font-larger')));
@@ -156,9 +158,12 @@ void main() {
 
     await _openQuran(tester, locale: const Locale('ar'));
 
+    expect(find.byKey(const ValueKey('quran-surah-selector')), findsOneWidget);
+    expect(find.byKey(const ValueKey('quran-juz-selector')), findsOneWidget);
     expect(find.byKey(const ValueKey('quran-font-smaller')), findsOneWidget);
     expect(find.byKey(const ValueKey('quran-font-larger')), findsOneWidget);
     expect(find.byKey(const ValueKey('quran-open-sources')), findsOneWidget);
+    expect(find.text('الجزء'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     final context = tester.element(
