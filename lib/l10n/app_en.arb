@@ -26,5 +26,13 @@
   "dhikrSubtitle": "Counter, dhikr guide, and intention-based discovery.",
   "profileTitle": "Me",
   "profileSubtitle": "Settings, favorites, history, and Premium.",
+  "sourcesLicensesTitle": "Sources & Licenses",
+  "sourcesLicensesSubtitle": "Review the sources of religious texts and third-party assets.",
+  "quranSourceTitle": "Arabic Qur’an Text",
+  "quranSourceName": "Tanzil Project — Uthmani Quran Text v1.1",
+  "quranSourceLicense": "Creative Commons Attribution 3.0 (CC BY 3.0). The text is used verbatim and Tanzil Project attribution is preserved.",
+  "quranSourceStatus": "The production source is not displayed as trusted text until exact-byte SHA-256 verification passes.",
+  "sourceTransparencyTitle": "Source transparency",
+  "sourceTransparencyBody": "Translations, hadith, duas, dhikr, history, and prophet content are recorded separately with their own source and review status. Uncertain information is not presented as certain.",
   "comingSoon": "This section is being built in specification order."
 }
