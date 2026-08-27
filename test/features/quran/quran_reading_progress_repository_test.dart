@@ -22,11 +22,12 @@ final class _MemoryPrivateStore implements PrivateUserStore {
 }
 
 void main() {
-  test('missing progress returns stable Quran start position', () async {
+  test('missing saved progress is distinguishable from initial fallback', () async {
     final repository = QuranReadingProgressRepository(_MemoryPrivateStore());
 
-    final progress = await repository.load();
+    expect(await repository.loadSaved(), isNull);
 
+    final progress = await repository.load();
     expect(progress.surah, 1);
     expect(progress.ayah, 1);
     expect(progress.quranScale, 1);
@@ -42,9 +43,10 @@ void main() {
     );
 
     await repository.save(progress);
-    final restored = await repository.load();
+    final restored = await repository.loadSaved();
 
-    expect(restored.surah, 18);
+    expect(restored, isNotNull);
+    expect(restored!.surah, 18);
     expect(restored.ayah, 10);
     expect(restored.quranScale, 1.3);
   });
@@ -86,7 +88,7 @@ void main() {
         '{"schemaVersion":1,"surah":2,"ayah":287,"quranScale":1.0}';
 
     expect(
-      repository.load(),
+      repository.loadSaved(),
       throwsA(isA<QuranReadingProgressFormatException>()),
     );
   });
