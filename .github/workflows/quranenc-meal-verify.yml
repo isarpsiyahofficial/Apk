@@ -6,7 +6,11 @@ on:
       - agent/**
     paths:
       - 'scripts/fetch_quranenc_meals.py'
+      - 'scripts/prepare_quranenc_meal_assets.py'
       - 'scripts/validate_quran_dataset.py'
+      - 'lib/features/quran/data/bundled_meal_dataset.dart'
+      - 'lib/features/quran/data/verified_meal_sources.dart'
+      - 'test/features/quran/bundled_meal_dataset_test.dart'
       - 'docs/MEAL_SOURCE_DECISION.md'
       - '.github/workflows/quranenc-meal-verify.yml'
   pull_request:
@@ -14,7 +18,11 @@ on:
       - main
     paths:
       - 'scripts/fetch_quranenc_meals.py'
+      - 'scripts/prepare_quranenc_meal_assets.py'
       - 'scripts/validate_quran_dataset.py'
+      - 'lib/features/quran/data/bundled_meal_dataset.dart'
+      - 'lib/features/quran/data/verified_meal_sources.dart'
+      - 'test/features/quran/bundled_meal_dataset_test.dart'
       - 'docs/MEAL_SOURCE_DECISION.md'
       - '.github/workflows/quranenc-meal-verify.yml'
   workflow_dispatch:
@@ -57,10 +65,40 @@ jobs:
           assert found == expected, (found, expected)
           PY
 
+      - name: Prepare byte-identical Flutter meal assets
+        run: >-
+          python3 scripts/prepare_quranenc_meal_assets.py
+          --input-dir build/quranenc-meals
+          --output-dir build/flutter-meal-assets
+
+      - name: Verify packaged asset hashes
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          expected = {
+              'turkish_rwwad.json': 'a0c001b1e690cc022351d55b9951a7410fde4a6266638766c553fa91f401b1b7',
+              'english_rwwad.json': '24c81ccfa5818e417b96f3b457955d34308a95d006a65c894ac69eaba580a3c0',
+          }
+          for name, pinned in expected.items():
+              raw = (Path('build/flutter-meal-assets') / name).read_bytes()
+              actual = hashlib.sha256(raw).hexdigest()
+              assert actual == pinned, (name, actual, pinned)
+              print(f'{name} packaged_sha256={actual}')
+          PY
+
       - name: Upload verified meal datasets and manifests
         uses: actions/upload-artifact@v4
         with:
           name: verified-quranenc-rowad-meals
           path: build/quranenc-meals/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload byte-identical Flutter meal assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: verified-flutter-meal-assets
+          path: build/flutter-meal-assets/
           if-no-files-found: error
           retention-days: 7
