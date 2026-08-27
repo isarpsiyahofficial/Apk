@@ -39,7 +39,7 @@ jobs:
           cp android_hardening/backup_rules.xml android/app/src/main/res/xml/backup_rules.xml
           cp android_hardening/data_extraction_rules.xml android/app/src/main/res/xml/data_extraction_rules.xml
 
-      - name: Audit Android security policy
+      - name: Audit Android source security policy
         run: python3 scripts/audit_android_security.py
 
       - name: Install dependencies
@@ -50,3 +50,19 @@ jobs:
 
       - name: Build Android debug APK
         run: flutter build apk --debug
+
+      - name: Audit final APK permissions
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-debug.apk"
+          BUILD_TOOLS="$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
+          AAPT2="$ANDROID_HOME/build-tools/$BUILD_TOOLS/aapt2"
+          PERMS="$($AAPT2 dump permissions "$APK")"
+          printf '%s\n' "$PERMS"
+          FORBIDDEN='ACCESS_FINE_LOCATION|ACCESS_COARSE_LOCATION|RECORD_AUDIO|CAMERA|READ_CONTACTS|WRITE_CONTACTS|GET_ACCOUNTS'
+          if printf '%s\n' "$PERMS" | grep -E "$FORBIDDEN"; then
+            echo "Forbidden sensitive permission found in final APK" >&2
+            exit 1
+          fi
+          echo "Final APK permission audit PASS"
