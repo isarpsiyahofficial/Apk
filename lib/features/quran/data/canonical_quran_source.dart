@@ -93,9 +93,21 @@ final class CanonicalQuranDataset {
 }
 
 final class CanonicalQuranAssetLoader {
-  CanonicalQuranAssetLoader({AssetBundle? bundle}) : bundle = bundle ?? rootBundle;
+  CanonicalQuranAssetLoader({AssetBundle? bundle})
+      : bundle = bundle ?? rootBundle,
+        _usesRootBundle = bundle == null;
+
+  static Future<CanonicalQuranDataset>? _rootBundleDataset;
+
   final AssetBundle bundle;
-  Future<CanonicalQuranDataset> load() async {
+  final bool _usesRootBundle;
+
+  Future<CanonicalQuranDataset> load() {
+    if (!_usesRootBundle) return _loadVerifiedDataset();
+    return _rootBundleDataset ??= _loadVerifiedDataset();
+  }
+
+  Future<CanonicalQuranDataset> _loadVerifiedDataset() async {
     final sourceData = await bundle.load(canonicalQuranAssetPath);
     final manifestText = await bundle.loadString(canonicalQuranManifestPath);
     final manifestValue = jsonDecode(manifestText);
