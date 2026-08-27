@@ -13,16 +13,16 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 
 | ID | Görünüm | Hedef | Durum | Kanıt |
 |---|---|---|---|---|
-| R01 | Dar telefon | 320×568 / 360×640 | TODO | |
-| R02 | Modern telefon | 390×844 | TODO | |
+| R01 | Dar telefon | 320×568 / 360×640 | PASS | `app_shell_responsive_test.dart`: 320×640, overflow yok, bottom navigation |
+| R02 | Modern telefon | 390×844 | PASS | `app_shell_responsive_test.dart`: 390×844, bottom navigation |
 | R03 | Büyük telefon | 430×932 | TODO | |
-| R04 | Küçük tablet/fold geniş | 600–839 px | TODO | |
-| R05 | Tablet portrait | 840–1199 px | TODO | |
-| R06 | 4:3 tablet | 1024×1366 benzeri | TODO | |
+| R04 | Küçük tablet/fold geniş | 600–839 px | PASS | 599/600 ve 839 breakpoint sınır testleri; rail yok |
+| R05 | Tablet portrait | 840–1199 px | PASS | 840 sınır testi + 1024 px tablet rail testi |
+| R06 | 4:3 tablet | 1024×1366 benzeri | PASS | 1024×768 4:3 landscape shell testi, overflow yok |
 | R07 | BlueStacks/desktop window | 1280×720 | TODO | |
-| R08 | BlueStacks wide | 1920×1080 | TODO | |
-| R09 | 16:10 landscape | 1280×800 | TODO | |
-| R10 | Büyük font scale | 1.3–2.0 | TODO | |
+| R08 | BlueStacks wide | 1920×1080 | PASS | 1920×1080 rail + overflow kontrolü |
+| R09 | 16:10 landscape | 1280×800 | PASS | 1280×800 rail + overflow kontrolü |
+| R10 | Büyük font scale | 1.3–2.0 | PASS | 360×800, text scale 1.6, shell overflow yok |
 | R11 | Orientation change | portrait ↔ landscape | TODO | |
 | R12 | Keyboard inset | text input ekranları | TODO | |
 
@@ -38,7 +38,7 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 | L04 | TR içinde EN/AR sızıntı | TODO | |
 | L05 | EN içinde TR/AR sızıntı | TODO | |
 | L06 | AR içinde TR/EN sızıntı | TODO | |
-| L07 | AR RTL navigation/icon mirroring | TODO | |
+| L07 | AR RTL navigation/icon mirroring | PASS | `app_shell_responsive_test.dart`: AR phone + tablet Directionality.rtl, nav/rail render |
 | L08 | AR share card line break | TODO | |
 | L09 | TR/EN modunda Arapça asıl yalnız explicit tercih ile | TODO | |
 | L10 | Error/loading/empty/paywall/ad/billing metinleri üç dil | TODO | |
@@ -128,9 +128,9 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 
 | ID | Senaryo | Durum | Kanıt |
 |---|---|---|---|
-| B01 | `flutter gen-l10n` | TODO | |
-| B02 | `flutter analyze --fatal-infos --fatal-warnings` | TODO | |
-| B03 | `flutter test` | TODO | |
+| B01 | `flutter gen-l10n` | PASS | Flutter CI run #10, `Generate localizations` success on `a64b992` |
+| B02 | `flutter analyze --fatal-infos --fatal-warnings` | PASS | Flutter CI run #10, `Analyze` success on `a64b992` |
+| B03 | `flutter test` | PASS | Flutter CI run #10, `Test` success on `a64b992` |
 | B04 | Android debug build | TODO | |
 | B05 | Android release AAB | TODO | |
 | B06 | Android release APK gerektiğinde | TODO | |
