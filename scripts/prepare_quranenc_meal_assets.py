@@ -10,16 +10,15 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import shutil
 from pathlib import Path
 
 PINNED = {
     "turkish_rwwad": {
-        "version": "V1.0.4",
+        "version": "1.0.4",
         "sha256": "a0c001b1e690cc022351d55b9951a7410fde4a6266638766c553fa91f401b1b7",
     },
     "english_rwwad": {
-        "version": "V1.0.19",
+        "version": "1.0.19",
         "sha256": "24c81ccfa5818e417b96f3b457955d34308a95d006a65c894ac69eaba580a3c0",
     },
 }
@@ -109,7 +108,6 @@ def main() -> int:
             raise IOError(f"Byte-for-byte copy verification failed: {destination}")
         print(f"packed {key}: bytes={len(raw)} sha256={_sha256(raw)}")
 
-    # Remove stale JSON datasets not in the pinned allow-list.
     allowed = {f"{key}.json" for key in PINNED}
     for path in output_dir.glob("*.json"):
         if path.name not in allowed:
