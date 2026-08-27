@@ -2,19 +2,45 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'storage_boundaries.dart';
 
-/// Production adapter for private mutable user data.
-///
-/// `flutter_secure_storage` delegates Android secrets to platform secure
-/// storage backed by Android Keystore. Religious source content must never be
-/// written through this adapter; it is reserved for bookmarks, notes, counters,
-/// history and entitlement cache material.
-final class SecurePrivateUserStore implements PrivateUserStore {
-  SecurePrivateUserStore({
-    FlutterSecureStorage? storage,
-    this.namespace = 'islami_hayat.private.',
-  }) : _storage = storage ?? const FlutterSecureStorage();
+abstract interface class SecureStorageBackend {
+  Future<String?> read(String key);
+  Future<void> write(String key, String value);
+  Future<void> delete(String key);
+  Future<Map<String, String>> readAll();
+}
+
+final class FlutterSecureStorageBackend implements SecureStorageBackend {
+  FlutterSecureStorageBackend({FlutterSecureStorage? storage})
+      : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
+
+  @override
+  Future<String?> read(String key) => _storage.read(key: key);
+
+  @override
+  Future<void> write(String key, String value) =>
+      _storage.write(key: key, value: value);
+
+  @override
+  Future<void> delete(String key) => _storage.delete(key: key);
+
+  @override
+  Future<Map<String, String>> readAll() => _storage.readAll();
+}
+
+/// Production adapter for private mutable user data.
+///
+/// The default backend uses `flutter_secure_storage`, which delegates Android
+/// secret protection to platform secure storage backed by Android Keystore.
+/// Trusted religious source content is deliberately excluded from this store.
+final class SecurePrivateUserStore implements PrivateUserStore {
+  SecurePrivateUserStore({
+    SecureStorageBackend? backend,
+    this.namespace = 'islami_hayat.private.',
+  }) : _backend = backend ?? FlutterSecureStorageBackend();
+
+  final SecureStorageBackend _backend;
   final String namespace;
 
   @override
@@ -29,20 +55,20 @@ final class SecurePrivateUserStore implements PrivateUserStore {
   }
 
   @override
-  Future<String?> read(String key) => _storage.read(key: _key(key));
+  Future<String?> read(String key) => _backend.read(_key(key));
 
   @override
   Future<void> write(String key, String value) =>
-      _storage.write(key: _key(key), value: value);
+      _backend.write(_key(key), value);
 
   @override
-  Future<void> delete(String key) => _storage.delete(key: _key(key));
+  Future<void> delete(String key) => _backend.delete(_key(key));
 
   @override
   Future<void> clear() async {
-    final all = await _storage.readAll();
+    final all = await _backend.readAll();
     for (final key in all.keys.where((key) => key.startsWith(namespace))) {
-      await _storage.delete(key: key);
+      await _backend.delete(key);
     }
   }
 }
