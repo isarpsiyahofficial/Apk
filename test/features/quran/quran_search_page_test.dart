@@ -61,10 +61,14 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.search);
     await tester.pumpAndSettle();
 
+    final resultCard = find.byKey(const ValueKey('quran-search-result-2:255'));
     expect(repository.lastLanguageCode, 'ar');
     expect(tester.takeException(), isNull);
-    expect(find.text('البقرة'), findsOneWidget);
-    expect(find.byKey(const ValueKey('quran-search-result-2:255')), findsOneWidget);
+    expect(resultCard, findsOneWidget);
+    expect(
+      find.descendant(of: resultCard, matching: find.text('البقرة')),
+      findsOneWidget,
+    );
     expect(Directionality.of(tester.element(find.byType(QuranSearchPage))), TextDirection.rtl);
   });
 }
