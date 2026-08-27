@@ -33,7 +33,7 @@ Future<void> _openQuran(
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: QuranReaderPage(),
+      home: Scaffold(body: SafeArea(child: QuranReaderPage())),
     ),
   );
   await _pumpUntilFound(
@@ -53,10 +53,12 @@ void main() {
     expect(find.byKey(const ValueKey('quran-font-larger')), findsOneWidget);
     expect(find.byKey(const ValueKey('quran-open-sources')), findsOneWidget);
 
+    await tester.ensureVisible(find.byKey(const ValueKey('quran-font-larger')));
     await tester.tap(find.byKey(const ValueKey('quran-font-larger')));
     await tester.pump();
     expect(tester.takeException(), isNull);
 
+    await tester.ensureVisible(find.byKey(const ValueKey('quran-open-sources')));
     await tester.tap(find.byKey(const ValueKey('quran-open-sources')));
     await _pumpUntilFound(tester, find.text('Kaynaklar ve Lisanslar'));
     expect(find.text('Kaynaklar ve Lisanslar'), findsWidgets);
