@@ -5,7 +5,12 @@ import 'package:islami_hayat/l10n/app_localizations.dart';
 import 'package:islami_hayat/shell/app_shell.dart';
 
 class IslamiHayatApp extends StatelessWidget {
-  const IslamiHayatApp({super.key});
+  const IslamiHayatApp({super.key, this.locale});
+
+  /// Optional explicit locale used by the in-app language setting and by
+  /// deterministic localization/RTL tests. When null, the device locale is
+  /// resolved against the supported TR/EN/AR set.
+  final Locale? locale;
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +20,7 @@ class IslamiHayatApp extends StatelessWidget {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: ThemeMode.system,
+      locale: locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -22,10 +28,12 @@ class IslamiHayatApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      localeResolutionCallback: (locale, supportedLocales) {
-        if (locale == null) return const Locale('tr');
+      localeResolutionCallback: (deviceLocale, supportedLocales) {
+        if (deviceLocale == null) return const Locale('tr');
         for (final supported in supportedLocales) {
-          if (supported.languageCode == locale.languageCode) return supported;
+          if (supported.languageCode == deviceLocale.languageCode) {
+            return supported;
+          }
         }
         return const Locale('tr');
       },
