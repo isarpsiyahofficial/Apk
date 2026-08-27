@@ -22,9 +22,14 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
-  late final QuranReadingProgressRepository _quranProgressRepository =
-      widget.quranProgressRepository ??
-          QuranReadingProgressRepository(SecurePrivateUserStore());
+  late final QuranReadingProgressRepository _quranProgressRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    _quranProgressRepository = widget.quranProgressRepository ??
+        QuranReadingProgressRepository(SecurePrivateUserStore());
+  }
 
   void _select(int value) {
     if (_selectedIndex == value) return;
