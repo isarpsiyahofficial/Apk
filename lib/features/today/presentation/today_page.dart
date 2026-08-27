@@ -1,9 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
+import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
+import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
-class TodayPage extends StatelessWidget {
-  const TodayPage({super.key});
+class TodayPage extends StatefulWidget {
+  TodayPage({
+    super.key,
+    QuranReadingProgressRepository? quranProgressRepository,
+    this.onContinueQuran,
+  }) : quranProgressRepository = quranProgressRepository ??
+            QuranReadingProgressRepository(SecurePrivateUserStore());
+
+  final QuranReadingProgressRepository quranProgressRepository;
+  final VoidCallback? onContinueQuran;
+
+  @override
+  State<TodayPage> createState() => _TodayPageState();
+}
+
+class _TodayPageState extends State<TodayPage> {
+  late Future<QuranReadingProgress?> _progressFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _progressFuture = widget.quranProgressRepository.loadSaved();
+  }
+
+  @override
+  void didUpdateWidget(covariant TodayPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(
+      oldWidget.quranProgressRepository,
+      widget.quranProgressRepository,
+    )) {
+      _progressFuture = widget.quranProgressRepository.loadSaved();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +80,26 @@ class TodayPage extends StatelessWidget {
               _QuickActionData(Icons.touch_app_outlined, l10n.quickDhikr),
               _QuickActionData(Icons.explore_outlined, l10n.quickExplore),
             ],
+          ),
+          const SizedBox(height: 28),
+          FutureBuilder<QuranReadingProgress?>(
+            future: _progressFuture,
+            builder: (context, snapshot) {
+              final progress = snapshot.data;
+              if (snapshot.connectionState != ConnectionState.done ||
+                  snapshot.hasError ||
+                  progress == null) {
+                return const SizedBox.shrink();
+              }
+              return _ContinueQuranBlock(
+                title: l10n.continueQuranTitle,
+                position: l10n.continueQuranPosition(
+                  progress.surah,
+                  progress.ayah,
+                ),
+                onTap: widget.onContinueQuran,
+              );
+            },
           ),
         ],
       ),
@@ -126,6 +180,59 @@ class _EditorialBlock extends StatelessWidget {
           const SizedBox(width: 12),
           const Icon(Icons.arrow_forward_ios_rounded, size: 14),
         ],
+      ),
+    );
+  }
+}
+
+class _ContinueQuranBlock extends StatelessWidget {
+  const _ContinueQuranBlock({
+    required this.title,
+    required this.position,
+    required this.onTap,
+  });
+
+  final String title;
+  final String position;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      button: onTap != null,
+      child: InkWell(
+        key: const ValueKey('continue-quran-card'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+          decoration: BoxDecoration(
+            border: Border.all(color: theme.dividerColor),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.bookmark_rounded, color: theme.colorScheme.primary),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: theme.textTheme.titleMedium),
+                    const SizedBox(height: 4),
+                    Text(position, style: theme.textTheme.bodyMedium),
+                  ],
+                ),
+              ),
+              if (onTap != null) ...[
+                const SizedBox(width: 12),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
