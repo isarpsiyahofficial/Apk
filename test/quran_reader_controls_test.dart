@@ -1,15 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/core/storage/storage_boundaries.dart';
 import 'package:islami_hayat/core/theme/app_theme.dart';
 import 'package:islami_hayat/features/quran/data/quran_reader_repository.dart';
+import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
 import 'package:islami_hayat/features/quran/presentation/quran_reader_page.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
+
+final class _MemoryPrivateStore implements PrivateUserStore {
+  final Map<String, String> values = <String, String>{};
+
+  @override
+  StorageDomain get domain => StorageDomain.privateUserData;
+
+  @override
+  Future<void> clear() async => values.clear();
+
+  @override
+  Future<void> delete(String key) async => values.remove(key);
+
+  @override
+  Future<String?> read(String key) async => values[key];
+
+  @override
+  Future<void> write(String key, String value) async => values[key] = value;
+}
 
 final class _FixtureQuranReaderDataSource implements QuranReaderDataSource {
   @override
   List<QuranChapterSummary> get chapterSummaries => const [
-        QuranChapterSummary(surah: 1, ayahCount: 1),
+        QuranChapterSummary(surah: 1, ayahCount: 2),
       ];
 
   @override
@@ -25,6 +46,12 @@ final class _FixtureQuranReaderDataSource implements QuranReaderDataSource {
           ayah: 1,
           arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
           translation: 'Doğrulanmış arayüz test metni',
+        ),
+        QuranReaderVerse(
+          surah: 1,
+          ayah: 2,
+          arabic: 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ',
+          translation: 'İkinci doğrulanmış arayüz test metni',
         ),
       ],
     );
@@ -43,10 +70,13 @@ Future<void> _pumpUntilFound(
   throw TestFailure('Timed out waiting for expected widget');
 }
 
-Future<void> _openQuran(
+Future<QuranReadingProgressRepository> _openQuran(
   WidgetTester tester, {
   required Locale locale,
 }) async {
+  final progressRepository = QuranReadingProgressRepository(
+    _MemoryPrivateStore(),
+  );
   await tester.pumpWidget(
     MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -61,7 +91,10 @@ Future<void> _openQuran(
       ],
       home: Scaffold(
         body: SafeArea(
-          child: QuranReaderPage(repository: _FixtureQuranReaderDataSource()),
+          child: QuranReaderPage(
+            repository: _FixtureQuranReaderDataSource(),
+            progressRepository: progressRepository,
+          ),
         ),
       ),
     ),
@@ -70,13 +103,17 @@ Future<void> _openQuran(
     tester,
     find.byKey(const ValueKey('quran-surah-selector')),
   );
+  return progressRepository;
 }
 
 void main() {
-  testWidgets('Quran reader exposes accessible font controls and sources', (
+  testWidgets('Quran reader persists font and explicit last-read ayah', (
     tester,
   ) async {
-    await _openQuran(tester, locale: const Locale('tr'));
+    final progressRepository = await _openQuran(
+      tester,
+      locale: const Locale('tr'),
+    );
 
     expect(find.byKey(const ValueKey('quran-surah-selector')), findsOneWidget);
     expect(find.byKey(const ValueKey('quran-font-smaller')), findsOneWidget);
@@ -86,6 +123,20 @@ void main() {
     await tester.ensureVisible(find.byKey(const ValueKey('quran-font-larger')));
     await tester.tap(find.byKey(const ValueKey('quran-font-larger')));
     await tester.pump();
+
+    final saveSecond = find.byKey(
+      const ValueKey('quran-save-position-1-2'),
+    );
+    await tester.ensureVisible(saveSecond);
+    await tester.tap(saveSecond);
+    await tester.pump();
+
+    final saved = await progressRepository.loadSaved();
+    expect(saved, isNotNull);
+    expect(saved!.surah, 1);
+    expect(saved.ayah, 2);
+    expect(saved.quranScale, closeTo(1.1, 0.001));
+    expect(find.textContaining('Sure 1, Ayet 2'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     await tester.ensureVisible(find.byKey(const ValueKey('quran-open-sources')));
