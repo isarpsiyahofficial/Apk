@@ -74,10 +74,12 @@ final class UserDataSnapshot {
     if (value is! Map) throw const UserDataFormatException('Expected map.');
     final result = <String, String>{};
     for (final entry in value.entries) {
-      if (entry.key is! String || entry.value is! String) {
+      final key = entry.key;
+      final rawValue = entry.value;
+      if (key is! String || rawValue is! String) {
         throw const UserDataFormatException('Expected string map.');
       }
-      result[entry.key as String] = entry.value as String;
+      result[key] = rawValue;
     }
     return Map<String, String>.unmodifiable(result);
   }
@@ -86,10 +88,14 @@ final class UserDataSnapshot {
     if (value is! Map) throw const UserDataFormatException('Expected map.');
     final result = <String, int>{};
     for (final entry in value.entries) {
-      if (entry.key is! String || entry.value is! int || entry.value < 0) {
-        throw const UserDataFormatException('Expected non-negative integer map.');
+      final key = entry.key;
+      final rawValue = entry.value;
+      if (key is! String || rawValue is! int || rawValue < 0) {
+        throw const UserDataFormatException(
+          'Expected non-negative integer map.',
+        );
       }
-      result[entry.key as String] = entry.value as int;
+      result[key] = rawValue;
     }
     return Map<String, int>.unmodifiable(result);
   }
