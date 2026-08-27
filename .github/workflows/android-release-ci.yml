@@ -49,6 +49,14 @@ jobs:
       - name: Audit Android source security policy
         run: python3 scripts/audit_android_security.py
 
+      - name: Prepare pinned canonical Quran asset
+        run: python3 scripts/prepare_quran_asset.py
+
+      - name: Re-validate packaged Quran source
+        run: >-
+          python3 scripts/validate_quran_dataset.py
+          assets/quran/source/quran-uthmani.txt
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -83,10 +91,20 @@ jobs:
           fi
           echo "Release APK permission audit PASS"
 
+      - name: Verify Quran source is packaged in release APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-release.apk"
+          unzip -l "$APK" | grep -F 'flutter_assets/assets/quran/source/quran-uthmani.txt'
+          unzip -l "$APK" | grep -F 'flutter_assets/assets/quran/source/quran-uthmani.manifest.json'
+          echo "Canonical Quran source packaging audit PASS"
+
       - name: Record artifact SHA-256
         run: |
           sha256sum build/app/outputs/bundle/release/app-release.aab | tee release-aab.sha256
           sha256sum build/app/outputs/flutter-apk/app-release.apk | tee release-apk.sha256
+          sha256sum assets/quran/source/quran-uthmani.txt | tee quran-source.sha256
 
       - name: Upload release verification artifacts
         uses: actions/upload-artifact@v4
@@ -98,3 +116,5 @@ jobs:
             build/app/outputs/flutter-apk/app-release.apk
             release-aab.sha256
             release-apk.sha256
+            quran-source.sha256
+            assets/quran/source/quran-uthmani.manifest.json
