@@ -47,8 +47,8 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 
 | ID | Alan | Durum | Kanıt / açık iş |
 |---|---|---|---|
-| D01 | 114 sure ve ayet sayıları source hash ile | TODO | gerçek Tanzil dataset importu açık |
-| D02 | Arapça Kur’an exact source integrity | TODO | SHA-256 fail-closed altyapısı PASS, gerçek dataset açık |
+| D01 | 114 sure ve ayet sayıları source hash ile | PASS | Tanzil Uthmani v1.1 exact source: 114 sure / 6236 ayet; `Quran Source Verify` #23 SUCCESS; runtime `canonical_quran_source_test.dart` bağımsız sure-ayet sırasını doğruluyor |
+| D02 | Arapça Kur’an exact source integrity | PASS | pinned exact-byte SHA-256 `bf4f57b968d03f4131c070b1e285da9be0e0a108a21c910e872801ca273312c8`; 1,370,878 byte; attribution footer dahil; `prepare_quran_asset.py` + release packaging + runtime fail-closed hash testi PASS |
 | D03 | TR meal source/license/version | TODO | exact ticari kullanım lisansı seçilecek |
 | D04 | EN meal source/license/version | TODO | exact ticari kullanım lisansı seçilecek |
 | D05 | Dua source/status/authenticity | TODO | |
@@ -62,7 +62,9 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 | D13 | Yasak kesin para/aşk/şifa iddiası sıfır | TODO | |
 | D14 | Yazım/imla native TR/EN/AR review | TODO | |
 
-**Altyapı PASS:** `content_governance_test.dart`, `source_manifest_test.dart`, `integrity_checked_trusted_content_store_test.dart`. Bunlar gerçek dini dataset satırlarını otomatik PASS yapmaz.
+**Kur’an canonical kaynak kanıtı:** `assets/quran/source/quran-uthmani.manifest.json` Tanzil Project Uthmani v1.1 kaynağını, CC BY 3.0 lisansını, exact byte/hash kapsamını ve 114/6236 yapısını pinler. `Quran Source Verify`, `Android Release CI` ve `CanonicalQuranDataset` aynı sözleşmeyi birbirinden bağımsız katmanlarda doğrular. Kaynak byte değişirse build/runtime fail-closed olur.
+
+**Altyapı PASS:** `content_governance_test.dart`, `source_manifest_test.dart`, `integrity_checked_trusted_content_store_test.dart`. Bunlar diğer gerçek dini dataset satırlarını otomatik PASS yapmaz.
 
 ## D. FREE / PRO / reklam / billing
 
@@ -132,30 +134,24 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 
 | ID | Senaryo | Durum | Kanıt |
 |---|---|---|---|
-| B01 | `flutter gen-l10n` | PASS | Flutter CI #123, HEAD `ed5ab4a0d7aae637d8d74859805d7ffda2405903` |
-| B02 | fatal analyzer | PASS | Flutter CI #123; Android Release CI #14 analyze PASS |
-| B03 | `flutter test` | PASS | Flutter CI #123; Android Release CI #14 tests PASS |
-| B04 | Android debug build | PASS | Android Debug CI #56 |
-| B05 | Android release AAB verification build | PASS | Android Release CI #14 |
-| B06 | Android release APK verification build | PASS | Android Release CI #14 |
-| B07 | APK install/launch gerçek cihaz/emülatör | PASS | Android Emulator Smoke #5, HEAD `ed5ab4a0d7aae637d8d74859805d7ffda2405903`: install success + process + MainActivity + fatal-crash scan PASS |
+| B01 | `flutter gen-l10n` | PASS | current branch CI |
+| B02 | fatal analyzer | PASS | current branch Flutter + Android Release CI |
+| B03 | `flutter test` | PASS | current branch Flutter + Android Release CI |
+| B04 | Android debug build | PASS | current branch Android Debug CI |
+| B05 | Android release AAB verification build | PASS | current branch Android Release CI |
+| B06 | Android release APK verification build | PASS | current branch Android Release CI |
+| B07 | APK install/launch gerçek cihaz/emülatör | PASS | current branch Android Emulator Smoke: install + process + MainActivity + fatal-crash scan PASS |
 | B08 | Final production artifact SHA-256 | TODO | verification hashes mevcut; production signing/final dataset sonrası yeniden üretilecek |
 | B09 | Privacy/Terms/Sources URLs | TODO | |
 | B10 | Store TR/EN/AR screenshots/copy | TODO | |
 
 ### Release-verification kanıtı
 
-- Release APK/AAB verification CI hattı PASS durumundadır; bunlar production signing/final dataset öncesi geçici doğrulama artifactleridir.
+- Current implementation HEAD öncesindeki canonical Quran entegrasyonunda Flutter CI, Quran Source Verify, Android Debug CI, Android Release CI ve Android Emulator Smoke birlikte SUCCESS durumundadır.
+- Release APK/AAB verification CI hattı production signing öncesi doğrulama artifactleri üretmektedir.
 - Release APK birleşik izin auditinde yasak hassas izin bulunmamaktadır.
+- Canonical Tanzil kaynağının APK içine source + manifest olarak paketlendiği release CI tarafından `unzip -l` ile doğrulanmaktadır.
 - B08 yalnız production signing ve final dataset sonrası üretilen exact artifact hash ile kapatılacaktır.
-
-### Emulator smoke kanıtı — CI #5
-
-- Debug APK emülatöre `adb install -r` ile başarıyla kurulmuştur.
-- Uygulama prosesi başlatılmış ve PID doğrulanmıştır.
-- `com.example.islami_hayat/.MainActivity` gerçek ActivityManager state içinde doğrulanmıştır.
-- Launch sonrası logcat fatal crash taraması temizdir.
-- Önceki iki smoke hatasının uygulama crash'i değil CI harness kaynaklı olduğu loglarla ayrıştırılmıştır: `/bin/sh` pipefail uyumsuzluğu ve `am start -W` cold-start timeout beklentisi giderilmiştir.
 
 ## Final kuralı
 
