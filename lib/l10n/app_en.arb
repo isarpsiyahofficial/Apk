@@ -28,6 +28,8 @@
   },
   "quranTitle": "The Qur’an",
   "quranSubtitle": "Read, search, and explore with sources.",
+  "quranSurahLabel": "Surah",
+  "quranJuzLabel": "Juz",
   "quranFontSmaller": "Decrease Qur’an text size",
   "quranFontLarger": "Increase Qur’an text size",
   "quranOpenSources": "Open Qur’an sources and licenses",
