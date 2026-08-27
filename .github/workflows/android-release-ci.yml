@@ -16,7 +16,7 @@ concurrency:
 jobs:
   android-release:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,6 +57,16 @@ jobs:
           python3 scripts/validate_quran_dataset.py
           assets/quran/source/quran-uthmani.txt
 
+      - name: Fetch pinned QuranEnc meal datasets
+        working-directory: scripts
+        run: python3 fetch_quranenc_meals.py --output-dir ../build/quranenc-meals --locale all
+
+      - name: Prepare verified QuranEnc meal assets
+        run: >-
+          python3 scripts/prepare_quranenc_meal_assets.py
+          --input-dir build/quranenc-meals
+          --output-dir assets/quran/meals
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -91,20 +101,26 @@ jobs:
           fi
           echo "Release APK permission audit PASS"
 
-      - name: Verify Quran source is packaged in release APK
+      - name: Verify trusted Quran assets are packaged in release APK
         shell: bash
         run: |
           set -euo pipefail
           APK="build/app/outputs/flutter-apk/app-release.apk"
           unzip -l "$APK" | grep -F 'flutter_assets/assets/quran/source/quran-uthmani.txt'
           unzip -l "$APK" | grep -F 'flutter_assets/assets/quran/source/quran-uthmani.manifest.json'
-          echo "Canonical Quran source packaging audit PASS"
+          unzip -l "$APK" | grep -F 'flutter_assets/assets/quran/meals/turkish_rwwad.json'
+          unzip -l "$APK" | grep -F 'flutter_assets/assets/quran/meals/english_rwwad.json'
+          echo "Canonical Quran + verified meal packaging audit PASS"
 
-      - name: Record artifact SHA-256
+      - name: Record trusted content and artifact SHA-256
         run: |
           sha256sum build/app/outputs/bundle/release/app-release.aab | tee release-aab.sha256
           sha256sum build/app/outputs/flutter-apk/app-release.apk | tee release-apk.sha256
           sha256sum assets/quran/source/quran-uthmani.txt | tee quran-source.sha256
+          sha256sum assets/quran/meals/turkish_rwwad.json | tee meal-tr.sha256
+          sha256sum assets/quran/meals/english_rwwad.json | tee meal-en.sha256
+          grep -F 'a0c001b1e690cc022351d55b9951a7410fde4a6266638766c553fa91f401b1b7' meal-tr.sha256
+          grep -F '24c81ccfa5818e417b96f3b457955d34308a95d006a65c894ac69eaba580a3c0' meal-en.sha256
 
       - name: Upload release verification artifacts
         uses: actions/upload-artifact@v4
@@ -117,4 +133,6 @@ jobs:
             release-aab.sha256
             release-apk.sha256
             quran-source.sha256
+            meal-tr.sha256
+            meal-en.sha256
             assets/quran/source/quran-uthmani.manifest.json
