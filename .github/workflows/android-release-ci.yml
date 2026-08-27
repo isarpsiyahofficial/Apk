@@ -30,6 +30,15 @@ jobs:
       - name: Generate clean Android runner
         run: flutter create --platforms=android --project-name islami_hayat .
 
+      - name: Remove template-only generated test
+        shell: bash
+        run: |
+          if git ls-files --error-unmatch test/widget_test.dart >/dev/null 2>&1; then
+            git checkout -- test/widget_test.dart
+          else
+            rm -f test/widget_test.dart
+          fi
+
       - name: Apply hardened Android manifest and backup policy
         run: |
           mkdir -p android/app/src/main/res/xml
