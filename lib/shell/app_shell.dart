@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
+import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
 import 'package:islami_hayat/features/shared/presentation/section_placeholder_page.dart';
 import 'package:islami_hayat/features/today/presentation/today_page.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
@@ -67,11 +68,7 @@ class _AppShellState extends State<AppShell> {
         subtitle: l10n.dhikrSubtitle,
         icon: Icons.touch_app_outlined,
       ),
-      SectionPlaceholderPage(
-        title: l10n.profileTitle,
-        subtitle: l10n.profileSubtitle,
-        icon: Icons.person_outline,
-      ),
+      const ProfilePage(),
     ];
 
     return LayoutBuilder(
