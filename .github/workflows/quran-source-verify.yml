@@ -8,6 +8,8 @@ on:
       - 'scripts/fetch_tanzil_uthmani.py'
       - 'scripts/validate_quran_dataset.py'
       - 'scripts/test_validate_quran_dataset.py'
+      - 'scripts/verify_tanzil_metadata.py'
+      - 'lib/features/quran/data/quran_structure_metadata.dart'
       - '.github/workflows/quran-source-verify.yml'
   pull_request:
     branches:
@@ -16,6 +18,8 @@ on:
       - 'scripts/fetch_tanzil_uthmani.py'
       - 'scripts/validate_quran_dataset.py'
       - 'scripts/test_validate_quran_dataset.py'
+      - 'scripts/verify_tanzil_metadata.py'
+      - 'lib/features/quran/data/quran_structure_metadata.dart'
       - '.github/workflows/quran-source-verify.yml'
   workflow_dispatch:
 
@@ -62,6 +66,9 @@ jobs:
                   raise SystemExit(f'manifest mismatch for {key}: {a[key]} != {b[key]}')
           print(f"verified sha256={a['sha256']} bytes={a['bytes']} layout={a['layout']}")
           PY
+
+      - name: Verify 30 juz boundaries against official Tanzil metadata
+        run: python3 scripts/verify_tanzil_metadata.py
 
       - name: Upload verified canonical source
         uses: actions/upload-artifact@v4
