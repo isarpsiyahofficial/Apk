@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/core/content/trusted_content_error_view.dart';
+import 'package:islami_hayat/features/profile/presentation/sources_licenses_page.dart';
 import 'package:islami_hayat/features/quran/data/quran_reader_repository.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
@@ -16,9 +17,14 @@ final class QuranReaderPage extends StatefulWidget {
 }
 
 final class _QuranReaderPageState extends State<QuranReaderPage> {
+  static const double _minQuranScale = 0.8;
+  static const double _maxQuranScale = 1.6;
+  static const double _quranScaleStep = 0.1;
+
   Future<QuranReaderChapter>? _chapterFuture;
   String? _languageCode;
   int _selectedSurah = 1;
+  double _quranScale = 1;
 
   @override
   void didChangeDependencies() {
@@ -46,6 +52,23 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
     });
   }
 
+  void _changeQuranScale(double delta) {
+    final next = (_quranScale + delta).clamp(
+      _minQuranScale,
+      _maxQuranScale,
+    );
+    if (next == _quranScale) return;
+    setState(() => _quranScale = next);
+  }
+
+  void _openSources() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => const SourcesLicensesPage(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -65,6 +88,13 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
         }
 
         final chapter = snapshot.requireData;
+        final arabicStyle = Theme.of(context).textTheme.headlineSmall?.copyWith(
+          height: 1.9,
+          fontSize:
+              (Theme.of(context).textTheme.headlineSmall?.fontSize ?? 24) *
+              _quranScale,
+        );
+
         return CustomScrollView(
           key: PageStorageKey('quran-reader-${chapter.surah}'),
           slivers: [
@@ -103,7 +133,37 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                           .toList(growable: false),
                       onChanged: _selectSurah,
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        IconButton.outlined(
+                          key: const ValueKey('quran-font-smaller'),
+                          tooltip: l10n.quranFontSmaller,
+                          onPressed: _quranScale <= _minQuranScale
+                              ? null
+                              : () => _changeQuranScale(-_quranScaleStep),
+                          icon: const Icon(Icons.text_decrease_outlined),
+                        ),
+                        IconButton.outlined(
+                          key: const ValueKey('quran-font-larger'),
+                          tooltip: l10n.quranFontLarger,
+                          onPressed: _quranScale >= _maxQuranScale
+                              ? null
+                              : () => _changeQuranScale(_quranScaleStep),
+                          icon: const Icon(Icons.text_increase_outlined),
+                        ),
+                        TextButton.icon(
+                          key: const ValueKey('quran-open-sources'),
+                          onPressed: _openSources,
+                          icon: const Icon(Icons.verified_outlined),
+                          label: Text(l10n.sourcesLicensesTitle),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
                     Row(
                       children: [
                         const Icon(Icons.verified_outlined, size: 18),
@@ -151,10 +211,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                         child: SelectableText(
                           verse.arabic,
                           textAlign: TextAlign.right,
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(height: 1.9),
+                          style: arabicStyle,
                         ),
                       ),
                       if (verse.translation case final translation?) ...[
