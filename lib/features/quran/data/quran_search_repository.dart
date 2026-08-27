@@ -106,19 +106,37 @@ final class QuranSearchRepository implements QuranSearchDataSource {
     final results = <QuranSearchResult>[];
     final seen = <String>{};
 
-    for (final sura in canonicalQuranSuraNames) {
-      if (!_matchesSuraName(sura, languageCode, trimmed)) continue;
+    QuranSearchResult resultForSura(QuranSuraNameMetadata sura) {
       final ayah = quran.ayah(sura.index, 1);
       final translation = meal?.verse(sura.index, 1).translation;
-      final result = QuranSearchResult(
+      return QuranSearchResult(
         surah: sura.index,
         ayah: 1,
         arabic: ayah.arabic,
         translation: translation,
         surahDisplayName: sura.displayNameForLocale(languageCode),
       );
+    }
+
+    // A verified native Turkish alias is a stronger navigation signal than a
+    // broad transliteration substring. Example: "Mümin" is the official
+    // Turkish name for sura 40, while the transliteration of sura 23 contains
+    // "Muminun". Exact verified aliases must therefore be ranked first.
+    if (languageCode == 'tr') {
+      for (final sura in canonicalQuranSuraNames) {
+        if (!_matchesExactTurkishAlias(sura.index, trimmed)) continue;
+        final result = resultForSura(sura);
+        results.add(result);
+        seen.add(result.key);
+        if (results.length == limit) return List.unmodifiable(results);
+      }
+    }
+
+    for (final sura in canonicalQuranSuraNames) {
+      if (!_matchesSuraName(sura, languageCode, trimmed)) continue;
+      final result = resultForSura(sura);
+      if (!seen.add(result.key)) continue;
       results.add(result);
-      seen.add(result.key);
       if (results.length == limit) return List.unmodifiable(results);
     }
 
@@ -149,6 +167,14 @@ final class QuranSearchRepository implements QuranSearchDataSource {
     }
     return List.unmodifiable(results);
   }
+}
+
+bool _matchesExactTurkishAlias(int sura, String query) {
+  final needle = _normalizeSuraLatin(query);
+  if (needle.length < 2) return false;
+  return turkishSuraAliases(
+    sura,
+  ).any((alias) => _normalizeSuraLatin(alias) == needle);
 }
 
 bool _matchesSuraName(
