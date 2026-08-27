@@ -26,26 +26,31 @@ class _AppShellState extends State<AppShell> {
     final l10n = AppLocalizations.of(context);
     final destinations = <_DestinationData>[
       _DestinationData(
+        id: 'today',
         icon: Icons.today_outlined,
         selectedIcon: Icons.today,
         label: l10n.navToday,
       ),
       _DestinationData(
+        id: 'quran',
         icon: Icons.menu_book_outlined,
         selectedIcon: Icons.menu_book,
         label: l10n.navQuran,
       ),
       _DestinationData(
+        id: 'discover',
         icon: Icons.explore_outlined,
         selectedIcon: Icons.explore,
         label: l10n.navDiscover,
       ),
       _DestinationData(
+        id: 'dhikr',
         icon: Icons.touch_app_outlined,
         selectedIcon: Icons.touch_app,
         label: l10n.navDhikr,
       ),
       _DestinationData(
+        id: 'profile',
         icon: Icons.person_outline,
         selectedIcon: Icons.person,
         label: l10n.navProfile,
@@ -86,6 +91,7 @@ class _AppShellState extends State<AppShell> {
               destinations: [
                 for (final item in destinations)
                   NavigationDestination(
+                    key: ValueKey('nav-${item.id}'),
                     icon: Icon(item.icon),
                     selectedIcon: Icon(item.selectedIcon),
                     label: item.label,
@@ -110,6 +116,7 @@ class _AppShellState extends State<AppShell> {
                   destinations: [
                     for (final item in destinations)
                       NavigationRailDestination(
+                        key: ValueKey('nav-${item.id}'),
                         icon: Icon(item.icon),
                         selectedIcon: Icon(item.selectedIcon),
                         label: Text(item.label),
@@ -139,11 +146,13 @@ class _AppShellState extends State<AppShell> {
 
 class _DestinationData {
   const _DestinationData({
+    required this.id,
     required this.icon,
     required this.selectedIcon,
     required this.label,
   });
 
+  final String id;
   final IconData icon;
   final IconData selectedIcon;
   final String label;
