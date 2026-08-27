@@ -250,7 +250,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
         ],
       ),
     );
-    controller.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
     if (result == null || !mounted) return;
 
     try {
