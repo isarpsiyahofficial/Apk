@@ -40,7 +40,16 @@ final class QuranReaderChapter {
   final VerifiedMealSource? mealSource;
 }
 
-final class QuranReaderRepository {
+abstract interface class QuranReaderDataSource {
+  List<QuranChapterSummary> get chapterSummaries;
+
+  Future<QuranReaderChapter> loadChapter({
+    required String languageCode,
+    int surah = 1,
+  });
+}
+
+final class QuranReaderRepository implements QuranReaderDataSource {
   QuranReaderRepository({
     CanonicalQuranAssetLoader? quranLoader,
     BundledMealDatasetLoader? mealLoader,
@@ -50,6 +59,7 @@ final class QuranReaderRepository {
   final CanonicalQuranAssetLoader _quranLoader;
   final BundledMealDatasetLoader _mealLoader;
 
+  @override
   List<QuranChapterSummary> get chapterSummaries => List.unmodifiable(
     List.generate(
       canonicalQuranSuraCount,
@@ -61,6 +71,7 @@ final class QuranReaderRepository {
     ),
   );
 
+  @override
   Future<QuranReaderChapter> loadChapter({
     required String languageCode,
     int surah = 1,
