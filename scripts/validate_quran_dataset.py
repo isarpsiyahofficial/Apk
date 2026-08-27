@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 """Fail-closed structural validator for the canonical Quran dataset.
 
-The canonical source bytes must remain verbatim. This validator therefore reads
-Tanzil-compatible text without rewriting it and accepts these input layouts:
+The canonical source bytes must remain verbatim. Tanzil text downloads may
+contain 6236 Quran records followed by their license/attribution footer. This
+validator therefore separates *inspection* of the Quran records from hashing:
+SHA-256 always covers the complete original file, including footer and exact
+line endings.
 
-1. Plain Tanzil text: one ayah text per line (6236 lines).
+Accepted Quran-record layouts:
+1. Plain Tanzil text: one ayah text per line.
 2. Tanzil numbered text: ``sura|ayah|text``.
 3. Internal locator text: ``sura:ayah|text`` (legacy/import-fixture support).
 
-Only the parser derives locator metadata. The source bytes and SHA-256 are never
-normalized before hashing.
+After the 6236 Quran records, only blank lines or comment lines beginning with
+``#`` are accepted. This preserves Tanzil's attribution block while rejecting
+unexpected extra Quran/content records.
 """
 from __future__ import annotations
 
@@ -43,10 +48,14 @@ def canonical_keys() -> Iterable[tuple[int, int]]:
             yield sura, ayah
 
 
-def _parse_line(line: str, expected_key: tuple[int, int], index: int) -> tuple[int, int, str, str]:
+def _parse_line(
+    line: str,
+    expected_key: tuple[int, int],
+    index: int,
+) -> tuple[int, int, str, str]:
     """Return ``sura, ayah, text, layout`` without mutating Quran text."""
     if not line:
-        fail(f"Blank record at line {index}")
+        fail(f"Blank Quran record at line {index}")
 
     # Tanzil/other numbered export: sura|ayah|text
     parts = line.split("|", 2)
@@ -65,6 +74,17 @@ def _parse_line(line: str, expected_key: tuple[int, int], index: int) -> tuple[i
     return expected_key[0], expected_key[1], line, "plain"
 
 
+def _validate_footer(footer: list[str]) -> None:
+    """Allow only Tanzil-style blank/comment attribution lines after ayah 6236."""
+    for offset, line in enumerate(footer, start=EXPECTED_AYAHS + 1):
+        if line == "" or line.startswith("#"):
+            continue
+        fail(
+            "Unexpected non-comment content after the 6236 Quran records "
+            f"at line {offset}"
+        )
+
+
 def validate_bytes(raw: bytes) -> dict[str, str | int]:
     try:
         text = raw.decode("utf-8")
@@ -74,15 +94,22 @@ def validate_bytes(raw: bytes) -> dict[str, str | int]:
     # splitlines() is intentionally used only for structural inspection. Hashing
     # below uses the original raw bytes, preserving CRLF/LF and final newline.
     lines = text.splitlines()
-    if len(lines) != EXPECTED_AYAHS:
+    if len(lines) < EXPECTED_AYAHS:
         fail(f"Expected {EXPECTED_AYAHS} ayah records, found {len(lines)}")
+
+    quran_lines = lines[:EXPECTED_AYAHS]
+    footer = lines[EXPECTED_AYAHS:]
+    _validate_footer(footer)
 
     expected_keys = list(canonical_keys())
     seen: set[tuple[int, int]] = set()
     per_sura = [0] * EXPECTED_SURAS
     layouts: set[str] = set()
 
-    for index, (line, expected_key) in enumerate(zip(lines, expected_keys), start=1):
+    for index, (line, expected_key) in enumerate(
+        zip(quran_lines, expected_keys),
+        start=1,
+    ):
         sura, ayah, arabic, layout = _parse_line(line, expected_key, index)
         layouts.add(layout)
 
@@ -120,6 +147,7 @@ def validate_bytes(raw: bytes) -> dict[str, str | int]:
         "surahs": EXPECTED_SURAS,
         "ayahs": EXPECTED_AYAHS,
         "layout": next(iter(layouts)),
+        "footer_lines": len(footer),
         "bytes": len(raw),
         "sha256": hashlib.sha256(raw).hexdigest(),
     }
@@ -139,9 +167,10 @@ def build_manifest(dataset: Path, result: dict[str, str | int]) -> dict[str, obj
         "layout": result["layout"],
         "surahs": result["surahs"],
         "ayahs": result["ayahs"],
+        "footer_lines": result["footer_lines"],
         "bytes": result["bytes"],
         "sha256": result["sha256"],
-        "hash_scope": "exact source bytes; no newline or Unicode normalization",
+        "hash_scope": "exact source bytes; includes attribution footer; no newline or Unicode normalization",
     }
 
 
@@ -176,7 +205,8 @@ def main() -> int:
     print("Quran dataset structural validation PASS")
     print(
         f"layout={result['layout']} surahs={result['surahs']} "
-        f"ayahs={result['ayahs']} bytes={result['bytes']}"
+        f"ayahs={result['ayahs']} footer_lines={result['footer_lines']} "
+        f"bytes={result['bytes']}"
     )
     print(f"sha256={result['sha256']}")
     return 0
