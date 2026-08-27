@@ -1,16 +1,24 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/core/content/trusted_content_error_view.dart';
+import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/profile/presentation/sources_licenses_page.dart';
 import 'package:islami_hayat/features/quran/data/quran_reader_repository.dart';
+import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
 final class QuranReaderPage extends StatefulWidget {
   QuranReaderPage({
     super.key,
     QuranReaderDataSource? repository,
-  }) : repository = repository ?? QuranReaderRepository();
+    QuranReadingProgressRepository? progressRepository,
+  })  : repository = repository ?? QuranReaderRepository(),
+        progressRepository = progressRepository ??
+            QuranReadingProgressRepository(SecurePrivateUserStore());
 
   final QuranReaderDataSource repository;
+  final QuranReadingProgressRepository progressRepository;
 
   @override
   State<QuranReaderPage> createState() => _QuranReaderPageState();
@@ -24,15 +32,46 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
   Future<QuranReaderChapter>? _chapterFuture;
   String? _languageCode;
   int _selectedSurah = 1;
+  int _savedAyah = 1;
   double _quranScale = 1;
+  bool _restoreStarted = false;
+  bool _progressReady = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final languageCode = Localizations.localeOf(context).languageCode;
-    if (_languageCode == languageCode && _chapterFuture != null) return;
+    final languageChanged = _languageCode != languageCode;
     _languageCode = languageCode;
-    _loadSelectedChapter();
+
+    if (!_restoreStarted) {
+      _restoreStarted = true;
+      unawaited(_restoreProgress());
+      return;
+    }
+
+    if (_progressReady && languageChanged) {
+      setState(_loadSelectedChapter);
+    }
+  }
+
+  Future<void> _restoreProgress() async {
+    QuranReadingProgress progress;
+    try {
+      progress = await widget.progressRepository.load();
+    } on QuranReadingProgressFormatException {
+      await widget.progressRepository.reset();
+      progress = QuranReadingProgress.initial();
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _selectedSurah = progress.surah;
+      _savedAyah = progress.ayah;
+      _quranScale = progress.quranScale;
+      _progressReady = true;
+      _loadSelectedChapter();
+    });
   }
 
   void _loadSelectedChapter() {
@@ -48,8 +87,10 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
     if (surah == null || surah == _selectedSurah) return;
     setState(() {
       _selectedSurah = surah;
+      _savedAyah = 1;
       _loadSelectedChapter();
     });
+    unawaited(_persistProgress());
   }
 
   void _changeQuranScale(double delta) {
@@ -58,6 +99,27 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
         .toDouble();
     if (next == _quranScale) return;
     setState(() => _quranScale = next);
+    unawaited(_persistProgress());
+  }
+
+  Future<void> _saveReadingPosition(int ayah) async {
+    final previous = _savedAyah;
+    setState(() => _savedAyah = ayah);
+    try {
+      await _persistProgress();
+    } catch (_) {
+      if (mounted) setState(() => _savedAyah = previous);
+    }
+  }
+
+  Future<void> _persistProgress() {
+    return widget.progressRepository.save(
+      QuranReadingProgress(
+        surah: _selectedSurah,
+        ayah: _savedAyah,
+        quranScale: _quranScale,
+      ),
+    );
   }
 
   void _openSources() {
@@ -72,7 +134,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final future = _chapterFuture;
-    if (future == null) {
+    if (!_progressReady || future == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -162,6 +224,13 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '${l10n.quranSavedPosition}: '
+                      '${l10n.continueQuranPosition(_selectedSurah, _savedAyah)}',
+                      key: const ValueKey('quran-saved-position'),
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
                     const SizedBox(height: 14),
                     Row(
                       children: [
@@ -192,6 +261,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final verse = chapter.verses[index];
+                final isSaved = verse.ayah == _savedAyah;
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
@@ -200,9 +270,31 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        '${verse.surah}:${verse.ayah}',
-                        style: Theme.of(context).textTheme.labelMedium,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '${verse.surah}:${verse.ayah}',
+                              style: Theme.of(context).textTheme.labelMedium,
+                            ),
+                          ),
+                          IconButton(
+                            key: ValueKey(
+                              'quran-save-position-${verse.surah}-${verse.ayah}',
+                            ),
+                            tooltip: isSaved
+                                ? l10n.quranSavedPosition
+                                : l10n.quranSavePosition,
+                            onPressed: isSaved
+                                ? null
+                                : () => _saveReadingPosition(verse.ayah),
+                            icon: Icon(
+                              isSaved
+                                  ? Icons.bookmark_rounded
+                                  : Icons.bookmark_border_rounded,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 10),
                       Directionality(
