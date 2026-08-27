@@ -78,7 +78,6 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
   Future<void> _restorePrivateState() async {
     QuranReadingProgress progress;
     QuranVerseUserState verseUserState;
-    Map<String, String> reflectionNotes;
     try {
       progress = await widget.progressRepository.load();
     } on QuranReadingProgressFormatException {
@@ -98,24 +97,26 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
       verseUserState = const QuranVerseUserState.empty();
     }
 
-    try {
-      reflectionNotes = await widget.reflectionNoteRepository.loadNotes();
-    } catch (_) {
-      // Personal notes are convenience state. Storage failure must not block or
-      // alter the separately verified Quran text.
-      reflectionNotes = const <String, String>{};
-    }
-
     if (!mounted) return;
     setState(() {
       _selectedSurah = progress.surah;
       _savedAyah = progress.ayah;
       _quranScale = progress.quranScale;
       _verseUserState = verseUserState;
-      _reflectionNotes = reflectionNotes;
       _progressReady = true;
       _loadSelectedChapter();
     });
+    unawaited(_restoreReflectionNotes());
+  }
+
+  Future<void> _restoreReflectionNotes() async {
+    try {
+      final notes = await widget.reflectionNoteRepository.loadNotes();
+      if (mounted) setState(() => _reflectionNotes = notes);
+    } catch (_) {
+      // Personal notes are convenience state. Storage failure must not block or
+      // alter the separately verified Quran text.
+    }
   }
 
   void _loadSelectedChapter() {
