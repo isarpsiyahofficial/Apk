@@ -212,48 +212,56 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                       builder: (context, constraints) {
                         final wide = constraints.maxWidth >= 640;
                         final selectors = <Widget>[
-                          DropdownButtonFormField<int>(
+                          KeyedSubtree(
                             key: const ValueKey('quran-surah-selector'),
-                            initialValue: chapter.surah,
-                            isExpanded: true,
-                            decoration: InputDecoration(
-                              labelText: l10n.quranSurahLabel,
-                              prefixIcon: const Icon(Icons.menu_book_outlined),
-                              border: const OutlineInputBorder(),
-                            ),
-                            items: widget.repository.chapterSummaries
-                                .map(
-                                  (summary) => DropdownMenuItem<int>(
-                                    value: summary.surah,
-                                    child: Text(
-                                      '${summary.surah} · ${summary.ayahCount}',
+                            child: DropdownButtonFormField<int>(
+                              key: ValueKey('quran-surah-value-${chapter.surah}'),
+                              initialValue: chapter.surah,
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                labelText: l10n.quranSurahLabel,
+                                prefixIcon: const Icon(Icons.menu_book_outlined),
+                                border: const OutlineInputBorder(),
+                              ),
+                              items: widget.repository.chapterSummaries
+                                  .map(
+                                    (summary) => DropdownMenuItem<int>(
+                                      value: summary.surah,
+                                      child: Text(
+                                        '${summary.surah} · ${summary.ayahCount}',
+                                      ),
                                     ),
-                                  ),
-                                )
-                                .toList(growable: false),
-                            onChanged: _selectSurah,
+                                  )
+                                  .toList(growable: false),
+                              onChanged: _selectSurah,
+                            ),
                           ),
-                          DropdownButtonFormField<int>(
+                          KeyedSubtree(
                             key: const ValueKey('quran-juz-selector'),
-                            initialValue: _selectedJuz,
-                            isExpanded: true,
-                            decoration: InputDecoration(
-                              labelText: l10n.quranJuzLabel,
-                              prefixIcon: const Icon(Icons.auto_stories_outlined),
-                              border: const OutlineInputBorder(),
-                            ),
-                            items: canonicalQuranJuzStarts
-                                .map(
-                                  (start) => DropdownMenuItem<int>(
-                                    value: start.juz,
-                                    child: Text(
-                                      '${l10n.quranJuzLabel} ${start.juz} · '
-                                      '${l10n.continueQuranPosition(start.surah, start.ayah)}',
+                            child: DropdownButtonFormField<int>(
+                              key: ValueKey('quran-juz-value-$_selectedJuz'),
+                              initialValue: _selectedJuz,
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                labelText: l10n.quranJuzLabel,
+                                prefixIcon: const Icon(
+                                  Icons.auto_stories_outlined,
+                                ),
+                                border: const OutlineInputBorder(),
+                              ),
+                              items: canonicalQuranJuzStarts
+                                  .map(
+                                    (start) => DropdownMenuItem<int>(
+                                      value: start.juz,
+                                      child: Text(
+                                        '${l10n.quranJuzLabel} ${start.juz} · '
+                                        '${l10n.continueQuranPosition(start.surah, start.ayah)}',
+                                      ),
                                     ),
-                                  ),
-                                )
-                                .toList(growable: false),
-                            onChanged: _selectJuz,
+                                  )
+                                  .toList(growable: false),
+                              onChanged: _selectJuz,
+                            ),
                           ),
                         ];
 
