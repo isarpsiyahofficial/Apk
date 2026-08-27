@@ -18,11 +18,21 @@
   "quickDuas": "Dualar",
   "quickDhikr": "Zikir",
   "quickExplore": "Keşfet",
+  "continueQuranTitle": "Kur’an’a Devam Et",
+  "continueQuranPosition": "Sure {surah}, Ayet {ayah}",
+  "@continueQuranPosition": {
+    "placeholders": {
+      "surah": {"type": "int"},
+      "ayah": {"type": "int"}
+    }
+  },
   "quranTitle": "Kur’an-ı Kerim",
   "quranSubtitle": "Oku, ara ve kaynaklarıyla incele.",
   "quranFontSmaller": "Kur’an yazısını küçült",
   "quranFontLarger": "Kur’an yazısını büyüt",
   "quranOpenSources": "Kur’an kaynaklarını ve lisanslarını aç",
+  "quranSavePosition": "Okumaya buradan devam et",
+  "quranSavedPosition": "Kayıtlı okuma konumu",
   "discoverTitle": "Keşfet",
   "discoverSubtitle": "Dua, peygamberler, tarih ve dini günler.",
   "dhikrTitle": "Zikir",
