@@ -12,6 +12,8 @@
   "dailyDuaTitle": "دعاء اليوم",
   "historyTodayTitle": "في مثل هذا اليوم من التاريخ الإسلامي",
   "contentPending": "يجري إعداد محتوى موثَّق.",
+  "trustedContentErrorTitle": "تعذّر التحقق من المحتوى",
+  "trustedContentErrorBody": "لم يجتز هذا المحتوى الديني فحص السلامة، لذلك لن نعرض النص حفاظًا على موثوقيته.",
   "quickTopicSearch": "استكشف موضوعًا",
   "quickDuas": "الأدعية",
   "quickDhikr": "الذكر",
