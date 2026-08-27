@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:islami_hayat/app.dart';
+import 'package:islami_hayat/core/theme/app_theme.dart';
+import 'package:islami_hayat/features/quran/presentation/quran_reader_page.dart';
+import 'package:islami_hayat/l10n/app_localizations.dart';
 
 Future<void> _pumpUntilFound(
   WidgetTester tester,
@@ -18,11 +21,21 @@ Future<void> _openQuran(
   WidgetTester tester, {
   required Locale locale,
 }) async {
-  await tester.pumpWidget(IslamiHayatApp(locale: locale));
-  await _pumpUntilFound(tester, find.byType(NavigationBar));
-  final navigationBar = tester.widget<NavigationBar>(find.byType(NavigationBar));
-  navigationBar.onDestinationSelected?.call(1);
-  await tester.pump();
+  await tester.pumpWidget(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      locale: locale,
+      theme: AppTheme.light(),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home: QuranReaderPage(),
+    ),
+  );
   await _pumpUntilFound(
     tester,
     find.byKey(const ValueKey('quran-surah-selector')),
