@@ -27,13 +27,29 @@ String quranVerseUserDataId({required int surah, required int ayah}) {
   return 'quran:$surah:$ayah';
 }
 
-final class QuranVerseUserStateRepository {
+abstract interface class QuranVerseUserStateDataSource {
+  Future<QuranVerseUserState> load();
+
+  Future<QuranVerseUserState> toggleFavorite({
+    required int surah,
+    required int ayah,
+  });
+
+  Future<QuranVerseUserState> toggleBookmark({
+    required int surah,
+    required int ayah,
+  });
+}
+
+final class QuranVerseUserStateRepository
+    implements QuranVerseUserStateDataSource {
   QuranVerseUserStateRepository([UserDataRepository? userDataRepository])
       : _userDataRepository = userDataRepository ??
             UserDataRepository(SecurePrivateUserStore());
 
   final UserDataRepository _userDataRepository;
 
+  @override
   Future<QuranVerseUserState> load() async {
     final snapshot = await _userDataRepository.load();
     return QuranVerseUserState(
@@ -46,11 +62,13 @@ final class QuranVerseUserStateRepository {
     );
   }
 
+  @override
   Future<QuranVerseUserState> toggleFavorite({
     required int surah,
     required int ayah,
   }) => _toggle(surah: surah, ayah: ayah, favorite: true);
 
+  @override
   Future<QuranVerseUserState> toggleBookmark({
     required int surah,
     required int ayah,
