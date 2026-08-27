@@ -47,10 +47,10 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 
 | ID | Alan | Durum | Kanıt / açık iş |
 |---|---|---|---|
-| D01 | 114 sure ve ayet sayıları source hash ile | PASS | Tanzil Uthmani v1.1 exact source: 114 sure / 6236 ayet; `Quran Source Verify` #23 SUCCESS; runtime `canonical_quran_source_test.dart` bağımsız sure-ayet sırasını doğruluyor |
+| D01 | 114 sure ve ayet sayıları source hash ile | PASS | Tanzil Uthmani v1.1 exact source: 114 sure / 6236 ayet; `Quran Source Verify` SUCCESS; runtime `canonical_quran_source_test.dart` bağımsız sure-ayet sırasını doğruluyor |
 | D02 | Arapça Kur’an exact source integrity | PASS | pinned exact-byte SHA-256 `bf4f57b968d03f4131c070b1e285da9be0e0a108a21c910e872801ca273312c8`; 1,370,878 byte; attribution footer dahil; `prepare_quran_asset.py` + release packaging + runtime fail-closed hash testi PASS |
-| D03 | TR meal source/license/version | TODO | exact ticari kullanım lisansı seçilecek |
-| D04 | EN meal source/license/version | TODO | exact ticari kullanım lisansı seçilecek |
+| D03 | TR meal source/license/version | PASS | QuranEnc `turkish_rwwad` Rowad; V1.0.4; 114 sure / 6236 ayet; canonical SHA-256 `a0c001b1e690cc022351d55b9951a7410fde4a6266638766c553fa91f401b1b7`; `QuranEnc Meal Verify` SUCCESS; 114 ayrı source-response hash |
+| D04 | EN meal source/license/version | PASS | QuranEnc `english_rwwad` Rowwad; V1.0.19; 114 sure / 6236 ayet; canonical SHA-256 `24c81ccfa5818e417b96f3b457955d34308a95d006a65c894ac69eaba580a3c0`; `QuranEnc Meal Verify` SUCCESS; 114 ayrı source-response hash |
 | D05 | Dua source/status/authenticity | TODO | |
 | D06 | Genel dua yanlışlıkla hadis/ayet değil | TODO | |
 | D07 | Zikir sayıları source-backed vs kişisel | TODO | |
@@ -63,6 +63,8 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 | D14 | Yazım/imla native TR/EN/AR review | TODO | |
 
 **Kur’an canonical kaynak kanıtı:** `assets/quran/source/quran-uthmani.manifest.json` Tanzil Project Uthmani v1.1 kaynağını, CC BY 3.0 lisansını, exact byte/hash kapsamını ve 114/6236 yapısını pinler. `Quran Source Verify`, `Android Release CI` ve `CanonicalQuranDataset` aynı sözleşmeyi birbirinden bağımsız katmanlarda doğrular. Kaynak byte değişirse build/runtime fail-closed olur.
+
+**Meal canonical kaynak kanıtı:** `scripts/fetch_quranenc_meals.py` resmi QuranEnc API metadata + 114 sura endpointini canlı doğrular; her raw response parse öncesi SHA-256 ile kaydedilir. Translation/footnotes değerleri değiştirilmez. `docs/MEAL_SOURCE_DECISION.md` exact sürüm, hash ve yeniden yayın koşullarını pinler.
 
 **Altyapı PASS:** `content_governance_test.dart`, `source_manifest_test.dart`, `integrity_checked_trusted_content_store_test.dart`. Bunlar diğer gerçek dini dataset satırlarını otomatik PASS yapmaz.
 
