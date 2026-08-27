@@ -5,7 +5,11 @@ import unittest
 from validate_quran_dataset import AYAH_COUNTS, EXPECTED_AYAHS, validate_bytes
 
 
-def synthetic_dataset(layout: str = "locator", newline: str = "\n") -> bytes:
+def synthetic_dataset(
+    layout: str = "locator",
+    newline: str = "\n",
+    footer: list[str] | None = None,
+) -> bytes:
     lines = []
     for sura, count in enumerate(AYAH_COUNTS, start=1):
         for ayah in range(1, count + 1):
@@ -17,6 +21,8 @@ def synthetic_dataset(layout: str = "locator", newline: str = "\n") -> bytes:
                 lines.append("ا")
             else:
                 raise AssertionError(layout)
+    if footer:
+        lines.extend(footer)
     return (newline.join(lines) + newline).encode("utf-8")
 
 
@@ -26,6 +32,7 @@ class QuranDatasetValidatorTest(unittest.TestCase):
         self.assertEqual(result["surahs"], 114)
         self.assertEqual(result["ayahs"], EXPECTED_AYAHS)
         self.assertEqual(result["layout"], "sura:ayah|text")
+        self.assertEqual(result["footer_lines"], 0)
 
     def test_numbered_tanzil_shape_accepts_complete_quran(self):
         result = validate_bytes(synthetic_dataset("numbered"))
@@ -37,9 +44,28 @@ class QuranDatasetValidatorTest(unittest.TestCase):
         self.assertEqual(result["layout"], "plain")
         self.assertEqual(result["sha256"], hashlib.sha256(raw).hexdigest())
 
+    def test_tanzil_comment_footer_is_preserved_and_accepted(self):
+        raw = synthetic_dataset(
+            "numbered",
+            footer=[
+                "",
+                "# Tanzil Quran Text",
+                "# Creative Commons Attribution 3.0",
+                "# https://tanzil.net/",
+            ],
+        )
+        result = validate_bytes(raw)
+        self.assertEqual(result["footer_lines"], 4)
+        self.assertEqual(result["sha256"], hashlib.sha256(raw).hexdigest())
+
+    def test_unexpected_content_after_quran_fails_closed(self):
+        raw = synthetic_dataset("numbered", footer=["unexpected content"])
+        with self.assertRaisesRegex(ValueError, "Unexpected non-comment content"):
+            validate_bytes(raw)
+
     def test_hash_preserves_exact_newline_bytes(self):
-        lf = synthetic_dataset("plain", "\n")
-        crlf = synthetic_dataset("plain", "\r\n")
+        lf = synthetic_dataset("plain", "\n", footer=["# license"])
+        crlf = synthetic_dataset("plain", "\r\n", footer=["# license"])
         lf_result = validate_bytes(lf)
         crlf_result = validate_bytes(crlf)
         self.assertNotEqual(lf_result["sha256"], crlf_result["sha256"])
