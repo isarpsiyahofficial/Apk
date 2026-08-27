@@ -1,6 +1,6 @@
 # Meal Source Decision — TR / EN
 
-**Durum:** Kaynak/lisans kararı ve production import doğrulaması tamamlandı.  
+**Durum:** Kaynak/lisans kararı, production import doğrulaması ve release asset paketleme kapısı oluşturuldu.  
 **Doğrulama tarihi:** 27 Ağustos 2026
 
 ## Seçilen kaynak ailesi
@@ -12,7 +12,8 @@ TR ve EN meal için ana kaynak **QuranEnc.com / Rowad (Rowwad) Translation Cente
 - Başlık: **Türkçe Tercüme - Rowad Tercüme Merkezi**
 - Translation key: `turkish_rwwad`
 - Kaynak sayfası: `https://quranenc.com/tr/browse/turkish_rwwad`
-- Doğrulanan sürüm: **V1.0.4**
+- QuranEnc arayüzünde görünen sürüm: **V1.0.4**
+- API/canonical dataset içinde exact sürüm değeri: **`1.0.4`**
 - Canonical generated dataset SHA-256: **`a0c001b1e690cc022351d55b9951a7410fde4a6266638766c553fa91f401b1b7`**
 - Coverage: **114 sure / 6236 ayet**
 
@@ -21,9 +22,12 @@ TR ve EN meal için ana kaynak **QuranEnc.com / Rowad (Rowwad) Translation Cente
 - Title: **English Translation - Rowwad Translation Center**
 - Translation key: `english_rwwad`
 - Source page: `https://quranenc.com/en/browse/english_rwwad`
-- Doğrulanan sürüm: **V1.0.19**
+- QuranEnc UI version: **V1.0.19**
+- Exact API/canonical dataset version value: **`1.0.19`**
 - Canonical generated dataset SHA-256: **`24c81ccfa5818e417b96f3b457955d34308a95d006a65c894ac69eaba580a3c0`**
 - Coverage: **114 sure / 6236 ayet**
+
+> Runtime validation pins the exact API value (`1.0.x`). The leading `V` is presentation-only and must never be part of byte/dataset identity checks.
 
 ## Yeniden yayınlama şartları
 
@@ -52,12 +56,29 @@ Bu şartlar uygulamanın mevcut dini içerik politikasıyla uyumludur: meal metn
 
 27 Ağustos 2026 doğrulamasında:
 
-- `turkish_rwwad` → V1.0.4 → 114 sure / 6236 ayet → SHA-256 `a0c001b1e690cc022351d55b9951a7410fde4a6266638766c553fa91f401b1b7`
-- `english_rwwad` → V1.0.19 → 114 sure / 6236 ayet → SHA-256 `24c81ccfa5818e417b96f3b457955d34308a95d006a65c894ac69eaba580a3c0`
-- her dil için 114 ayrı official sura response hash kaydı üretildi,
-- workflow artifact'i `verified-quranenc-rowad-meals` olarak üretildi.
+- `turkish_rwwad` → API `1.0.4` / UI `V1.0.4` → 114 sure / 6236 ayet → SHA-256 `a0c001b1e690cc022351d55b9951a7410fde4a6266638766c553fa91f401b1b7`
+- `english_rwwad` → API `1.0.19` / UI `V1.0.19` → 114 sure / 6236 ayet → SHA-256 `24c81ccfa5818e417b96f3b457955d34308a95d006a65c894ac69eaba580a3c0`
+- her dil için 114 ayrı official sura response hash kaydı üretilir,
+- workflow artifact'i `verified-quranenc-rowad-meals` olarak üretilir.
 
-Bu doğrulama D03/D04 için kaynak, lisans, sürüm ve coverage kanıtıdır. Uygulamaya kalıcı paketleme yapılırken aynı manifest/hashes yeniden doğrulanacak; kaynak yeni sürüme geçmişse fark raporu olmadan sessiz replacement yapılmayacaktır.
+## Uygulama asseti ve runtime fail-closed zinciri
+
+`scripts/prepare_quranenc_meal_assets.py` yalnız yukarıdaki exact SHA-256 ve exact API sürümü eşleşen canonical JSON dosyalarını Flutter asset alanına byte-for-byte kopyalar. Kopya tekrar hashlenir; unpinned JSON dosyaları asset alanından temizlenir.
+
+`BundledMealDatasetLoader` runtime'da tekrar:
+
+- asset byte SHA-256,
+- translation key,
+- exact API version,
+- 114 sure,
+- 6236 ayet,
+- duplicate locator,
+- contiguous sure/ayet sırası,
+- boş meal / geçersiz dipnot tipini
+
+kontrol eder. Bir kontrol bile başarısızsa meal güvenilir içerik olarak dönmez.
+
+Android Release CI, build öncesinde hem Tanzil Arapça kaynağını hem iki QuranEnc meal datasetini hazırlar. APK oluşturulduktan sonra üç kaynak dosyasının gerçekten `flutter_assets` içinde bulunduğu kontrol edilir ve TR/EN meal SHA-256 değerleri tekrar pinned hashlerle karşılaştırılır.
 
 ## Neden Quran Foundation ana offline meal kaynağı seçilmedi?
 
@@ -71,8 +92,9 @@ Quran Foundation'ın 18 Ağustos 2026 tarihli Developer Terms ve güncel Connect
 - İndirilen exact source response payload'ları SHA-256 ile pinlenmeli. **PASS — 114 response hash / dil**
 - Publisher, source URL, translation key, exact source version ve hash manifestte tutulmalı. **PASS**
 - Meal metnine otomatik yazım düzeltmesi, yeniden çeviri veya AI paraphrase uygulanmamalı. **PASS — importer sözleşmesi**
-- Kaynak yeni sürüm yayımladığında fark raporu olmadan sessiz replace yapılmamalı. **Enforced by version pin / release gate**
-- TR/EN production dataset D03/D04 gerçek import + hash + 6236/6236 coverage testi geçmeden PASS olmayacaktır. **PASS — canlı workflow kanıtı mevcut**
+- Kaynak yeni sürüm yayımladığında fark raporu olmadan sessiz replace yapılmamalı. **Enforced by exact API version + SHA pin**
+- Runtime loader bozuk/eksik/unpinned asseti kabul etmemeli. **PASS — unit test sözleşmesi**
+- Release APK/AAB meal JSON'larını ancak pre-build verification sonrası paketlemeli. **CI gate oluşturuldu; son clean run sonucu ayrıca kaydedilecektir.**
 
 ## Resmi doğrulama bağlantıları
 
