@@ -18,11 +18,21 @@
   "quickDuas": "الأدعية",
   "quickDhikr": "الذكر",
   "quickExplore": "اكتشف",
+  "continueQuranTitle": "متابعة قراءة القرآن",
+  "continueQuranPosition": "السورة {surah}، الآية {ayah}",
+  "@continueQuranPosition": {
+    "placeholders": {
+      "surah": {"type": "int"},
+      "ayah": {"type": "int"}
+    }
+  },
   "quranTitle": "القرآن الكريم",
   "quranSubtitle": "اقرأ وابحث وتعرّف إلى المصادر.",
   "quranFontSmaller": "تصغير خط القرآن",
   "quranFontLarger": "تكبير خط القرآن",
   "quranOpenSources": "فتح مصادر القرآن وتراخيصه",
+  "quranSavePosition": "متابعة القراءة من هنا",
+  "quranSavedPosition": "موضع القراءة المحفوظ",
   "discoverTitle": "اكتشف",
   "discoverSubtitle": "الأدعية والأنبياء والتاريخ والمناسبات الدينية.",
   "dhikrTitle": "الذكر",
