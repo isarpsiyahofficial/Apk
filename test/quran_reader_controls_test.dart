@@ -31,6 +31,7 @@ final class _FixtureQuranReaderDataSource implements QuranReaderDataSource {
   @override
   List<QuranChapterSummary> get chapterSummaries => const [
     QuranChapterSummary(surah: 1, ayahCount: 2),
+    QuranChapterSummary(surah: 2, ayahCount: 2),
   ];
 
   @override
@@ -38,9 +39,29 @@ final class _FixtureQuranReaderDataSource implements QuranReaderDataSource {
     required String languageCode,
     int surah = 1,
   }) async {
-    return QuranReaderChapter(
-      surah: surah,
-      verses: const [
+    if (surah == 2) {
+      return const QuranReaderChapter(
+        surah: 2,
+        verses: [
+          QuranReaderVerse(
+            surah: 2,
+            ayah: 142,
+            arabic: 'سَيَقُولُ السُّفَهَاءُ',
+            translation: 'Doğrulanmış ikinci cüz test metni',
+          ),
+          QuranReaderVerse(
+            surah: 2,
+            ayah: 143,
+            arabic: 'وَكَذَٰلِكَ جَعَلْنَاكُمْ أُمَّةً وَسَطًا',
+            translation: 'İkinci cüz için ikinci test metni',
+          ),
+        ],
+      );
+    }
+
+    return const QuranReaderChapter(
+      surah: 1,
+      verses: [
         QuranReaderVerse(
           surah: 1,
           ayah: 1,
@@ -146,6 +167,40 @@ void main() {
     await _pumpUntilFound(tester, find.text('Kaynaklar ve Lisanslar'));
     expect(find.text('Kaynaklar ve Lisanslar'), findsWidgets);
     expect(find.textContaining('Tanzil Project'), findsWidgets);
+  });
+
+  testWidgets('selecting Juz 2 synchronizes Surah 2 and saved 2:142 position', (
+    tester,
+  ) async {
+    final progressRepository = await _openQuran(
+      tester,
+      locale: const Locale('tr'),
+    );
+
+    final juzSelector = find.descendant(
+      of: find.byKey(const ValueKey('quran-juz-selector')),
+      matching: find.byType(DropdownButtonFormField<int>),
+    );
+    await tester.tap(juzSelector);
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Cüz 2 · Sure 2, Ayet 142').last);
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Sure 2, Ayet 142'), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('quran-surah-value-2')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('quran-juz-value-2')),
+      findsOneWidget,
+    );
+
+    final saved = await progressRepository.loadSaved();
+    expect(saved, isNotNull);
+    expect(saved!.surah, 2);
+    expect(saved.ayah, 142);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('Quran controls remain usable on narrow Arabic layout', (
