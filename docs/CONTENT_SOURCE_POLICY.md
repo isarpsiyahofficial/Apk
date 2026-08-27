@@ -4,15 +4,19 @@
 
 ## 1. Qur'an Arabic text
 
-### Tanzil Quran Text — preferred baseline candidate
+### Tanzil Quran Text v1.1 Uthmani — selected canonical baseline
 
-- Source: https://tanzil.net/docs/text_license
+- Source license: https://tanzil.net/docs/text_license
+- Official download/version reference: https://tanzil.net/docs/download
+- Selected canonical variant: **Tanzil Quran Text v1.1, Uthmani**.
 - License shown by the source: Creative Commons Attribution 3.0.
 - Required behavior: distribute verbatim; changing the Qur'an text is not allowed.
 - Required attribution: clearly identify Tanzil Project and provide a link to tanzil.net so users can track changes.
 - The copyright notice must accompany verbatim copies / files containing a substantial portion of the text.
-- Product decision: suitable candidate for the bundled, read-only Arabic Qur'an baseline because the product requires offline PRO access and deterministic release hashes.
-- Gate before import: record exact downloaded variant/version, retrieval date, upstream update reference, source file SHA-256 and attribution text.
+- Product decision: this is the canonical bundled, read-only Arabic Qur'an baseline because the product requires deterministic hashes and offline PRO access.
+- Structural contract: 114 suras and 6236 standard ayah records; exact requirements are in `docs/QURAN_DATASET_CONTRACT.md` and enforced by `scripts/validate_quran_dataset.py`.
+- Import gate: record the exact downloaded bytes, retrieval date, upstream version/update reference, source file SHA-256 and attribution text. Until that exact asset is imported and verified, TEST_MATRIX D01/D02 remain TODO.
+- Search normalization, presentation-only Bismillah handling or indexing must never rewrite the canonical source bytes.
 
 ## 2. Quran Foundation APIs
 
@@ -30,6 +34,7 @@
 - QuranEnc describes its project as providing free, trustworthy translations/exegeses prepared and reviewed by specialized bodies, including formats usable by applications and systems.
 - Product decision: translation **candidate**, not yet production-approved.
 - Gate before import: identify the exact Turkish/English translation keys, publisher/translator, explicit reuse/license terms for each dataset, version/retrieval date and SHA-256. If exact redistribution/offline rights are not sufficiently clear, do not bundle until written/explicit permission is resolved.
+- Do not assume Tanzil's Arabic-text CC BY 3.0 license grants commercial redistribution rights for translations listed on Tanzil; translation rights are reviewed separately.
 
 ## 4. Hadith / dua
 
