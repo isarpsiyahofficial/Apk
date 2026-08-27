@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
 import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
+import 'package:islami_hayat/features/quran/presentation/quran_reader_page.dart';
 import 'package:islami_hayat/features/shared/presentation/section_placeholder_page.dart';
 import 'package:islami_hayat/features/today/presentation/today_page.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
@@ -53,11 +54,7 @@ class _AppShellState extends State<AppShell> {
 
     final pages = <Widget>[
       const TodayPage(),
-      SectionPlaceholderPage(
-        title: l10n.quranTitle,
-        subtitle: l10n.quranSubtitle,
-        icon: Icons.menu_book_outlined,
-      ),
+      QuranReaderPage(),
       SectionPlaceholderPage(
         title: l10n.discoverTitle,
         subtitle: l10n.discoverSubtitle,
