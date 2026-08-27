@@ -18,11 +18,21 @@
   "quickDuas": "Duas",
   "quickDhikr": "Dhikr",
   "quickExplore": "Discover",
+  "continueQuranTitle": "Continue the Qur’an",
+  "continueQuranPosition": "Surah {surah}, Ayah {ayah}",
+  "@continueQuranPosition": {
+    "placeholders": {
+      "surah": {"type": "int"},
+      "ayah": {"type": "int"}
+    }
+  },
   "quranTitle": "The Qur’an",
   "quranSubtitle": "Read, search, and explore with sources.",
   "quranFontSmaller": "Decrease Qur’an text size",
   "quranFontLarger": "Increase Qur’an text size",
   "quranOpenSources": "Open Qur’an sources and licenses",
+  "quranSavePosition": "Continue reading from here",
+  "quranSavedPosition": "Saved reading position",
   "discoverTitle": "Discover",
   "discoverSubtitle": "Duas, prophets, history, and religious occasions.",
   "dhikrTitle": "Dhikr",
