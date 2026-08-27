@@ -25,3 +25,4 @@ flutter:
   generate: true
   assets:
     - assets/quran/source/
+    - assets/quran/meals/
