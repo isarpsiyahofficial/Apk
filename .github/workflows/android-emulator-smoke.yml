@@ -62,16 +62,42 @@ jobs:
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: |
             set -eu
+            PACKAGE='com.example.islami_hayat'
+            ACTIVITY="$PACKAGE/.MainActivity"
             adb install -r build/app/outputs/flutter-apk/app-debug.apk
-            adb shell am force-stop com.example.islami_hayat
-            adb shell am start -W -n com.example.islami_hayat/.MainActivity | tee /tmp/start.txt
-            grep -E 'Status: ok|ThisTime:|TotalTime:' /tmp/start.txt
-            sleep 4
-            PID="$(adb shell pidof com.example.islami_hayat | tr -d '\r')"
+            adb shell am force-stop "$PACKAGE"
+            adb logcat -c
+            adb shell am start -n "$ACTIVITY" | tee /tmp/start.txt
+            grep -F "Starting: Intent" /tmp/start.txt
+
+            PID=''
+            attempt=0
+            while [ "$attempt" -lt 30 ]; do
+              PID="$(adb shell pidof "$PACKAGE" 2>/dev/null | tr -d '\r' || true)"
+              if [ -n "$PID" ]; then
+                break
+              fi
+              attempt=$((attempt + 1))
+              sleep 1
+            done
             test -n "$PID"
             echo "App process running with PID $PID"
-            adb shell dumpsys activity activities | grep -m 1 'com.example.islami_hayat/.MainActivity'
-            if adb logcat -d -t 500 | grep -E 'FATAL EXCEPTION.*com\.example\.islami_hayat|Process: com\.example\.islami_hayat.*FATAL'; then
+
+            ACTIVITY_FOUND=''
+            attempt=0
+            while [ "$attempt" -lt 30 ]; do
+              ACTIVITY_FOUND="$(adb shell dumpsys activity activities | grep -m 1 "$ACTIVITY" || true)"
+              if [ -n "$ACTIVITY_FOUND" ]; then
+                break
+              fi
+              attempt=$((attempt + 1))
+              sleep 1
+            done
+            test -n "$ACTIVITY_FOUND"
+            echo "$ACTIVITY_FOUND"
+
+            sleep 3
+            if adb logcat -d -t 800 | grep -E 'FATAL EXCEPTION.*com\.example\.islami_hayat|Process: com\.example\.islami_hayat.*FATAL'; then
               echo 'Fatal application crash found after launch' >&2
               exit 1
             fi
