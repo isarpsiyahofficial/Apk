@@ -1,0 +1,49 @@
+name: Repair reflection controller lifecycle
+
+on:
+  push:
+    branches:
+      - agent/islamic-life-implementation
+    paths:
+      - .github/workflows/repair-reflection-controller.yml
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.event.head_commit.message != 'fix: repair reflection controller lifecycle'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/islamic-life-implementation
+          fetch-depth: 0
+      - name: Patch lifecycle
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/features/quran/presentation/quran_reader_page.dart')
+          s = p.read_text()
+          old = """    controller.dispose();\n    if (result == null || !mounted) return;\n"""
+          new = """    // The dialog route can still be finishing its exit transition after\n    // showDialog completes. Disposing the controller synchronously here can\n    // leave EditableText attached to a disposed controller on Flutter 3.47.\n    // Let the route own the final detach first, then release the controller.\n    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());\n    if (result == null || !mounted) return;\n"""
+          if old not in s:
+              raise SystemExit('expected controller disposal block not found')
+          p.write_text(s.replace(old, new, 1))
+          PY
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter gen-l10n
+      - run: flutter analyze --fatal-infos --fatal-warnings
+      - run: flutter test test/features/quran/quran_reflection_note_ui_test.dart --reporter expanded
+      - name: Commit validated patch
+        run: |
+          rm .github/workflows/repair-reflection-controller.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/features/quran/presentation/quran_reader_page.dart .github/workflows/repair-reflection-controller.yml
+          git commit -m 'fix: repair reflection controller lifecycle'
+          git push origin HEAD:agent/islamic-life-implementation
