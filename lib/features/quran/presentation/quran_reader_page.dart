@@ -6,6 +6,7 @@ import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/profile/presentation/sources_licenses_page.dart';
 import 'package:islami_hayat/features/quran/data/quran_reader_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
+import 'package:islami_hayat/features/quran/data/quran_structure_metadata.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
 final class QuranReaderPage extends StatefulWidget {
@@ -13,9 +14,10 @@ final class QuranReaderPage extends StatefulWidget {
     super.key,
     QuranReaderDataSource? repository,
     QuranReadingProgressRepository? progressRepository,
-  })  : repository = repository ?? QuranReaderRepository(),
-        progressRepository = progressRepository ??
-            QuranReadingProgressRepository(SecurePrivateUserStore());
+  }) : repository = repository ?? QuranReaderRepository(),
+       progressRepository =
+           progressRepository ??
+           QuranReadingProgressRepository(SecurePrivateUserStore());
 
   final QuranReaderDataSource repository;
   final QuranReadingProgressRepository progressRepository;
@@ -36,6 +38,11 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
   double _quranScale = 1;
   bool _restoreStarted = false;
   bool _progressReady = false;
+
+  int get _selectedJuz => quranJuzForPosition(
+    surah: _selectedSurah,
+    ayah: _savedAyah,
+  );
 
   @override
   void didChangeDependencies() {
@@ -101,6 +108,18 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
     unawaited(_persistProgressSafely());
   }
 
+  void _selectJuz(int? juz) {
+    if (juz == null) return;
+    final start = quranJuzStart(juz);
+    if (start.surah == _selectedSurah && start.ayah == _savedAyah) return;
+    setState(() {
+      _selectedSurah = start.surah;
+      _savedAyah = start.ayah;
+      _loadSelectedChapter();
+    });
+    unawaited(_persistProgressSafely());
+  }
+
   void _changeQuranScale(double delta) {
     final next = (_quranScale + delta)
         .clamp(_minQuranScale, _maxQuranScale)
@@ -140,9 +159,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
 
   void _openSources() {
     Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => const SourcesLicensesPage(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const SourcesLicensesPage()),
     );
   }
 
@@ -191,24 +208,75 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     const SizedBox(height: 18),
-                    DropdownButtonFormField<int>(
-                      key: const ValueKey('quran-surah-selector'),
-                      initialValue: chapter.surah,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.menu_book_outlined),
-                        border: OutlineInputBorder(),
-                      ),
-                      items: widget.repository.chapterSummaries
-                          .map(
-                            (summary) => DropdownMenuItem<int>(
-                              value: summary.surah,
-                              child: Text(
-                                '${summary.surah} · ${summary.ayahCount}',
-                              ),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final wide = constraints.maxWidth >= 640;
+                        final selectors = <Widget>[
+                          DropdownButtonFormField<int>(
+                            key: const ValueKey('quran-surah-selector'),
+                            initialValue: chapter.surah,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              labelText: l10n.quranSurahLabel,
+                              prefixIcon: const Icon(Icons.menu_book_outlined),
+                              border: const OutlineInputBorder(),
                             ),
-                          )
-                          .toList(growable: false),
-                      onChanged: _selectSurah,
+                            items: widget.repository.chapterSummaries
+                                .map(
+                                  (summary) => DropdownMenuItem<int>(
+                                    value: summary.surah,
+                                    child: Text(
+                                      '${summary.surah} · ${summary.ayahCount}',
+                                    ),
+                                  ),
+                                )
+                                .toList(growable: false),
+                            onChanged: _selectSurah,
+                          ),
+                          DropdownButtonFormField<int>(
+                            key: const ValueKey('quran-juz-selector'),
+                            initialValue: _selectedJuz,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              labelText: l10n.quranJuzLabel,
+                              prefixIcon: const Icon(Icons.auto_stories_outlined),
+                              border: const OutlineInputBorder(),
+                            ),
+                            items: canonicalQuranJuzStarts
+                                .map(
+                                  (start) => DropdownMenuItem<int>(
+                                    value: start.juz,
+                                    child: Text(
+                                      '${l10n.quranJuzLabel} ${start.juz} · '
+                                      '${l10n.continueQuranPosition(start.surah, start.ayah)}',
+                                    ),
+                                  ),
+                                )
+                                .toList(growable: false),
+                            onChanged: _selectJuz,
+                          ),
+                        ];
+
+                        if (!wide) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              selectors.first,
+                              const SizedBox(height: 12),
+                              selectors.last,
+                            ],
+                          );
+                        }
+
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(child: selectors.first),
+                            const SizedBox(width: 12),
+                            Expanded(child: selectors.last),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 14),
                     Wrap(
@@ -325,10 +393,9 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                         const SizedBox(height: 14),
                         SelectableText(
                           translation,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(height: 1.55),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyLarge?.copyWith(height: 1.55),
                         ),
                       ],
                       if (verse.footnotes case final footnotes?
