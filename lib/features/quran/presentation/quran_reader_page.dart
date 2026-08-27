@@ -60,7 +60,15 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
     try {
       progress = await widget.progressRepository.load();
     } on QuranReadingProgressFormatException {
-      await widget.progressRepository.reset();
+      try {
+        await widget.progressRepository.reset();
+      } catch (_) {
+        // Private progress cleanup failure must not block trusted Quran content.
+      }
+      progress = QuranReadingProgress.initial();
+    } catch (_) {
+      // Quran progress is private convenience state. A platform storage failure
+      // must never prevent the separately verified Quran dataset from loading.
       progress = QuranReadingProgress.initial();
     }
 
@@ -90,7 +98,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
       _savedAyah = 1;
       _loadSelectedChapter();
     });
-    unawaited(_persistProgress());
+    unawaited(_persistProgressSafely());
   }
 
   void _changeQuranScale(double delta) {
@@ -99,7 +107,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
         .toDouble();
     if (next == _quranScale) return;
     setState(() => _quranScale = next);
-    unawaited(_persistProgress());
+    unawaited(_persistProgressSafely());
   }
 
   Future<void> _saveReadingPosition(int ayah) async {
@@ -109,6 +117,14 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
       await _persistProgress();
     } catch (_) {
       if (mounted) setState(() => _savedAyah = previous);
+    }
+  }
+
+  Future<void> _persistProgressSafely() async {
+    try {
+      await _persistProgress();
+    } catch (_) {
+      // Font/chapter preference persistence is non-critical convenience state.
     }
   }
 
