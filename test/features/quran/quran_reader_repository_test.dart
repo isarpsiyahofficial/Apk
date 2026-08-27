@@ -3,6 +3,8 @@ import 'package:islami_hayat/features/quran/data/canonical_quran_source.dart';
 import 'package:islami_hayat/features/quran/data/quran_reader_repository.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('QuranReaderRepository chapter metadata', () {
     final repository = QuranReaderRepository();
 
