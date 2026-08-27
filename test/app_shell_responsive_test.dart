@@ -8,12 +8,12 @@ void main() {
     Size size, {
     Locale? locale,
     double textScaleFactor = 1,
-    EdgeInsets viewInsets = EdgeInsets.zero,
+    double viewInsetBottom = 0,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     tester.platformDispatcher.textScaleFactorTestValue = textScaleFactor;
-    tester.view.viewInsets = viewInsets;
+    tester.view.viewInsets = FakeViewPadding(bottom: viewInsetBottom);
 
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -126,7 +126,7 @@ void main() {
     await pumpAtSize(
       tester,
       const Size(390, 844),
-      viewInsets: const EdgeInsets.only(bottom: 320),
+      viewInsetBottom: 320,
     );
 
     expect(find.byType(NavigationBar), findsOneWidget);
