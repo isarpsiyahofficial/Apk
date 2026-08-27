@@ -42,5 +42,9 @@ jobs:
       - name: Analyze
         run: flutter analyze --fatal-infos --fatal-warnings
 
+      - name: Test Quran dataset validator
+        working-directory: scripts
+        run: python3 -m unittest -v test_validate_quran_dataset.py
+
       - name: Test
         run: flutter test --reporter expanded
