@@ -4,10 +4,10 @@ import 'package:islami_hayat/features/quran/data/quran_reader_repository.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
 final class QuranReaderPage extends StatefulWidget {
-  const QuranReaderPage({
+  QuranReaderPage({
     super.key,
     QuranReaderRepository? repository,
-  }) : repository = repository ?? const _DefaultQuranReaderRepository();
+  }) : repository = repository ?? QuranReaderRepository();
 
   final QuranReaderRepository repository;
 
@@ -56,9 +56,15 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(l10n.quranTitle, style: Theme.of(context).textTheme.headlineMedium),
+                    Text(
+                      l10n.quranTitle,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                     const SizedBox(height: 6),
-                    Text(l10n.quranSubtitle, style: Theme.of(context).textTheme.bodyLarge),
+                    Text(
+                      l10n.quranSubtitle,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
                     const SizedBox(height: 18),
                     Row(
                       children: [
@@ -89,7 +95,10 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
               itemBuilder: (context, index) {
                 final verse = chapter.verses[index];
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 20,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -103,14 +112,20 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                         child: SelectableText(
                           verse.arabic,
                           textAlign: TextAlign.right,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(height: 1.9),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(height: 1.9),
                         ),
                       ),
                       if (verse.translation case final translation?) ...[
                         const SizedBox(height: 14),
                         SelectableText(
                           translation,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.55),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyLarge
+                              ?.copyWith(height: 1.55),
                         ),
                       ],
                     ],
@@ -124,8 +139,4 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
       },
     );
   }
-}
-
-final class _DefaultQuranReaderRepository extends QuranReaderRepository {
-  const _DefaultQuranReaderRepository();
 }
