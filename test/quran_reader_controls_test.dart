@@ -19,9 +19,10 @@ Future<void> _openQuran(
   required Locale locale,
 }) async {
   await tester.pumpWidget(IslamiHayatApp(locale: locale));
-  final quranNavigation = find.byKey(const ValueKey('nav-quran'));
-  await _pumpUntilFound(tester, quranNavigation);
-  await tester.tap(quranNavigation);
+  await _pumpUntilFound(tester, find.byType(NavigationBar));
+  final navigationBar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+  navigationBar.onDestinationSelected?.call(1);
+  await tester.pump();
   await _pumpUntilFound(
     tester,
     find.byKey(const ValueKey('quran-surah-selector')),
