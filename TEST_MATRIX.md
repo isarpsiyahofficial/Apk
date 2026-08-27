@@ -41,14 +41,14 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 | L07 | AR RTL navigation/icon mirroring | PASS | `app_shell_responsive_test.dart`: AR phone + tablet Directionality.rtl, nav/rail render |
 | L08 | AR share card line break | TODO | |
 | L09 | TR/EN modunda Arapça asıl yalnız explicit tercih ile | TODO | |
-| L10 | Error/loading/empty/paywall/ad/billing metinleri üç dil | TODO | |
+| L10 | Error/loading/empty/paywall/ad/billing metinleri üç dil | TODO | `trusted_content_error_view_test.dart` ile integrity error TR/AR + RTL yüzeyi PASS; diğer error/paywall/ad/billing yüzeyleri açık |
 
 ## C. Dini içerik doğruluk matrisi
 
 | ID | Alan | Durum | Kanıt |
 |---|---|---|---|
 | D01 | 114 sure ve ayet sayıları source hash ile | TODO | |
-| D02 | Arapça Kur’an exact source integrity | TODO | |
+| D02 | Arapça Kur’an exact source integrity | TODO | Integrity altyapısı `IntegrityCheckedTrustedContentStore` ile fail-closed; gerçek Kur’an dataset importu henüz açık |
 | D03 | TR meal source/license/version | TODO | |
 | D04 | EN meal source/license/version | TODO | |
 | D05 | Dua source/status/authenticity | TODO | |
@@ -62,7 +62,7 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 | D13 | Yasak kesin para/aşk/şifa iddiaları sıfır | TODO | |
 | D14 | Yazım/imla native TR/EN/AR review | TODO | |
 
-**Altyapı kanıtı:** `content_governance_test.dart` production dataset için `published` statüsü, TR/EN/AR tamlığı ve kaynak zorunluluğunu; `source_manifest_test.dart` source/license/hash ve final reusable Canva asset kapılarını test eder. Bu altyapı PASS olması gerçek içerik satırlarını otomatik olarak D01–D14 PASS yapmaz.
+**Altyapı kanıtı:** `content_governance_test.dart` production dataset için `published` statüsü, TR/EN/AR tamlığı ve kaynak zorunluluğunu; `source_manifest_test.dart` source/license/hash ve final reusable Canva asset kapılarını test eder. `integrity_checked_trusted_content_store_test.dart` manifest olmayan veya SHA-256 uyuşmayan trusted datasetlerin fail-closed olduğunu doğrular. Bu altyapı PASS olması gerçek içerik satırlarını otomatik olarak D01–D14 PASS yapmaz.
 
 ## D. FREE / PRO / reklam / billing
 
@@ -119,7 +119,7 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 | P01 | Ham dini soru network çıkışı = 0 | TODO | |
 | P02 | Ham soru ad payload = 0 | TODO | |
 | P03 | Ham soru analytics/crash log = 0 | TODO | |
-| P04 | Yerel hassas veri encryption | TODO | |
+| P04 | Yerel hassas veri encryption | PASS | `SecurePrivateUserStore` varsayılan olarak `flutter_secure_storage` kullanır; Android platform secure storage/Keystore hattı. Namespace round-trip/clear/isolation testleri CI run #65 PASS. Gerçek Android build/device doğrulaması B04/B07 ile ayrıca yapılacak. |
 | P05 | Auto Backup hassas veri kontrolü | TODO | |
 | P06 | Clipboard/share note leak = 0 | TODO | |
 | P07 | Release debug log = 0 | TODO | |
@@ -132,10 +132,10 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 
 | ID | Senaryo | Durum | Kanıt |
 |---|---|---|---|
-| B01 | `flutter gen-l10n` | PASS | Flutter CI run #25, latest implementation HEAD `9bf8f70`, localization generation success |
-| B02 | `flutter analyze --fatal-infos --fatal-warnings` | PASS | Flutter CI run #25, latest implementation HEAD `9bf8f70`, analyzer success |
-| B03 | `flutter test` | PASS | Flutter CI run #25, latest implementation HEAD `9bf8f70`, expanded responsive + content/source manifest tests success |
-| B04 | Android debug build | TODO | |
+| B01 | `flutter gen-l10n` | PASS | Flutter CI run #65, implementation HEAD `7b7eb54`, localization generation success |
+| B02 | `flutter analyze --fatal-infos --fatal-warnings` | PASS | Flutter CI run #65, implementation HEAD `7b7eb54`, analyzer success |
+| B03 | `flutter test` | PASS | Flutter CI run #65, implementation HEAD `7b7eb54`, responsive + governance + source manifest + integrity + secure storage + fail-safe UI tests success |
+| B04 | Android debug build | TODO | Android runner/platform scaffold henüz repoda yok; sıradaki platform görevi |
 | B05 | Android release AAB | TODO | |
 | B06 | Android release APK gerektiğinde | TODO | |
 | B07 | APK install/launch gerçek/emülatör | TODO | |
