@@ -32,12 +32,14 @@ void main() {
 
   test('fails closed on meal hash, version or coverage mismatch', () {
     final source = VerifiedMealSources.english;
+    const wrongHash =
+        '0000000000000000000000000000000000000000000000000000000000000000';
 
     expect(
       () => source.validate(
         actualTranslationKey: source.translationKey,
         actualVersion: source.version,
-        actualSha256: '0' * 64,
+        actualSha256: wrongHash,
         actualSurahCount: source.surahCount,
         actualAyahCount: source.ayahCount,
       ),
