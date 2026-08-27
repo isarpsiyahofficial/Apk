@@ -9,6 +9,14 @@ on:
       - 'scripts/validate_quran_dataset.py'
       - 'scripts/test_validate_quran_dataset.py'
       - '.github/workflows/quran-source-verify.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'scripts/fetch_tanzil_uthmani.py'
+      - 'scripts/validate_quran_dataset.py'
+      - 'scripts/test_validate_quran_dataset.py'
+      - '.github/workflows/quran-source-verify.yml'
   workflow_dispatch:
 
 permissions:
