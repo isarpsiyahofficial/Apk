@@ -20,16 +20,22 @@
   "quickExplore": "Keşfet",
   "continueQuranTitle": "Kur’an’a Devam Et",
   "continueQuranPosition": "Sure {surah}, Ayet {ayah}",
-  "@continueQuranPosition": {
-    "placeholders": {
-      "surah": {"type": "int"},
-      "ayah": {"type": "int"}
-    }
-  },
+  "@continueQuranPosition": {"placeholders": {"surah": {"type": "int"}, "ayah": {"type": "int"}}},
   "quranTitle": "Kur’an-ı Kerim",
   "quranSubtitle": "Oku, ara ve kaynaklarıyla incele.",
   "quranSurahLabel": "Sure",
   "quranJuzLabel": "Cüz",
+  "quranReadTab": "Oku",
+  "quranSearchTab": "Ara",
+  "quranSearchTitle": "Kur’an’da Ara",
+  "quranSearchSubtitle": "Seçili dilde doğrulanmış meal içinde ara veya 2:255 gibi bir ayet adresine doğrudan git.",
+  "quranSearchLabel": "Kelime veya ayet adresi",
+  "quranSearchHint": "Örnek: merhamet veya 2:255",
+  "quranSearchAction": "Ara",
+  "quranSearchNoResults": "Eşleşen ayet bulunamadı.",
+  "quranSearchOpenVerse": "Ayeti aç",
+  "quranSearchOpenFailed": "Ayet açılamadı. Kayıtlı okuma konumun değiştirilmedi.",
+  "quranSearchPrivacyNote": "Arama cihaz üzerinde çalışır. Yazdığın sorgu harici bir servise gönderilmez.",
   "quranFontSmaller": "Kur’an yazısını küçült",
   "quranFontLarger": "Kur’an yazısını büyüt",
   "quranOpenSources": "Kur’an kaynaklarını ve lisanslarını aç",
