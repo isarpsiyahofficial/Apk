@@ -47,3 +47,4 @@ jobs:
           git add lib/features/quran/presentation/quran_reader_page.dart .github/workflows/repair-reflection-controller.yml
           git commit -m 'fix: repair reflection controller lifecycle'
           git push origin HEAD:agent/islamic-life-implementation
+# trigger validated repair
