@@ -5,6 +5,7 @@ import 'package:islami_hayat/core/storage/storage_boundaries.dart';
 import 'package:islami_hayat/core/theme/app_theme.dart';
 import 'package:islami_hayat/features/quran/data/quran_reader_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
+import 'package:islami_hayat/features/quran/data/quran_verse_user_state_repository.dart';
 import 'package:islami_hayat/features/quran/presentation/quran_reader_page.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
@@ -25,6 +26,24 @@ final class _MemoryPrivateStore implements PrivateUserStore {
 
   @override
   Future<void> write(String key, String value) async => values[key] = value;
+}
+
+final class _EmptyVerseUserStateDataSource
+    implements QuranVerseUserStateDataSource {
+  @override
+  Future<QuranVerseUserState> load() async => const QuranVerseUserState.empty();
+
+  @override
+  Future<QuranVerseUserState> toggleBookmark({
+    required int surah,
+    required int ayah,
+  }) async => const QuranVerseUserState.empty();
+
+  @override
+  Future<QuranVerseUserState> toggleFavorite({
+    required int surah,
+    required int ayah,
+  }) async => const QuranVerseUserState.empty();
 }
 
 final class _FixtureQuranReaderDataSource implements QuranReaderDataSource {
@@ -125,6 +144,7 @@ Future<QuranReadingProgressRepository> _openQuran(
           child: QuranReaderPage(
             repository: _FixtureQuranReaderDataSource(),
             progressRepository: progressRepository,
+            verseUserStateRepository: _EmptyVerseUserStateDataSource(),
           ),
         ),
       ),
