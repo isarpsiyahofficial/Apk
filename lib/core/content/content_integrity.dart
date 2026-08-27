@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 
@@ -15,6 +16,11 @@ final class ContentIntegrity {
     return sha256.convert(utf8.encode(content)).toString();
   }
 
+  /// Hash raw asset bytes without newline, Unicode, BOM or text normalization.
+  static String sha256Bytes(Uint8List bytes) {
+    return sha256.convert(bytes).toString();
+  }
+
   static bool hasValidSha256({
     required String content,
     required String expectedSha256,
@@ -26,6 +32,17 @@ final class ContentIntegrity {
     return sha256Utf8(content) == normalizedExpected;
   }
 
+  static bool hasValidByteSha256({
+    required Uint8List bytes,
+    required String expectedSha256,
+  }) {
+    final normalizedExpected = expectedSha256.trim().toLowerCase();
+    if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(normalizedExpected)) {
+      return false;
+    }
+    return sha256Bytes(bytes) == normalizedExpected;
+  }
+
   static void requireValidSha256({
     required String datasetId,
     required String content,
@@ -33,6 +50,19 @@ final class ContentIntegrity {
   }) {
     if (!hasValidSha256(
       content: content,
+      expectedSha256: expectedSha256,
+    )) {
+      throw ContentIntegrityException(datasetId);
+    }
+  }
+
+  static void requireValidByteSha256({
+    required String datasetId,
+    required Uint8List bytes,
+    required String expectedSha256,
+  }) {
+    if (!hasValidByteSha256(
+      bytes: bytes,
       expectedSha256: expectedSha256,
     )) {
       throw ContentIntegrityException(datasetId);
