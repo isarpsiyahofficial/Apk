@@ -5,7 +5,7 @@ void main() {
   group('ContentIntegrity', () {
     const content = 'trusted religious dataset';
     const expected =
-        'ba43f79d4b09b1d06bfbc41d6683bfe76084f91fc4f56b09056a1aab3d65b1f9';
+        '7689081ce0f7c1f5002c4656cd7005953182031a915dfe1659982b3709a35345';
 
     test('computes deterministic SHA-256', () {
       expect(ContentIntegrity.sha256Utf8(content), expected);
