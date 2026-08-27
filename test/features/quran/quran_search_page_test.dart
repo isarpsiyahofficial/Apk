@@ -22,13 +22,14 @@ void main() {
 
     await tester.enterText(
       find.byKey(const ValueKey('quran-search-field')),
-      '2:255',
+      'Bakara',
     );
     await tester.tap(find.byKey(const ValueKey('quran-search-submit')));
     await tester.pumpAndSettle();
 
     expect(repository.lastLanguageCode, 'tr');
-    expect(repository.lastQuery, '2:255');
+    expect(repository.lastQuery, 'Bakara');
+    expect(find.text('Al-Baqara'), findsOneWidget);
     expect(find.byKey(const ValueKey('quran-search-result-2:255')), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('quran-search-result-2:255')));
@@ -55,13 +56,14 @@ void main() {
 
     await tester.enterText(
       find.byKey(const ValueKey('quran-search-field')),
-      'رحمة',
+      'البقرة',
     );
     await tester.testTextInput.receiveAction(TextInputAction.search);
     await tester.pumpAndSettle();
 
     expect(repository.lastLanguageCode, 'ar');
     expect(tester.takeException(), isNull);
+    expect(find.text('البقرة'), findsOneWidget);
     expect(find.byKey(const ValueKey('quran-search-result-2:255')), findsOneWidget);
     expect(Directionality.of(tester.element(find.byType(QuranSearchPage))), TextDirection.rtl);
   });
@@ -97,12 +99,13 @@ final class _FakeQuranSearchRepository implements QuranSearchDataSource {
   }) async {
     lastLanguageCode = languageCode;
     lastQuery = query;
-    return const [
+    return [
       QuranSearchResult(
         surah: 2,
         ayah: 255,
         arabic: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ',
-        translation: 'Verified translation fixture',
+        translation: languageCode == 'ar' ? null : 'Verified translation fixture',
+        surahDisplayName: languageCode == 'ar' ? 'البقرة' : 'Al-Baqara',
       ),
     ];
   }
