@@ -28,6 +28,8 @@
   },
   "quranTitle": "القرآن الكريم",
   "quranSubtitle": "اقرأ وابحث وتعرّف إلى المصادر.",
+  "quranSurahLabel": "السورة",
+  "quranJuzLabel": "الجزء",
   "quranFontSmaller": "تصغير خط القرآن",
   "quranFontLarger": "تكبير خط القرآن",
   "quranOpenSources": "فتح مصادر القرآن وتراخيصه",
