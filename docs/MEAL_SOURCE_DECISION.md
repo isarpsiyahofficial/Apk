@@ -1,27 +1,29 @@
 # Meal Source Decision — TR / EN
 
-**Durum:** Kaynak/lisans kararı doğrulandı; production import pipeline henüz tamamlanmadı.  
+**Durum:** Kaynak/lisans kararı ve production import doğrulaması tamamlandı.  
 **Doğrulama tarihi:** 27 Ağustos 2026
 
 ## Seçilen kaynak ailesi
 
-TR ve EN meal için ana aday kaynak **QuranEnc.com / Rowad (Rowwad) Translation Center** olarak sabitlenmiştir.
+TR ve EN meal için ana kaynak **QuranEnc.com / Rowad (Rowwad) Translation Center** olarak sabitlenmiştir.
 
 ### Türkçe
 
 - Başlık: **Türkçe Tercüme - Rowad Tercüme Merkezi**
 - Translation key: `turkish_rwwad`
 - Kaynak sayfası: `https://quranenc.com/tr/browse/turkish_rwwad`
-- Güncel katalog sürümü doğrulaması: QuranEnc Türkçe kataloğunda Rowad tercümesi yayımlanmış ve XML/CSV/Excel/SQLite/API indirme seçenekleri sunulmaktadır.
-- Production import sırasında exact sürüm yeniden sorgulanacak ve manifestte pinlenecektir; katalog sürümü değişmişse eski sürüm sessizce kullanılmayacaktır.
+- Doğrulanan sürüm: **V1.0.4**
+- Canonical generated dataset SHA-256: **`a0c001b1e690cc022351d55b9951a7410fde4a6266638766c553fa91f401b1b7`**
+- Coverage: **114 sure / 6236 ayet**
 
 ### English
 
 - Title: **English Translation - Rowwad Translation Center**
 - Translation key: `english_rwwad`
 - Source page: `https://quranenc.com/en/browse/english_rwwad`
-- 12 Mart 2026 tarihli katalog kaydı V1.0.19 olarak doğrulanmıştır.
-- Production import sırasında exact güncel sürüm yeniden sorgulanıp manifestte pinlenecektir.
+- Doğrulanan sürüm: **V1.0.19**
+- Canonical generated dataset SHA-256: **`24c81ccfa5818e417b96f3b457955d34308a95d006a65c894ac69eaba580a3c0`**
+- Coverage: **114 sure / 6236 ayet**
 
 ## Yeniden yayınlama şartları
 
@@ -37,24 +39,45 @@ QuranEnc'in resmi Terms and Policies sayfası çeviri içeriklerinin indirilip y
 
 Bu şartlar uygulamanın mevcut dini içerik politikasıyla uyumludur: meal metni immutable tutulacak, attribution görünür olacak, exact sürüm/hash manifesti saklanacak ve meal reader içinde reklam gösterilmeyecektir.
 
+## Doğrulanmış production import kanıtı
+
+`QuranEnc Meal Verify` workflow'u canlı resmi API üzerinden her iki çeviri için 114 surenin tamamını ayrı ayrı indirmektedir. `scripts/fetch_quranenc_meals.py`:
+
+- önce resmi translation-list endpoint'inden translation key ve exact sürümü doğrular,
+- her surenin canlı API response byte'larını **parse etmeden önce SHA-256** ile kaydeder,
+- canonical sure/ayet sayılarıyla her response'u karşılaştırır,
+- duplicate, eksik veya sıra dışı ayet olduğunda fail-closed olur,
+- `translation` ve `footnotes` değerlerini aynen korur; yazım düzeltmesi, paraphrase, AI çevirisi veya normalizasyon uygulamaz,
+- deterministic canonical JSON üretir ve ayrıca onun SHA-256 değerini manifestte sabitler.
+
+27 Ağustos 2026 doğrulamasında:
+
+- `turkish_rwwad` → V1.0.4 → 114 sure / 6236 ayet → SHA-256 `a0c001b1e690cc022351d55b9951a7410fde4a6266638766c553fa91f401b1b7`
+- `english_rwwad` → V1.0.19 → 114 sure / 6236 ayet → SHA-256 `24c81ccfa5818e417b96f3b457955d34308a95d006a65c894ac69eaba580a3c0`
+- her dil için 114 ayrı official sura response hash kaydı üretildi,
+- workflow artifact'i `verified-quranenc-rowad-meals` olarak üretildi.
+
+Bu doğrulama D03/D04 için kaynak, lisans, sürüm ve coverage kanıtıdır. Uygulamaya kalıcı paketleme yapılırken aynı manifest/hashes yeniden doğrulanacak; kaynak yeni sürüme geçmişse fark raporu olmadan sessiz replacement yapılmayacaktır.
+
 ## Neden Quran Foundation ana offline meal kaynağı seçilmedi?
 
 Quran Foundation'ın 18 Ağustos 2026 tarihli Developer Terms ve güncel Connected Apps dokümantasyonu, API içeriği için ek geliştirici şartları uygular; ticari uygulamalarda bazı translation/tafsir içeriklerinin yeniden dağıtımı ayrıca yazılı içerik lisansı gerektirebilir. Bu nedenle QF, açık yazılı içerik lisansı alınmadan bundled offline ana meal kaynağı yapılmayacaktır.
 
 ## Production import için zorunlu kapılar
 
-- TR ve EN için 114 sure / 6236 ayetin tamamı bulunmalı.
-- Her satır `sura`, `ayah`, `translation`, varsa `footnotes` alanlarıyla canonical ayet kimliğine bağlanmalı.
-- Duplicate veya eksik ayet bulunursa import FAIL olmalı.
-- İndirilen exact payload SHA-256 ile pinlenmeli.
-- Publisher, source URL, translation key, exact source version, download timestamp ve hash manifestte tutulmalı.
-- Meal metnine otomatik yazım düzeltmesi, yeniden çeviri veya AI paraphrase uygulanmamalı.
-- Kaynak yeni sürüm yayımladığında fark raporu olmadan sessiz replace yapılmamalı.
-- TR/EN production dataset D03/D04 ancak gerçek import + hash + 6236/6236 coverage testi geçince PASS olacaktır.
+- TR ve EN için 114 sure / 6236 ayetin tamamı bulunmalı. **PASS**
+- Her satır `sura`, `ayah`, `translation`, varsa `footnotes` alanlarıyla canonical ayet kimliğine bağlanmalı. **PASS**
+- Duplicate veya eksik ayet bulunursa import FAIL olmalı. **PASS — fail-closed validator**
+- İndirilen exact source response payload'ları SHA-256 ile pinlenmeli. **PASS — 114 response hash / dil**
+- Publisher, source URL, translation key, exact source version ve hash manifestte tutulmalı. **PASS**
+- Meal metnine otomatik yazım düzeltmesi, yeniden çeviri veya AI paraphrase uygulanmamalı. **PASS — importer sözleşmesi**
+- Kaynak yeni sürüm yayımladığında fark raporu olmadan sessiz replace yapılmamalı. **Enforced by version pin / release gate**
+- TR/EN production dataset D03/D04 gerçek import + hash + 6236/6236 coverage testi geçmeden PASS olmayacaktır. **PASS — canlı workflow kanıtı mevcut**
 
 ## Resmi doğrulama bağlantıları
 
 - QuranEnc Terms and Policies: `https://quranenc.com/en/home/about/terms-and-conditions`
+- QuranEnc API docs: `https://quranenc.com/en/home/api`
 - Turkish Rowad: `https://quranenc.com/tr/browse/turkish_rwwad`
 - English Rowwad: `https://quranenc.com/en/browse/english_rwwad`
 - Quran Foundation Developer Terms: `https://api-docs.quran.foundation/legal/developer-terms/`
