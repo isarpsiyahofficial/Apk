@@ -1,5 +1,6 @@
 import 'package:islami_hayat/features/quran/data/bundled_meal_dataset.dart';
 import 'package:islami_hayat/features/quran/data/canonical_quran_source.dart';
+import 'package:islami_hayat/features/quran/data/quran_sura_name_metadata.dart';
 
 final class QuranAddress {
   const QuranAddress({required this.surah, required this.ayah});
@@ -16,12 +17,14 @@ final class QuranSearchResult {
     required this.ayah,
     required this.arabic,
     this.translation,
+    this.surahDisplayName,
   });
 
   final int surah;
   final int ayah;
   final String arabic;
   final String? translation;
+  final String? surahDisplayName;
 
   String get key => '$surah:$ayah';
 }
@@ -68,6 +71,9 @@ final class QuranSearchRepository implements QuranSearchDataSource {
     if (limit < 1 || limit > 200) {
       throw RangeError.range(limit, 1, 200, 'limit');
     }
+    if (languageCode != 'tr' && languageCode != 'en' && languageCode != 'ar') {
+      throw UnsupportedError('Unsupported Quran search locale: $languageCode');
+    }
 
     final trimmed = query.trim();
     if (trimmed.isEmpty) return const [];
@@ -76,8 +82,6 @@ final class QuranSearchRepository implements QuranSearchDataSource {
     BundledMealDataset? meal;
     if (languageCode == 'tr' || languageCode == 'en') {
       meal = await _mealLoader.loadForLocale(languageCode);
-    } else if (languageCode != 'ar') {
-      throw UnsupportedError('Unsupported Quran search locale: $languageCode');
     }
 
     final direct = parseAddress(trimmed);
@@ -90,16 +94,38 @@ final class QuranSearchRepository implements QuranSearchDataSource {
           ayah: direct.ayah,
           arabic: ayah.arabic,
           translation: translation,
+          surahDisplayName: quranSuraName(
+            direct.surah,
+          ).displayNameForLocale(languageCode),
         ),
       ];
+    }
+
+    validateCanonicalQuranSuraNames();
+    final results = <QuranSearchResult>[];
+    final seen = <String>{};
+
+    for (final sura in canonicalQuranSuraNames) {
+      if (!_matchesSuraName(sura, languageCode, trimmed)) continue;
+      final ayah = quran.ayah(sura.index, 1);
+      final translation = meal?.verse(sura.index, 1).translation;
+      final result = QuranSearchResult(
+        surah: sura.index,
+        ayah: 1,
+        arabic: ayah.arabic,
+        translation: translation,
+        surahDisplayName: sura.displayNameForLocale(languageCode),
+      );
+      results.add(result);
+      seen.add(result.key);
+      if (results.length == limit) return List.unmodifiable(results);
     }
 
     final needle = languageCode == 'ar'
         ? _normalizeArabic(trimmed)
         : _normalizeLatin(trimmed);
-    if (needle.isEmpty) return const [];
+    if (needle.isEmpty) return List.unmodifiable(results);
 
-    final results = <QuranSearchResult>[];
     for (final ayah in quran.ayahs) {
       final translation = meal?.verse(ayah.sura, ayah.ayah).translation;
       final haystack = languageCode == 'ar'
@@ -107,18 +133,38 @@ final class QuranSearchRepository implements QuranSearchDataSource {
           : _normalizeLatin(translation ?? '');
       if (!haystack.contains(needle)) continue;
 
-      results.add(
-        QuranSearchResult(
-          surah: ayah.sura,
-          ayah: ayah.ayah,
-          arabic: ayah.arabic,
-          translation: translation,
-        ),
+      final result = QuranSearchResult(
+        surah: ayah.sura,
+        ayah: ayah.ayah,
+        arabic: ayah.arabic,
+        translation: translation,
+        surahDisplayName: quranSuraName(
+          ayah.sura,
+        ).displayNameForLocale(languageCode),
       );
+      if (!seen.add(result.key)) continue;
+      results.add(result);
       if (results.length == limit) break;
     }
     return List.unmodifiable(results);
   }
+}
+
+bool _matchesSuraName(
+  QuranSuraNameMetadata sura,
+  String languageCode,
+  String query,
+) {
+  if (languageCode == 'ar') {
+    final needle = _normalizeArabic(query);
+    final haystack = _normalizeArabic(sura.arabicName);
+    return needle.isNotEmpty && haystack.contains(needle);
+  }
+
+  final needle = _normalizeSuraLatin(query);
+  if (needle.length < 2) return false;
+  final haystack = _normalizeSuraLatin(sura.transliteratedName);
+  return haystack.contains(needle);
 }
 
 String _normalizeLatin(String value) {
@@ -127,7 +173,23 @@ String _normalizeLatin(String value) {
       .toLowerCase()
       .replaceAll('ı', 'i')
       .replaceAll('İ', 'i')
+      .replaceAll('ç', 'c')
+      .replaceAll('ğ', 'g')
+      .replaceAll('ö', 'o')
+      .replaceAll('ş', 's')
+      .replaceAll('ü', 'u')
       .replaceAll(RegExp(r'\s+'), ' ');
+}
+
+String _normalizeSuraLatin(String value) {
+  var normalized = _normalizeLatin(value)
+      .replaceAll('q', 'k')
+      .replaceAll(RegExp(r'[^a-z0-9]'), '');
+  normalized = normalized
+      .replaceAll('aa', 'a')
+      .replaceAll('ee', 'i')
+      .replaceAll('oo', 'u');
+  return normalized;
 }
 
 String _normalizeArabic(String value) {
