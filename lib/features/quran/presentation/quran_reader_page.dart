@@ -95,6 +95,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
     _chapterFuture = widget.repository.loadChapter(
       languageCode: languageCode,
       surah: _selectedSurah,
+      startAyah: _savedAyah,
     );
   }
 
@@ -190,7 +191,9 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
         );
 
         return CustomScrollView(
-          key: PageStorageKey('quran-reader-${chapter.surah}'),
+          key: PageStorageKey(
+            'quran-reader-${chapter.surah}-$_savedAyah',
+          ),
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
