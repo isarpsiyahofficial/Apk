@@ -18,6 +18,16 @@ final class QuranReaderVerse {
   final String? footnotes;
 }
 
+final class QuranChapterSummary {
+  const QuranChapterSummary({
+    required this.surah,
+    required this.ayahCount,
+  });
+
+  final int surah;
+  final int ayahCount;
+}
+
 final class QuranReaderChapter {
   const QuranReaderChapter({
     required this.surah,
@@ -39,6 +49,17 @@ final class QuranReaderRepository {
 
   final CanonicalQuranAssetLoader _quranLoader;
   final BundledMealDatasetLoader _mealLoader;
+
+  List<QuranChapterSummary> get chapterSummaries => List.unmodifiable(
+    List.generate(
+      canonicalQuranSuraCount,
+      (index) => QuranChapterSummary(
+        surah: index + 1,
+        ayahCount: canonicalQuranAyahCountForSura(index + 1),
+      ),
+      growable: false,
+    ),
+  );
 
   Future<QuranReaderChapter> loadChapter({
     required String languageCode,
@@ -70,8 +91,8 @@ final class QuranReaderRepository {
       );
     }
 
-    if (verses.isEmpty) {
-      throw StateError('Verified Quran chapter $surah is empty');
+    if (verses.length != canonicalQuranAyahCountForSura(surah)) {
+      throw StateError('Verified Quran chapter $surah is structurally incomplete');
     }
 
     return QuranReaderChapter(
