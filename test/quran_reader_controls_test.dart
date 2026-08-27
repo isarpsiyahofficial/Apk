@@ -38,8 +38,12 @@ final class _FixtureQuranReaderDataSource implements QuranReaderDataSource {
   Future<QuranReaderChapter> loadChapter({
     required String languageCode,
     int surah = 1,
+    int startAyah = 1,
   }) async {
     if (surah == 2) {
+      if (startAyah != 142) {
+        throw StateError('Fixture Surah 2 must be opened at verified Juz 2 start');
+      }
       return const QuranReaderChapter(
         surah: 2,
         verses: [
@@ -59,22 +63,28 @@ final class _FixtureQuranReaderDataSource implements QuranReaderDataSource {
       );
     }
 
-    return const QuranReaderChapter(
+    if (startAyah < 1 || startAyah > 2) {
+      throw RangeError.range(startAyah, 1, 2, 'startAyah');
+    }
+    const allVerses = [
+      QuranReaderVerse(
+        surah: 1,
+        ayah: 1,
+        arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+        translation: 'Doğrulanmış arayüz test metni',
+      ),
+      QuranReaderVerse(
+        surah: 1,
+        ayah: 2,
+        arabic: 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ',
+        translation: 'İkinci doğrulanmış arayüz test metni',
+      ),
+    ];
+    return QuranReaderChapter(
       surah: 1,
-      verses: [
-        QuranReaderVerse(
-          surah: 1,
-          ayah: 1,
-          arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-          translation: 'Doğrulanmış arayüz test metni',
-        ),
-        QuranReaderVerse(
-          surah: 1,
-          ayah: 2,
-          arabic: 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ',
-          translation: 'İkinci doğrulanmış arayüz test metni',
-        ),
-      ],
+      verses: allVerses
+          .where((verse) => verse.ayah >= startAyah)
+          .toList(growable: false),
     );
   }
 }
@@ -187,6 +197,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Sure 2, Ayet 142'), findsWidgets);
+    expect(find.text('2:142'), findsOneWidget);
+    expect(find.text('2:143'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('quran-surah-value-2')),
       findsOneWidget,
