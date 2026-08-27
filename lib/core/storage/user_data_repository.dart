@@ -23,6 +23,22 @@ final class UserDataSnapshot {
         entitlementCache: <String, String>{},
       );
 
+  factory UserDataSnapshot.fromJson(Map<String, dynamic> json) {
+    if (json['schemaVersion'] != 1) {
+      throw const UserDataFormatException('Unsupported user-data schema.');
+    }
+
+    return UserDataSnapshot(
+      favorites: _stringSet(json['favorites']),
+      bookmarks: _stringSet(json['bookmarks']),
+      notes: _stringMap(json['notes']),
+      questionHistory: _stringList(json['questionHistory']),
+      dhikrTotals: _intMap(json['dhikrTotals']),
+      settings: _stringMap(json['settings']),
+      entitlementCache: _stringMap(json['entitlementCache']),
+    );
+  }
+
   final Set<String> favorites;
   final Set<String> bookmarks;
   final Map<String, String> notes;
@@ -41,22 +57,6 @@ final class UserDataSnapshot {
         'settings': settings,
         'entitlementCache': entitlementCache,
       };
-
-  factory UserDataSnapshot.fromJson(Map<String, dynamic> json) {
-    if (json['schemaVersion'] != 1) {
-      throw const UserDataFormatException('Unsupported user-data schema.');
-    }
-
-    return UserDataSnapshot(
-      favorites: _stringSet(json['favorites']),
-      bookmarks: _stringSet(json['bookmarks']),
-      notes: _stringMap(json['notes']),
-      questionHistory: _stringList(json['questionHistory']),
-      dhikrTotals: _intMap(json['dhikrTotals']),
-      settings: _stringMap(json['settings']),
-      entitlementCache: _stringMap(json['entitlementCache']),
-    );
-  }
 
   static Set<String> _stringSet(Object? value) => _stringList(value).toSet();
 
