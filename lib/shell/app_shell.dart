@@ -3,8 +3,10 @@ import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
+import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
 import 'package:islami_hayat/features/quran/presentation/quran_hub_page.dart';
 import 'package:islami_hayat/features/shared/presentation/section_placeholder_page.dart';
+import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
 import 'package:islami_hayat/features/today/presentation/today_page.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
@@ -12,9 +14,13 @@ class AppShell extends StatefulWidget {
   const AppShell({
     super.key,
     this.quranProgressRepository,
+    this.dailyVerseRepository,
+    this.todayNow,
   });
 
   final QuranReadingProgressRepository? quranProgressRepository;
+  final DailyVerseDataSource? dailyVerseRepository;
+  final DateTime Function()? todayNow;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -34,6 +40,23 @@ class _AppShellState extends State<AppShell> {
   void _select(int value) {
     if (_selectedIndex == value) return;
     setState(() => _selectedIndex = value);
+  }
+
+  Future<void> _openQuranAt(QuranAddress address) async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      final current = await _quranProgressRepository.load();
+      await _quranProgressRepository.save(
+        current.copyWith(surah: address.surah, ayah: address.ayah),
+      );
+      if (!mounted) return;
+      _select(1);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.quranSearchOpenFailed)),
+      );
+    }
   }
 
   @override
@@ -75,7 +98,10 @@ class _AppShellState extends State<AppShell> {
     final pages = <Widget>[
       TodayPage(
         quranProgressRepository: _quranProgressRepository,
+        dailyVerseRepository: widget.dailyVerseRepository,
+        now: widget.todayNow,
         onContinueQuran: () => _select(1),
+        onOpenDailyVerse: _openQuranAt,
       ),
       QuranHubPage(progressRepository: _quranProgressRepository),
       SectionPlaceholderPage(
