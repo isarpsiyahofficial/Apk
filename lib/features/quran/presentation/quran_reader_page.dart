@@ -18,6 +18,7 @@ final class QuranReaderPage extends StatefulWidget {
 final class _QuranReaderPageState extends State<QuranReaderPage> {
   Future<QuranReaderChapter>? _chapterFuture;
   String? _languageCode;
+  int _selectedSurah = 1;
 
   @override
   void didChangeDependencies() {
@@ -25,7 +26,24 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
     final languageCode = Localizations.localeOf(context).languageCode;
     if (_languageCode == languageCode && _chapterFuture != null) return;
     _languageCode = languageCode;
-    _chapterFuture = widget.repository.loadChapter(languageCode: languageCode);
+    _loadSelectedChapter();
+  }
+
+  void _loadSelectedChapter() {
+    final languageCode = _languageCode;
+    if (languageCode == null) return;
+    _chapterFuture = widget.repository.loadChapter(
+      languageCode: languageCode,
+      surah: _selectedSurah,
+    );
+  }
+
+  void _selectSurah(int? surah) {
+    if (surah == null || surah == _selectedSurah) return;
+    setState(() {
+      _selectedSurah = surah;
+      _loadSelectedChapter();
+    });
   }
 
   @override
@@ -48,7 +66,7 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
 
         final chapter = snapshot.requireData;
         return CustomScrollView(
-          key: const PageStorageKey('quran-reader'),
+          key: PageStorageKey('quran-reader-${chapter.surah}'),
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
@@ -66,6 +84,26 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     const SizedBox(height: 18),
+                    DropdownButtonFormField<int>(
+                      key: const ValueKey('quran-surah-selector'),
+                      initialValue: chapter.surah,
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.menu_book_outlined),
+                        border: OutlineInputBorder(),
+                      ),
+                      items: widget.repository.chapterSummaries
+                          .map(
+                            (summary) => DropdownMenuItem<int>(
+                              value: summary.surah,
+                              child: Text(
+                                '${summary.surah} · ${summary.ayahCount}',
+                              ),
+                            ),
+                          )
+                          .toList(growable: false),
+                      onChanged: _selectSurah,
+                    ),
+                    const SizedBox(height: 18),
                     Row(
                       children: [
                         const Icon(Icons.verified_outlined, size: 18),
@@ -81,7 +119,8 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                     if (chapter.mealSource case final source?) ...[
                       const SizedBox(height: 6),
                       Text(
-                        '${l10n.mealSourceLabel}: ${source.publisher} · V${source.version}',
+                        '${l10n.mealSourceLabel}: '
+                        '${source.publisher} · V${source.version}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
@@ -126,6 +165,14 @@ final class _QuranReaderPageState extends State<QuranReaderPage> {
                               .textTheme
                               .bodyLarge
                               ?.copyWith(height: 1.55),
+                        ),
+                      ],
+                      if (verse.footnotes case final footnotes?
+                          when footnotes.trim().isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Text(
+                          footnotes,
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
                     ],
