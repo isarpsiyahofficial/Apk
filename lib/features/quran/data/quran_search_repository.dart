@@ -1,6 +1,7 @@
 import 'package:islami_hayat/features/quran/data/bundled_meal_dataset.dart';
 import 'package:islami_hayat/features/quran/data/canonical_quran_source.dart';
 import 'package:islami_hayat/features/quran/data/quran_sura_name_metadata.dart';
+import 'package:islami_hayat/features/quran/data/quran_turkish_sura_aliases.dart';
 
 final class QuranAddress {
   const QuranAddress({required this.surah, required this.ayah});
@@ -163,6 +164,13 @@ bool _matchesSuraName(
 
   final needle = _normalizeSuraLatin(query);
   if (needle.length < 2) return false;
+
+  if (languageCode == 'tr') {
+    for (final alias in turkishSuraAliases(sura.index)) {
+      if (_normalizeSuraLatin(alias).contains(needle)) return true;
+    }
+  }
+
   final haystack = _normalizeSuraLatin(sura.transliteratedName);
   return haystack.contains(needle);
 }

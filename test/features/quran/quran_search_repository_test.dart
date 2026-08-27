@@ -61,6 +61,25 @@ void main() {
       expect(yasin.first.key, '36:1');
     });
 
+    test('Turkish search uses Diyanet-verified aliases when transliteration differs', () async {
+      final cases = <String, String>{
+        'Tevbe': '9:1',
+        'Mümin': '40:1',
+        'Şura': '42:1',
+        'Hucurat': '49:1',
+      };
+
+      for (final entry in cases.entries) {
+        final results = await repository.search(
+          languageCode: 'tr',
+          query: entry.key,
+          limit: 5,
+        );
+        expect(results, isNotEmpty, reason: entry.key);
+        expect(results.first.key, entry.value, reason: entry.key);
+      }
+    });
+
     test('Arabic sura-name search uses verified Arabic metadata', () async {
       final results = await repository.search(
         languageCode: 'ar',
