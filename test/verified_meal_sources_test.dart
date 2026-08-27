@@ -6,12 +6,12 @@ void main() {
     expect(VerifiedMealSources.all, hasLength(2));
 
     expect(VerifiedMealSources.turkish.translationKey, 'turkish_rwwad');
-    expect(VerifiedMealSources.turkish.version, 'V1.0.4');
+    expect(VerifiedMealSources.turkish.version, '1.0.4');
     expect(VerifiedMealSources.turkish.surahCount, 114);
     expect(VerifiedMealSources.turkish.ayahCount, 6236);
 
     expect(VerifiedMealSources.english.translationKey, 'english_rwwad');
-    expect(VerifiedMealSources.english.version, 'V1.0.19');
+    expect(VerifiedMealSources.english.version, '1.0.19');
     expect(VerifiedMealSources.english.surahCount, 114);
     expect(VerifiedMealSources.english.ayahCount, 6236);
   });
@@ -48,7 +48,7 @@ void main() {
     expect(
       () => source.validate(
         actualTranslationKey: source.translationKey,
-        actualVersion: 'V0',
+        actualVersion: '0',
         actualSha256: source.canonicalSha256,
         actualSurahCount: source.surahCount,
         actualAyahCount: source.ayahCount,
