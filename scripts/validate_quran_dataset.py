@@ -1,18 +1,24 @@
 #!/usr/bin/env python3
 """Fail-closed structural validator for the canonical Quran dataset.
 
-Expected input format (UTF-8):
-    sura:ayah|canonical Arabic text
+The canonical source bytes must remain verbatim. This validator therefore reads
+Tanzil-compatible text without rewriting it and accepts these input layouts:
 
-This validates structure only. Exact Tanzil v1.1 source-byte provenance and
-SHA-256 must also be verified through the release source manifest.
+1. Plain Tanzil text: one ayah text per line (6236 lines).
+2. Tanzil numbered text: ``sura|ayah|text``.
+3. Internal locator text: ``sura:ayah|text`` (legacy/import-fixture support).
+
+Only the parser derives locator metadata. The source bytes and SHA-256 are never
+normalized before hashing.
 """
 from __future__ import annotations
 
 from pathlib import Path
 import argparse
 import hashlib
+import json
 import sys
+from typing import Iterable
 
 AYAH_COUNTS = (
     7, 286, 200, 176, 120, 165, 206, 75, 129, 109, 123, 111, 43, 52, 99,
@@ -31,39 +37,57 @@ def fail(message: str) -> None:
     raise ValueError(message)
 
 
+def canonical_keys() -> Iterable[tuple[int, int]]:
+    for sura, count in enumerate(AYAH_COUNTS, start=1):
+        for ayah in range(1, count + 1):
+            yield sura, ayah
+
+
+def _parse_line(line: str, expected_key: tuple[int, int], index: int) -> tuple[int, int, str, str]:
+    """Return ``sura, ayah, text, layout`` without mutating Quran text."""
+    if not line:
+        fail(f"Blank record at line {index}")
+
+    # Tanzil/other numbered export: sura|ayah|text
+    parts = line.split("|", 2)
+    if len(parts) == 3 and parts[0].isdigit() and parts[1].isdigit():
+        return int(parts[0]), int(parts[1]), parts[2], "sura|ayah|text"
+
+    # Legacy internal import fixture: sura:ayah|text
+    if len(parts) >= 2 and ":" in parts[0]:
+        locator, arabic = line.split("|", 1)
+        sura_raw, ayah_raw = locator.split(":", 1)
+        if sura_raw.isdigit() and ayah_raw.isdigit():
+            return int(sura_raw), int(ayah_raw), arabic, "sura:ayah|text"
+
+    # Official Tanzil plain text: one ayah per line. Location is derived only in
+    # memory from canonical order; source bytes remain untouched.
+    return expected_key[0], expected_key[1], line, "plain"
+
+
 def validate_bytes(raw: bytes) -> dict[str, str | int]:
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError as exc:
         fail(f"Dataset is not valid UTF-8: {exc}")
 
+    # splitlines() is intentionally used only for structural inspection. Hashing
+    # below uses the original raw bytes, preserving CRLF/LF and final newline.
     lines = text.splitlines()
     if len(lines) != EXPECTED_AYAHS:
         fail(f"Expected {EXPECTED_AYAHS} ayah records, found {len(lines)}")
 
+    expected_keys = list(canonical_keys())
     seen: set[tuple[int, int]] = set()
     per_sura = [0] * EXPECTED_SURAS
-    previous_key = (0, 0)
+    layouts: set[str] = set()
 
-    for index, line in enumerate(lines, start=1):
-        if not line.strip():
-            fail(f"Blank record at line {index}")
-        if "|" not in line:
-            fail(f"Missing '|' separator at line {index}")
+    for index, (line, expected_key) in enumerate(zip(lines, expected_keys), start=1):
+        sura, ayah, arabic, layout = _parse_line(line, expected_key, index)
+        layouts.add(layout)
 
-        locator, arabic = line.split("|", 1)
-        if not arabic.strip():
+        if arabic == "" or arabic.isspace():
             fail(f"Empty Quran text at line {index}")
-        if ":" not in locator:
-            fail(f"Invalid locator at line {index}: {locator!r}")
-
-        sura_raw, ayah_raw = locator.split(":", 1)
-        try:
-            sura = int(sura_raw)
-            ayah = int(ayah_raw)
-        except ValueError:
-            fail(f"Non-integer locator at line {index}: {locator!r}")
-
         if not 1 <= sura <= EXPECTED_SURAS:
             fail(f"Invalid sura {sura} at line {index}")
         max_ayah = AYAH_COUNTS[sura - 1]
@@ -71,23 +95,23 @@ def validate_bytes(raw: bytes) -> dict[str, str | int]:
             fail(f"Invalid ayah {sura}:{ayah}; expected 1..{max_ayah}")
 
         key = (sura, ayah)
+        if key != expected_key:
+            fail(
+                f"Unexpected Quran order at line {index}: found {sura}:{ayah}, "
+                f"expected {expected_key[0]}:{expected_key[1]}"
+            )
         if key in seen:
             fail(f"Duplicate ayah key {sura}:{ayah}")
-        if key <= previous_key:
-            fail(
-                f"Dataset order is not strictly Quran order at {sura}:{ayah}; "
-                f"previous was {previous_key[0]}:{previous_key[1]}"
-            )
+
         seen.add(key)
-        previous_key = key
         per_sura[sura - 1] += 1
+
+    if len(layouts) != 1:
+        fail(f"Mixed dataset layouts are not allowed: {', '.join(sorted(layouts))}")
 
     for sura, (actual, expected) in enumerate(zip(per_sura, AYAH_COUNTS), start=1):
         if actual != expected:
             fail(f"Sura {sura}: expected {expected} ayahs, found {actual}")
-        for ayah in range(1, expected + 1):
-            if (sura, ayah) not in seen:
-                fail(f"Missing ayah {sura}:{ayah}")
 
     if len(seen) != EXPECTED_AYAHS:
         fail(f"Expected {EXPECTED_AYAHS} unique ayahs, found {len(seen)}")
@@ -95,27 +119,65 @@ def validate_bytes(raw: bytes) -> dict[str, str | int]:
     return {
         "surahs": EXPECTED_SURAS,
         "ayahs": EXPECTED_AYAHS,
+        "layout": next(iter(layouts)),
+        "bytes": len(raw),
         "sha256": hashlib.sha256(raw).hexdigest(),
+    }
+
+
+def build_manifest(dataset: Path, result: dict[str, str | int]) -> dict[str, object]:
+    return {
+        "schema": 1,
+        "kind": "quran-arabic-canonical",
+        "source": "Tanzil Project",
+        "text_family": "Uthmani",
+        "source_version": "1.1",
+        "source_url": "https://tanzil.net/download/",
+        "license": "CC BY 3.0",
+        "license_url": "https://tanzil.net/docs/Text_License",
+        "file": dataset.name,
+        "layout": result["layout"],
+        "surahs": result["surahs"],
+        "ayahs": result["ayahs"],
+        "bytes": result["bytes"],
+        "sha256": result["sha256"],
+        "hash_scope": "exact source bytes; no newline or Unicode normalization",
     }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("dataset", type=Path)
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        help="Write a provenance/integrity manifest after successful validation",
+    )
     args = parser.parse_args()
 
     if not args.dataset.is_file():
         print(f"Quran dataset not found: {args.dataset}", file=sys.stderr)
         return 2
 
+    raw = args.dataset.read_bytes()
     try:
-        result = validate_bytes(args.dataset.read_bytes())
+        result = validate_bytes(raw)
     except ValueError as exc:
         print(f"Quran dataset validation FAIL: {exc}", file=sys.stderr)
         return 1
 
+    if args.manifest:
+        args.manifest.parent.mkdir(parents=True, exist_ok=True)
+        args.manifest.write_text(
+            json.dumps(build_manifest(args.dataset, result), ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
     print("Quran dataset structural validation PASS")
-    print(f"surahs={result['surahs']} ayahs={result['ayahs']}")
+    print(
+        f"layout={result['layout']} surahs={result['surahs']} "
+        f"ayahs={result['ayahs']} bytes={result['bytes']}"
+    )
     print(f"sha256={result['sha256']}")
     return 0
 
