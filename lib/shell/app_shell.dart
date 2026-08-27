@@ -116,9 +116,14 @@ class _AppShellState extends State<AppShell> {
                   destinations: [
                     for (final item in destinations)
                       NavigationRailDestination(
-                        key: ValueKey('nav-${item.id}'),
-                        icon: Icon(item.icon),
-                        selectedIcon: Icon(item.selectedIcon),
+                        icon: KeyedSubtree(
+                          key: ValueKey('nav-${item.id}'),
+                          child: Icon(item.icon),
+                        ),
+                        selectedIcon: KeyedSubtree(
+                          key: ValueKey('nav-${item.id}-selected'),
+                          child: Icon(item.selectedIcon),
+                        ),
                         label: Text(item.label),
                       ),
                   ],
