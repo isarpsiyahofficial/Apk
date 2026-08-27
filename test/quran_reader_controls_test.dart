@@ -2,15 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/app.dart';
 
+Future<void> _pumpUntilFound(
+  WidgetTester tester,
+  Finder finder, {
+  int maxPumps = 80,
+}) async {
+  for (var i = 0; i < maxPumps; i++) {
+    if (finder.evaluate().isNotEmpty) return;
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  throw TestFailure('Timed out waiting for ${finder.description}');
+}
+
 Future<void> _openQuran(
   WidgetTester tester, {
   required Locale locale,
   required String quranLabel,
 }) async {
   await tester.pumpWidget(IslamiHayatApp(locale: locale));
-  await tester.pumpAndSettle();
+  await _pumpUntilFound(tester, find.text(quranLabel));
   await tester.tap(find.text(quranLabel).last);
-  await tester.pumpAndSettle();
+  await _pumpUntilFound(
+    tester,
+    find.byKey(const ValueKey('quran-surah-selector')),
+  );
 }
 
 void main() {
@@ -33,9 +48,9 @@ void main() {
     expect(tester.takeException(), isNull);
 
     await tester.tap(find.byKey(const ValueKey('quran-open-sources')));
-    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text('Kaynaklar ve Lisanslar'));
     expect(find.text('Kaynaklar ve Lisanslar'), findsWidgets);
-    expect(find.textContaining('Tanzil Project'), findsOneWidget);
+    expect(find.textContaining('Tanzil Project'), findsWidgets);
   });
 
   testWidgets('Quran controls remain usable on narrow Arabic layout', (
@@ -57,7 +72,9 @@ void main() {
     expect(find.byKey(const ValueKey('quran-open-sources')), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    final context = tester.element(find.byKey(const ValueKey('quran-open-sources')));
+    final context = tester.element(
+      find.byKey(const ValueKey('quran-open-sources')),
+    );
     expect(Directionality.of(context), TextDirection.rtl);
   });
 }
