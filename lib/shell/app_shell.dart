@@ -3,7 +3,7 @@ import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
-import 'package:islami_hayat/features/quran/presentation/quran_reader_page.dart';
+import 'package:islami_hayat/features/quran/presentation/quran_hub_page.dart';
 import 'package:islami_hayat/features/shared/presentation/section_placeholder_page.dart';
 import 'package:islami_hayat/features/today/presentation/today_page.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
@@ -77,7 +77,7 @@ class _AppShellState extends State<AppShell> {
         quranProgressRepository: _quranProgressRepository,
         onContinueQuran: () => _select(1),
       ),
-      QuranReaderPage(progressRepository: _quranProgressRepository),
+      QuranHubPage(progressRepository: _quranProgressRepository),
       SectionPlaceholderPage(
         title: l10n.discoverTitle,
         subtitle: l10n.discoverSubtitle,
