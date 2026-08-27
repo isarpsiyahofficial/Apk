@@ -1,0 +1,91 @@
+name: Android Release CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate clean Android runner
+        run: flutter create --platforms=android --project-name islami_hayat .
+
+      - name: Apply hardened Android manifest and backup policy
+        run: |
+          mkdir -p android/app/src/main/res/xml
+          cp android_hardening/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+          cp android_hardening/backup_rules.xml android/app/src/main/res/xml/backup_rules.xml
+          cp android_hardening/data_extraction_rules.xml android/app/src/main/res/xml/data_extraction_rules.xml
+
+      - name: Audit Android source security policy
+        run: python3 scripts/audit_android_security.py
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Analyze
+        run: flutter analyze --fatal-infos --fatal-warnings
+
+      - name: Test
+        run: flutter test
+
+      - name: Build release AAB
+        run: flutter build appbundle --release
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Audit final release APK permissions
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-release.apk"
+          BUILD_TOOLS="$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
+          AAPT2="$ANDROID_HOME/build-tools/$BUILD_TOOLS/aapt2"
+          PERMS="$($AAPT2 dump permissions "$APK")"
+          printf '%s\n' "$PERMS"
+          FORBIDDEN='ACCESS_FINE_LOCATION|ACCESS_COARSE_LOCATION|RECORD_AUDIO|CAMERA|READ_CONTACTS|WRITE_CONTACTS|GET_ACCOUNTS'
+          if printf '%s\n' "$PERMS" | grep -E "$FORBIDDEN"; then
+            echo "Forbidden sensitive permission found in release APK" >&2
+            exit 1
+          fi
+          echo "Release APK permission audit PASS"
+
+      - name: Record artifact SHA-256
+        run: |
+          sha256sum build/app/outputs/bundle/release/app-release.aab | tee release-aab.sha256
+          sha256sum build/app/outputs/flutter-apk/app-release.apk | tee release-apk.sha256
+
+      - name: Upload release verification artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-verification
+          retention-days: 7
+          path: |
+            build/app/outputs/bundle/release/app-release.aab
+            build/app/outputs/flutter-apk/app-release.apk
+            release-aab.sha256
+            release-apk.sha256
