@@ -5,6 +5,7 @@ import 'package:islami_hayat/core/storage/storage_boundaries.dart';
 import 'package:islami_hayat/core/theme/app_theme.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
+import 'package:islami_hayat/features/quran/data/quran_verse_user_state_repository.dart';
 import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
 import 'package:islami_hayat/features/today/presentation/today_page.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
@@ -48,9 +49,39 @@ final class _FakeDailyVerseRepository implements DailyVerseDataSource {
   }
 }
 
+final class _MemoryVerseStateRepository
+    implements QuranVerseUserStateDataSource {
+  QuranVerseUserState _state = const QuranVerseUserState.empty();
+
+  @override
+  Future<QuranVerseUserState> load() async => _state;
+
+  @override
+  Future<QuranVerseUserState> toggleBookmark({
+    required int surah,
+    required int ayah,
+  }) async => _state;
+
+  @override
+  Future<QuranVerseUserState> toggleFavorite({
+    required int surah,
+    required int ayah,
+  }) async {
+    final id = quranVerseUserDataId(surah: surah, ayah: ayah);
+    final favorites = Set<String>.of(_state.favoriteVerseIds);
+    if (!favorites.remove(id)) favorites.add(id);
+    _state = QuranVerseUserState(
+      favoriteVerseIds: Set<String>.unmodifiable(favorites),
+      bookmarkVerseIds: _state.bookmarkVerseIds,
+    );
+    return _state;
+  }
+}
+
 Widget _app({
   required Locale locale,
   required DailyVerseDataSource dailyVerseRepository,
+  QuranVerseUserStateDataSource? verseUserStateRepository,
   Future<void> Function(QuranAddress address)? onOpenDailyVerse,
 }) {
   return MaterialApp(
@@ -68,6 +99,8 @@ Widget _app({
         quranProgressRepository: QuranReadingProgressRepository(
           _MemoryPrivateStore(),
         ),
+        verseUserStateRepository:
+            verseUserStateRepository ?? _MemoryVerseStateRepository(),
         dailyVerseRepository: dailyVerseRepository,
         now: () => DateTime(2026, 8, 28, 21, 15),
         onOpenDailyVerse: onOpenDailyVerse,
@@ -112,6 +145,37 @@ void main() {
 
     expect(opened, isNotNull);
     expect(opened!.key, '2:286');
+  });
+
+  testWidgets('daily verse favorite toggles exact canonical verse locally', (
+    tester,
+  ) async {
+    final verseState = _MemoryVerseStateRepository();
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('tr'),
+        dailyVerseRepository: _FakeDailyVerseRepository(),
+        verseUserStateRepository: verseState,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final favoriteButton = find.byKey(const ValueKey('daily-verse-favorite'));
+    expect(favoriteButton, findsOneWidget);
+    expect(find.byIcon(Icons.favorite_border), findsOneWidget);
+
+    await tester.tap(favoriteButton);
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.favorite), findsOneWidget);
+    final saved = await verseState.load();
+    expect(saved.isFavorite(surah: 2, ayah: 286), isTrue);
+
+    await tester.tap(favoriteButton);
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.favorite_border), findsOneWidget);
+    expect((await verseState.load()).isFavorite(surah: 2, ayah: 286), isFalse);
   });
 
   testWidgets('Arabic daily verse is RTL-safe on a 320px phone and has no fake meal', (
