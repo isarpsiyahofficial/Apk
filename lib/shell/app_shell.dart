@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
-import 'package:islami_hayat/features/dhikr/presentation/dhikr_counter_page.dart';
+import 'package:islami_hayat/features/dhikr/presentation/dhikr_hub_page.dart';
 import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
@@ -110,7 +110,7 @@ class _AppShellState extends State<AppShell> {
         subtitle: l10n.discoverSubtitle,
         icon: Icons.explore_outlined,
       ),
-      const DhikrCounterPage(),
+      const DhikrHubPage(),
       const ProfilePage(),
     ];
 
