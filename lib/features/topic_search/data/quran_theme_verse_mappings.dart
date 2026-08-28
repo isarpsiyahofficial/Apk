@@ -93,7 +93,7 @@ abstract final class QuranThemeVerseCatalog {
     QuranThemeVerseMapping(themeId: 'work', verses: [QuranVerseReference(9, 105), QuranVerseReference(53, 39), QuranVerseReference(62, 10)]),
     QuranThemeVerseMapping(themeId: 'decision', verses: [QuranVerseReference(3, 159), QuranVerseReference(42, 38), QuranVerseReference(65, 3)]),
     QuranThemeVerseMapping(themeId: 'trust_in_god', verses: [QuranVerseReference(3, 159), QuranVerseReference(8, 2), QuranVerseReference(65, 3)]),
-    QuranThemeVerseMapping(themeId: 'illness_spiritual_support', verses: [QuranVerseReference(10, 57), QuranVerseReference(17, 82), QuranVerseReference(26, 80)]),
+    QuranThemeVerseMapping(themeId: 'illness_spiritual_support', verses: [QuranVerseReference(17, 82), QuranVerseReference(21, 83), QuranVerseReference(26, 80)]),
     QuranThemeVerseMapping(themeId: 'loss', verses: [QuranVerseReference(2, 155), QuranVerseReference(2, 156), QuranVerseReference(64, 11)]),
     QuranThemeVerseMapping(themeId: 'death', verses: [QuranVerseReference(3, 185), QuranVerseReference(21, 35), QuranVerseReference(62, 8)]),
     QuranThemeVerseMapping(themeId: 'gratitude', verses: [QuranVerseReference(2, 152), QuranVerseReference(14, 7), QuranVerseReference(31, 12)]),
