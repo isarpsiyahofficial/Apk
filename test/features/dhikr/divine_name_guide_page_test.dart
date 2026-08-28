@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/dhikr/data/divine_name_entry.dart';
@@ -59,6 +60,11 @@ void main() {
         child: MaterialApp(
           locale: locale,
           supportedLocales: const [Locale('tr'), Locale('en'), Locale('ar')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           home: DivineNameGuidePage(entries: entries),
         ),
       ),
@@ -110,7 +116,10 @@ void main() {
 
     expect(find.text('اختبار المعنى بالعربية.'), findsOneWidget);
     expect(find.text('اختبار الشرح بالعربية.'), findsOneWidget);
-    expect(Directionality.of(tester.element(find.byType(Scaffold))), TextDirection.rtl);
+    expect(
+      Directionality.of(tester.element(find.byType(Scaffold))),
+      TextDirection.rtl,
+    );
     expect(tester.takeException(), isNull);
   });
 
