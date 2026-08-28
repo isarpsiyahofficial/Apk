@@ -5,6 +5,20 @@ PACKAGE='com.example.islami_hayat'
 ACTIVITY="$PACKAGE/.MainActivity"
 APK='build/app/outputs/flutter-apk/app-debug.apk'
 
+MEMTOTAL_KB="$(adb shell cat /proc/meminfo | awk '/MemTotal:/ {print $2}' | tr -d '\r')"
+if [ -z "$MEMTOTAL_KB" ]; then
+  echo 'Could not read emulator MemTotal' >&2
+  exit 1
+fi
+# Android reserves part of configured emulator RAM, so a 1024 MB emulator
+# normally reports slightly less than 1 GiB. Keep a small upper tolerance so
+# this smoke cannot silently regress to a multi-gigabyte emulator.
+if [ "$MEMTOTAL_KB" -gt 1250000 ]; then
+  echo "Emulator is not low-memory enough: MemTotal=${MEMTOTAL_KB}kB" >&2
+  exit 1
+fi
+echo "Low-memory emulator confirmed: MemTotal=${MEMTOTAL_KB}kB"
+
 adb install -r "$APK"
 adb shell am force-stop "$PACKAGE"
 adb logcat -c
