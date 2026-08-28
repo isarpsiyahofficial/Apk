@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/storage/storage_boundaries.dart';
 import 'package:islami_hayat/features/dhikr/data/dhikr_counter_repository.dart';
+import 'package:islami_hayat/features/dhikr/data/dhikr_history_repository.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_counter_page.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_feedback.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
@@ -40,6 +41,7 @@ final class _FakeFeedbackPlayer implements DhikrFeedbackPlayer {
 Widget _app({
   required Locale locale,
   required DhikrCounterRepository repository,
+  DhikrHistoryRepository? historyRepository,
   DhikrFeedbackPlayer? feedbackPlayer,
 }) {
   return MaterialApp(
@@ -55,6 +57,7 @@ Widget _app({
       body: SafeArea(
         child: DhikrCounterPage(
           repository: repository,
+          historyRepository: historyRepository,
           feedbackPlayer: feedbackPlayer ?? const SystemDhikrFeedbackPlayer(),
         ),
       ),
@@ -79,6 +82,44 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('1'), findsOneWidget);
     expect((await repository.load()).count, 1);
+  });
+
+  testWidgets('saving session updates local-only summary and resets counter',
+      (tester) async {
+    final store = _MemoryStore();
+    final repository = DhikrCounterRepository(store);
+    final history = DhikrHistoryRepository(
+      store,
+      now: () => DateTime(2026, 8, 28, 12),
+    );
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('en'),
+        repository: repository,
+        historyRepository: history,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final target = find.byKey(const ValueKey('dhikr-counter-tap-area'));
+    for (var i = 0; i < 3; i += 1) {
+      await tester.tap(target);
+      await tester.pumpAndSettle();
+    }
+    expect((await repository.load()).count, 3);
+
+    final save = find.byKey(const ValueKey('dhikr-save-session'));
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+
+    expect((await repository.load()).count, 0);
+    final summary = await history.summary(now: DateTime(2026, 8, 28, 18));
+    expect(summary.todayTotal, 3);
+    expect(summary.lastSevenDaysTotal, 3);
+    expect(summary.currentStreakDays, 1);
+    expect(summary.entries, hasLength(1));
+    expect(find.byKey(const ValueKey('dhikr-history-summary')), findsOneWidget);
   });
 
   testWidgets('vibration and sound are separate opt-in behavior', (tester) async {
@@ -150,7 +191,7 @@ void main() {
 
     final list = find.byType(ListView);
     expect(list, findsOneWidget);
-    await tester.drag(list, const Offset(0, -900));
+    await tester.drag(list, const Offset(0, -1200));
     await tester.pumpAndSettle();
 
     expect(
@@ -177,8 +218,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Personal Counter'), findsOneWidget);
-    expect(find.text('Vibration'), findsOneWidget);
-    expect(find.text('Sound'), findsOneWidget);
+    expect(find.text('Personal progress'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
