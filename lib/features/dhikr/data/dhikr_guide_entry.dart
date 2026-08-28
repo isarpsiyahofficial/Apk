@@ -1,12 +1,23 @@
 import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/dhikr/data/dhikr_target.dart';
 
+enum DhikrCountProvenance {
+  /// A numeric practice directly tied to Qur'an or sahih/hasan Sunnah evidence.
+  strongSource,
+
+  /// A count reported in classical/tasawwuf or later traditional practice.
+  traditional,
+
+  /// Historical abjad/havas number. Informational only; never a Sunnah target.
+  ebcedHavasHistorical,
+}
+
 /// A reviewed dhikr guide record.
 ///
 /// SPEC 270 requires the Arabic wording, transliteration, meaning, source,
 /// reason for reciting, and—when a recommended count is claimed—the count and
-/// its source. A count therefore cannot enter the production dataset without
-/// independent count-source metadata.
+/// its source. T0141 additionally requires strong-source, traditional and
+/// ebced/havas counts to remain distinct in both data and UI.
 final class DhikrGuideEntry {
   const DhikrGuideEntry({
     required this.id,
@@ -40,6 +51,32 @@ final class DhikrGuideEntry {
 
   bool get hasRecommendedCount => recommendedCount != null;
 
+  DhikrCountProvenance? get countProvenance {
+    if (!hasRecommendedCount || countSources.isEmpty) {
+      return null;
+    }
+    final classes = countSources.map((source) => source.sourceClass).toSet();
+    if (classes.every(
+      (sourceClass) =>
+          sourceClass == ReligiousSourceClass.quran ||
+          sourceClass == ReligiousSourceClass.sahihHasanHadith,
+    )) {
+      return DhikrCountProvenance.strongSource;
+    }
+    if (classes.every(
+      (sourceClass) =>
+          sourceClass == ReligiousSourceClass.classicalTraditional ||
+          sourceClass == ReligiousSourceClass.laterTradition,
+    )) {
+      return DhikrCountProvenance.traditional;
+    }
+    if (classes.length == 1 &&
+        classes.single == ReligiousSourceClass.ebcedHavasTradition) {
+      return DhikrCountProvenance.ebcedHavasHistorical;
+    }
+    return null;
+  }
+
   bool get _hasCompleteCoreFields =>
       id.trim().isNotEmpty &&
       arabic.trim().isNotEmpty &&
@@ -61,22 +98,27 @@ final class DhikrGuideEntry {
     return count > 0 &&
         count <= DhikrTarget.maxCount &&
         countSources.isNotEmpty &&
-        countSources.every(_isAllowedCountSource);
+        countSources.every(_hasCompleteSourceMetadata) &&
+        countProvenance != null;
   }
 
-  /// Production is fail-closed: draft/partial records and sourced-number claims
-  /// with missing/weak provenance are rejected.
+  /// Production is fail-closed: draft/partial records, mixed provenance and
+  /// numeric claims with missing source metadata are rejected.
   bool get canEnterProductionDataset =>
       reviewStatus == ContentReviewStatus.published &&
       _hasCompleteCoreFields &&
       _hasAllowedPrimarySources &&
       _hasValidCountProvenance;
 
+  /// Only Qur'an / sahih-hasan Sunnah backed counts become an automatic counter
+  /// target. Traditional and ebced/havas numbers remain informational and must
+  /// never be silently promoted into a Sunnah-style target.
   DhikrTarget? toSourceBackedTarget() {
     if (!canEnterProductionDataset) {
       throw StateError('Dhikr guide entry has not passed production gates: $id');
     }
-    if (!hasRecommendedCount) {
+    if (!hasRecommendedCount ||
+        countProvenance != DhikrCountProvenance.strongSource) {
       return null;
     }
 
@@ -86,6 +128,13 @@ final class DhikrGuideEntry {
       sourceId: source.id,
       sourceReference: _humanReadableSource(source),
     );
+  }
+
+  String? get countSourceReference {
+    if (!canEnterProductionDataset || !hasRecommendedCount) {
+      return null;
+    }
+    return countSources.map(_humanReadableSource).join(' · ');
   }
 
   ReligiousContentRecord toGovernedRecord() {
@@ -118,26 +167,15 @@ final class DhikrGuideEntry {
         ReligiousSourceClass.sahihHasanHadith ||
         ReligiousSourceClass.classicalTraditional ||
         ReligiousSourceClass.laterTradition =>
-          source.id.trim().isNotEmpty &&
-              source.title.trim().isNotEmpty &&
-              source.licenseId.trim().isNotEmpty,
+          _hasCompleteSourceMetadata(source),
         _ => false,
       };
 
-  /// A numeric religious recommendation is stricter than a general historical
-  /// attribution. Later-tradition, disputed, unknown and ebced/havas sources do
-  /// not qualify as a source-backed target here.
-  static bool _isAllowedCountSource(SourceReference source) => switch (
-        source.sourceClass
-      ) {
-        ReligiousSourceClass.quran ||
-        ReligiousSourceClass.sahihHasanHadith ||
-        ReligiousSourceClass.classicalTraditional =>
-          source.id.trim().isNotEmpty &&
-              source.title.trim().isNotEmpty &&
-              source.licenseId.trim().isNotEmpty,
-        _ => false,
-      };
+  static bool _hasCompleteSourceMetadata(SourceReference source) =>
+      source.id.trim().isNotEmpty &&
+      source.title.trim().isNotEmpty &&
+      source.licenseId.trim().isNotEmpty &&
+      (source.locator?.trim().isNotEmpty ?? false);
 
   static CertaintyLevel _certaintyFor(ReligiousSourceClass sourceClass) =>
       switch (sourceClass) {
