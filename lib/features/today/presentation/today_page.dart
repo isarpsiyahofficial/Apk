@@ -229,7 +229,9 @@ class _DailyVerseBlockState extends State<_DailyVerseBlock> {
         ayah: widget.verse.address.ayah,
       );
       if (!mounted) return;
-      setState(() => _stateFuture = Future.value(state));
+      setState(() {
+        _stateFuture = Future.value(state);
+      });
     } finally {
       if (mounted) setState(() => _updatingFavorite = false);
     }
