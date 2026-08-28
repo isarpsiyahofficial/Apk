@@ -166,11 +166,15 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('show-ebced-havas-historical')));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Subhanallah ebced'), findsOneWidget);
-
     final restored = await DhikrGuidePreferencesRepository(store).load();
     expect(restored.showTraditionalPractices, isTrue);
     expect(restored.showEbcedHavasHistorical, isTrue);
+
+    await tester.tap(find.byKey(const ValueKey('dhikr-content-preferences')));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Subhanallah ebced'), findsOneWidget);
   });
 
   testWidgets('Arabic RTL settings remain usable at 320x640 and 1.6x font', (tester) async {
