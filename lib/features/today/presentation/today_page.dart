@@ -3,6 +3,7 @@ import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
+import 'package:islami_hayat/features/quran/data/quran_verse_user_state_repository.dart';
 import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
@@ -10,15 +11,19 @@ class TodayPage extends StatefulWidget {
   TodayPage({
     super.key,
     QuranReadingProgressRepository? quranProgressRepository,
+    QuranVerseUserStateDataSource? verseUserStateRepository,
     DailyVerseDataSource? dailyVerseRepository,
     this.now,
     this.onContinueQuran,
     this.onOpenDailyVerse,
   }) : quranProgressRepository = quranProgressRepository ??
             QuranReadingProgressRepository(SecurePrivateUserStore()),
+       verseUserStateRepository =
+           verseUserStateRepository ?? QuranVerseUserStateRepository(),
        dailyVerseRepository = dailyVerseRepository ?? DailyVerseRepository();
 
   final QuranReadingProgressRepository quranProgressRepository;
+  final QuranVerseUserStateDataSource verseUserStateRepository;
   final DailyVerseDataSource dailyVerseRepository;
   final DateTime Function()? now;
   final VoidCallback? onContinueQuran;
@@ -102,6 +107,7 @@ class _TodayPageState extends State<TodayPage> {
               return _DailyVerseBlock(
                 eyebrow: l10n.dailyVerseTitle,
                 verse: verse,
+                verseUserStateRepository: widget.verseUserStateRepository,
                 onTap: widget.onOpenDailyVerse,
               );
             },
@@ -175,28 +181,72 @@ class _Header extends StatelessWidget {
   }
 }
 
-class _DailyVerseBlock extends StatelessWidget {
+class _DailyVerseBlock extends StatefulWidget {
   const _DailyVerseBlock({
     required this.eyebrow,
     required this.verse,
+    required this.verseUserStateRepository,
     required this.onTap,
   });
 
   final String eyebrow;
   final DailyVerse verse;
+  final QuranVerseUserStateDataSource verseUserStateRepository;
   final Future<void> Function(QuranAddress address)? onTap;
+
+  @override
+  State<_DailyVerseBlock> createState() => _DailyVerseBlockState();
+}
+
+class _DailyVerseBlockState extends State<_DailyVerseBlock> {
+  late Future<QuranVerseUserState> _stateFuture;
+  bool _updatingFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _stateFuture = widget.verseUserStateRepository.load();
+  }
+
+  @override
+  void didUpdateWidget(covariant _DailyVerseBlock oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(
+          oldWidget.verseUserStateRepository,
+          widget.verseUserStateRepository,
+        ) ||
+        oldWidget.verse.address.key != widget.verse.address.key) {
+      _stateFuture = widget.verseUserStateRepository.load();
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    if (_updatingFavorite) return;
+    setState(() => _updatingFavorite = true);
+    try {
+      final state = await widget.verseUserStateRepository.toggleFavorite(
+        surah: widget.verse.address.surah,
+        ayah: widget.verse.address.ayah,
+      );
+      if (!mounted) return;
+      setState(() => _stateFuture = Future.value(state));
+    } finally {
+      if (mounted) setState(() => _updatingFavorite = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Semantics(
-      button: onTap != null,
+      button: widget.onTap != null,
       child: InkWell(
         key: const ValueKey('daily-verse-card'),
-        onTap: onTap == null
+        onTap: widget.onTap == null
             ? null
             : () {
-                onTap!(verse.address);
+                widget.onTap!(widget.verse.address);
               },
         child: Container(
           width: double.infinity,
@@ -224,7 +274,7 @@ class _DailyVerseBlock extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      eyebrow.toUpperCase(),
+                      widget.eyebrow.toUpperCase(),
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: theme.colorScheme.primary,
                         letterSpacing: 0.6,
@@ -232,13 +282,13 @@ class _DailyVerseBlock extends StatelessWidget {
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      verse.arabic,
+                      widget.verse.arabic,
                       key: const ValueKey('daily-verse-arabic'),
                       textDirection: TextDirection.rtl,
                       textAlign: TextAlign.start,
                       style: theme.textTheme.titleLarge?.copyWith(height: 1.9),
                     ),
-                    if (verse.translation case final translation?) ...[
+                    if (widget.verse.translation case final translation?) ...[
                       const SizedBox(height: 12),
                       Text(
                         translation,
@@ -248,7 +298,7 @@ class _DailyVerseBlock extends StatelessWidget {
                     ],
                     const SizedBox(height: 12),
                     Text(
-                      verse.sourceLabel,
+                      widget.verse.sourceLabel,
                       key: const ValueKey('daily-verse-source'),
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: theme.colorScheme.primary,
@@ -257,10 +307,36 @@ class _DailyVerseBlock extends StatelessWidget {
                   ],
                 ),
               ),
-              if (onTap != null) ...[
-                const SizedBox(width: 12),
+              const SizedBox(width: 8),
+              FutureBuilder<QuranVerseUserState>(
+                future: _stateFuture,
+                builder: (context, snapshot) {
+                  final state = snapshot.data;
+                  final favorite = state?.isFavorite(
+                        surah: widget.verse.address.surah,
+                        ayah: widget.verse.address.ayah,
+                      ) ??
+                      false;
+                  return IconButton(
+                    key: const ValueKey('daily-verse-favorite'),
+                    tooltip: favorite
+                        ? l10n.quranRemoveFavorite
+                        : l10n.quranAddFavorite,
+                    onPressed: snapshot.connectionState == ConnectionState.done &&
+                            !_updatingFavorite
+                        ? _toggleFavorite
+                        : null,
+                    icon: Icon(
+                      favorite ? Icons.favorite : Icons.favorite_border,
+                      color: favorite ? theme.colorScheme.primary : null,
+                    ),
+                  );
+                },
+              ),
+              if (widget.onTap != null) ...[
+                const SizedBox(width: 4),
                 const Padding(
-                  padding: EdgeInsets.only(top: 2),
+                  padding: EdgeInsets.only(top: 14),
                   child: Icon(Icons.arrow_forward_ios_rounded, size: 14),
                 ),
               ],
