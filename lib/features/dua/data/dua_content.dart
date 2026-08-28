@@ -9,11 +9,41 @@ enum DuaSourceStatus {
 
 enum DuaLengthClass { short, medium, long }
 
+/// SPEC 238 category taxonomy. These values are content metadata only; they do
+/// not imply that a special sourced dua exists for every category or occasion.
+enum DuaCategory {
+  morning,
+  evening,
+  night,
+  distress,
+  peace,
+  repentance,
+  seekingForgiveness,
+  gratitude,
+  patience,
+  provision,
+  debt,
+  blessing,
+  family,
+  spouse,
+  parents,
+  children,
+  spiritualSupportDuringIllness,
+  fear,
+  travel,
+  protection,
+  ramadan,
+  friday,
+  eid,
+  religiousNights,
+}
+
 final class DuaContent {
   const DuaContent({
     required this.id,
     required this.sourceStatus,
     required this.lengthClass,
+    required this.categories,
     required this.text,
     required this.reviewStatus,
     required this.version,
@@ -28,6 +58,7 @@ final class DuaContent {
   final String id;
   final DuaSourceStatus sourceStatus;
   final DuaLengthClass lengthClass;
+  final Set<DuaCategory> categories;
   final LocalizedReligiousText text;
   final ContentReviewStatus reviewStatus;
   final int version;
@@ -47,6 +78,7 @@ final class DuaContent {
   bool get canEnterProductionDataset {
     if (id.trim().isEmpty ||
         version <= 0 ||
+        categories.isEmpty ||
         reviewStatus != ContentReviewStatus.published ||
         !text.isComplete ||
         sources.isEmpty) {
