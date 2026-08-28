@@ -61,9 +61,9 @@ void main() {
 
   test('production UI/routes expose no forbidden occult action or analysis', () {
     final forbidden = <RegExp>[
-      RegExp(r"['\"]\s*/(?:vefk|tilsim|talisman)(?:/|['\"])", caseSensitive: false),
-      RegExp(r"['\"]\s*/(?:ask[-_]?baglama|love[-_]?binding)(?:/|['\"])", caseSensitive: false),
-      RegExp(r"['\"]\s*/(?:divination|fortune[-_]?telling|fate[-_]?analysis|occult[-_]?analysis)(?:/|['\"])", caseSensitive: false),
+      RegExp(r'''['"]\s*/(?:vefk|tilsim|talisman)(?:/|['"])''', caseSensitive: false),
+      RegExp(r'''['"]\s*/(?:ask[-_]?baglama|love[-_]?binding)(?:/|['"])''', caseSensitive: false),
+      RegExp(r'''['"]\s*/(?:divination|fortune[-_]?telling|fate[-_]?analysis|occult[-_]?analysis)(?:/|['"])''', caseSensitive: false),
       RegExp(r'\b(?:vefk|tilsim|ask baglama|gayb analizi|kader analizi)\b', caseSensitive: false),
       RegExp(r'\b(?:love binding|fortune telling|fate analysis|occult name analysis|occult birth date analysis)\b', caseSensitive: false),
     ];
