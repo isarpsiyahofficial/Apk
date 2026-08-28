@@ -100,23 +100,30 @@ void main() {
     expect(feedback.vibrationCalls, 0);
     expect(feedback.soundCalls, 0);
 
-    await tester.tap(find.text('Vibration'));
+    final vibrationToggle =
+        find.byKey(const ValueKey('dhikr-vibration-toggle'));
+    await tester.ensureVisible(vibrationToggle);
+    await tester.tap(vibrationToggle);
     await tester.pumpAndSettle();
     var state = await repository.load();
     expect(state.vibrationEnabled, isTrue);
     expect(state.soundEnabled, isFalse);
 
+    await tester.ensureVisible(target);
     await tester.tap(target);
     await tester.pumpAndSettle();
     expect(feedback.vibrationCalls, 1);
     expect(feedback.soundCalls, 0);
 
-    await tester.tap(find.text('Sound'));
+    final soundToggle = find.byKey(const ValueKey('dhikr-sound-toggle'));
+    await tester.ensureVisible(soundToggle);
+    await tester.tap(soundToggle);
     await tester.pumpAndSettle();
     state = await repository.load();
     expect(state.vibrationEnabled, isTrue);
     expect(state.soundEnabled, isTrue);
 
+    await tester.ensureVisible(target);
     await tester.tap(target);
     await tester.pumpAndSettle();
     expect(feedback.vibrationCalls, 2);
@@ -139,8 +146,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('العداد الشخصي'), findsOneWidget);
-    expect(find.text('الاهتزاز'), findsOneWidget);
-    expect(find.text('الصوت'), findsOneWidget);
+    final vibrationToggle =
+        find.byKey(const ValueKey('dhikr-vibration-toggle'));
+    final soundToggle = find.byKey(const ValueKey('dhikr-sound-toggle'));
+    await tester.ensureVisible(vibrationToggle);
+    expect(vibrationToggle, findsOneWidget);
+    await tester.ensureVisible(soundToggle);
+    expect(soundToggle, findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
