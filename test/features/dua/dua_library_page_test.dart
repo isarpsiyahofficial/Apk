@@ -105,7 +105,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('dua-travel')));
     await tester.pumpAndSettle();
     expect((await state.load()).historyIds.first, 'travel');
-    await tester.tap(find.text('Kapat'));
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.tap(find.byType(TextButton).last);
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byKey(const ValueKey('dua-search-field')), '');
@@ -140,7 +141,10 @@ void main() {
     await tester.pumpWidget(_app(locale: const Locale('ar'), state: state));
     await tester.pumpAndSettle();
 
-    expect(Directionality.of(tester.element(find.byType(DuaLibraryPage))), TextDirection.rtl);
+    expect(
+      Directionality.of(tester.element(find.byType(DuaLibraryPage))),
+      TextDirection.rtl,
+    );
     expect(find.byKey(const ValueKey('dua-search-field')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
