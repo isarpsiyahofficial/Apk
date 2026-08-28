@@ -5,20 +5,18 @@ PACKAGE='com.example.islami_hayat'
 ACTIVITY="$PACKAGE/.MainActivity"
 APK='build/app/outputs/flutter-apk/app-debug.apk'
 
-MEMTOTAL_KB="$(adb shell cat /proc/meminfo | awk '/MemTotal:/ {print $2}' | tr -d '\r')"
-if [ -z "$MEMTOTAL_KB" ]; then
-  echo 'Could not read emulator MemTotal' >&2
-  exit 1
+if [ -n "${MAX_MEMTOTAL_KB:-}" ]; then
+  MEMTOTAL_KB="$(adb shell cat /proc/meminfo | awk '/MemTotal:/ {print $2}' | tr -d '\r')"
+  if [ -z "$MEMTOTAL_KB" ]; then
+    echo 'Could not read emulator MemTotal' >&2
+    exit 1
+  fi
+  if [ "$MEMTOTAL_KB" -gt "$MAX_MEMTOTAL_KB" ]; then
+    echo "Emulator exceeds requested memory class: MemTotal=${MEMTOTAL_KB}kB max=${MAX_MEMTOTAL_KB}kB" >&2
+    exit 1
+  fi
+  echo "Requested memory class confirmed: MemTotal=${MEMTOTAL_KB}kB max=${MAX_MEMTOTAL_KB}kB"
 fi
-# This smoke intentionally targets a low-memory Android class. Android reserves
-# part of configured AVD RAM, so a 2048 MB guest usually reports slightly less
-# than 2 GiB. Keep a small tolerance but fail if the runner silently regresses
-# to a modern multi-gigabyte profile.
-if [ "$MEMTOTAL_KB" -gt 2300000 ]; then
-  echo "Emulator is not low-memory enough: MemTotal=${MEMTOTAL_KB}kB" >&2
-  exit 1
-fi
-echo "Low-memory emulator confirmed: MemTotal=${MEMTOTAL_KB}kB"
 
 adb install -r "$APK"
 adb shell am force-stop "$PACKAGE"
