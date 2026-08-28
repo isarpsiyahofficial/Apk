@@ -96,79 +96,85 @@ class _DhikrGuidePreferencesViewState
     }
 
     final theme = Theme.of(context);
+    final preferencesMaxHeight = MediaQuery.sizeOf(context).height * 0.45;
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: Card(
-            child: ExpansionTile(
-              key: const ValueKey('dhikr-content-preferences'),
-              leading: const Icon(Icons.tune_outlined),
-              title: Text(
-                _text(
-                  context,
-                  'İçerik tercihleri',
-                  'Content preferences',
-                  'تفضيلات المحتوى',
-                ),
-              ),
-              subtitle: Text(
-                _text(
-                  context,
-                  'Güçlü kaynaklar varsayılan olarak öne çıkarılır.',
-                  'Strong-source content is prioritized by default.',
-                  'تظهر المحتويات ذات المصادر الأقوى أولًا افتراضيًا.',
-                ),
-                style: theme.textTheme.bodySmall,
-              ),
-              children: [
-                SwitchListTile.adaptive(
-                  key: const ValueKey('show-traditional-practices'),
-                  value: _preferences.showTraditionalPractices,
-                  onChanged: (value) => _setPreferences(
-                    _preferences.copyWith(showTraditionalPractices: value),
-                  ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: preferencesMaxHeight),
+            child: SingleChildScrollView(
+              child: Card(
+                child: ExpansionTile(
+                  key: const ValueKey('dhikr-content-preferences'),
+                  leading: const Icon(Icons.tune_outlined),
                   title: Text(
                     _text(
                       context,
-                      'Geleneksel uygulamaları da göster',
-                      'Show traditional practices',
-                      'إظهار الممارسات التقليدية',
+                      'İçerik tercihleri',
+                      'Content preferences',
+                      'تفضيلات المحتوى',
                     ),
                   ),
                   subtitle: Text(
                     _text(
                       context,
-                      'Tasavvufî veya sonraki gelenek kayıtları güçlü kaynaklarla aynı statüde değildir.',
-                      'Tasawwuf or later-tradition entries do not have the same status as strong-source content.',
-                      'المحتوى الصوفي أو المتأخر تقليدي وليس في مرتبة المصادر الأقوى.',
+                      'Güçlü kaynaklar varsayılan olarak öne çıkarılır.',
+                      'Strong-source content is prioritized by default.',
+                      'تظهر المحتويات ذات المصادر الأقوى أولًا افتراضيًا.',
                     ),
+                    style: theme.textTheme.bodySmall,
                   ),
+                  children: [
+                    SwitchListTile.adaptive(
+                      key: const ValueKey('show-traditional-practices'),
+                      value: _preferences.showTraditionalPractices,
+                      onChanged: (value) => _setPreferences(
+                        _preferences.copyWith(showTraditionalPractices: value),
+                      ),
+                      title: Text(
+                        _text(
+                          context,
+                          'Geleneksel uygulamaları da göster',
+                          'Show traditional practices',
+                          'إظهار الممارسات التقليدية',
+                        ),
+                      ),
+                      subtitle: Text(
+                        _text(
+                          context,
+                          'Tasavvufî veya sonraki gelenek kayıtları güçlü kaynaklarla aynı statüde değildir.',
+                          'Tasawwuf or later-tradition entries do not have the same status as strong-source content.',
+                          'المحتوى الصوفي أو المتأخر تقليدي وليس في مرتبة المصادر الأقوى.',
+                        ),
+                      ),
+                    ),
+                    SwitchListTile.adaptive(
+                      key: const ValueKey('show-ebced-havas-historical'),
+                      value: _preferences.showEbcedHavasHistorical,
+                      onChanged: (value) => _setPreferences(
+                        _preferences.copyWith(showEbcedHavasHistorical: value),
+                      ),
+                      title: Text(
+                        _text(
+                          context,
+                          'Ebced/havas tarihsel bilgisini göster',
+                          'Show historical abjad/havas information',
+                          'إظهار المعلومات التاريخية للأبجد/الخواص',
+                        ),
+                      ),
+                      subtitle: Text(
+                        _text(
+                          context,
+                          'Bilgilendiricidir; sünnetle sabit bir zikir sayısı olarak sunulmaz.',
+                          'Informational only; never presented as a Sunnah-prescribed dhikr count.',
+                          'للمعلومة التاريخية فقط، ولا يُعرض كعدد ذكر ثابت بالسنة.',
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                SwitchListTile.adaptive(
-                  key: const ValueKey('show-ebced-havas-historical'),
-                  value: _preferences.showEbcedHavasHistorical,
-                  onChanged: (value) => _setPreferences(
-                    _preferences.copyWith(showEbcedHavasHistorical: value),
-                  ),
-                  title: Text(
-                    _text(
-                      context,
-                      'Ebced/havas tarihsel bilgisini göster',
-                      'Show historical abjad/havas information',
-                      'إظهار المعلومات التاريخية للأبجد/الخواص',
-                    ),
-                  ),
-                  subtitle: Text(
-                    _text(
-                      context,
-                      'Bilgilendiricidir; sünnetle sabit bir zikir sayısı olarak sunulmaz.',
-                      'Informational only; never presented as a Sunnah-prescribed dhikr count.',
-                      'للمعلومة التاريخية فقط، ولا يُعرض كعدد ذكر ثابت بالسنة.',
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
