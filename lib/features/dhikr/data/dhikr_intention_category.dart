@@ -1,4 +1,5 @@
 import 'package:islami_hayat/core/content/content_governance.dart';
+import 'package:islami_hayat/features/dhikr/domain/dhikr_outcome_claim_policy.dart';
 
 enum DhikrIntentionCategoryId {
   provisionAndBlessing,
@@ -59,7 +60,8 @@ final class DhikrIntentionSuggestion {
       id.trim().isNotEmpty &&
       divineNameId.trim().isNotEmpty &&
       rationale.isComplete &&
-      version > 0;
+      version > 0 &&
+      DhikrOutcomeClaimPolicy.allows(rationale);
 }
 
 const dhikrIntentionCategories = <DhikrIntentionCategory>[
