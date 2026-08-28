@@ -52,6 +52,7 @@ void main() {
 
     expect(item.canEnterProductionDataset, isTrue);
     expect(item.hasRecommendedCount, isTrue);
+    expect(item.countProvenance, DhikrCountProvenance.strongSource);
   });
 
   test('recommended number cannot exist without an independent number source', () {
@@ -61,23 +62,18 @@ void main() {
     expect(item.toSourceBackedTarget, throwsStateError);
   });
 
-  test('count source rejects unknown, disputed, later-tradition and ebced/havas', () {
+  test('unknown and disputed count provenance fail closed', () {
     for (final sourceClass in [
       ReligiousSourceClass.unknown,
       ReligiousSourceClass.disputed,
-      ReligiousSourceClass.laterTradition,
-      ReligiousSourceClass.ebcedHavasTradition,
     ]) {
       final item = entry(countSources: [source(sourceClass: sourceClass)]);
-      expect(
-        item.canEnterProductionDataset,
-        isFalse,
-        reason: '$sourceClass must not become a source-backed numeric target',
-      );
+      expect(item.canEnterProductionDataset, isFalse);
+      expect(item.countProvenance, isNull);
     }
   });
 
-  test('source-backed target preserves count provenance', () {
+  test('strong-source target preserves count provenance', () {
     final item = entry(
       countSources: [
         source(
@@ -97,6 +93,76 @@ void main() {
       target.sourceReference,
       'Verified hadith source — chapter 2, narration 7',
     );
+  });
+
+  test('traditional number remains reviewable but never becomes Sunnah target', () {
+    final item = entry(
+      countSources: [
+        source(
+          sourceClass: ReligiousSourceClass.classicalTraditional,
+          id: 'tradition:33',
+          title: 'Classical traditional source',
+          locator: 'section 4',
+        ),
+      ],
+    );
+
+    expect(item.canEnterProductionDataset, isTrue);
+    expect(item.countProvenance, DhikrCountProvenance.traditional);
+    expect(item.toSourceBackedTarget(), isNull);
+    expect(item.countSourceReference, contains('Classical traditional source'));
+  });
+
+  test('later traditional number is distinct from strong-source target', () {
+    final item = entry(
+      countSources: [
+        source(
+          sourceClass: ReligiousSourceClass.laterTradition,
+          id: 'later:100',
+          title: 'Later traditional source',
+          locator: 'practice note 2',
+        ),
+      ],
+    );
+
+    expect(item.canEnterProductionDataset, isTrue);
+    expect(item.countProvenance, DhikrCountProvenance.traditional);
+    expect(item.toSourceBackedTarget(), isNull);
+  });
+
+  test('ebced/havas number is historical metadata and never Sunnah target', () {
+    final item = entry(
+      recommendedCount: 308,
+      countSources: [
+        source(
+          sourceClass: ReligiousSourceClass.ebcedHavasTradition,
+          id: 'ebced:308',
+          title: 'Historical abjad source',
+          locator: 'table 3',
+        ),
+      ],
+    );
+
+    expect(item.canEnterProductionDataset, isTrue);
+    expect(item.countProvenance, DhikrCountProvenance.ebcedHavasHistorical);
+    expect(item.toSourceBackedTarget(), isNull);
+  });
+
+  test('mixed strong and traditional count sources fail closed', () {
+    final item = entry(
+      countSources: [
+        source(),
+        source(
+          sourceClass: ReligiousSourceClass.classicalTraditional,
+          id: 'tradition:mixed',
+          title: 'Traditional source',
+          locator: 'section 1',
+        ),
+      ],
+    );
+
+    expect(item.countProvenance, isNull);
+    expect(item.canEnterProductionDataset, isFalse);
   });
 
   test('guide without recommended count is valid only with no count sources', () {
