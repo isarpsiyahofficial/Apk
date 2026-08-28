@@ -9,7 +9,7 @@ import 'package:islami_hayat/features/dua/presentation/dua_source_disclosure_vie
 ///
 /// Religious text is supplied only by [DuaLibraryRepository], which rejects
 /// records that have not passed production review. Search/filter/favorite and
-/// history never mutate the trusted dua records.
+/// history never mutate trusted dua records.
 final class DuaLibraryPage extends StatefulWidget {
   const DuaLibraryPage({
     required this.library,
@@ -135,28 +135,27 @@ class _DuaLibraryPageState extends State<DuaLibraryPage> {
                   onChanged: (value) => setState(() => _category = value),
                 ),
                 const SizedBox(height: 12),
-                SegmentedButton<_DuaView>(
-                  segments: [
-                    ButtonSegment(
+                Wrap(
+                  key: const ValueKey('dua-view-filter'),
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _viewChip(
                       value: _DuaView.all,
-                      icon: const Icon(Icons.menu_book_outlined),
-                      label: Text(labels.all),
+                      label: labels.all,
+                      icon: Icons.menu_book_outlined,
                     ),
-                    ButtonSegment(
+                    _viewChip(
                       value: _DuaView.favorites,
-                      icon: const Icon(Icons.favorite_outline),
-                      label: Text(labels.favorites),
+                      label: labels.favorites,
+                      icon: Icons.favorite_outline,
                     ),
-                    ButtonSegment(
+                    _viewChip(
                       value: _DuaView.history,
-                      icon: const Icon(Icons.history),
-                      label: Text(labels.history),
+                      label: labels.history,
+                      icon: Icons.history,
                     ),
                   ],
-                  selected: {_view},
-                  onSelectionChanged: (value) {
-                    setState(() => _view = value.single);
-                  },
                 ),
                 const SizedBox(height: 16),
                 if (visible.isEmpty)
@@ -183,12 +182,30 @@ class _DuaLibraryPageState extends State<DuaLibraryPage> {
     );
   }
 
+  Widget _viewChip({
+    required _DuaView value,
+    required String label,
+    required IconData icon,
+  }) {
+    return ChoiceChip(
+      selected: _view == value,
+      onSelected: (_) => setState(() => _view = value),
+      avatar: Icon(icon, size: 18),
+      label: Text(label),
+    );
+  }
+
   static List<DuaContent> _historyOrdered(
     List<DuaContent> candidates,
     List<String> historyIds,
   ) {
     final byId = {for (final item in candidates) item.id: item};
-    return [for (final id in historyIds) if (byId[id] case final item?) item];
+    final result = <DuaContent>[];
+    for (final id in historyIds) {
+      final item = byId[id];
+      if (item != null) result.add(item);
+    }
+    return List<DuaContent>.unmodifiable(result);
   }
 }
 
@@ -332,7 +349,8 @@ final class _DuaLabels {
     empty: 'Bu filtrelerde doğrulanmış dua bulunmuyor.',
     favorite: 'Favorilere ekle',
     unfavorite: 'Favorilerden çıkar',
-    privateStateError: 'Kişisel dua verileri okunamadı. Dini içerik değiştirilmedi.',
+    privateStateError:
+        'Kişisel dua verileri okunamadı. Dini içerik değiştirilmedi.',
     categoryNames: _trCategories,
   );
 
@@ -348,7 +366,8 @@ final class _DuaLabels {
     empty: 'No verified dua matches these filters.',
     favorite: 'Add to favorites',
     unfavorite: 'Remove from favorites',
-    privateStateError: 'Private dua data could not be read. Religious content was not changed.',
+    privateStateError:
+        'Private dua data could not be read. Religious content was not changed.',
     categoryNames: _enCategories,
   );
 
@@ -364,55 +383,90 @@ final class _DuaLabels {
     empty: 'لا يوجد دعاء موثَّق يطابق هذه المرشحات.',
     favorite: 'إضافة إلى المفضلة',
     unfavorite: 'إزالة من المفضلة',
-    privateStateError: 'تعذّرت قراءة بيانات الأدعية الخاصة. لم يتغير المحتوى الديني.',
+    privateStateError:
+        'تعذّرت قراءة بيانات الأدعية الخاصة. لم يتغير المحتوى الديني.',
     categoryNames: _arCategories,
   );
 }
 
 const _trCategories = <DuaCategory, String>{
-  DuaCategory.morning: 'Sabah', DuaCategory.evening: 'Akşam',
-  DuaCategory.night: 'Gece', DuaCategory.distress: 'Sıkıntı',
-  DuaCategory.peace: 'Huzur', DuaCategory.repentance: 'Tövbe',
-  DuaCategory.seekingForgiveness: 'İstiğfar', DuaCategory.gratitude: 'Şükür',
-  DuaCategory.patience: 'Sabır', DuaCategory.provision: 'Rızık',
-  DuaCategory.debt: 'Borç', DuaCategory.blessing: 'Bereket',
-  DuaCategory.family: 'Aile', DuaCategory.spouse: 'Eş',
-  DuaCategory.parents: 'Anne-baba', DuaCategory.children: 'Çocuklar',
+  DuaCategory.morning: 'Sabah',
+  DuaCategory.evening: 'Akşam',
+  DuaCategory.night: 'Gece',
+  DuaCategory.distress: 'Sıkıntı',
+  DuaCategory.peace: 'Huzur',
+  DuaCategory.repentance: 'Tövbe',
+  DuaCategory.seekingForgiveness: 'İstiğfar',
+  DuaCategory.gratitude: 'Şükür',
+  DuaCategory.patience: 'Sabır',
+  DuaCategory.provision: 'Rızık',
+  DuaCategory.debt: 'Borç',
+  DuaCategory.blessing: 'Bereket',
+  DuaCategory.family: 'Aile',
+  DuaCategory.spouse: 'Eş',
+  DuaCategory.parents: 'Anne-baba',
+  DuaCategory.children: 'Çocuklar',
   DuaCategory.spiritualSupportDuringIllness: 'Hastalıkta manevi destek',
-  DuaCategory.fear: 'Korku', DuaCategory.travel: 'Yolculuk',
-  DuaCategory.protection: 'Korunma', DuaCategory.ramadan: 'Ramazan',
-  DuaCategory.friday: 'Cuma', DuaCategory.eid: 'Bayram',
+  DuaCategory.fear: 'Korku',
+  DuaCategory.travel: 'Yolculuk',
+  DuaCategory.protection: 'Korunma',
+  DuaCategory.ramadan: 'Ramazan',
+  DuaCategory.friday: 'Cuma',
+  DuaCategory.eid: 'Bayram',
   DuaCategory.religiousNights: 'Dini geceler',
 };
 
 const _enCategories = <DuaCategory, String>{
-  DuaCategory.morning: 'Morning', DuaCategory.evening: 'Evening',
-  DuaCategory.night: 'Night', DuaCategory.distress: 'Distress',
-  DuaCategory.peace: 'Peace', DuaCategory.repentance: 'Repentance',
-  DuaCategory.seekingForgiveness: 'Seeking forgiveness', DuaCategory.gratitude: 'Gratitude',
-  DuaCategory.patience: 'Patience', DuaCategory.provision: 'Provision',
-  DuaCategory.debt: 'Debt', DuaCategory.blessing: 'Blessing',
-  DuaCategory.family: 'Family', DuaCategory.spouse: 'Spouse',
-  DuaCategory.parents: 'Parents', DuaCategory.children: 'Children',
-  DuaCategory.spiritualSupportDuringIllness: 'Spiritual support during illness',
-  DuaCategory.fear: 'Fear', DuaCategory.travel: 'Travel',
-  DuaCategory.protection: 'Protection', DuaCategory.ramadan: 'Ramadan',
-  DuaCategory.friday: 'Friday', DuaCategory.eid: 'Eid',
+  DuaCategory.morning: 'Morning',
+  DuaCategory.evening: 'Evening',
+  DuaCategory.night: 'Night',
+  DuaCategory.distress: 'Distress',
+  DuaCategory.peace: 'Peace',
+  DuaCategory.repentance: 'Repentance',
+  DuaCategory.seekingForgiveness: 'Seeking forgiveness',
+  DuaCategory.gratitude: 'Gratitude',
+  DuaCategory.patience: 'Patience',
+  DuaCategory.provision: 'Provision',
+  DuaCategory.debt: 'Debt',
+  DuaCategory.blessing: 'Blessing',
+  DuaCategory.family: 'Family',
+  DuaCategory.spouse: 'Spouse',
+  DuaCategory.parents: 'Parents',
+  DuaCategory.children: 'Children',
+  DuaCategory.spiritualSupportDuringIllness:
+      'Spiritual support during illness',
+  DuaCategory.fear: 'Fear',
+  DuaCategory.travel: 'Travel',
+  DuaCategory.protection: 'Protection',
+  DuaCategory.ramadan: 'Ramadan',
+  DuaCategory.friday: 'Friday',
+  DuaCategory.eid: 'Eid',
   DuaCategory.religiousNights: 'Religious nights',
 };
 
 const _arCategories = <DuaCategory, String>{
-  DuaCategory.morning: 'الصباح', DuaCategory.evening: 'المساء',
-  DuaCategory.night: 'الليل', DuaCategory.distress: 'الكرب',
-  DuaCategory.peace: 'الطمأنينة', DuaCategory.repentance: 'التوبة',
-  DuaCategory.seekingForgiveness: 'الاستغفار', DuaCategory.gratitude: 'الشكر',
-  DuaCategory.patience: 'الصبر', DuaCategory.provision: 'الرزق',
-  DuaCategory.debt: 'الدَّين', DuaCategory.blessing: 'البركة',
-  DuaCategory.family: 'الأسرة', DuaCategory.spouse: 'الزوجان',
-  DuaCategory.parents: 'الوالدان', DuaCategory.children: 'الأبناء',
+  DuaCategory.morning: 'الصباح',
+  DuaCategory.evening: 'المساء',
+  DuaCategory.night: 'الليل',
+  DuaCategory.distress: 'الكرب',
+  DuaCategory.peace: 'الطمأنينة',
+  DuaCategory.repentance: 'التوبة',
+  DuaCategory.seekingForgiveness: 'الاستغفار',
+  DuaCategory.gratitude: 'الشكر',
+  DuaCategory.patience: 'الصبر',
+  DuaCategory.provision: 'الرزق',
+  DuaCategory.debt: 'الدَّين',
+  DuaCategory.blessing: 'البركة',
+  DuaCategory.family: 'الأسرة',
+  DuaCategory.spouse: 'الزوجان',
+  DuaCategory.parents: 'الوالدان',
+  DuaCategory.children: 'الأبناء',
   DuaCategory.spiritualSupportDuringIllness: 'الدعم الروحي أثناء المرض',
-  DuaCategory.fear: 'الخوف', DuaCategory.travel: 'السفر',
-  DuaCategory.protection: 'الحفظ', DuaCategory.ramadan: 'رمضان',
-  DuaCategory.friday: 'الجمعة', DuaCategory.eid: 'العيد',
+  DuaCategory.fear: 'الخوف',
+  DuaCategory.travel: 'السفر',
+  DuaCategory.protection: 'الحفظ',
+  DuaCategory.ramadan: 'رمضان',
+  DuaCategory.friday: 'الجمعة',
+  DuaCategory.eid: 'العيد',
   DuaCategory.religiousNights: 'الليالي الدينية',
 };
