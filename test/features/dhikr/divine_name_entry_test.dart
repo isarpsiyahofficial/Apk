@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/dhikr/data/divine_name_entry.dart';
+import 'package:islami_hayat/features/dhikr/data/ebced_value.dart';
 
 void main() {
   SourceReference quranSource() => const SourceReference(
@@ -19,9 +20,28 @@ void main() {
         locator: 'section 1',
       );
 
+  SourceReference ebcedSource() => const SourceReference(
+        id: 'ebced:example:1',
+        title: 'Reviewed ebced reference',
+        sourceClass: ReligiousSourceClass.ebcedHavasTradition,
+        licenseId: 'reference-license',
+        locator: 'entry 1',
+      );
+
+  EbcedValueMetadata ebced({
+    ContentReviewStatus reviewStatus = ContentReviewStatus.published,
+  }) => EbcedValueMetadata(
+        value: 308,
+        source: ebcedSource(),
+        reviewStatus: reviewStatus,
+        version: 1,
+        lastReviewedAt: DateTime.utc(2026, 8, 28),
+      );
+
   DivineNameEntry entry({
     ContentReviewStatus reviewStatus = ContentReviewStatus.published,
     List<SourceReference>? sources,
+    EbcedValueMetadata? ebcedValue,
   }) => DivineNameEntry(
         id: 'esma:test:1',
         arabic: 'اسم عربي تجريبي',
@@ -41,6 +61,7 @@ void main() {
         reviewStatus: reviewStatus,
         version: 1,
         lastReviewedAt: DateTime.utc(2026, 8, 28),
+        ebced: ebcedValue,
       );
 
   test('published entry with Quran link enters governed divine-name dataset', () {
@@ -80,6 +101,40 @@ void main() {
             locator: '1:1',
           ),
         ],
+      ),
+      throwsArgumentError,
+    );
+  });
+
+  test('reviewed ebced stays separate from governed religious source', () {
+    final value = entry(ebcedValue: ebced());
+
+    expect(value.canEnterProductionDataset, isTrue);
+    expect(value.publishedEbced?.value, 308);
+    expect(
+      value.publishedEbced?.source.sourceClass,
+      ReligiousSourceClass.ebcedHavasTradition,
+    );
+    expect(value.toGovernedRecord().sourceStatus, ReligiousSourceClass.quran);
+  });
+
+  test('unreviewed ebced is hidden without suppressing reviewed Esma core', () {
+    final value = entry(
+      ebcedValue: ebced(reviewStatus: ContentReviewStatus.religiousReview),
+    );
+
+    expect(value.canEnterProductionDataset, isTrue);
+    expect(value.publishedEbced, isNull);
+  });
+
+  test('ebced cannot use Quran or hadith source class', () {
+    expect(
+      () => EbcedValueMetadata(
+        value: 308,
+        source: quranSource(),
+        reviewStatus: ContentReviewStatus.published,
+        version: 1,
+        lastReviewedAt: DateTime.utc(2026, 8, 28),
       ),
       throwsArgumentError,
     );

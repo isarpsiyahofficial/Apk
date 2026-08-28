@@ -92,6 +92,7 @@ class DivineNameGuidePage extends StatelessWidget {
                         source.sourceClass ==
                             ReligiousSourceClass.sahihHasanHadith,
                   );
+                  final ebced = entry.publishedEbced;
                   return Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 760),
@@ -147,6 +148,85 @@ class DivineNameGuidePage extends StatelessWidget {
                                 key: ValueKey('divine-name-why-${entry.id}'),
                                 style: theme.textTheme.bodyLarge,
                               ),
+                              if (ebced != null) ...[
+                                const SizedBox(height: 16),
+                                DecoratedBox(
+                                  key: ValueKey('divine-name-ebced-${entry.id}'),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.secondaryContainer,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        Wrap(
+                                          spacing: 8,
+                                          runSpacing: 6,
+                                          crossAxisAlignment:
+                                              WrapCrossAlignment.center,
+                                          children: [
+                                            DecoratedBox(
+                                              decoration: BoxDecoration(
+                                                border: Border.all(
+                                                  color: theme.colorScheme
+                                                      .onSecondaryContainer,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(999),
+                                              ),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 10,
+                                                  vertical: 4,
+                                                ),
+                                                child: Text(
+                                                  _text(
+                                                    context,
+                                                    'Ebced / tarihsel bilgi',
+                                                    'Abjad / historical info',
+                                                    'أبجد / معلومة تاريخية',
+                                                  ),
+                                                  key: ValueKey(
+                                                    'divine-name-ebced-badge-${entry.id}',
+                                                  ),
+                                                  style:
+                                                      theme.textTheme.labelMedium,
+                                                ),
+                                              ),
+                                            ),
+                                            Text(
+                                              '${_text(context, 'Ebced değeri', 'Abjad value', 'قيمة أبجد')}: ${ebced.value}',
+                                              style: theme.textTheme.titleSmall,
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          _text(
+                                            context,
+                                            'Bu sayı matematiksel harf-sayı değeridir; sünnetle sabit zikir adedi değildir.',
+                                            'This is a mathematical letter-number value; it is not a Sunnah-prescribed dhikr count.',
+                                            'هذه قيمة حرفية عددية في حساب أبجد، وليست عددًا للذكر ثابتًا بالسنة.',
+                                          ),
+                                          key: ValueKey(
+                                            'divine-name-ebced-disclaimer-${entry.id}',
+                                          ),
+                                          style: theme.textTheme.bodySmall,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          '${ebced.source.title} · ${ebced.source.locator}',
+                                          style: theme.textTheme.bodySmall,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                               const SizedBox(height: 16),
                               DecoratedBox(
                                 decoration: BoxDecoration(

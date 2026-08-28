@@ -3,11 +3,31 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/dhikr/data/divine_name_entry.dart';
+import 'package:islami_hayat/features/dhikr/data/ebced_value.dart';
 import 'package:islami_hayat/features/dhikr/presentation/divine_name_guide_page.dart';
 
 void main() {
+  EbcedValueMetadata ebced({
+    ContentReviewStatus reviewStatus = ContentReviewStatus.published,
+  }) {
+    return EbcedValueMetadata(
+      value: 308,
+      source: const SourceReference(
+        id: 'ebced:ui:test',
+        title: 'Reviewed ebced reference',
+        sourceClass: ReligiousSourceClass.ebcedHavasTradition,
+        licenseId: 'reference-license',
+        locator: 'entry 1',
+      ),
+      reviewStatus: reviewStatus,
+      version: 1,
+      lastReviewedAt: DateTime.utc(2026, 8, 28),
+    );
+  }
+
   DivineNameEntry entry({
     ContentReviewStatus reviewStatus = ContentReviewStatus.published,
+    EbcedValueMetadata? ebcedValue,
   }) {
     return DivineNameEntry(
       id: 'esma:ui:test',
@@ -36,6 +56,7 @@ void main() {
       reviewStatus: reviewStatus,
       version: 1,
       lastReviewedAt: DateTime.utc(2026, 8, 28),
+      ebced: ebcedValue,
     );
   }
 
@@ -86,6 +107,53 @@ void main() {
     expect(find.text('Türkçe anlam testi.'), findsOneWidget);
     expect(find.text('Türkçe açıklama testi.'), findsOneWidget);
     expect(find.textContaining('Pinned Quran source'), findsOneWidget);
+    expect(find.byKey(const ValueKey('divine-name-ebced-esma:ui:test')), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('reviewed ebced renders as separate historical badge',
+      (tester) async {
+    await pumpGuide(
+      tester,
+      locale: const Locale('tr'),
+      size: const Size(390, 844),
+      textScale: 1,
+      entries: [entry(ebcedValue: ebced())],
+    );
+
+    await tester.drag(find.byType(ListView), const Offset(0, -300));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ebced / tarihsel bilgi'), findsOneWidget);
+    expect(find.text('Ebced değeri: 308'), findsOneWidget);
+    expect(
+      find.text(
+        'Bu sayı matematiksel harf-sayı değeridir; sünnetle sabit zikir adedi değildir.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Reviewed ebced reference'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('unreviewed ebced is fail-closed while Esma remains visible',
+      (tester) async {
+    await pumpGuide(
+      tester,
+      locale: const Locale('tr'),
+      size: const Size(390, 844),
+      textScale: 1,
+      entries: [
+        entry(
+          ebcedValue: ebced(
+            reviewStatus: ContentReviewStatus.religiousReview,
+          ),
+        ),
+      ],
+    );
+
+    expect(find.text('Deneme adı'), findsOneWidget);
+    expect(find.text('Ebced / tarihsel bilgi'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -111,15 +179,17 @@ void main() {
       locale: const Locale('ar'),
       size: const Size(320, 640),
       textScale: 1.6,
-      entries: [entry()],
+      entries: [entry(ebcedValue: ebced())],
     );
 
     expect(find.text('اختبار المعنى بالعربية.'), findsOneWidget);
-    expect(find.text('اختبار الشرح بالعربية.'), findsOneWidget);
     expect(
       Directionality.of(tester.element(find.byType(Scaffold))),
       TextDirection.rtl,
     );
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pumpAndSettle();
+    expect(find.text('أبجد / معلومة تاريخية'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -129,7 +199,7 @@ void main() {
       locale: const Locale('en'),
       size: const Size(1024, 768),
       textScale: 1,
-      entries: [entry()],
+      entries: [entry(ebcedValue: ebced())],
     );
 
     final cardSize = tester.getSize(find.byType(Card));

@@ -1,10 +1,12 @@
 import 'package:islami_hayat/core/content/content_governance.dart';
+import 'package:islami_hayat/features/dhikr/data/ebced_value.dart';
 
 /// Source-governed entry for the Esmâü'l-Hüsnâ guide.
 ///
 /// This model intentionally does not infer devotional promises or recommended
-/// counts. It only carries the reviewed name, transliteration, meaning,
-/// contextual explanation and explicit Qur'an / sahih-hasan hadith links.
+/// counts. It carries the reviewed name, transliteration, meaning, contextual
+/// explanation and explicit Qur'an / sahih-hasan hadith links. Optional ebced
+/// metadata is a separate historical/math field and never a devotional count.
 final class DivineNameEntry {
   DivineNameEntry({
     required this.id,
@@ -18,6 +20,7 @@ final class DivineNameEntry {
     required this.version,
     required this.lastReviewedAt,
     this.reviewer,
+    this.ebced,
   }) {
     _validateShape();
   }
@@ -33,12 +36,16 @@ final class DivineNameEntry {
   final int version;
   final DateTime lastReviewedAt;
   final String? reviewer;
+  final EbcedValueMetadata? ebced;
 
   bool get hasPrimaryReligiousLink => sources.any(
         (source) =>
             source.sourceClass == ReligiousSourceClass.quran ||
             source.sourceClass == ReligiousSourceClass.sahihHasanHadith,
       );
+
+  EbcedValueMetadata? get publishedEbced =>
+      ebced?.canBeDisplayed == true ? ebced : null;
 
   bool get canEnterProductionDataset =>
       id.trim().isNotEmpty &&
