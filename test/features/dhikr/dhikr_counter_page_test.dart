@@ -135,36 +135,45 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    final list = find.byType(ListView);
     final target = find.byKey(const ValueKey('dhikr-counter-tap-area'));
     await tester.tap(target);
     await tester.pumpAndSettle();
     expect(feedback.vibrationCalls, 0);
     expect(feedback.soundCalls, 0);
 
+    await tester.drag(list, const Offset(0, -1200));
+    await tester.pumpAndSettle();
     final vibrationToggle =
         find.byKey(const ValueKey('dhikr-vibration-toggle'));
-    await tester.ensureVisible(vibrationToggle);
+    expect(vibrationToggle, findsOneWidget);
     await tester.tap(vibrationToggle);
     await tester.pumpAndSettle();
     var state = await repository.load();
     expect(state.vibrationEnabled, isTrue);
     expect(state.soundEnabled, isFalse);
 
-    await tester.ensureVisible(target);
+    await tester.drag(list, const Offset(0, 1200));
+    await tester.pumpAndSettle();
+    expect(target, findsOneWidget);
     await tester.tap(target);
     await tester.pumpAndSettle();
     expect(feedback.vibrationCalls, 1);
     expect(feedback.soundCalls, 0);
 
+    await tester.drag(list, const Offset(0, -1200));
+    await tester.pumpAndSettle();
     final soundToggle = find.byKey(const ValueKey('dhikr-sound-toggle'));
-    await tester.ensureVisible(soundToggle);
+    expect(soundToggle, findsOneWidget);
     await tester.tap(soundToggle);
     await tester.pumpAndSettle();
     state = await repository.load();
     expect(state.vibrationEnabled, isTrue);
     expect(state.soundEnabled, isTrue);
 
-    await tester.ensureVisible(target);
+    await tester.drag(list, const Offset(0, 1200));
+    await tester.pumpAndSettle();
+    expect(target, findsOneWidget);
     await tester.tap(target);
     await tester.pumpAndSettle();
     expect(feedback.vibrationCalls, 2);
