@@ -38,6 +38,15 @@ enum DuaCategory {
   religiousNights,
 }
 
+/// Semantic disclosure class consumed by presentation code. It deliberately
+/// carries no user-visible string; labels must still come from localization.
+enum DuaSourceDisclosure {
+  quran,
+  authenticatedSunnah,
+  classicalTraditional,
+  generalEditorial,
+}
+
 final class DuaContent {
   const DuaContent({
     required this.id,
@@ -51,6 +60,7 @@ final class DuaContent {
     required this.sources,
     this.hadithReference,
     this.hadithGrade,
+    this.hasSourceDispute = false,
     this.disputeNote,
     this.reviewer,
   });
@@ -66,6 +76,11 @@ final class DuaContent {
   final List<SourceReference> sources;
   final String? hadithReference;
   final String? hadithGrade;
+
+  /// True only when the source/reliability assessment itself has a meaningful
+  /// disagreement that the user needs to see. If true, a complete TR/EN/AR
+  /// note is a production requirement.
+  final bool hasSourceDispute;
   final LocalizedReligiousText? disputeNote;
   final String? reviewer;
 
@@ -74,6 +89,18 @@ final class DuaContent {
 
   bool get requiresHadithMetadata =>
       sourceStatus == DuaSourceStatus.sahihHasanSunnah;
+
+  DuaSourceDisclosure get disclosure => switch (sourceStatus) {
+    DuaSourceStatus.quran => DuaSourceDisclosure.quran,
+    DuaSourceStatus.sahihHasanSunnah =>
+      DuaSourceDisclosure.authenticatedSunnah,
+    DuaSourceStatus.classicalTraditional =>
+      DuaSourceDisclosure.classicalTraditional,
+    DuaSourceStatus.generalEditorial => DuaSourceDisclosure.generalEditorial,
+  };
+
+  bool get _hasHadithReference => hadithReference?.trim().isNotEmpty ?? false;
+  bool get _hasHadithGrade => hadithGrade?.trim().isNotEmpty ?? false;
 
   bool get canEnterProductionDataset {
     if (id.trim().isEmpty ||
@@ -85,9 +112,22 @@ final class DuaContent {
       return false;
     }
 
-    if (requiresHadithMetadata &&
-        ((hadithReference?.trim().isEmpty ?? true) ||
-            (hadithGrade?.trim().isEmpty ?? true))) {
+    // Hadith metadata belongs only to a hadith-class dua. This prevents a
+    // Quran, traditional or editorial dua from accidentally looking prophetic.
+    if (!requiresHadithMetadata && (_hasHadithReference || _hasHadithGrade)) {
+      return false;
+    }
+
+    if (requiresHadithMetadata && (!_hasHadithReference || !_hasHadithGrade)) {
+      return false;
+    }
+
+    // SPEC 245: if a source disagreement exists, it must be disclosed in all
+    // supported languages. Partial notes are treated as a publication error.
+    if (hasSourceDispute && !(disputeNote?.isComplete ?? false)) {
+      return false;
+    }
+    if (disputeNote != null && !disputeNote!.isComplete) {
       return false;
     }
 
