@@ -142,10 +142,6 @@ Future<void> _pumpReader(
 }
 
 void main() {
-  tearDown(() {
-    TestWidgetsFlutterBinding.ensureInitialized();
-  });
-
   testWidgets('English reader remains usable on 4:3 tablet', (tester) async {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -197,8 +193,21 @@ void main() {
     expect(sourceButton, findsOneWidget);
     expect(find.byKey(const ValueKey('quran-font-smaller')), findsOneWidget);
     expect(find.byKey(const ValueKey('quran-font-larger')), findsOneWidget);
-    expect(find.text('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'), findsOneWidget);
     expect(Directionality.of(tester.element(sourceButton)), TextDirection.rtl);
+    expect(tester.takeException(), isNull);
+
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -600));
+    await tester.pumpAndSettle();
+
+    final renderedArabic = tester
+        .widgetList<SelectableText>(find.byType(SelectableText))
+        .map((widget) => widget.data)
+        .whereType<String>()
+        .toList(growable: false);
+    expect(
+      renderedArabic,
+      contains('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'),
+    );
     expect(tester.takeException(), isNull);
   });
 
