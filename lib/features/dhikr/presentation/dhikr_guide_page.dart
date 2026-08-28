@@ -31,10 +31,41 @@ class DhikrGuidePage extends StatelessWidget {
         : entry.transliterationTr;
   }
 
+  String? _countLabel(BuildContext context, DhikrGuideEntry entry) {
+    final count = entry.recommendedCount;
+    final provenance = entry.countProvenance;
+    final source = entry.countSourceReference;
+    if (count == null || provenance == null || source == null) {
+      return null;
+    }
+    return switch (provenance) {
+      DhikrCountProvenance.strongSource => _text(
+          context,
+          'Kur’an / Sahih-Hasen Sünnet kaynaklı sayı: $count · $source',
+          'Qur’an / sahih-hasan Sunnah sourced count: $count · $source',
+          'عدد مستند إلى القرآن / السنة الصحيحة أو الحسنة: $count · $source',
+        ),
+      DhikrCountProvenance.traditional => _text(
+          context,
+          'Tasavvufî-geleneksel sayı: $count · $source — sünnetle sabit sayı değildir.',
+          'Traditional/tasawwuf count: $count · $source — not a Sunnah-prescribed count.',
+          'عدد تقليدي/صوفي: $count · $source — ليس عددًا ثابتًا بالسنة.',
+        ),
+      DhikrCountProvenance.ebcedHavasHistorical => _text(
+          context,
+          'Ebced-havas tarihsel sayısı: $count · $source — sünnetle sabit zikir sayısı değildir.',
+          'Historical abjad/havas count: $count · $source — not a Sunnah-prescribed dhikr count.',
+          'عدد تاريخي من حساب الأبجد/الخواص: $count · $source — ليس عددًا ثابتًا بالسنة للذكر.',
+        ),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final published = entries.where((entry) => entry.canEnterProductionDataset).toList(growable: false);
+    final published = entries
+        .where((entry) => entry.canEnterProductionDataset)
+        .toList(growable: false);
 
     if (published.isEmpty) {
       return Center(
@@ -60,6 +91,7 @@ class DhikrGuidePage extends StatelessWidget {
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final entry = published[index];
+        final countLabel = _countLabel(context, entry);
         return Card(
           clipBehavior: Clip.antiAlias,
           child: Padding(
@@ -81,6 +113,14 @@ class DhikrGuidePage extends StatelessWidget {
                   _transliteration(context, entry),
                   style: theme.textTheme.bodyLarge,
                 ),
+                if (countLabel != null) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    countLabel,
+                    key: ValueKey('dhikr-count-provenance-${entry.id}'),
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
                 const SizedBox(height: 14),
                 Align(
                   alignment: AlignmentDirectional.centerEnd,
@@ -178,9 +218,9 @@ class DhikrGuidedCounterPage extends StatelessWidget {
                         Text(
                           _text(
                             context,
-                            'Kaynaklı sayı: ${target.count} · ${target.sourceReference}',
-                            'Source-backed target: ${target.count} · ${target.sourceReference}',
-                            'عدد موثق بالمصدر: ${target.count} · ${target.sourceReference}',
+                            'Kur’an / Sahih-Hasen Sünnet kaynaklı sayı: ${target.count} · ${target.sourceReference}',
+                            'Qur’an / sahih-hasan Sunnah sourced count: ${target.count} · ${target.sourceReference}',
+                            'عدد مستند إلى القرآن / السنة الصحيحة أو الحسنة: ${target.count} · ${target.sourceReference}',
                           ),
                           key: const ValueKey('guided-dhikr-source-target'),
                           style: theme.textTheme.bodySmall,
@@ -189,9 +229,9 @@ class DhikrGuidedCounterPage extends StatelessWidget {
                         Text(
                           _text(
                             context,
-                            'Bu kayıt için doğrulanmış kaynaklı sayı yok; sayaç hedef uydurmaz.',
-                            'This entry has no verified source-backed count; the counter does not invent a target.',
-                            'لا يوجد لهذا الذكر عدد موثق بالمصدر؛ ولا ينشئ العداد هدفًا من تلقاء نفسه.',
+                            'Bu kayıt için sünnetle sabit otomatik hedef yok. Geleneksel veya ebced/havas sayıları otomatik hedefe dönüştürülmez.',
+                            'This entry has no Sunnah-backed automatic target. Traditional or abjad/havas counts are never converted into an automatic target.',
+                            'لا يوجد لهذا الذكر هدف تلقائي ثابت بالسنة. ولا تتحول الأعداد التقليدية أو أعداد الأبجد/الخواص إلى هدف تلقائي.',
                           ),
                           key: const ValueKey('guided-dhikr-no-target'),
                           style: theme.textTheme.bodySmall,
