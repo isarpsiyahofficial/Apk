@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/dhikr/data/dhikr_counter_repository.dart';
+import 'package:islami_hayat/features/dhikr/data/dhikr_history_repository.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_feedback.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
@@ -8,10 +9,12 @@ class DhikrCounterPage extends StatefulWidget {
   const DhikrCounterPage({
     super.key,
     this.repository,
+    this.historyRepository,
     this.feedbackPlayer = const SystemDhikrFeedbackPlayer(),
   });
 
   final DhikrCounterRepository? repository;
+  final DhikrHistoryRepository? historyRepository;
   final DhikrFeedbackPlayer feedbackPlayer;
 
   @override
@@ -20,7 +23,9 @@ class DhikrCounterPage extends StatefulWidget {
 
 class _DhikrCounterPageState extends State<DhikrCounterPage> {
   late final DhikrCounterRepository _repository;
+  late final DhikrHistoryRepository _historyRepository;
   late Future<DhikrCounterState> _stateFuture;
+  late Future<DhikrHistorySummary> _historyFuture;
   bool _busy = false;
 
   @override
@@ -28,7 +33,10 @@ class _DhikrCounterPageState extends State<DhikrCounterPage> {
     super.initState();
     _repository = widget.repository ??
         DhikrCounterRepository(SecurePrivateUserStore());
+    _historyRepository = widget.historyRepository ??
+        DhikrHistoryRepository(SecurePrivateUserStore());
     _stateFuture = _repository.load();
+    _historyFuture = _historyRepository.summary();
   }
 
   String _text(BuildContext context, String tr, String en, String ar) {
@@ -94,6 +102,23 @@ class _DhikrCounterPageState extends State<DhikrCounterPage> {
     }
   }
 
+  Future<void> _saveSession(DhikrCounterState state) async {
+    if (_busy || state.count <= 0) return;
+    _busy = true;
+    try {
+      await _historyRepository.recordSession(count: state.count);
+      final next = await _repository.reset();
+      final summary = await _historyRepository.summary();
+      if (!mounted) return;
+      setState(() {
+        _stateFuture = Future.value(next);
+        _historyFuture = Future.value(summary);
+      });
+    } finally {
+      _busy = false;
+    }
+  }
+
   Future<void> _reset() async {
     if (_busy) return;
     final confirmed = await showDialog<bool>(
@@ -110,9 +135,9 @@ class _DhikrCounterPageState extends State<DhikrCounterPage> {
         content: Text(
           _text(
             context,
-            'Bu işlem yalnız kişisel sayaç değerini sıfırlar.',
-            'This only resets your personal counter value.',
-            'يؤدي هذا فقط إلى تصفير قيمة عدادك الشخصي.',
+            'Bu işlem yalnız kişisel sayaç değerini sıfırlar ve geçmişe kayıt eklemez.',
+            'This only resets your personal counter and does not add a history entry.',
+            'يؤدي هذا فقط إلى تصفير عدادك الشخصي ولا يضيف سجلًا إلى التاريخ.',
           ),
         ),
         actions: [
@@ -139,6 +164,27 @@ class _DhikrCounterPageState extends State<DhikrCounterPage> {
     } finally {
       _busy = false;
     }
+  }
+
+  Widget _summaryCell(BuildContext context, String label, int value) {
+    final theme = Theme.of(context);
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('$value', style: theme.textTheme.titleLarge),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -225,7 +271,72 @@ class _DhikrCounterPageState extends State<DhikrCounterPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            FilledButton.tonalIcon(
+              key: const ValueKey('dhikr-save-session'),
+              onPressed: snapshot.hasData && state.count > 0
+                  ? () => _saveSession(state)
+                  : null,
+              icon: const Icon(Icons.check_circle_outline),
+              label: Text(
+                _text(
+                  context,
+                  'Oturumu kaydet',
+                  'Save session',
+                  'حفظ الجلسة',
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              _text(context, 'Kişisel ilerleme', 'Personal progress', 'تقدمك الشخصي'),
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _text(
+                context,
+                'Yalnız bu cihazda tutulur. Sıralama, karşılaştırma veya kaçırdığın günler için uyarı yoktur.',
+                'Stored only on this device. There are no rankings, comparisons, or guilt messages for missed days.',
+                'تُحفظ على هذا الجهاز فقط. لا توجد تصنيفات أو مقارنات أو رسائل لوم على الأيام الفائتة.',
+              ),
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 10),
+            FutureBuilder<DhikrHistorySummary>(
+              future: _historyFuture,
+              builder: (context, historySnapshot) {
+                final summary = historySnapshot.data ??
+                    const DhikrHistorySummary(
+                      todayTotal: 0,
+                      lastSevenDaysTotal: 0,
+                      currentStreakDays: 0,
+                      entries: [],
+                    );
+                return Row(
+                  key: const ValueKey('dhikr-history-summary'),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _summaryCell(
+                      context,
+                      _text(context, 'Bugün', 'Today', 'اليوم'),
+                      summary.todayTotal,
+                    ),
+                    _summaryCell(
+                      context,
+                      _text(context, '7 gün', '7 days', '7 أيام'),
+                      summary.lastSevenDaysTotal,
+                    ),
+                    _summaryCell(
+                      context,
+                      _text(context, 'Seri', 'Streak', 'التتابع'),
+                      summary.currentStreakDays,
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 20),
             Text(
               _text(context, 'Geri bildirim', 'Feedback', 'التنبيه عند العد'),
               style: theme.textTheme.titleMedium,
