@@ -3,12 +3,26 @@ import 'dart:convert';
 import 'package:islami_hayat/core/storage/storage_boundaries.dart';
 
 final class DhikrCounterState {
-  const DhikrCounterState({required this.count});
+  const DhikrCounterState({
+    required this.count,
+    this.vibrationEnabled = false,
+    this.soundEnabled = false,
+  });
 
   final int count;
+  final bool vibrationEnabled;
+  final bool soundEnabled;
 
-  DhikrCounterState copyWith({int? count}) =>
-      DhikrCounterState(count: count ?? this.count);
+  DhikrCounterState copyWith({
+    int? count,
+    bool? vibrationEnabled,
+    bool? soundEnabled,
+  }) =>
+      DhikrCounterState(
+        count: count ?? this.count,
+        vibrationEnabled: vibrationEnabled ?? this.vibrationEnabled,
+        soundEnabled: soundEnabled ?? this.soundEnabled,
+      );
 }
 
 final class DhikrCounterRepository {
@@ -35,7 +49,14 @@ final class DhikrCounterRepository {
       if (value is! int || value < 0 || value > _maxCount) {
         return const DhikrCounterState(count: 0);
       }
-      return DhikrCounterState(count: value);
+      final vibrationEnabled = decoded['vibrationEnabled'];
+      final soundEnabled = decoded['soundEnabled'];
+      return DhikrCounterState(
+        count: value,
+        vibrationEnabled:
+            vibrationEnabled is bool ? vibrationEnabled : false,
+        soundEnabled: soundEnabled is bool ? soundEnabled : false,
+      );
     } on FormatException {
       return const DhikrCounterState(count: 0);
     }
@@ -43,16 +64,41 @@ final class DhikrCounterRepository {
 
   Future<DhikrCounterState> increment(DhikrCounterState current) async {
     StorageBoundaryGuard.requirePrivateUserStore(_store);
-    final nextCount = current.count >= _maxCount ? _maxCount : current.count + 1;
+    final nextCount =
+        current.count >= _maxCount ? _maxCount : current.count + 1;
     final next = current.copyWith(count: nextCount);
-    await _store.write(_storageKey, jsonEncode({'count': next.count}));
+    await _persist(next);
+    return next;
+  }
+
+  Future<DhikrCounterState> setFeedbackPreferences(
+    DhikrCounterState current, {
+    bool? vibrationEnabled,
+    bool? soundEnabled,
+  }) async {
+    StorageBoundaryGuard.requirePrivateUserStore(_store);
+    final next = current.copyWith(
+      vibrationEnabled: vibrationEnabled,
+      soundEnabled: soundEnabled,
+    );
+    await _persist(next);
     return next;
   }
 
   Future<DhikrCounterState> reset() async {
     StorageBoundaryGuard.requirePrivateUserStore(_store);
-    const next = DhikrCounterState(count: 0);
-    await _store.write(_storageKey, jsonEncode({'count': 0}));
+    final current = await load();
+    final next = current.copyWith(count: 0);
+    await _persist(next);
     return next;
   }
+
+  Future<void> _persist(DhikrCounterState state) => _store.write(
+        _storageKey,
+        jsonEncode({
+          'count': state.count,
+          'vibrationEnabled': state.vibrationEnabled,
+          'soundEnabled': state.soundEnabled,
+        }),
+      );
 }

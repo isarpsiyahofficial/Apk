@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/storage/storage_boundaries.dart';
 import 'package:islami_hayat/features/dhikr/data/dhikr_counter_repository.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_counter_page.dart';
+import 'package:islami_hayat/features/dhikr/presentation/dhikr_feedback.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
 final class _MemoryStore implements PrivateUserStore {
@@ -21,7 +22,26 @@ final class _MemoryStore implements PrivateUserStore {
   Future<void> write(String key, String value) async => values[key] = value;
 }
 
-Widget _app({required Locale locale, required DhikrCounterRepository repository}) {
+final class _FakeFeedbackPlayer implements DhikrFeedbackPlayer {
+  int vibrationCalls = 0;
+  int soundCalls = 0;
+
+  @override
+  Future<void> playSound() async {
+    soundCalls += 1;
+  }
+
+  @override
+  Future<void> vibrate() async {
+    vibrationCalls += 1;
+  }
+}
+
+Widget _app({
+  required Locale locale,
+  required DhikrCounterRepository repository,
+  DhikrFeedbackPlayer? feedbackPlayer,
+}) {
   return MaterialApp(
     locale: locale,
     localizationsDelegates: const [
@@ -31,7 +51,14 @@ Widget _app({required Locale locale, required DhikrCounterRepository repository}
       GlobalCupertinoLocalizations.delegate,
     ],
     supportedLocales: AppLocalizations.supportedLocales,
-    home: Scaffold(body: SafeArea(child: DhikrCounterPage(repository: repository))),
+    home: Scaffold(
+      body: SafeArea(
+        child: DhikrCounterPage(
+          repository: repository,
+          feedbackPlayer: feedbackPlayer ?? const SystemDhikrFeedbackPlayer(),
+        ),
+      ),
+    ),
   );
 }
 
@@ -39,7 +66,9 @@ void main() {
   testWidgets('large touch target increments and persists', (tester) async {
     final store = _MemoryStore();
     final repository = DhikrCounterRepository(store);
-    await tester.pumpWidget(_app(locale: const Locale('tr'), repository: repository));
+    await tester.pumpWidget(
+      _app(locale: const Locale('tr'), repository: repository),
+    );
     await tester.pumpAndSettle();
 
     final target = find.byKey(const ValueKey('dhikr-counter-tap-area'));
@@ -50,6 +79,48 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('1'), findsOneWidget);
     expect((await repository.load()).count, 1);
+  });
+
+  testWidgets('vibration and sound are separate opt-in behavior', (tester) async {
+    final store = _MemoryStore();
+    final repository = DhikrCounterRepository(store);
+    final feedback = _FakeFeedbackPlayer();
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('en'),
+        repository: repository,
+        feedbackPlayer: feedback,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final target = find.byKey(const ValueKey('dhikr-counter-tap-area'));
+    await tester.tap(target);
+    await tester.pumpAndSettle();
+    expect(feedback.vibrationCalls, 0);
+    expect(feedback.soundCalls, 0);
+
+    await tester.tap(find.text('Vibration'));
+    await tester.pumpAndSettle();
+    var state = await repository.load();
+    expect(state.vibrationEnabled, isTrue);
+    expect(state.soundEnabled, isFalse);
+
+    await tester.tap(target);
+    await tester.pumpAndSettle();
+    expect(feedback.vibrationCalls, 1);
+    expect(feedback.soundCalls, 0);
+
+    await tester.tap(find.text('Sound'));
+    await tester.pumpAndSettle();
+    state = await repository.load();
+    expect(state.vibrationEnabled, isTrue);
+    expect(state.soundEnabled, isTrue);
+
+    await tester.tap(target);
+    await tester.pumpAndSettle();
+    expect(feedback.vibrationCalls, 2);
+    expect(feedback.soundCalls, 1);
   });
 
   testWidgets('Arabic RTL survives narrow screen with 1.6x text', (tester) async {
@@ -68,6 +139,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('العداد الشخصي'), findsOneWidget);
+    expect(find.text('الاهتزاز'), findsOneWidget);
+    expect(find.text('الصوت'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -78,10 +151,14 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final repository = DhikrCounterRepository(_MemoryStore());
-    await tester.pumpWidget(_app(locale: const Locale('en'), repository: repository));
+    await tester.pumpWidget(
+      _app(locale: const Locale('en'), repository: repository),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Personal Counter'), findsOneWidget);
+    expect(find.text('Vibration'), findsOneWidget);
+    expect(find.text('Sound'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
