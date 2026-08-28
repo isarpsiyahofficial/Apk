@@ -76,7 +76,7 @@ void main() {
     test('high-risk illness mapping remains spiritual support only', () {
       final mapping = QuranThemeVerseCatalog.byThemeId('illness_spiritual_support');
       expect(mapping, isNotNull);
-      expect(mapping!.verses.map((verse) => verse.key).toSet(), {'10:57', '17:82', '26:80'});
+      expect(mapping!.verses.map((verse) => verse.key).toSet(), {'17:82', '21:83', '26:80'});
       expect(mapping.isProductionReady, isFalse);
     });
   });
