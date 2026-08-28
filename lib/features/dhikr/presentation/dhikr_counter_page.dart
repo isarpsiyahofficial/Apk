@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/dhikr/data/dhikr_counter_repository.dart';
 import 'package:islami_hayat/features/dhikr/data/dhikr_history_repository.dart';
+import 'package:islami_hayat/features/dhikr/domain/dhikr_progress_policy.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_feedback.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
@@ -166,7 +167,13 @@ class _DhikrCounterPageState extends State<DhikrCounterPage> {
     }
   }
 
-  Widget _summaryCell(BuildContext context, String label, int value) {
+  Widget _summaryCell(
+    BuildContext context,
+    DhikrProgressSurface surface,
+    String label,
+    int value,
+  ) {
+    DhikrProgressPolicy.requireAllowed(surface);
     final theme = Theme.of(context);
     return Expanded(
       child: Padding(
@@ -319,16 +326,19 @@ class _DhikrCounterPageState extends State<DhikrCounterPage> {
                   children: [
                     _summaryCell(
                       context,
+                      DhikrProgressSurface.localDailyTotal,
                       _text(context, 'Bugün', 'Today', 'اليوم'),
                       summary.todayTotal,
                     ),
                     _summaryCell(
                       context,
+                      DhikrProgressSurface.localWeeklyTotal,
                       _text(context, '7 gün', '7 days', '7 أيام'),
                       summary.lastSevenDaysTotal,
                     ),
                     _summaryCell(
                       context,
+                      DhikrProgressSurface.personalStreak,
                       _text(context, 'Seri', 'Streak', 'التتابع'),
                       summary.currentStreakDays,
                     ),
