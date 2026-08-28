@@ -146,13 +146,21 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('العداد الشخصي'), findsOneWidget);
-    final vibrationToggle =
-        find.byKey(const ValueKey('dhikr-vibration-toggle'));
-    final soundToggle = find.byKey(const ValueKey('dhikr-sound-toggle'));
-    await tester.ensureVisible(vibrationToggle);
-    expect(vibrationToggle, findsOneWidget);
-    await tester.ensureVisible(soundToggle);
-    expect(soundToggle, findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    final list = find.byType(ListView);
+    expect(list, findsOneWidget);
+    await tester.drag(list, const Offset(0, -420));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('dhikr-vibration-toggle')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('dhikr-sound-toggle')),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
