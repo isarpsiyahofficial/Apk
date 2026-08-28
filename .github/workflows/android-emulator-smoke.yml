@@ -110,4 +110,4 @@ jobs:
           heap-size: 256M
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: MAX_MEMTOTAL_KB=1900000 sh scripts/android_emulator_smoke.sh
+          script: MAX_MEMTOTAL_KB=2100000 sh scripts/android_emulator_smoke.sh
