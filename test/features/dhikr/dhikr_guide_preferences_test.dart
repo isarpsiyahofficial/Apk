@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/core/storage/storage_boundaries.dart';
 import 'package:islami_hayat/features/dhikr/data/dhikr_guide_entry.dart';
 import 'package:islami_hayat/features/dhikr/data/dhikr_guide_preferences_repository.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_guide_preferences_view.dart';
+import 'package:islami_hayat/l10n/app_localizations.dart';
 
 final class _MemoryStore implements PrivateUserStore {
   final Map<String, String> values = {};
@@ -66,7 +68,13 @@ Widget _app({
   double textScale = 1,
 }) => MaterialApp(
   locale: locale,
-  supportedLocales: const [Locale('tr'), Locale('en'), Locale('ar')],
+  localizationsDelegates: const [
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  supportedLocales: AppLocalizations.supportedLocales,
   builder: (context, child) => MediaQuery(
     data: MediaQuery.of(context).copyWith(
       textScaler: TextScaler.linear(textScale),
