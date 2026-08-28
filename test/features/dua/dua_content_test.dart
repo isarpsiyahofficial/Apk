@@ -18,6 +18,7 @@ SourceReference _source(ReligiousSourceClass sourceClass) => SourceReference(
 DuaContent _dua({
   required DuaSourceStatus status,
   required List<SourceReference> sources,
+  Set<DuaCategory> categories = const {DuaCategory.morning},
   String? hadithReference,
   String? hadithGrade,
   ContentReviewStatus reviewStatus = ContentReviewStatus.published,
@@ -25,6 +26,7 @@ DuaContent _dua({
   id: 'dua-1',
   sourceStatus: status,
   lengthClass: DuaLengthClass.short,
+  categories: categories,
   text: _text,
   reviewStatus: reviewStatus,
   version: 1,
@@ -108,5 +110,23 @@ void main() {
       dua.toGovernedRecord().sourceStatus,
       ReligiousSourceClass.classicalTraditional,
     );
+  });
+
+  test('dua must have at least one explicit category before publication', () {
+    expect(
+      _dua(
+        status: DuaSourceStatus.quran,
+        sources: [_source(ReligiousSourceClass.quran)],
+        categories: const {},
+      ).canEnterProductionDataset,
+      isFalse,
+    );
+  });
+
+  test('SPEC 238 category taxonomy stays complete', () {
+    expect(DuaCategory.values, hasLength(24));
+    expect(DuaCategory.values, contains(DuaCategory.religiousNights));
+    expect(DuaCategory.values, contains(DuaCategory.spiritualSupportDuringIllness));
+    expect(DuaCategory.values, contains(DuaCategory.debt));
   });
 }
