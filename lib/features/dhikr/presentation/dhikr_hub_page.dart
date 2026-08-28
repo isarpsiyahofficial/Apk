@@ -3,7 +3,7 @@ import 'package:islami_hayat/features/dhikr/data/dhikr_guide_entry.dart';
 import 'package:islami_hayat/features/dhikr/data/dhikr_intention_category.dart';
 import 'package:islami_hayat/features/dhikr/data/divine_name_entry.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_counter_page.dart';
-import 'package:islami_hayat/features/dhikr/presentation/dhikr_guide_page.dart';
+import 'package:islami_hayat/features/dhikr/presentation/dhikr_guide_preferences_view.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_intention_page.dart';
 import 'package:islami_hayat/features/dhikr/presentation/divine_name_guide_page.dart';
 
@@ -81,7 +81,7 @@ class DhikrHubPage extends StatelessWidget {
             child: TabBarView(
               children: [
                 const DhikrCounterPage(),
-                DhikrGuidePage(entries: guideEntries),
+                DhikrGuidePreferencesView(entries: guideEntries),
                 DhikrIntentionPage(
                   suggestions: intentionSuggestions,
                   divineNames: divineNameEntries,
