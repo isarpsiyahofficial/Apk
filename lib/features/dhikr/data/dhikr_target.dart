@@ -18,16 +18,6 @@ final class DhikrTarget {
     this.sourceReference,
   });
 
-  static const int maxCount = 999999999;
-  static const Set<int> supportedPresetCounts = {33, 100};
-
-  final DhikrTargetKind kind;
-  final int count;
-  final String? sourceId;
-  final String? sourceReference;
-
-  bool get isReligiouslySourced => kind == DhikrTargetKind.sourceBacked;
-
   factory DhikrTarget.personal(int count) {
     _validateCount(count);
     return DhikrTarget._(kind: DhikrTargetKind.personal, count: count);
@@ -65,13 +55,6 @@ final class DhikrTarget {
     );
   }
 
-  Map<String, Object?> toJson() => {
-        'kind': kind.name,
-        'count': count,
-        if (sourceId != null) 'sourceId': sourceId,
-        if (sourceReference != null) 'sourceReference': sourceReference,
-      };
-
   factory DhikrTarget.fromJson(Map<String, dynamic> json) {
     final rawKind = json['kind'];
     final rawCount = json['count'];
@@ -86,6 +69,23 @@ final class DhikrTarget {
       _ => throw const FormatException('Unknown dhikr target kind.'),
     };
   }
+
+  static const int maxCount = 999999999;
+  static const Set<int> supportedPresetCounts = {33, 100};
+
+  final DhikrTargetKind kind;
+  final int count;
+  final String? sourceId;
+  final String? sourceReference;
+
+  bool get isReligiouslySourced => kind == DhikrTargetKind.sourceBacked;
+
+  Map<String, Object?> toJson() => {
+        'kind': kind.name,
+        'count': count,
+        if (sourceId != null) 'sourceId': sourceId,
+        if (sourceReference != null) 'sourceReference': sourceReference,
+      };
 
   static DhikrTarget _decodeSourceBacked(
     Map<String, dynamic> json,
