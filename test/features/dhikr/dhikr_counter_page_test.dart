@@ -150,7 +150,7 @@ void main() {
 
     final list = find.byType(ListView);
     expect(list, findsOneWidget);
-    await tester.drag(list, const Offset(0, -420));
+    await tester.drag(list, const Offset(0, -900));
     await tester.pumpAndSettle();
 
     expect(
