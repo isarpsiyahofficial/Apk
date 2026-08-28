@@ -10,10 +10,11 @@ if [ -z "$MEMTOTAL_KB" ]; then
   echo 'Could not read emulator MemTotal' >&2
   exit 1
 fi
-# Android reserves part of configured emulator RAM, so a 1024 MB emulator
-# normally reports slightly less than 1 GiB. Keep a small upper tolerance so
-# this smoke cannot silently regress to a multi-gigabyte emulator.
-if [ "$MEMTOTAL_KB" -gt 1250000 ]; then
+# This smoke intentionally targets a low-memory Android class. Android reserves
+# part of configured AVD RAM, so a 2048 MB guest usually reports slightly less
+# than 2 GiB. Keep a small tolerance but fail if the runner silently regresses
+# to a modern multi-gigabyte profile.
+if [ "$MEMTOTAL_KB" -gt 2300000 ]; then
   echo "Emulator is not low-memory enough: MemTotal=${MEMTOTAL_KB}kB" >&2
   exit 1
 fi
