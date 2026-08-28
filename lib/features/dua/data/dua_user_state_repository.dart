@@ -13,6 +13,17 @@ final class DuaUserState {
         historyIds: <String>[],
       );
 
+  factory DuaUserState.fromJson(Map<String, dynamic> json) {
+    if (json['schemaVersion'] != 1) {
+      throw const DuaUserStateFormatException('Unsupported schema version.');
+    }
+
+    return DuaUserState(
+      favoriteIds: _stringList(json['favoriteIds']).toSet(),
+      historyIds: _stringList(json['historyIds']),
+    );
+  }
+
   final Set<String> favoriteIds;
 
   /// Most-recent first. This is private local usage history and must never be
@@ -24,17 +35,6 @@ final class DuaUserState {
         'favoriteIds': favoriteIds.toList()..sort(),
         'historyIds': historyIds,
       };
-
-  factory DuaUserState.fromJson(Map<String, dynamic> json) {
-    if (json['schemaVersion'] != 1) {
-      throw const DuaUserStateFormatException('Unsupported schema version.');
-    }
-
-    return DuaUserState(
-      favoriteIds: _stringList(json['favoriteIds']).toSet(),
-      historyIds: _stringList(json['historyIds']),
-    );
-  }
 
   static List<String> _stringList(Object? value) {
     if (value is! List) {
