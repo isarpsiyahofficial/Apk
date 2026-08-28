@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/dhikr/data/dhikr_intention_category.dart';
 import 'package:islami_hayat/features/dhikr/data/divine_name_entry.dart';
 
@@ -14,12 +15,12 @@ class DhikrIntentionPage extends StatelessWidget {
   final List<DhikrIntentionSuggestion> suggestions;
   final List<DivineNameEntry> divineNames;
 
-  String _localized(BuildContext context, dynamic value) {
+  String _localized(BuildContext context, LocalizedReligiousText value) {
     final languageCode = Localizations.localeOf(context).languageCode;
     return switch (languageCode) {
-      'ar' => value.ar as String,
-      'en' => value.en as String,
-      _ => value.tr as String,
+      'ar' => value.ar,
+      'en' => value.en,
+      _ => value.tr,
     };
   }
 
