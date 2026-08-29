@@ -8,7 +8,7 @@ void main() {
   test('second T0194 batch is Quran-only and source complete', () {
     expect(
       t0194ProphetBiographySupplements2.keys.toSet(),
-      {'harun', 'dawud', 'suleyman'},
+      {'harun', 'dawud', 'sulayman'},
     );
 
     for (final entry in t0194ProphetBiographySupplements2.entries) {
@@ -63,18 +63,18 @@ void main() {
     );
   });
 
-  test('Suleyman wind jinn and dua claims keep explicit Quran provenance', () {
-    final suleyman = t0194ProphetBiographySupplements2['suleyman']!;
+  test('Sulayman wind jinn and dua claims keep explicit Quran provenance', () {
+    final sulayman = t0194ProphetBiographySupplements2['sulayman']!;
     expect(
-      suleyman[ProphetBiographySectionKey.keyEvents]!.sources.single.locator,
+      sulayman[ProphetBiographySectionKey.keyEvents]!.sources.single.locator,
       'Quran 27:15-16',
     );
     expect(
-      suleyman[ProphetBiographySectionKey.miracles]!.sources.single.locator,
+      sulayman[ProphetBiographySectionKey.miracles]!.sources.single.locator,
       'Quran 34:12-13',
     );
     expect(
-      suleyman[ProphetBiographySectionKey.dua]!.sources.single.locator,
+      sulayman[ProphetBiographySectionKey.dua]!.sources.single.locator,
       'Quran 27:19',
     );
   });
@@ -106,7 +106,7 @@ void main() {
       ProphetBiographyFieldStatus.sourceBacked,
     );
     expect(
-      draft('suleyman').sections[ProphetBiographySectionKey.dua]!.status,
+      draft('sulayman').sections[ProphetBiographySectionKey.dua]!.status,
       ProphetBiographyFieldStatus.sourceBacked,
     );
     expect(canonicalProphetBiographyT0194DatasetIsStructurallyValid, isTrue);
