@@ -81,26 +81,26 @@ final t0194ProphetBiographySupplements2 =
       locator: 'Quran 38:24-25',
     ),
   },
-  'suleyman': <ProphetBiographySectionKey, ProphetBiographyField>{
+  'sulayman': <ProphetBiographySectionKey, ProphetBiographyField>{
     ProphetBiographySectionKey.keyEvents: _quranField(
       tr: 'Kur’an, Dâvûd ve Süleyman’a ilim verildiğini, Süleyman’ın Dâvûd’a vâris olduğunu ve kuşların dilinin kendisine öğretildiğini anlatır.',
       en: 'The Quran recounts David and Solomon being given knowledge, Solomon inheriting from David, and Solomon being taught the speech of birds.',
       ar: 'يروي القرآن أن داود وسليمان أُوتيا علمًا، وأن سليمان ورث داود وعُلّم منطق الطير.',
-      stableId: 'suleyman-q27-15-16',
+      stableId: 'sulayman-q27-15-16',
       locator: 'Quran 27:15-16',
     ),
     ProphetBiographySectionKey.miracles: _quranField(
       tr: 'Kur’an, rüzgârın Süleyman’ın emrine verildiğini ve cinlerden bir grubun Rabbi’nin izniyle onun için çalıştığını bildirir.',
       en: 'The Quran states that the wind was subjected to Solomon and that a group of jinn worked for him by his Lord’s permission.',
       ar: 'يذكر القرآن تسخير الريح لسليمان وعمل فريق من الجن له بإذن ربه.',
-      stableId: 'suleyman-q34-12',
+      stableId: 'sulayman-q34-12',
       locator: 'Quran 34:12-13',
     ),
     ProphetBiographySectionKey.dua: _quranField(
       tr: 'Süleyman, kendisine ve anne-babasına verilen nimetlere şükretmek, Allah’ın razı olacağı salih amel işlemek ve rahmetle salih kullar arasına katılmak için dua eder.',
       en: 'Solomon asks to be enabled to give thanks for the favors granted to him and his parents, to do righteous deeds pleasing to Allah, and to be admitted by mercy among the righteous servants.',
       ar: 'يدعو سليمان أن يُوزع شكر نعمة الله عليه وعلى والديه، وأن يعمل صالحًا يرضاه الله، وأن يُدخله برحمته في عباده الصالحين.',
-      stableId: 'suleyman-q27-19',
+      stableId: 'sulayman-q27-19',
       locator: 'Quran 27:19',
     ),
   },
@@ -122,7 +122,7 @@ final t0194ProphetSupplementReferences2 = <String, List<ProphetVerseReference>>{
     ProphetVerseReference(surah: 38, ayah: 25),
     ProphetVerseReference(surah: 38, ayah: 26),
   ],
-  'suleyman': const <ProphetVerseReference>[
+  'sulayman': const <ProphetVerseReference>[
     ProphetVerseReference(surah: 27, ayah: 15),
     ProphetVerseReference(surah: 27, ayah: 16),
     ProphetVerseReference(surah: 27, ayah: 19),
