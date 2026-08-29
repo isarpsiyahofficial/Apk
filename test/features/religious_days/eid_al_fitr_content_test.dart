@@ -125,13 +125,19 @@ void main() {
         ],
       ].join(' ').toLowerCase();
 
+      // Match affirmative guarantee claims, not safety copy that explicitly says
+      // the app does *not* attach a guarantee. This keeps the regression gate from
+      // producing the same negated-substring false positive caught in T0172.
       for (final forbidden in <String>[
-        'kesin şifa',
-        'kesin para',
-        'kesin kabul',
-        'guaranteed healing',
-        'guaranteed wealth',
-        'guaranteed acceptance',
+        'kesin şifa verir',
+        'kesin para getirir',
+        'kesin kabul edilir',
+        'guarantees healing',
+        'guarantees wealth',
+        'guarantees acceptance',
+        'يضمن الشفاء',
+        'يضمن المال',
+        'يضمن القبول',
       ]) {
         expect(texts.contains(forbidden), isFalse, reason: forbidden);
       }
