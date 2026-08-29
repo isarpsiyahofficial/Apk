@@ -27,7 +27,9 @@ class ProphetChronologyBand {
   final List<SourceReference> sources;
 
   bool get isValid {
-    if (order <= 0 || prophetIds.isEmpty || prophetIds.toSet().length != prophetIds.length) {
+    if (order <= 0 ||
+        prophetIds.isEmpty ||
+        prophetIds.toSet().length != prophetIds.length) {
       return false;
     }
     if (kind == ProphetChronologyBandKind.sequential && prophetIds.length != 1) {
@@ -36,14 +38,17 @@ class ProphetChronologyBand {
     if (kind == ProphetChronologyBandKind.parallel && prophetIds.length < 2) {
       return false;
     }
-    if (certainty != CertaintyLevel.approximate || !_hasTimelineSourceMetadata(sources)) {
+    if (certainty != CertaintyLevel.approximate ||
+        !_hasTimelineSourceMetadata(sources)) {
       return false;
     }
-    return sources.every((source) =>
-        source.sourceClass != ReligiousSourceClass.israiliyat &&
-        source.sourceClass != ReligiousSourceClass.laterTradition &&
-        source.sourceClass != ReligiousSourceClass.disputed &&
-        source.sourceClass != ReligiousSourceClass.unknown);
+    return sources.every(
+      (source) =>
+          source.sourceClass != ReligiousSourceClass.israiliyat &&
+          source.sourceClass != ReligiousSourceClass.laterTradition &&
+          source.sourceClass != ReligiousSourceClass.disputed &&
+          source.sourceClass != ReligiousSourceClass.unknown,
+    );
   }
 }
 
@@ -53,7 +58,6 @@ const _quranRevelationSequenceSource = SourceReference(
   sourceClass: ReligiousSourceClass.quran,
   licenseId: 'quran-reference-only',
   locator: '4:163',
-  url: Uri.parse('https://quran.com/4/163'),
 );
 
 const _tdvProphetReferenceFamily = SourceReference(
@@ -62,7 +66,6 @@ const _tdvProphetReferenceFamily = SourceReference(
   sourceClass: ReligiousSourceClass.earlyIslamicHistoryTafsir,
   licenseId: 'reference-only-no-copy',
   locator: 'individual prophet entries; chronology used only approximately',
-  url: Uri.parse('https://islamansiklopedisi.org.tr/'),
 );
 
 const _timelineSources = <SourceReference>[
@@ -75,28 +78,160 @@ const _timelineSources = <SourceReference>[
 /// Parallel bands deliberately avoid inventing a strict before/after relation
 /// where the product specification groups prophets in the same broad period.
 const mainApproximateProphetChronology = <ProphetChronologyBand>[
-  ProphetChronologyBand(order: 1, prophetIds: ['adam'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 2, prophetIds: ['idris'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 3, prophetIds: ['nuh'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 4, prophetIds: ['hud'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 5, prophetIds: ['salih'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 6, prophetIds: ['ibrahim', 'lut'], kind: ProphetChronologyBandKind.parallel, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 7, prophetIds: ['ismail', 'ishaq'], kind: ProphetChronologyBandKind.parallel, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 8, prophetIds: ['yakub'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 9, prophetIds: ['yusuf'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 10, prophetIds: ['ayyub'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 11, prophetIds: ['shuayb'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 12, prophetIds: ['musa', 'harun'], kind: ProphetChronologyBandKind.parallel, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 13, prophetIds: ['dawud'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 14, prophetIds: ['sulayman'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 15, prophetIds: ['ilyas'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 16, prophetIds: ['alyasa'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 17, prophetIds: ['yunus'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 18, prophetIds: ['dhul_kifl'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 19, prophetIds: ['zakariya'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 20, prophetIds: ['yahya'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 21, prophetIds: ['isa'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
-  ProphetChronologyBand(order: 22, prophetIds: ['muhammad'], kind: ProphetChronologyBandKind.sequential, certainty: CertaintyLevel.approximate, sources: _timelineSources),
+  ProphetChronologyBand(
+    order: 1,
+    prophetIds: ['adam'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 2,
+    prophetIds: ['idris'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 3,
+    prophetIds: ['nuh'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 4,
+    prophetIds: ['hud'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 5,
+    prophetIds: ['salih'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 6,
+    prophetIds: ['ibrahim', 'lut'],
+    kind: ProphetChronologyBandKind.parallel,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 7,
+    prophetIds: ['ismail', 'ishaq'],
+    kind: ProphetChronologyBandKind.parallel,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 8,
+    prophetIds: ['yakub'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 9,
+    prophetIds: ['yusuf'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 10,
+    prophetIds: ['ayyub'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 11,
+    prophetIds: ['shuayb'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 12,
+    prophetIds: ['musa', 'harun'],
+    kind: ProphetChronologyBandKind.parallel,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 13,
+    prophetIds: ['dawud'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 14,
+    prophetIds: ['sulayman'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 15,
+    prophetIds: ['ilyas'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 16,
+    prophetIds: ['alyasa'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 17,
+    prophetIds: ['yunus'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 18,
+    prophetIds: ['dhul_kifl'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 19,
+    prophetIds: ['zakariya'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 20,
+    prophetIds: ['yahya'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 21,
+    prophetIds: ['isa'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
+  ProphetChronologyBand(
+    order: 22,
+    prophetIds: ['muhammad'],
+    kind: ProphetChronologyBandKind.sequential,
+    certainty: CertaintyLevel.approximate,
+    sources: _timelineSources,
+  ),
 ];
 
 const specificationMainChronologyFlattened = <String>[
@@ -169,8 +304,10 @@ bool _sameOrderedIds(List<String> left, List<String> right) {
 
 bool _hasTimelineSourceMetadata(List<SourceReference> sources) =>
     sources.isNotEmpty &&
-    sources.every((source) =>
-        source.id.trim().isNotEmpty &&
-        source.title.trim().isNotEmpty &&
-        source.licenseId.trim().isNotEmpty &&
-        (source.locator?.trim().isNotEmpty ?? false));
+    sources.every(
+      (source) =>
+          source.id.trim().isNotEmpty &&
+          source.title.trim().isNotEmpty &&
+          source.licenseId.trim().isNotEmpty &&
+          (source.locator?.trim().isNotEmpty ?? false),
+    );
