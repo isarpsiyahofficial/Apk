@@ -2,6 +2,7 @@ import 'canonical_prophet_biographies.dart';
 import 'prophet_biography_t0194_supplements.dart';
 import 'prophet_biography_t0194_supplements_2.dart';
 import 'prophet_biography_t0194_supplements_3.dart';
+import 'prophet_biography_t0194_supplements_4.dart';
 import 'prophet_content.dart';
 
 CanonicalProphetBiographyDraft _applySupplement(
@@ -13,6 +14,8 @@ CanonicalProphetBiographyDraft _applySupplement(
       t0194ProphetBiographySupplements2[draft.identity.canonicalId];
   final thirdSupplement =
       t0194ProphetBiographySupplements3[draft.identity.canonicalId];
+  final fourthSupplement =
+      t0194ProphetBiographySupplements4[draft.identity.canonicalId];
   final firstReferences =
       t0194ProphetSupplementReferences[draft.identity.canonicalId] ??
           const <ProphetVerseReference>[];
@@ -22,13 +25,18 @@ CanonicalProphetBiographyDraft _applySupplement(
   final thirdReferences =
       t0194ProphetSupplementReferences3[draft.identity.canonicalId] ??
           const <ProphetVerseReference>[];
+  final fourthReferences =
+      t0194ProphetSupplementReferences4[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
 
   if (firstSupplement == null &&
       secondSupplement == null &&
       thirdSupplement == null &&
+      fourthSupplement == null &&
       firstReferences.isEmpty &&
       secondReferences.isEmpty &&
-      thirdReferences.isEmpty) {
+      thirdReferences.isEmpty &&
+      fourthReferences.isEmpty) {
     return draft;
   }
 
@@ -37,6 +45,7 @@ CanonicalProphetBiographyDraft _applySupplement(
     for (final reference in firstReferences) reference.stableId: reference,
     for (final reference in secondReferences) reference.stableId: reference,
     for (final reference in thirdReferences) reference.stableId: reference,
+    for (final reference in fourthReferences) reference.stableId: reference,
   };
 
   return CanonicalProphetBiographyDraft(
@@ -47,6 +56,7 @@ CanonicalProphetBiographyDraft _applySupplement(
       if (firstSupplement != null) ...firstSupplement,
       if (secondSupplement != null) ...secondSupplement,
       if (thirdSupplement != null) ...thirdSupplement,
+      if (fourthSupplement != null) ...fourthSupplement,
     },
   );
 }
