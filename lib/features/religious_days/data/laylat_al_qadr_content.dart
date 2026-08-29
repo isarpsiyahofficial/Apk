@@ -3,10 +3,9 @@ import 'religious_day_content.dart';
 
 /// T0171 research record for Laylat al-Qadr.
 ///
-/// This file deliberately paraphrases secondary/hadith-reference material instead
-/// of copying third-party translations. It remains `research` until religious and
-/// native-language review evidence is attached; therefore it cannot enter the
-/// production dataset yet.
+/// Third-party material is paraphrased and cited by locator; no third-party
+/// translation is copied. The record stays `research` until religious and
+/// native-language review evidence is attached, so it cannot enter production.
 final ReligiousDayContent laylatAlQadrResearchContent = ReligiousDayContent(
   record: ReligiousContentRecord(
     id: 'religious-day-laylat-al-qadr',
@@ -90,9 +89,9 @@ final ReligiousDayContent laylatAlQadrResearchContent = ReligiousDayContent(
     ReligiousDayEvidenceSection(
       kind: ReligiousDayEvidenceKind.specificWorship,
       text: LocalizedReligiousText(
-        tr: 'Bu geceyi iman ve sevap ümidiyle namazla ihya etmek sahih hadisle sabittir. Ayrıca Hz. Âişe’ye öğretilen bağışlanma duası sahih/hasen-sahih rivayetle aktarılmıştır.',
+        tr: 'Bu geceyi iman ve sevap ümidiyle namazla ihya etmek sahih hadisle sabittir. Ayrıca Hz. Âişe’ye öğretilen bağışlanma duası güçlü bir rivayetle aktarılmıştır.',
         en: 'Spending the night in prayer with faith and hope for reward is established by authentic hadith. A supplication for pardon taught to Aishah is also transmitted in a strong report.',
-        ar: 'قيام هذه الليلة إيماناً واحتساباً ثابت بالحديث الصحيح، كما ورد دعاء العفو الذي عُلِّم لعائشة رضي الله عنها بإسناد قوي.',
+        ar: 'قيام هذه الليلة إيماناً واحتساباً ثابت بالحديث الصحيح، كما ورد دعاء العفو الذي عُلِّم لعائشة رضي الله عنها برواية قوية.',
       ),
       certainty: CertaintyLevel.stronglyAttested,
       sources: [_bukhari2014, _tirmidhi3513],
@@ -123,7 +122,6 @@ const _quran97 = SourceReference(
   sourceClass: ReligiousSourceClass.quran,
   licenseId: 'tanzil-uthmani-v1.1-cc-by-3.0',
   locator: '97:1-5',
-  url: Uri.parse('https://quran.com/97'),
 );
 
 const _bukhari2014 = SourceReference(
@@ -132,7 +130,6 @@ const _bukhari2014 = SourceReference(
   sourceClass: ReligiousSourceClass.sahihHasanHadith,
   licenseId: 'reference-only-no-verbatim-translation-copied',
   locator: 'Book 32, Hadith 1',
-  url: Uri.parse('https://sunnah.com/bukhari/32/1'),
 );
 
 const _bukhari2017 = SourceReference(
@@ -141,7 +138,6 @@ const _bukhari2017 = SourceReference(
   sourceClass: ReligiousSourceClass.sahihHasanHadith,
   licenseId: 'reference-only-no-verbatim-translation-copied',
   locator: 'Book 32, Hadith 4',
-  url: Uri.parse('https://sunnah.com/bukhari/32/4'),
 );
 
 const _tirmidhi3513 = SourceReference(
@@ -150,7 +146,6 @@ const _tirmidhi3513 = SourceReference(
   sourceClass: ReligiousSourceClass.sahihHasanHadith,
   licenseId: 'reference-only-no-verbatim-translation-copied',
   locator: 'Book 48, Hadith 144',
-  url: Uri.parse('https://sunnah.com/tirmidhi/48/144'),
 );
 
 const _tdvLaylatAlQadr = SourceReference(
@@ -159,5 +154,4 @@ const _tdvLaylatAlQadr = SourceReference(
   sourceClass: ReligiousSourceClass.laterTradition,
   licenseId: 'reference-only-no-verbatim-text-copied',
   locator: 'M. Sait Özervarlı, 2001',
-  url: Uri.parse('https://islamansiklopedisi.org.tr/kadir-gecesi'),
 );
