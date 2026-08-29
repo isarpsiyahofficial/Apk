@@ -8,7 +8,7 @@ void main() {
     expect(canonicalProphetBiographyT0194DatasetIsStructurallyValid, isTrue);
   });
 
-  test('Ishaq Yakub Yusuf supplements are applied to canonical drafts', () {
+  test('source supplements are applied to canonical drafts', () {
     CanonicalProphetBiographyDraft byId(String id) =>
         canonicalProphetBiographyT0194Dataset.singleWhere(
           (draft) => draft.identity.canonicalId == id,
@@ -17,6 +17,9 @@ void main() {
     final ishaq = byId('ishaq');
     final yakub = byId('yakub');
     final yusuf = byId('yusuf');
+    final ayyub = byId('ayyub');
+    final shuayb = byId('shuayb');
+    final musa = byId('musa');
 
     expect(
       ishaq.sections[ProphetBiographySectionKey.missionStart]!.status,
@@ -30,14 +33,56 @@ void main() {
       yusuf.sections[ProphetBiographySectionKey.dua]!.sources.single.locator,
       'Quran 12:101',
     );
+    expect(
+      ayyub.sections[ProphetBiographySectionKey.dua]!.sources.single.locator,
+      'Quran 21:83',
+    );
+    expect(
+      shuayb.sections[ProphetBiographySectionKey.community]!
+          .sources
+          .single
+          .locator,
+      'Quran 11:84',
+    );
+    expect(
+      musa.sections[ProphetBiographySectionKey.dua]!.sources.single.locator,
+      'Quran 20:25-35',
+    );
 
-    expect(ishaq.hasPendingResearch, isTrue);
-    expect(yakub.hasPendingResearch, isTrue);
-    expect(yusuf.hasPendingResearch, isTrue);
+    for (final id in const [
+      'ishaq',
+      'yakub',
+      'yusuf',
+      'ayyub',
+      'shuayb',
+      'musa',
+    ]) {
+      expect(byId(id).hasPendingResearch, isTrue, reason: id);
+    }
+
+    expect(
+      shuayb.sections[ProphetBiographySectionKey.geography]!.status,
+      ProphetBiographyFieldStatus.unknownPendingResearch,
+    );
+    expect(
+      musa.sections[ProphetBiographySectionKey.period]!.status,
+      ProphetBiographyFieldStatus.unknownPendingResearch,
+    );
+    expect(
+      musa.sections[ProphetBiographySectionKey.death]!.status,
+      ProphetBiographyFieldStatus.unknownPendingResearch,
+    );
   });
 
   test('supplement Quran references are merged without duplicates', () {
-    for (final id in const ['ishaq', 'yakub', 'yusuf']) {
+    for (final id in const [
+      'ishaq',
+      'yakub',
+      'yusuf',
+      'ayyub',
+      'shuayb',
+      'musa',
+    ]) {
       final draft = canonicalProphetBiographyT0194Dataset.singleWhere(
         (entry) => entry.identity.canonicalId == id,
       );
