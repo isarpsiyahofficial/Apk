@@ -56,7 +56,7 @@ void main() {
           .expand((section) => [section.text.tr, section.text.en, section.text.ar])
           .join(' ')
           .toLowerCase();
-      expect(text.contains('sahuru farz'), isFalse);
+      expect(text.contains('sahur farzdır'), isFalse);
       expect(text.contains('suhur is obligatory'), isFalse);
       expect(text.contains('السحور واجب'), isFalse);
     });
