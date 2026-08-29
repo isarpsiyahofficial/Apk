@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophets.dart';
 import 'package:islami_hayat/features/prophets/data/noncanonical_prophet_candidates.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_content.dart';
 
 void main() {
   group('non-canonical prophet candidates', () {
