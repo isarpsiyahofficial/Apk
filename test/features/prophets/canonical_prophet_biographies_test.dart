@@ -38,8 +38,17 @@ void main() {
       }
     });
 
-    test('first sourced dossiers use Quran evidence without invented chronology', () {
-      const researchedIds = <String>{'adam', 'idris', 'nuh', 'hud', 'salih'};
+    test('sourced dossiers use Quran evidence without invented chronology', () {
+      const researchedIds = <String>{
+        'adam',
+        'idris',
+        'nuh',
+        'hud',
+        'salih',
+        'ibrahim',
+        'lut',
+        'ismail',
+      };
       for (final draft in canonicalProphetBiographyDrafts
           .where((entry) => researchedIds.contains(entry.identity.canonicalId))) {
         expect(
@@ -80,8 +89,8 @@ void main() {
       }
     });
 
-    test('Adam and Noah preserve explicit Quran dua provenance', () {
-      for (final id in const <String>['adam', 'nuh']) {
+    test('Quran dua provenance is preserved for sourced prophet prayers', () {
+      for (final id in const <String>['adam', 'nuh', 'ibrahim', 'ismail']) {
         final draft = canonicalProphetBiographyDrafts.singleWhere(
           (entry) => entry.identity.canonicalId == id,
         );
@@ -91,6 +100,47 @@ void main() {
         expect(dua.sources.single.sourceClass, ReligiousSourceClass.quran);
         expect(dua.sources.single.locator, contains('Quran'));
       }
+    });
+
+    test('Ibrahim fire sign is sourced without inventing date or location', () {
+      final ibrahim = canonicalProphetBiographyDrafts.singleWhere(
+        (entry) => entry.identity.canonicalId == 'ibrahim',
+      );
+      final miracle = ibrahim.sections[ProphetBiographySectionKey.miracles]!;
+      expect(miracle.status, ProphetBiographyFieldStatus.sourceBacked);
+      expect(miracle.sources.single.locator, 'Quran 21:69');
+      expect(
+        ibrahim.sections[ProphetBiographySectionKey.geography]!.status,
+        ProphetBiographyFieldStatus.unknownPendingResearch,
+      );
+      expect(
+        ibrahim.sections[ProphetBiographySectionKey.period]!.status,
+        ProphetBiographyFieldStatus.unknownPendingResearch,
+      );
+    });
+
+    test('Lut rescue account does not promote a modern exact map claim', () {
+      final lut = canonicalProphetBiographyDrafts.singleWhere(
+        (entry) => entry.identity.canonicalId == 'lut',
+      );
+      expect(
+        lut.sections[ProphetBiographySectionKey.keyEvents]!.sources.single.locator,
+        'Quran 11:77-83',
+      );
+      expect(
+        lut.sections[ProphetBiographySectionKey.geography]!.status,
+        ProphetBiographyFieldStatus.unknownPendingResearch,
+      );
+    });
+
+    test('Ismail household claim stays narrower than an invented tribal label', () {
+      final ismail = canonicalProphetBiographyDrafts.singleWhere(
+        (entry) => entry.identity.canonicalId == 'ismail',
+      );
+      final community = ismail.sections[ProphetBiographySectionKey.community]!;
+      expect(community.status, ProphetBiographyFieldStatus.sourceBacked);
+      expect(community.sources.single.locator, 'Quran 19:55');
+      expect(community.text.en, contains('no unverified tribal or community label'));
     });
 
     test('Salih sign is sourced without promoting geography or dates', () {
