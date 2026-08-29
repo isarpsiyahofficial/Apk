@@ -94,6 +94,14 @@ const prophetQuranDatasetSource = SourceReference(
   licenseId: 'CC-BY-3.0',
 );
 
+const prophetUniversalMessageSource = SourceReference(
+  id: 'tanzil-uthmani-v1.1-q21-25',
+  title: 'Tanzil Project — Uthmani Quran Text v1.1',
+  sourceClass: ReligiousSourceClass.quran,
+  licenseId: 'CC-BY-3.0',
+  locator: 'Quran 21:25',
+);
+
 const _unknownField = ProphetBiographyField(
   text: LocalizedReligiousText(
     tr: 'Bu alan için güvenilir ayrıntı henüz doğrulanmadı; kesin bilgi uydurulmayacaktır.',
@@ -104,9 +112,20 @@ const _unknownField = ProphetBiographyField(
   sources: <SourceReference>[],
 );
 
-Map<ProphetBiographySectionKey, ProphetBiographyField> _emptyResearchSections() =>
+const _universalMainMessageField = ProphetBiographyField(
+  text: LocalizedReligiousText(
+    tr: 'Kur’an’ın peygamberlik için verdiği ortak ana mesaj, yalnız Allah’a kulluk edilmesi ve O’ndan başka ilâh olmadığıdır.',
+    en: 'The Quran presents the shared core message of prophethood as worshipping Allah alone, with no deity besides Him.',
+    ar: 'يعرض القرآن الرسالة الجامعة للنبوة بأنها عبادة الله وحده، فلا إله إلا هو.',
+  ),
+  status: ProphetBiographyFieldStatus.sourceBacked,
+  sources: <SourceReference>[prophetUniversalMessageSource],
+);
+
+Map<ProphetBiographySectionKey, ProphetBiographyField> _researchSections() =>
     <ProphetBiographySectionKey, ProphetBiographyField>{
       for (final key in ProphetBiographySectionKey.values) key: _unknownField,
+      ProphetBiographySectionKey.mainMessage: _universalMainMessageField,
     };
 
 final canonicalProphetBiographyDrafts = <CanonicalProphetBiographyDraft>[
@@ -116,7 +135,7 @@ final canonicalProphetBiographyDrafts = <CanonicalProphetBiographyDraft>[
       quranReferences: <ProphetVerseReference>[
         identity.explicitNameReference,
       ],
-      sections: _emptyResearchSections(),
+      sections: _researchSections(),
     ),
 ];
 
