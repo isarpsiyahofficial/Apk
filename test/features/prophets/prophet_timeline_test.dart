@@ -28,20 +28,15 @@ void main() {
       }
     });
 
-    test('known broad contemporaneous groups remain parallel instead of fake ordering', () {
+    test('broad contemporaneous groups stay parallel instead of fake ordering', () {
       final parallelGroups = mainApproximateProphetChronology
           .where((band) => band.kind == ProphetChronologyBandKind.parallel)
-          .map((band) => band.prophetIds)
-          .toList(growable: false);
+          .map((band) => band.prophetIds.join('|'))
+          .toSet();
 
-      expect(
-        parallelGroups,
-        containsAll(<List<String>>[
-          ['ibrahim', 'lut'],
-          ['ismail', 'ishaq'],
-          ['musa', 'harun'],
-        ]),
-      );
+      expect(parallelGroups, contains('ibrahim|lut'));
+      expect(parallelGroups, contains('ismail|ishaq'));
+      expect(parallelGroups, contains('musa|harun'));
     });
 
     test('chronology evidence excludes weak/disputed source classes', () {
