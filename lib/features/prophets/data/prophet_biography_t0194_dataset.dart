@@ -1,6 +1,7 @@
 import 'canonical_prophet_biographies.dart';
 import 'prophet_biography_t0194_supplements.dart';
 import 'prophet_biography_t0194_supplements_2.dart';
+import 'prophet_biography_t0194_supplements_3.dart';
 import 'prophet_content.dart';
 
 CanonicalProphetBiographyDraft _applySupplement(
@@ -10,17 +11,24 @@ CanonicalProphetBiographyDraft _applySupplement(
       t0194ProphetBiographySupplements[draft.identity.canonicalId];
   final secondSupplement =
       t0194ProphetBiographySupplements2[draft.identity.canonicalId];
+  final thirdSupplement =
+      t0194ProphetBiographySupplements3[draft.identity.canonicalId];
   final firstReferences =
       t0194ProphetSupplementReferences[draft.identity.canonicalId] ??
           const <ProphetVerseReference>[];
   final secondReferences =
       t0194ProphetSupplementReferences2[draft.identity.canonicalId] ??
           const <ProphetVerseReference>[];
+  final thirdReferences =
+      t0194ProphetSupplementReferences3[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
 
   if (firstSupplement == null &&
       secondSupplement == null &&
+      thirdSupplement == null &&
       firstReferences.isEmpty &&
-      secondReferences.isEmpty) {
+      secondReferences.isEmpty &&
+      thirdReferences.isEmpty) {
     return draft;
   }
 
@@ -28,6 +36,7 @@ CanonicalProphetBiographyDraft _applySupplement(
     for (final reference in draft.quranReferences) reference.stableId: reference,
     for (final reference in firstReferences) reference.stableId: reference,
     for (final reference in secondReferences) reference.stableId: reference,
+    for (final reference in thirdReferences) reference.stableId: reference,
   };
 
   return CanonicalProphetBiographyDraft(
@@ -37,6 +46,7 @@ CanonicalProphetBiographyDraft _applySupplement(
       ...draft.sections,
       if (firstSupplement != null) ...firstSupplement,
       if (secondSupplement != null) ...secondSupplement,
+      if (thirdSupplement != null) ...thirdSupplement,
     },
   );
 }
