@@ -4,6 +4,7 @@ import 'prophet_biography_t0194_supplements_2.dart';
 import 'prophet_biography_t0194_supplements_3.dart';
 import 'prophet_biography_t0194_supplements_4.dart';
 import 'prophet_biography_t0194_supplements_5.dart';
+import 'prophet_biography_t0194_supplements_6.dart';
 import 'prophet_content.dart';
 
 CanonicalProphetBiographyDraft _applySupplement(
@@ -19,6 +20,8 @@ CanonicalProphetBiographyDraft _applySupplement(
       t0194ProphetBiographySupplements4[draft.identity.canonicalId];
   final fifthSupplement =
       t0194ProphetBiographySupplements5[draft.identity.canonicalId];
+  final sixthSupplement =
+      t0194ProphetBiographySupplements6[draft.identity.canonicalId];
   final firstReferences =
       t0194ProphetSupplementReferences[draft.identity.canonicalId] ??
           const <ProphetVerseReference>[];
@@ -40,6 +43,7 @@ CanonicalProphetBiographyDraft _applySupplement(
       thirdSupplement == null &&
       fourthSupplement == null &&
       fifthSupplement == null &&
+      sixthSupplement == null &&
       firstReferences.isEmpty &&
       secondReferences.isEmpty &&
       thirdReferences.isEmpty &&
@@ -67,6 +71,7 @@ CanonicalProphetBiographyDraft _applySupplement(
       if (thirdSupplement != null) ...thirdSupplement,
       if (fourthSupplement != null) ...fourthSupplement,
       if (fifthSupplement != null) ...fifthSupplement,
+      if (sixthSupplement != null) ...sixthSupplement,
     },
   );
 }
