@@ -1,20 +1,33 @@
 import 'canonical_prophet_biographies.dart';
 import 'prophet_biography_t0194_supplements.dart';
+import 'prophet_biography_t0194_supplements_2.dart';
 import 'prophet_content.dart';
 
 CanonicalProphetBiographyDraft _applySupplement(
   CanonicalProphetBiographyDraft draft,
 ) {
-  final supplement = t0194ProphetBiographySupplements[draft.identity.canonicalId];
-  final extraReferences =
+  final firstSupplement =
+      t0194ProphetBiographySupplements[draft.identity.canonicalId];
+  final secondSupplement =
+      t0194ProphetBiographySupplements2[draft.identity.canonicalId];
+  final firstReferences =
       t0194ProphetSupplementReferences[draft.identity.canonicalId] ??
           const <ProphetVerseReference>[];
+  final secondReferences =
+      t0194ProphetSupplementReferences2[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
 
-  if (supplement == null && extraReferences.isEmpty) return draft;
+  if (firstSupplement == null &&
+      secondSupplement == null &&
+      firstReferences.isEmpty &&
+      secondReferences.isEmpty) {
+    return draft;
+  }
 
   final referencesById = <String, ProphetVerseReference>{
     for (final reference in draft.quranReferences) reference.stableId: reference,
-    for (final reference in extraReferences) reference.stableId: reference,
+    for (final reference in firstReferences) reference.stableId: reference,
+    for (final reference in secondReferences) reference.stableId: reference,
   };
 
   return CanonicalProphetBiographyDraft(
@@ -22,7 +35,8 @@ CanonicalProphetBiographyDraft _applySupplement(
     quranReferences: referencesById.values.toList(growable: false),
     sections: <ProphetBiographySectionKey, ProphetBiographyField>{
       ...draft.sections,
-      if (supplement != null) ...supplement,
+      if (firstSupplement != null) ...firstSupplement,
+      if (secondSupplement != null) ...secondSupplement,
     },
   );
 }
