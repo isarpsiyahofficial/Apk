@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:islamic_life/features/topic_search/domain/topic_theme_scorer.dart';
+import 'package:islami_hayat/features/topic_search/domain/topic_theme_scorer.dart';
 
 void main() {
   group('TopicThemeScorer', () {
@@ -30,8 +30,10 @@ void main() {
         themes: themes,
       );
 
-      expect(result.matches.map((match) => match.themeId),
-          containsAll(<String>['anxiety', 'patience']));
+      expect(
+        result.matches.map((match) => match.themeId),
+        containsAll(<String>['anxiety', 'patience']),
+      );
       expect(result.matches.length, 2);
       expect(result.matches.every((match) => match.score > 0), isTrue);
     });
@@ -79,8 +81,10 @@ void main() {
       );
 
       expect(result.matches.length, 2);
-      expect(result.matches.map((match) => match.themeId),
-          orderedEquals(<String>['anxiety', 'patience']));
+      expect(
+        result.matches.map((match) => match.themeId),
+        orderedEquals(<String>['anxiety', 'patience']),
+      );
     });
 
     test('duplicate theme IDs fail closed', () {
