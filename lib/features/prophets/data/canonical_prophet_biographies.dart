@@ -285,6 +285,110 @@ Map<ProphetBiographySectionKey, ProphetBiographyField> _sectionsFor(
         locator: 'Quran 11:65-68',
       );
       break;
+    case 'ibrahim':
+      sections[ProphetBiographySectionKey.community] = _quranField(
+        tr: 'Kur’an, İbrâhim’in babasına ve toplumuna taptıkları heykelleri sorgulayarak hitap ettiğini anlatır.',
+        en: 'The Quran recounts Abraham addressing his father and people by questioning the statues to which they were devoted.',
+        ar: 'يروي القرآن مخاطبة إبراهيم لأبيه وقومه وسؤاله لهم عن التماثيل التي كانوا يعكفون عليها.',
+        stableId: 'ibrahim-q21-52-54',
+        locator: 'Quran 21:52-54',
+      );
+      sections[ProphetBiographySectionKey.missionStart] = _quranField(
+        tr: 'İbrâhim, göklerin ve yerin Rabbi’ni gerçek Rab olarak göstererek toplumunun putperest geleneğine karşı tevhid çağrısını açıkça ortaya koyar.',
+        en: 'Abraham openly sets out a monotheistic call against his people’s inherited idol worship, identifying the Lord of the heavens and earth as the true Lord.',
+        ar: 'يعلن إبراهيم دعوة التوحيد في مواجهة عبادة الأصنام الموروثة، ويقرر أن رب السماوات والأرض هو الرب الحق.',
+        stableId: 'ibrahim-q21-55-57',
+        locator: 'Quran 21:55-57',
+      );
+      sections[ProphetBiographySectionKey.communityResponse] = _quranField(
+        tr: 'Kur’an, putların kırılmasından sonra toplumunun İbrâhim’i sorguladığını ve sonunda onun yakılmasını istediğini bildirir.',
+        en: 'The Quran states that after the idols were broken, his people questioned Abraham and eventually called for him to be burned.',
+        ar: 'يذكر القرآن أن قومه حاكموا إبراهيم بعد كسر الأصنام ثم دعوا إلى إحراقه.',
+        stableId: 'ibrahim-q21-59-68',
+        locator: 'Quran 21:59-68',
+      );
+      sections[ProphetBiographySectionKey.miracles] = _quranField(
+        tr: 'Kur’an, ateşe İbrâhim için serin ve güvenli olması emrinin verildiğini bildirir.',
+        en: 'The Quran states that the fire was commanded to become cool and safe for Abraham.',
+        ar: 'يذكر القرآن أن النار أُمرت أن تكون بردًا وسلامًا على إبراهيم.',
+        stableId: 'ibrahim-q21-69',
+        locator: 'Quran 21:69',
+      );
+      sections[ProphetBiographySectionKey.keyEvents] = _quranField(
+        tr: 'Kur’an, İbrâhim ile İsmâil’in Beyt’in temellerini yükseltmesini ve bu sırada Allah’a yönelmelerini anlatır.',
+        en: 'The Quran recounts Abraham and Ishmael raising the foundations of the House while turning to Allah in prayer.',
+        ar: 'يروي القرآن رفع إبراهيم وإسماعيل قواعد البيت وتوجههما إلى الله بالدعاء أثناء ذلك.',
+        stableId: 'ibrahim-q2-125-129',
+        locator: 'Quran 2:125-129',
+      );
+      sections[ProphetBiographySectionKey.dua] = _quranField(
+        tr: 'Kur’an, İbrâhim’in güvenli bir belde, putperestlikten korunma, namazı sürdürme ve bağışlanma için yaptığı duaları kaydeder.',
+        en: 'The Quran records Abraham praying for a secure land, protection from idolatry, steadfast prayer, and forgiveness.',
+        ar: 'يسجل القرآن دعاء إبراهيم بالأمن، والبعد عن عبادة الأصنام، وإقامة الصلاة، والمغفرة.',
+        stableId: 'ibrahim-q14-35-41',
+        locator: 'Quran 14:35-41',
+      );
+      break;
+    case 'lut':
+      sections[ProphetBiographySectionKey.community] = _quranField(
+        tr: 'Kur’an, Lût’un kendi kavmine hitap ederek onların açık bir ahlâkî sapmasını eleştirdiğini bildirir.',
+        en: 'The Quran presents Lot addressing his own people and condemning a grave moral transgression among them.',
+        ar: 'يعرض القرآن لوطًا مخاطبًا قومه ومنكرًا عليهم فاحشة ظاهرة.',
+        stableId: 'lut-q7-80-81',
+        locator: 'Quran 7:80-81',
+      );
+      sections[ProphetBiographySectionKey.missionStart] = _quranField(
+        tr: 'Lût’un tebliğinde, toplumunun işlediği kötülükten vazgeçme çağrısı açıkça yer alır.',
+        en: 'Lot’s preaching explicitly includes calling his people away from the wrongdoing described in the Quranic account.',
+        ar: 'تتضمن دعوة لوط إنكار المنكر الذي وصفه القرآن ودعوة قومه إلى تركه.',
+        stableId: 'lut-q7-80-81-call',
+        locator: 'Quran 7:80-81',
+      );
+      sections[ProphetBiographySectionKey.communityResponse] = _quranField(
+        tr: 'Kavminin cevabı, Lût ve beraberindekileri yerleşimlerinden çıkarmayı istemek olmuştur.',
+        en: 'His people’s response was to call for Lot and his household to be expelled from their settlement.',
+        ar: 'كان جواب قومه أن دعوا إلى إخراج لوط وأهله من قريتهم.',
+        stableId: 'lut-q7-82',
+        locator: 'Quran 7:82',
+      );
+      sections[ProphetBiographySectionKey.keyEvents] = _quranField(
+        tr: 'Kur’an, melek elçilerin Lût’a gelişini, ailesinin kurtarılmasını ve inkârcı toplumun cezalandırılmasını anlatır; eşinin istisna edildiğini de açıkça belirtir.',
+        en: 'The Quran recounts the angelic messengers arriving to Lot, the rescue of his household, and the punishment of the rejecting community, while explicitly excepting his wife.',
+        ar: 'يروي القرآن مجيء الملائكة إلى لوط ونجاة أهله وعقوبة القوم المكذبين، مع استثناء امرأته صراحة.',
+        stableId: 'lut-q11-77-83',
+        locator: 'Quran 11:77-83',
+      );
+      break;
+    case 'ismail':
+      sections[ProphetBiographySectionKey.missionStart] = _quranField(
+        tr: 'Kur’an, İsmâil’i sözünde duran, resul ve peygamber olarak anar.',
+        en: 'The Quran describes Ishmael as true to his promise and as a messenger and prophet.',
+        ar: 'يصف القرآن إسماعيل بأنه صادق الوعد ورسولًا نبيًا.',
+        stableId: 'ismail-q19-54',
+        locator: 'Quran 19:54',
+      );
+      sections[ProphetBiographySectionKey.community] = _quranField(
+        tr: 'Kur’an, İsmâil’in ailesine namazı ve zekâtı emrettiğini bildirir; bunun ötesinde doğrulanmamış bir topluluk adı eklenmez.',
+        en: 'The Quran states that Ishmael enjoined prayer and almsgiving upon his household; no unverified tribal or community label is added beyond that.',
+        ar: 'يذكر القرآن أن إسماعيل كان يأمر أهله بالصلاة والزكاة، ولا يُضاف إلى ذلك اسم قوم غير موثق.',
+        stableId: 'ismail-q19-55',
+        locator: 'Quran 19:55',
+      );
+      sections[ProphetBiographySectionKey.keyEvents] = _quranField(
+        tr: 'Kur’an, İsmâil’in İbrâhim ile birlikte Beyt’in temellerini yükselttiğini açıkça anlatır.',
+        en: 'The Quran explicitly recounts Ishmael raising the foundations of the House together with Abraham.',
+        ar: 'يصرح القرآن بأن إسماعيل شارك إبراهيم في رفع قواعد البيت.',
+        stableId: 'ismail-q2-127',
+        locator: 'Quran 2:127',
+      );
+      sections[ProphetBiographySectionKey.dua] = _quranField(
+        tr: 'İbrâhim ve İsmâil, Beyt’in temellerini yükseltirken amellerinin kabulünü, teslimiyetlerini ve soylarından teslim olan bir ümmet çıkmasını Allah’tan birlikte diler.',
+        en: 'While raising the foundations of the House, Abraham and Ishmael jointly ask Allah to accept their work, keep them submitted to Him, and bring forth a submitting community from their descendants.',
+        ar: 'يدعو إبراهيم وإسماعيل عند رفع قواعد البيت بقبول العمل والثبات على الإسلام وأن يجعل من ذريتهما أمةً مسلمة له.',
+        stableId: 'ismail-q2-127-129',
+        locator: 'Quran 2:127-129',
+      );
+      break;
   }
 
   return sections;
@@ -328,6 +432,29 @@ List<ProphetVerseReference> _referencesFor(
         ProphetVerseReference(surah: 11, ayah: 62),
         ProphetVerseReference(surah: 11, ayah: 64),
         ProphetVerseReference(surah: 11, ayah: 68),
+      ]);
+      break;
+    case 'ibrahim':
+      references.addAll(const <ProphetVerseReference>[
+        ProphetVerseReference(surah: 2, ayah: 127),
+        ProphetVerseReference(surah: 14, ayah: 35),
+        ProphetVerseReference(surah: 14, ayah: 41),
+        ProphetVerseReference(surah: 21, ayah: 52),
+        ProphetVerseReference(surah: 21, ayah: 69),
+      ]);
+      break;
+    case 'lut':
+      references.addAll(const <ProphetVerseReference>[
+        ProphetVerseReference(surah: 7, ayah: 82),
+        ProphetVerseReference(surah: 11, ayah: 77),
+        ProphetVerseReference(surah: 11, ayah: 83),
+      ]);
+      break;
+    case 'ismail':
+      references.addAll(const <ProphetVerseReference>[
+        ProphetVerseReference(surah: 2, ayah: 127),
+        ProphetVerseReference(surah: 2, ayah: 129),
+        ProphetVerseReference(surah: 19, ayah: 55),
       ]);
       break;
   }
