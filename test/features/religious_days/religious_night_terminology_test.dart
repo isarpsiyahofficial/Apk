@@ -19,10 +19,9 @@ void main() {
       }
     });
 
-    test('English never mistranslates kandil as a lamp-night religious term', () {
+    test('English titles never mistranslate kandil as a lamp-night religious term', () {
       for (final entry in religiousNightTerminology) {
-        final english = '${entry.title.en} ${entry.culturalNote.en}'.toLowerCase();
-        expect(english, isNot(contains('lamp night')));
+        expect(entry.title.en.toLowerCase(), isNot(contains('lamp night')));
         expect(entry.title.en, isNot(contains('Kandil')));
       }
       expect(
@@ -32,6 +31,13 @@ void main() {
       expect(
         religiousNightTerm(ReligiousNightTerminologyId.laylatAlQadr).title.en,
         'Laylat al-Qadr',
+      );
+      expect(
+        religiousNightTerm(ReligiousNightTerminologyId.laylatAlQadr)
+            .culturalNote
+            .en
+            .toLowerCase(),
+        contains('not translated as “lamp night”'),
       );
     });
 
