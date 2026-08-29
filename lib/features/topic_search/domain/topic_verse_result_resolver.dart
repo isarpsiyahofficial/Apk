@@ -1,5 +1,6 @@
 import 'package:islami_hayat/features/topic_search/data/quran_theme_taxonomy.dart';
 import 'package:islami_hayat/features/topic_search/data/quran_theme_verse_mappings.dart';
+import 'package:islami_hayat/features/topic_search/domain/topic_religious_output_boundary.dart';
 import 'package:islami_hayat/features/topic_search/domain/topic_theme_confidence_gate.dart';
 
 enum TopicResultLocale { tr, en, ar }
@@ -52,14 +53,17 @@ final class TopicVerseResultResolver {
         'must be between 3 and 5',
       );
     }
-    if (!decision.mayResolveVerses || decision.themeIds.isEmpty) return null;
+
+    // T0160 boundary: algorithm-owned output must collapse to canonical theme
+    // IDs before any reviewed religious content may be resolved. Unknown,
+    // duplicate, or structurally inconsistent decisions fail closed here.
+    final selection = TopicReligiousOutputBoundary.enforce(decision);
+    if (!selection.mayResolveReviewedVerses) return null;
 
     final reviewedThemes = <QuranThemeDefinition>[];
     final reviewedMappings = <QuranThemeVerseMapping>[];
-    final seenThemeIds = <String>{};
 
-    for (final themeId in decision.themeIds) {
-      if (!seenThemeIds.add(themeId)) return null;
+    for (final themeId in selection.themeIds) {
       final theme = _themes[themeId];
       final mapping = _mappings[themeId];
       if (theme == null ||
