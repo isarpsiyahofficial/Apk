@@ -23,11 +23,11 @@ ProphetBiographyField _quranField({
       sources: <SourceReference>[_quranSource(stableId, locator)],
     );
 
-/// T0194 research supplements for Ishaq, Ya'qub and Yusuf.
+/// T0194 research supplements layered after the source-backed base biographies.
 ///
 /// Only claims directly supportable from the pinned Quran dataset are placed
-/// here. Exact birth/death years and speculative geography remain outside this
-/// supplement until a later source/certainty review can support them.
+/// here. Exact birth/death years, modern map coordinates and chronology that
+/// the Quran does not establish remain pending instead of being inferred.
 final t0194ProphetBiographySupplements =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'ishaq': <ProphetBiographySectionKey, ProphetBiographyField>{
@@ -120,6 +120,96 @@ final t0194ProphetBiographySupplements =
       locator: 'Quran 12:101',
     ),
   },
+  'ayyub': <ProphetBiographySectionKey, ProphetBiographyField>{
+    ProphetBiographySectionKey.keyEvents: _quranField(
+      tr: 'Kur’an, Eyyûb’un ağır bir sıkıntıyla Rabbine yöneldiğini, ardından sıkıntısının giderildiğini ve ailesinin kendisine yeniden bağışlandığını bildirir; hastalığın türünü veya süresini kesinleştirmez.',
+      en: 'The Quran recounts Job turning to his Lord in severe distress, after which his distress was removed and his family was restored to him; it does not specify the illness or its duration.',
+      ar: 'يروي القرآن توجه أيوب إلى ربه عند الضر، ثم كشف الضر عنه ورد أهله إليه، من غير تحديد نوع المرض أو مدته.',
+      stableId: 'ayyub-q21-83-84',
+      locator: 'Quran 21:83-84',
+    ),
+    ProphetBiographySectionKey.dua: _quranField(
+      tr: 'Eyyûb, kendisine sıkıntı dokunduğunu belirterek Allah’ın merhametine sığınır.',
+      en: 'Job calls upon Allah while acknowledging the distress that has touched him and appealing to His mercy.',
+      ar: 'يدعو أيوب ربه مقرًا بما مسه من الضر ومتوسلًا برحمته.',
+      stableId: 'ayyub-q21-83',
+      locator: 'Quran 21:83',
+    ),
+    ProphetBiographySectionKey.laterImpact: _quranField(
+      tr: 'Kur’an, Eyyûb’un sıkıntısının giderilmesini Allah’tan bir rahmet ve kulluk edenler için bir hatırlatma olarak sunar.',
+      en: 'The Quran presents the removal of Job’s distress as mercy from Allah and a reminder for worshippers.',
+      ar: 'يعرض القرآن كشف الضر عن أيوب رحمةً من الله وذكرى للعابدين.',
+      stableId: 'ayyub-q21-84',
+      locator: 'Quran 21:84',
+    ),
+  },
+  'shuayb': <ProphetBiographySectionKey, ProphetBiographyField>{
+    ProphetBiographySectionKey.community: _quranField(
+      tr: 'Kur’an, Şuayb’ın Medyen halkına gönderildiğini açıkça belirtir.',
+      en: 'The Quran explicitly states that Shuayb was sent to the people of Midian.',
+      ar: 'يصرح القرآن بأن شعيبًا أُرسل إلى أهل مدين.',
+      stableId: 'shuayb-q11-84',
+      locator: 'Quran 11:84',
+    ),
+    ProphetBiographySectionKey.missionStart: _quranField(
+      tr: 'Şuayb’ın çağrısı Allah’a kulluğu, ölçü ve tartıda hakkaniyeti, insanların mallarını eksiltmemeyi ve yeryüzünde bozgunculuk yapmamayı birlikte vurgular.',
+      en: 'Shuayb’s call joins worship of Allah with fairness in measure and weight, not depriving people of their goods, and avoiding corruption on earth.',
+      ar: 'تجمع دعوة شعيب بين عبادة الله والعدل في الكيل والميزان وعدم بخس الناس أشياءهم وترك الفساد في الأرض.',
+      stableId: 'shuayb-q11-84-86',
+      locator: 'Quran 11:84-86',
+    ),
+    ProphetBiographySectionKey.communityResponse: _quranField(
+      tr: 'Kavmi, atalarının taptıklarını ve mallarında diledikleri gibi tasarrufu bırakmalarını istemesini alaycı bir itirazla karşıladı.',
+      en: 'His people answered with a mocking objection to being asked to leave what their ancestors worshipped and to restrain how they dealt with their property.',
+      ar: 'واجه قومه دعوته باعتراض ساخر على ترك ما كان يعبد آباؤهم وعلى تقييد تصرفهم في أموالهم.',
+      stableId: 'shuayb-q11-87',
+      locator: 'Quran 11:87',
+    ),
+    ProphetBiographySectionKey.keyEvents: _quranField(
+      tr: 'Kur’an, hüküm geldiğinde Şuayb ve beraberindeki iman edenlerin rahmetle kurtarıldığını, zulmedenlerin ise cezaya uğradığını bildirir.',
+      en: 'The Quran states that when the decree came, Shuayb and those who believed with him were saved by mercy, while the wrongdoers were overtaken by punishment.',
+      ar: 'يذكر القرآن أنه لما جاء الأمر نُجّي شعيب والذين آمنوا معه برحمة، وأخذ العذاب الذين ظلموا.',
+      stableId: 'shuayb-q11-94-95',
+      locator: 'Quran 11:94-95',
+    ),
+  },
+  'musa': <ProphetBiographySectionKey, ProphetBiographyField>{
+    ProphetBiographySectionKey.childhoodYouth: _quranField(
+      tr: 'Kur’an, Mûsâ’nın annesine onu emzirmesinin, korktuğunda nehre bırakmasının bildirildiğini; ardından Mûsâ’nın annesine geri döndürüldüğünü anlatır.',
+      en: 'The Quran recounts Moses’ mother being instructed to nurse him and, when afraid for him, place him in the river; it then recounts his return to his mother.',
+      ar: 'يروي القرآن إلهام أم موسى أن ترضعه وأن تلقيه في اليم عند الخوف عليه، ثم إعادته إليها.',
+      stableId: 'musa-q28-7-13',
+      locator: 'Quran 28:7-13',
+    ),
+    ProphetBiographySectionKey.missionStart: _quranField(
+      tr: 'Kur’an, Mûsâ’ya vadide hitap edildiğini, Allah’ın kendisini tanıttığını ve ona Firavun ile ileri gelenlerine yönelmesi için deliller verildiğini anlatır.',
+      en: 'The Quran recounts Moses being addressed in the valley, Allah identifying Himself to him, and signs being given for his mission to Pharaoh and his chiefs.',
+      ar: 'يروي القرآن نداء موسى في الوادي وتعريف الله له بنفسه وإعطاءه آيات لمهمته إلى فرعون وملئه.',
+      stableId: 'musa-q28-30-32',
+      locator: 'Quran 28:30-32',
+    ),
+    ProphetBiographySectionKey.communityResponse: _quranField(
+      tr: 'Firavun, Mûsâ’nın çağrısına karşı çıkarak onu hapisle tehdit etti; Mûsâ ise kendisine verilen açık delilleri gösterdi.',
+      en: 'Pharaoh opposed Moses’ call and threatened him with imprisonment, while Moses presented the clear signs given to him.',
+      ar: 'عارض فرعون دعوة موسى وهدده بالسجن، فأظهر موسى ما أُعطي من الآيات البينات.',
+      stableId: 'musa-q26-29-33',
+      locator: 'Quran 26:29-33',
+    ),
+    ProphetBiographySectionKey.miracles: _quranField(
+      tr: 'Kur’an, Mûsâ’ya asasının dönüşmesi ve elinin kusursuz biçimde beyaz görünmesi şeklinde iki açık delil verildiğini bildirir.',
+      en: 'The Quran states that Moses was given two clear signs: the transformation of his staff and his hand appearing white without harm.',
+      ar: 'يذكر القرآن أن موسى أُعطي برهانين ظاهرين: تحول عصاه وخروج يده بيضاء من غير سوء.',
+      stableId: 'musa-q28-31-32',
+      locator: 'Quran 28:31-32',
+    ),
+    ProphetBiographySectionKey.dua: _quranField(
+      tr: 'Mûsâ, görevinin başında gönlüne ferahlık verilmesini, işinin kolaylaştırılmasını, sözünün anlaşılmasını ve kardeşi Hârûn’un kendisine yardımcı kılınmasını diler.',
+      en: 'At the outset of his mission, Moses asks for ease in his task, clarity in his speech, and for his brother Aaron to be appointed as his helper.',
+      ar: 'في بداية مهمته يسأل موسى ربه شرح صدره وتيسير أمره وفهم كلامه وأن يجعل أخاه هارون معينًا له.',
+      stableId: 'musa-q20-25-35',
+      locator: 'Quran 20:25-35',
+    ),
+  },
 };
 
 final t0194ProphetSupplementReferences = <String, List<ProphetVerseReference>>{
@@ -143,5 +233,28 @@ final t0194ProphetSupplementReferences = <String, List<ProphetVerseReference>>{
     ProphetVerseReference(surah: 12, ayah: 21),
     ProphetVerseReference(surah: 12, ayah: 100),
     ProphetVerseReference(surah: 12, ayah: 101),
+  ],
+  'ayyub': const <ProphetVerseReference>[
+    ProphetVerseReference(surah: 6, ayah: 84),
+    ProphetVerseReference(surah: 21, ayah: 83),
+    ProphetVerseReference(surah: 21, ayah: 84),
+  ],
+  'shuayb': const <ProphetVerseReference>[
+    ProphetVerseReference(surah: 11, ayah: 84),
+    ProphetVerseReference(surah: 11, ayah: 85),
+    ProphetVerseReference(surah: 11, ayah: 86),
+    ProphetVerseReference(surah: 11, ayah: 87),
+    ProphetVerseReference(surah: 11, ayah: 94),
+    ProphetVerseReference(surah: 11, ayah: 95),
+  ],
+  'musa': const <ProphetVerseReference>[
+    ProphetVerseReference(surah: 20, ayah: 25),
+    ProphetVerseReference(surah: 20, ayah: 35),
+    ProphetVerseReference(surah: 26, ayah: 29),
+    ProphetVerseReference(surah: 26, ayah: 33),
+    ProphetVerseReference(surah: 28, ayah: 7),
+    ProphetVerseReference(surah: 28, ayah: 13),
+    ProphetVerseReference(surah: 28, ayah: 30),
+    ProphetVerseReference(surah: 28, ayah: 32),
   ],
 };
