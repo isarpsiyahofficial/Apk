@@ -121,7 +121,7 @@ void main() {
         'kesin kabul edilir',
         'bütün günahlar kesin silinir',
         '100 kez oku',
-        'guaranteed acceptance',
+        'fasting guarantees acceptance',
         'all sins are guaranteed erased',
         'recite 100 times',
         'يضمن القبول',
