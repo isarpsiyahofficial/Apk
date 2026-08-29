@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:islamic_life/core/content/content_governance.dart';
-import 'package:islamic_life/features/prophets/data/canonical_prophet_biographies.dart';
-import 'package:islamic_life/features/prophets/data/canonical_prophets.dart';
+import 'package:islami_hayat/core/content/content_governance.dart';
+import 'package:islami_hayat/features/prophets/data/canonical_prophet_biographies.dart';
+import 'package:islami_hayat/features/prophets/data/canonical_prophets.dart';
 
 void main() {
   group('T0194 canonical prophet biography research dossiers', () {
