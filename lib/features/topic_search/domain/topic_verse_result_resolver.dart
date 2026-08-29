@@ -1,5 +1,6 @@
 import 'package:islami_hayat/features/topic_search/data/quran_theme_taxonomy.dart';
 import 'package:islami_hayat/features/topic_search/data/quran_theme_verse_mappings.dart';
+import 'package:islami_hayat/features/topic_search/domain/topic_health_safety_policy.dart';
 import 'package:islami_hayat/features/topic_search/domain/topic_religious_output_boundary.dart';
 import 'package:islami_hayat/features/topic_search/domain/topic_theme_confidence_gate.dart';
 
@@ -10,11 +11,17 @@ class TopicVerseResult {
     required this.themeIds,
     required this.verses,
     required this.whyShown,
+    this.safetyNotice,
   });
 
   final List<String> themeIds;
   final List<QuranVerseReference> verses;
   final String whyShown;
+
+  /// Non-null only for result themes that require an explicit high-risk safety
+  /// message. This copy is fixed by policy; it is not generated from the user
+  /// question and is not a medical diagnosis or treatment recommendation.
+  final String? safetyNotice;
 }
 
 /// Resolves a confident topic decision only against explicitly expert-reviewed
@@ -103,13 +110,27 @@ final class TopicVerseResultResolver {
 
     if (verses.length < 3) return null;
 
+    final resolvedThemeIds = List<String>.unmodifiable(
+      reviewedThemes.map((theme) => theme.id),
+    );
+
     return TopicVerseResult(
-      themeIds: List<String>.unmodifiable(
-        reviewedThemes.map((theme) => theme.id),
-      ),
+      themeIds: resolvedThemeIds,
       verses: List<QuranVerseReference>.unmodifiable(verses),
       whyShown: _whyShown(reviewedThemes, locale),
+      safetyNotice: TopicHealthSafetyPolicy.noticeFor(
+        resolvedThemeIds,
+        locale: _safetyLocale(locale),
+      ),
     );
+  }
+
+  static TopicSafetyLocale _safetyLocale(TopicResultLocale locale) {
+    return switch (locale) {
+      TopicResultLocale.tr => TopicSafetyLocale.tr,
+      TopicResultLocale.en => TopicSafetyLocale.en,
+      TopicResultLocale.ar => TopicSafetyLocale.ar,
+    };
   }
 
   static String _whyShown(
