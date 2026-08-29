@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophet_biographies.dart';
+import 'package:islami_hayat/features/prophets/data/canonical_prophets.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_content.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_source_class_audit.dart';
 
 void main() {
@@ -8,6 +10,7 @@ void main() {
     canonicalId: 'test',
     name: LocalizedReligiousText(tr: 'Test', en: 'Test', ar: 'اختبار'),
     arabicName: 'اختبار',
+    explicitNameReference: ProphetVerseReference(surah: 1, ayah: 1),
   );
   const unknownText = LocalizedReligiousText(
     tr: 'kesin bilgi uydurulmayacaktır',
@@ -19,7 +22,9 @@ void main() {
   CanonicalProphetBiographyDraft draftWith(ProphetBiographyField field) {
     return CanonicalProphetBiographyDraft(
       identity: identity,
-      quranReferences: const [],
+      quranReferences: const <ProphetVerseReference>[
+        ProphetVerseReference(surah: 1, ayah: 1),
+      ],
       sections: <ProphetBiographySectionKey, ProphetBiographyField>{
         for (final key in ProphetBiographySectionKey.values)
           key: key == ProphetBiographySectionKey.mainMessage
@@ -27,7 +32,7 @@ void main() {
               : const ProphetBiographyField(
                   text: unknownText,
                   status: ProphetBiographyFieldStatus.unknownPendingResearch,
-                  sources: [],
+                  sources: <SourceReference>[],
                 ),
       },
     );
@@ -44,7 +49,7 @@ void main() {
         const ProphetBiographyField(
           text: sourceText,
           status: ProphetBiographyFieldStatus.sourceBacked,
-          sources: [],
+          sources: <SourceReference>[],
         ),
       ),
     ]);
@@ -58,7 +63,7 @@ void main() {
         const ProphetBiographyField(
           text: sourceText,
           status: ProphetBiographyFieldStatus.sourceBacked,
-          sources: [
+          sources: <SourceReference>[
             SourceReference(
               id: 'unknown-source',
               title: 'Unknown',
@@ -80,7 +85,7 @@ void main() {
         const ProphetBiographyField(
           text: sourceText,
           status: ProphetBiographyFieldStatus.sourceBacked,
-          sources: [
+          sources: <SourceReference>[
             SourceReference(
               id: 'quran-test',
               title: 'Quran',
@@ -101,7 +106,7 @@ void main() {
         const ProphetBiographyField(
           text: unknownText,
           status: ProphetBiographyFieldStatus.unknownPendingResearch,
-          sources: [
+          sources: <SourceReference>[
             SourceReference(
               id: 'quran-test',
               title: 'Quran',
