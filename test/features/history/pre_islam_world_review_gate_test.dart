@@ -8,7 +8,9 @@ void main() {
   );
 
   PreIslamWorldContextEntry entryById(String id) {
-    return preIslamWorldContextDataset.entries.single((entry) => entry.id == id);
+    return preIslamWorldContextDataset.entries.singleWhere(
+      (entry) => entry.id == id,
+    );
   }
 
   PreIslamWorldContextEntry promoted(PreIslamWorldContextEntry entry) {
