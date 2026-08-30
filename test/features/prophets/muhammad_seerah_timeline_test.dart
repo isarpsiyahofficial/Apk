@@ -4,12 +4,14 @@ import 'package:islami_hayat/features/prophets/data/muhammad_seerah_timeline.dar
 
 void main() {
   group('T0201 Muhammad seerah chronology', () {
-    test('working chronology passes fail-closed audit', () {
+    test('working chronology covers every required SPEC 884 event family', () {
       expect(auditMuhammadSeerahT0201(muhammadSeerahT0201Events), isEmpty);
-      expect(muhammadSeerahT0201Events.length, greaterThanOrEqualTo(9));
+      expect(muhammadSeerahT0201Events.length, SeerahEventKind.values.length);
+      expect(muhammadSeerahT0201Events.map((event) => event.kind).toSet(),
+          SeerahEventKind.values.toSet());
     });
 
-    test('events are strictly ordered and multilingual', () {
+    test('events are strictly ordered and TR EN AR complete', () {
       var previous = 0;
       for (final event in muhammadSeerahT0201Events) {
         expect(event.order, greaterThan(previous));
@@ -34,7 +36,7 @@ void main() {
       expect(sourceClasses, isNot(contains(ReligiousSourceClass.unknown)));
     });
 
-    test('Quran sources retain pinned Tanzil license and locators', () {
+    test('Quran sources retain pinned Tanzil identity license and locator', () {
       final quranSources = muhammadSeerahT0201Events
           .expand((event) => event.sources)
           .where((source) => source.sourceClass == ReligiousSourceClass.quran)
@@ -47,14 +49,15 @@ void main() {
       }
     });
 
-    test('hadith is bibliographic reference only, never copied translation asset', () {
+    test('hadith remains bibliographic REFERENCE-ONLY metadata', () {
       final hadithSources = muhammadSeerahT0201Events
           .expand((event) => event.sources)
           .where((source) =>
               source.sourceClass == ReligiousSourceClass.sahihHasanHadith)
           .toList();
       expect(hadithSources, isNotEmpty);
-      expect(hadithSources.every((source) => source.licenseId == 'REFERENCE-ONLY'),
+      expect(
+          hadithSources.every((source) => source.licenseId == 'REFERENCE-ONLY'),
           isTrue);
     });
 
@@ -66,35 +69,74 @@ void main() {
       expect(birth.certainty, CertaintyLevel.stronglyAttested);
     });
 
-    test('Hira event requires both sahih report and Quran link', () {
-      final hira = muhammadSeerahT0201Events.singleWhere(
-          (event) => event.kind == SeerahEventKind.hiraAndFirstRevelation);
-      expect(
-          hira.sources.any((source) =>
-              source.sourceClass == ReligiousSourceClass.sahihHasanHadith &&
-              source.locator == 'Sahih al-Bukhari 3'),
-          isTrue);
-      expect(
-          hira.sources.any((source) =>
-              source.sourceClass == ReligiousSourceClass.quran &&
-              source.locator == '96:1-5'),
-          isTrue);
+    test('youth and marriage use explicit sahih locators without invented dates', () {
+      final youth = muhammadSeerahT0201Events
+          .singleWhere((event) => event.kind == SeerahEventKind.youth);
+      final marriage = muhammadSeerahT0201Events
+          .singleWhere((event) => event.kind == SeerahEventKind.marriage);
+      expect(youth.sources.single.locator, 'Sahih al-Bukhari 2262');
+      expect(marriage.sources.single.locator, 'Sahih al-Bukhari 3817');
+      expect('${youth.summary.tr} ${marriage.summary.tr}', isNot(contains('595')));
     });
 
-    test('Hijrah cave is independently linked to Quran and sahih report', () {
+    test('Hira and first revelation are separate linked milestones', () {
+      final hira = muhammadSeerahT0201Events
+          .singleWhere((event) => event.kind == SeerahEventKind.hira);
+      final first = muhammadSeerahT0201Events
+          .singleWhere((event) => event.kind == SeerahEventKind.firstRevelation);
+      expect(hira.sources.single.locator, 'Sahih al-Bukhari 3');
+      expect(first.sources.map((source) => source.locator),
+          containsAll(<String?>['Sahih al-Bukhari 3', '96:1-5']));
+    });
+
+    test('Meccan pressure and migration milestones keep sahih locators', () {
+      final expected = <SeerahEventKind, String>{
+        SeerahEventKind.abyssiniaMigration: 'Sahih al-Bukhari 3876',
+        SeerahEventKind.boycott: 'Sahih al-Bukhari 3058',
+        SeerahEventKind.taif: 'Sahih al-Bukhari 3231',
+        SeerahEventKind.aqaba: 'Sahih al-Bukhari 3893',
+      };
+      for (final entry in expected.entries) {
+        final event = muhammadSeerahT0201Events
+            .singleWhere((candidate) => candidate.kind == entry.key);
+        expect(event.sources.map((source) => source.locator), contains(entry.value));
+      }
+    });
+
+    test('Isra and Miraj preserve Quran and sahih layers together', () {
+      final event = muhammadSeerahT0201Events
+          .singleWhere((candidate) => candidate.kind == SeerahEventKind.israMiraj);
+      expect(event.sources.map((source) => source.locator),
+          containsAll(<String?>['17:1', 'Sahih al-Bukhari 3887']));
+    });
+
+    test('Hijrah and Medina arrival are separate sourced milestones', () {
       final hijrah = muhammadSeerahT0201Events
           .singleWhere((event) => event.kind == SeerahEventKind.hijrah);
+      final medina = muhammadSeerahT0201Events
+          .singleWhere((event) => event.kind == SeerahEventKind.medinaArrival);
       expect(hijrah.sources.map((source) => source.locator),
           containsAll(<String?>['9:40', 'Sahih al-Bukhari 4663']));
+      expect(medina.sources.single.locator, 'Sahih al-Bukhari 3925');
     });
 
-    test('conquest of Mecca has sahih event locator', () {
-      final conquest = muhammadSeerahT0201Events.singleWhere(
-          (event) => event.kind == SeerahEventKind.conquestOfMecca);
-      expect(conquest.sources.single.locator, 'Sahih al-Bukhari 4280');
+    test('campaign treaty conquest farewell and death chain is sourced', () {
+      final expected = <SeerahEventKind, String>{
+        SeerahEventKind.badr: '3:123',
+        SeerahEventKind.pledgeUnderTree: '48:18',
+        SeerahEventKind.hudaybiyyahTreaty: 'Sahih al-Bukhari 2711-2712',
+        SeerahEventKind.conquestOfMecca: 'Sahih al-Bukhari 4280',
+        SeerahEventKind.farewellPilgrimage: 'Sahih al-Bukhari 1739',
+        SeerahEventKind.death: 'Sahih al-Bukhari 4449',
+      };
+      for (final entry in expected.entries) {
+        final event = muhammadSeerahT0201Events
+            .singleWhere((candidate) => candidate.kind == entry.key);
+        expect(event.sources.map((source) => source.locator), contains(entry.value));
+      }
     });
 
-    test('audit rejects duplicate IDs and non-increasing chronology', () {
+    test('audit rejects duplicate IDs duplicate source IDs and chronology collisions', () {
       final original = muhammadSeerahT0201Events.first;
       final duplicate = MuhammadSeerahEvent(
         id: original.id,
@@ -113,17 +155,22 @@ void main() {
         ...muhammadSeerahT0201Events.skip(1),
       ]);
       expect(issues.any((issue) => issue.contains('duplicate event id')), isTrue);
+      expect(issues.any((issue) => issue.contains('duplicate source id')), isTrue);
       expect(issues.any((issue) => issue.contains('not strictly increasing')), isTrue);
     });
 
-    test('audit rejects missing required event families', () {
-      final withoutBadr = muhammadSeerahT0201Events
-          .where((event) => event.kind != SeerahEventKind.badr)
-          .toList();
-      expect(
-          auditMuhammadSeerahT0201(withoutBadr)
-              .any((issue) => issue.contains('badr')),
-          isTrue);
+    test('audit rejects any missing SPEC 884 event family', () {
+      for (final kind in SeerahEventKind.values) {
+        final withoutKind = muhammadSeerahT0201Events
+            .where((event) => event.kind != kind)
+            .toList();
+        expect(
+          auditMuhammadSeerahT0201(withoutKind)
+              .any((issue) => issue.contains(kind.name)),
+          isTrue,
+          reason: 'missing ${kind.name} must fail closed',
+        );
+      }
     });
   });
 }
