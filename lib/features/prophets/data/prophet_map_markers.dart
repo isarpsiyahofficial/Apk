@@ -29,7 +29,7 @@ class ProphetMapMarker {
   final double? longitude;
 
   bool get isValid {
-    if (!label.isComplete || sources.isEmpty || sources.any(!_hasMapSource)) {
+    if (!label.isComplete || sources.isEmpty || !sources.every(_hasMapSource)) {
       return false;
     }
     if ((latitude == null) != (longitude == null)) return false;
