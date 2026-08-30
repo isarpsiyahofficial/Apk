@@ -6,19 +6,19 @@ import 'package:islami_hayat/features/prophets/domain/prophet_deep_link_executio
 void main() {
   group('ProphetDeepLinkExecutor', () {
     test('dispatches Quran verse with exact prophet/surah/ayah', () async {
-      String? prophetId;
-      int? surah;
-      int? ayah;
+      String? capturedProphetId;
+      int? capturedSurah;
+      int? capturedAyah;
       final executor = ProphetDeepLinkExecutor(
         ProphetDeepLinkExecutionHandlers(
           openQuranVerse: ({
-            required String prophetId: receivedProphetId,
-            required int surah: receivedSurah,
-            required int ayah: receivedAyah,
+            required String prophetId,
+            required int surah,
+            required int ayah,
           }) async {
-            prophetId = receivedProphetId;
-            surah = receivedSurah;
-            ayah = receivedAyah;
+            capturedProphetId = prophetId;
+            capturedSurah = surah;
+            capturedAyah = ayah;
           },
         ),
       );
@@ -32,9 +32,9 @@ void main() {
 
       expect(result.executed, isTrue);
       expect(result.failure, isNull);
-      expect(prophetId, 'adam');
-      expect(surah, 7);
-      expect(ayah, 23);
+      expect(capturedProphetId, 'adam');
+      expect(capturedSurah, 7);
+      expect(capturedAyah, 23);
     });
 
     test('dispatches dua/history/map target IDs without rewriting them', () async {
