@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_deep_links.dart';
 import 'package:islami_hayat/features/prophets/presentation/revelation_journey_page.dart';
 
 void main() {
@@ -9,6 +10,7 @@ void main() {
     required Locale locale,
     required TextDirection direction,
     Size size = const Size(390, 844),
+    ProphetQuranTargetOpener? quranTargetOpener,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -26,7 +28,9 @@ void main() {
         ],
         home: Directionality(
           textDirection: direction,
-          child: const RevelationJourneyPage(),
+          child: RevelationJourneyPage(
+            quranTargetOpener: quranTargetOpener,
+          ),
         ),
       ),
     );
@@ -68,6 +72,64 @@ void main() {
     expect(find.byKey(const ValueKey('journey-prophet-lut')), findsOneWidget);
     expect(find.text('Parallel'), findsWidgets);
     expect(find.textContaining('no exact date'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('prophet pill exposes verified Quran refs and dispatches exact link', (
+    tester,
+  ) async {
+    ProphetDeepLink? opened;
+    await pumpJourney(
+      tester,
+      locale: const Locale('en'),
+      direction: TextDirection.ltr,
+      size: const Size(1280, 900),
+      quranTargetOpener: (context, link) async {
+        opened = link;
+        return true;
+      },
+    );
+
+    await tester.tap(find.byKey(const ValueKey('journey-filter-abrahamic')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('journey-prophet-ibrahim')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Verified Quran references'), findsOneWidget);
+    expect(find.byType(ListTile), findsWidgets);
+
+    await tester.tap(find.byType(ListTile).first);
+    await tester.pumpAndSettle();
+
+    expect(opened, isNotNull);
+    expect(opened!.kind, ProphetDeepLinkKind.quranVerse);
+    expect(opened!.prophetId, 'ibrahim');
+    expect(opened!.surah, isNotNull);
+    expect(opened!.ayah, isNotNull);
+    expect(opened!.isValid, isTrue);
+    expect(find.text('Verified Quran references'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('failed Quran dispatch keeps reference sheet visible', (
+    tester,
+  ) async {
+    await pumpJourney(
+      tester,
+      locale: const Locale('en'),
+      direction: TextDirection.ltr,
+      size: const Size(1280, 900),
+      quranTargetOpener: (context, link) async => false,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('journey-filter-abrahamic')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('journey-prophet-ibrahim')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(ListTile).first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Verified Quran references'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
