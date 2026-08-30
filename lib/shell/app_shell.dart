@@ -6,7 +6,7 @@ import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
 import 'package:islami_hayat/features/quran/presentation/quran_hub_page.dart';
-import 'package:islami_hayat/features/shared/presentation/section_placeholder_page.dart';
+import 'package:islami_hayat/features/shared/presentation/discover_page.dart';
 import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
 import 'package:islami_hayat/features/today/presentation/today_page.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
@@ -105,11 +105,7 @@ class _AppShellState extends State<AppShell> {
         onOpenDailyVerse: _openQuranAt,
       ),
       QuranHubPage(progressRepository: _quranProgressRepository),
-      SectionPlaceholderPage(
-        title: l10n.discoverTitle,
-        subtitle: l10n.discoverSubtitle,
-        icon: Icons.explore_outlined,
-      ),
+      const DiscoverPage(),
       const DhikrHubPage(),
       const ProfilePage(),
     ];
