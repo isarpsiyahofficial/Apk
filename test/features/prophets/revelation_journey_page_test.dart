@@ -55,14 +55,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Abrahamic period'), findsWidgets);
-    expect(find.text('Abraham'), findsOneWidget);
-    expect(find.text('Lot'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('journey-prophet-ibrahim')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('journey-prophet-lut')), findsOneWidget);
     expect(find.text('Parallel'), findsWidgets);
     expect(find.textContaining('no exact date'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('exact-date-free period filter shows Jesus without Muhammad', (
+  testWidgets('exact-date-free period filter shows Isa without Muhammad', (
     tester,
   ) async {
     await pumpJourney(
@@ -76,8 +79,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Jesus period'), findsWidgets);
-    expect(find.text('Jesus'), findsOneWidget);
-    expect(find.text('Muhammad'), findsNothing);
+    expect(find.byKey(const ValueKey('journey-prophet-isa')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('journey-prophet-muhammad')),
+      findsNothing,
+    );
     expect(find.textContaining('no exact date'), findsOneWidget);
   });
 
