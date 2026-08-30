@@ -32,10 +32,6 @@ class IslamicHistoryPeriod {
 class IslamicHistoryPeriodTree {
   IslamicHistoryPeriodTree._(this.periods);
 
-  static const String preIslamWorldId = 'pre_islam_world';
-
-  final List<IslamicHistoryPeriod> periods;
-
   factory IslamicHistoryPeriodTree.validated(
     List<IslamicHistoryPeriod> periods,
   ) {
@@ -73,6 +69,10 @@ class IslamicHistoryPeriodTree {
 
     return IslamicHistoryPeriodTree._(List.unmodifiable(periods));
   }
+
+  static const String preIslamWorldId = 'pre_islam_world';
+
+  final List<IslamicHistoryPeriod> periods;
 }
 
 const preIslamWorldPeriod = IslamicHistoryPeriod(
