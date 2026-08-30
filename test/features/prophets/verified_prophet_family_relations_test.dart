@@ -48,7 +48,7 @@ void main() {
     test('shared or traditional genealogy is never inferred automatically', () {
       expect(verifiedFamilyRelationsFor('ismail'), isEmpty);
       expect(verifiedFamilyRelationsFor('ishaq'), isEmpty);
-      expect(verifiedFamilyRelationsFor('yaqub'), isEmpty);
+      expect(verifiedFamilyRelationsFor('yakub'), isEmpty);
     });
 
     test('unknown prophet id fails closed instead of returning guessed data', () {
