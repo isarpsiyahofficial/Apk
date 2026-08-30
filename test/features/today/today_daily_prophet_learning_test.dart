@@ -122,7 +122,10 @@ void main() {
       find.byKey(const ValueKey('daily-prophet-learning-card')),
       findsOneWidget,
     );
-    expect(find.text('Bugün Ne Öğrenelim?'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('daily-prophet-learning-title')),
+      findsOneWidget,
+    );
     expect(
       find.byKey(const ValueKey('daily-prophet-learning-source')),
       findsOneWidget,
