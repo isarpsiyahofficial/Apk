@@ -35,11 +35,19 @@ class HistoryReviewEvidence {
 }
 
 class PreIslamWorldReviewGate {
-  const PreIslamWorldReviewGate({required this.sourceFamilies});
+  const PreIslamWorldReviewGate({
+    required this.sourceFamilies,
+    required this.allowedSupportingSourceIdsByEntry,
+  });
 
   /// Maps a source locator ID to an independent publication/work family.
   /// Chapters from the same monograph must use the same family ID.
   final Map<String, String> sourceFamilies;
+
+  /// Exact research sources authorized for each canonical history topic.
+  /// This permits independently researched supplemental works to become review
+  /// evidence without silently mutating the original draft content snapshot.
+  final Map<String, List<String>> allowedSupportingSourceIdsByEntry;
 
   static String contentSnapshot(PreIslamWorldContextEntry entry) {
     return [
@@ -89,8 +97,18 @@ class PreIslamWorldReviewGate {
         evidenceSourceIds.any((sourceId) => !knownSourceIds.contains(sourceId))) {
       throw StateError('History review evidence contains duplicate or unknown sources.');
     }
-    if (evidenceSourceIds.any((sourceId) => !entry.sourceIds.contains(sourceId))) {
-      throw StateError('Review sources must be attached to the reviewed history entry.');
+
+    final authorizedSourceIds =
+        allowedSupportingSourceIdsByEntry[entry.id]?.toSet();
+    if (authorizedSourceIds == null || authorizedSourceIds.isEmpty) {
+      throw StateError('History topic has no authorized research evidence set.');
+    }
+    if (evidenceSourceIds.any(
+      (sourceId) => !authorizedSourceIds.contains(sourceId),
+    )) {
+      throw StateError(
+        'Review sources must belong to the authorized research set for the topic.',
+      );
     }
 
     final families = <String>{};
@@ -111,7 +129,13 @@ const preIslamWorldSourceFamilies = <String, String>{
   'grasso_2023_ch1': 'grasso_2023_pre_islamic_arabia',
   'grasso_2023_ch3': 'grasso_2023_pre_islamic_arabia',
   'grasso_2023_ch4': 'grasso_2023_pre_islamic_arabia',
-  'cambridge_history_islam_pre_islamic_arabia': 'new_cambridge_history_of_islam_v1',
+  'cambridge_history_islam_pre_islamic_arabia':
+      'new_cambridge_history_of_islam_v1',
   'hallaq_pre_islamic_near_east': 'hallaq_origins_evolution_islamic_law',
   'hawting_idolatry': 'hawting_idea_of_idolatry',
+  'hoyland_2001_arabia_arabs': 'hoyland_2001_arabia_arabs',
+  'fisher_2015_arabs_empires': 'fisher_2015_arabs_empires',
+  'robin_2015_himyar_aksum': 'fisher_2015_arabs_empires',
+  'bowersock_2013_throne_adulis': 'bowersock_2013_throne_adulis',
+  'robin_harris_2021_judaism_arabia': 'cambridge_history_judaism_v5',
 };
