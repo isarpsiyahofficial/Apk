@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:islamic_life/core/content/content_governance.dart';
-import 'package:islamic_life/features/prophets/data/muhammad_seerah_timeline.dart';
+import 'package:islami_hayat/core/content/content_governance.dart';
+import 'package:islami_hayat/features/prophets/data/muhammad_seerah_timeline.dart';
 
 void main() {
   group('T0201 Muhammad seerah chronology', () {
