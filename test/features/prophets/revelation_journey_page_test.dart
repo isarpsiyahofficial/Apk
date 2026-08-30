@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/features/prophets/presentation/revelation_journey_page.dart';
 
@@ -18,6 +19,11 @@ void main() {
       MaterialApp(
         locale: locale,
         supportedLocales: const [Locale('tr'), Locale('en'), Locale('ar')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         home: Directionality(
           textDirection: direction,
           child: const RevelationJourneyPage(),
