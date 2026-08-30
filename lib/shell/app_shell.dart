@@ -3,6 +3,7 @@ import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_hub_page.dart';
 import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
+import 'package:islami_hayat/features/prophets/presentation/prophet_story_page.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
 import 'package:islami_hayat/features/quran/presentation/quran_hub_page.dart';
@@ -60,6 +61,14 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
+  void _openProphetStory(String prophetId) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ProphetStoryPage(prophetId: prophetId),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -103,6 +112,7 @@ class _AppShellState extends State<AppShell> {
         now: widget.todayNow,
         onContinueQuran: () => _select(1),
         onOpenDailyVerse: _openQuranAt,
+        onOpenProphetStory: _openProphetStory,
       ),
       QuranHubPage(progressRepository: _quranProgressRepository),
       const DiscoverPage(),
