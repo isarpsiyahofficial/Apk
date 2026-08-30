@@ -30,9 +30,13 @@ final class _MemoryPrivateStore implements PrivateUserStore {
 }
 
 final class _FakeDailyVerseRepository implements DailyVerseDataSource {
-  _FakeDailyVerseRepository({this.fail = false});
+  _FakeDailyVerseRepository({
+    this.fail = false,
+    this.address = const QuranAddress(surah: 2, ayah: 286),
+  });
 
   final bool fail;
+  final QuranAddress address;
 
   @override
   Future<DailyVerse> forDate({
@@ -40,11 +44,14 @@ final class _FakeDailyVerseRepository implements DailyVerseDataSource {
     required String languageCode,
   }) async {
     if (fail) throw StateError('unverified source');
+    final isYunusStory = address.surah == 21 && address.ayah == 87;
     return DailyVerse(
-      address: const QuranAddress(surah: 2, ayah: 286),
+      address: address,
       arabic: 'نَصٌّ عَرَبِيٌّ مُخْتَبَرٌ',
       translation: languageCode == 'ar' ? null : 'Verified translation fixture',
-      surahDisplayName: languageCode == 'ar' ? 'البقرة' : 'Al-Baqara',
+      surahDisplayName: languageCode == 'ar'
+          ? (isYunusStory ? 'الأنبياء' : 'البقرة')
+          : (isYunusStory ? 'Al-Anbiya' : 'Al-Baqara'),
     );
   }
 }
@@ -83,6 +90,7 @@ Widget _app({
   required DailyVerseDataSource dailyVerseRepository,
   QuranVerseUserStateDataSource? verseUserStateRepository,
   Future<void> Function(QuranAddress address)? onOpenDailyVerse,
+  ValueChanged<String>? onOpenProphetStory,
 }) {
   return MaterialApp(
     locale: locale,
@@ -104,6 +112,7 @@ Widget _app({
         dailyVerseRepository: dailyVerseRepository,
         now: () => DateTime(2026, 8, 28, 21, 15),
         onOpenDailyVerse: onOpenDailyVerse,
+        onOpenProphetStory: onOpenProphetStory,
       ),
     ),
   );
@@ -145,6 +154,51 @@ void main() {
 
     expect(opened, isNotNull);
     expect(opened!.key, '2:286');
+  });
+
+  testWidgets('T0203 exact prophet verse exposes and dispatches story action', (
+    tester,
+  ) async {
+    String? openedProphetId;
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('tr'),
+        dailyVerseRepository: _FakeDailyVerseRepository(
+          address: const QuranAddress(surah: 21, ayah: 87),
+        ),
+        onOpenProphetStory: (prophetId) => openedProphetId = prophetId,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final action = find.byKey(
+      const ValueKey('daily-verse-prophet-story-yunus'),
+    );
+    expect(action, findsOneWidget);
+    expect(find.textContaining('Bu kıssayı keşfet'), findsOneWidget);
+
+    await tester.tap(action);
+    await tester.pump();
+
+    expect(openedProphetId, 'yunus');
+  });
+
+  testWidgets('T0203 does not invent story action for unrelated verse', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('en'),
+        dailyVerseRepository: _FakeDailyVerseRepository(),
+        onOpenProphetStory: (_) {},
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('daily-verse-prophet-story-yunus')),
+      findsNothing,
+    );
   });
 
   testWidgets('daily verse favorite toggles exact canonical verse locally', (
@@ -199,6 +253,34 @@ void main() {
     expect(Directionality.of(tester.element(card)), TextDirection.rtl);
     expect(find.text('البقرة · 2:286'), findsOneWidget);
     expect(find.text('Verified translation fixture'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Arabic T0203 story action remains RTL-safe on a 320px phone', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 760);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('ar'),
+        dailyVerseRepository: _FakeDailyVerseRepository(
+          address: const QuranAddress(surah: 21, ayah: 87),
+        ),
+        onOpenProphetStory: (_) {},
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final action = find.byKey(
+      const ValueKey('daily-verse-prophet-story-yunus'),
+    );
+    expect(action, findsOneWidget);
+    expect(Directionality.of(tester.element(action)), TextDirection.rtl);
+    expect(find.textContaining('استكشف هذه القصة'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
