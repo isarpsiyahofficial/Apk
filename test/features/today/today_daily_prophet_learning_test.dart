@@ -68,6 +68,7 @@ Widget _app({
   required Locale locale,
   required DateTime date,
   required ValueChanged<String> onOpenProphetStory,
+  TextScaler textScaler = TextScaler.noScaling,
 }) {
   return MaterialApp(
     locale: locale,
@@ -79,6 +80,13 @@ Widget _app({
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
     ],
+    builder: (context, child) {
+      final media = MediaQuery.of(context);
+      return MediaQuery(
+        data: media.copyWith(textScaler: textScaler),
+        child: child!,
+      );
+    },
     home: Scaffold(
       body: TodayPage(
         quranProgressRepository: QuranReadingProgressRepository(
@@ -140,13 +148,11 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      MediaQuery(
-        data: const MediaQueryData(textScaler: TextScaler.linear(1.6)),
-        child: _app(
-          locale: const Locale('ar'),
-          date: DateTime(2026, 8, 30),
-          onOpenProphetStory: (_) {},
-        ),
+      _app(
+        locale: const Locale('ar'),
+        date: DateTime(2026, 8, 30),
+        onOpenProphetStory: (_) {},
+        textScaler: const TextScaler.linear(1.6),
       ),
     );
     await tester.pumpAndSettle();
@@ -157,7 +163,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('ماذا نتعلّم اليوم؟'), findsOneWidget);
-    expect(find.text('المصدر', findRichText: true), findsWidgets);
+    expect(find.textContaining('المصدر:'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
