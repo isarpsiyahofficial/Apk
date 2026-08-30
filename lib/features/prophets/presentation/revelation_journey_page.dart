@@ -173,17 +173,6 @@ class _JourneyCopy {
     required this.periods,
   });
 
-  final String title;
-  final String intro;
-  final String allPeriods;
-  final String parallel;
-  final String approximateNotice;
-  final String parallelSemantics;
-  final String sequentialSemantics;
-  final Map<RevelationJourneyPeriod, String> periods;
-
-  String periodLabel(RevelationJourneyPeriod period) => periods[period]!;
-
   factory _JourneyCopy.forLocale(Locale locale) {
     if (locale.languageCode == 'ar') {
       return const _JourneyCopy(
@@ -238,4 +227,15 @@ class _JourneyCopy {
       },
     );
   }
+
+  final String title;
+  final String intro;
+  final String allPeriods;
+  final String parallel;
+  final String approximateNotice;
+  final String parallelSemantics;
+  final String sequentialSemantics;
+  final Map<RevelationJourneyPeriod, String> periods;
+
+  String periodLabel(RevelationJourneyPeriod period) => periods[period]!;
 }
