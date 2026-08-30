@@ -19,15 +19,15 @@ void main() {
     expect(ids, isEmpty);
   });
 
-  test('nearby verse does not fuzzy-match a prophet story', () {
+  test('adjacent verse does not fuzzy-match the Yunus story', () {
     final exact = prophetStoryIdsForDailyVerse(
       const QuranAddress(surah: 21, ayah: 87),
     );
-    final nearby = prophetStoryIdsForDailyVerse(
-      const QuranAddress(surah: 21, ayah: 88),
+    final adjacent = prophetStoryIdsForDailyVerse(
+      const QuranAddress(surah: 21, ayah: 86),
     );
 
     expect(exact, contains('yunus'));
-    expect(nearby, isNot(contains('yunus')));
+    expect(adjacent, isNot(contains('yunus')));
   });
 }
