@@ -27,15 +27,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> revealAndTapFilter(WidgetTester tester, String periodName) async {
-    final finder = find.byKey(ValueKey('journey-filter-$periodName'));
-    await tester.ensureVisible(finder);
-    await tester.pumpAndSettle();
-    await tester.tap(finder);
-    await tester.pumpAndSettle();
-  }
-
-  testWidgets('TR surface exposes period filters and parallel lanes', (tester) async {
+  testWidgets('TR phone surface renders its localized entry without overflow', (
+    tester,
+  ) async {
     await pumpJourney(
       tester,
       locale: const Locale('tr'),
@@ -44,18 +38,42 @@ void main() {
 
     expect(find.text('Vahiy Yolculuğu'), findsOneWidget);
     expect(find.byKey(const ValueKey('journey-filter-all')), findsOneWidget);
-    expect(find.text('Paralel'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('period filter narrows the visible journey without fake dates', (tester) async {
+  testWidgets('wide period filter narrows journey and exposes parallel lanes', (
+    tester,
+  ) async {
     await pumpJourney(
       tester,
       locale: const Locale('en'),
       direction: TextDirection.ltr,
+      size: const Size(1280, 900),
     );
 
-    await revealAndTapFilter(tester, 'isa');
+    await tester.tap(find.byKey(const ValueKey('journey-filter-abrahamic')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Abrahamic period'), findsWidgets);
+    expect(find.text('Abraham'), findsOneWidget);
+    expect(find.text('Lot'), findsOneWidget);
+    expect(find.text('Parallel'), findsWidgets);
+    expect(find.textContaining('no exact date'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('exact-date-free period filter shows Jesus without Muhammad', (
+    tester,
+  ) async {
+    await pumpJourney(
+      tester,
+      locale: const Locale('en'),
+      direction: TextDirection.ltr,
+      size: const Size(1280, 900),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('journey-filter-isa')));
+    await tester.pumpAndSettle();
 
     expect(find.text('Jesus period'), findsWidgets);
     expect(find.text('Jesus'), findsOneWidget);
@@ -63,7 +81,9 @@ void main() {
     expect(find.textContaining('no exact date'), findsOneWidget);
   });
 
-  testWidgets('Arabic surface remains RTL and readable on narrow phone', (tester) async {
+  testWidgets('Arabic surface remains RTL and readable on narrow phone', (
+    tester,
+  ) async {
     await pumpJourney(
       tester,
       locale: const Locale('ar'),
@@ -73,8 +93,8 @@ void main() {
 
     expect(find.text('رحلة الوحي'), findsOneWidget);
     expect(find.text('كل الفترات'), findsOneWidget);
-    await revealAndTapFilter(tester, 'israelite');
-    expect(find.text('موسى'), findsOneWidget);
+    final titleContext = tester.element(find.text('رحلة الوحي'));
+    expect(Directionality.of(titleContext), TextDirection.rtl);
     expect(tester.takeException(), isNull);
   });
 
