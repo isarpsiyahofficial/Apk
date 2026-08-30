@@ -1,10 +1,25 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/storage/secure_private_user_store.dart';
+import '../../quran/data/quran_reading_progress_repository.dart';
+import '../../quran/presentation/quran_reader_page.dart';
 import '../data/canonical_prophets.dart';
+import '../data/prophet_biography_t0194_dataset.dart';
+import '../data/prophet_deep_links.dart';
 import '../data/revelation_journey_timeline.dart';
 
+typedef ProphetQuranTargetOpener = Future<bool> Function(
+  BuildContext context,
+  ProphetDeepLink link,
+);
+
 class RevelationJourneyPage extends StatefulWidget {
-  const RevelationJourneyPage({super.key});
+  const RevelationJourneyPage({
+    super.key,
+    this.quranTargetOpener,
+  });
+
+  final ProphetQuranTargetOpener? quranTargetOpener;
 
   @override
   State<RevelationJourneyPage> createState() => _RevelationJourneyPageState();
@@ -57,7 +72,12 @@ class _RevelationJourneyPageState extends State<RevelationJourneyPage> {
                 ),
                 const SizedBox(height: 20),
                 for (final segment in segments) ...[
-                  _TimelineSegmentCard(segment: segment, copy: copy),
+                  _TimelineSegmentCard(
+                    segment: segment,
+                    copy: copy,
+                    quranTargetOpener:
+                        widget.quranTargetOpener ?? _openQuranTarget,
+                  ),
                   const SizedBox(height: 12),
                 ],
               ],
@@ -70,10 +90,15 @@ class _RevelationJourneyPageState extends State<RevelationJourneyPage> {
 }
 
 class _TimelineSegmentCard extends StatelessWidget {
-  const _TimelineSegmentCard({required this.segment, required this.copy});
+  const _TimelineSegmentCard({
+    required this.segment,
+    required this.copy,
+    required this.quranTargetOpener,
+  });
 
   final RevelationJourneySegment segment;
   final _JourneyCopy copy;
+  final ProphetQuranTargetOpener quranTargetOpener;
 
   @override
   Widget build(BuildContext context) {
@@ -117,6 +142,8 @@ class _TimelineSegmentCard extends StatelessWidget {
                         'journey-prophet-${identity.canonicalId}',
                       ),
                       identity: identity,
+                      copy: copy,
+                      quranTargetOpener: quranTargetOpener,
                     ),
                 ],
               ),
@@ -131,9 +158,16 @@ class _TimelineSegmentCard extends StatelessWidget {
 }
 
 class _ProphetNamePill extends StatelessWidget {
-  const _ProphetNamePill({required this.identity, super.key});
+  const _ProphetNamePill({
+    required this.identity,
+    required this.copy,
+    required this.quranTargetOpener,
+    super.key,
+  });
 
   final CanonicalProphetIdentity identity;
+  final _JourneyCopy copy;
+  final ProphetQuranTargetOpener quranTargetOpener;
 
   @override
   Widget build(BuildContext context) {
@@ -144,16 +178,142 @@ class _ProphetNamePill extends StatelessWidget {
       _ => identity.name.tr,
     };
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+    return Material(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
         borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-        child: Text(name),
+        onTap: () => _showProphetQuranReferences(
+          context,
+          identity: identity,
+          displayName: name,
+          copy: copy,
+          quranTargetOpener: quranTargetOpener,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(name),
+              const SizedBox(width: 6),
+              const Icon(Icons.menu_book_outlined, size: 17),
+            ],
+          ),
+        ),
       ),
     );
+  }
+}
+
+Future<void> _showProphetQuranReferences(
+  BuildContext context, {
+  required CanonicalProphetIdentity identity,
+  required String displayName,
+  required _JourneyCopy copy,
+  required ProphetQuranTargetOpener quranTargetOpener,
+}) async {
+  final biography = canonicalProphetBiographyT0194Dataset.firstWhere(
+    (entry) => entry.identity.canonicalId == identity.canonicalId,
+  );
+  final references = biography.quranReferences;
+  if (references.isEmpty) return;
+
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (sheetContext) => SafeArea(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 560),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    displayName,
+                    style: Theme.of(sheetContext).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(copy.quranReferences),
+                ],
+              ),
+            ),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 20),
+                itemCount: references.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (itemContext, index) {
+                  final reference = references[index];
+                  final link = ProphetDeepLink.quranVerse(
+                    prophetId: identity.canonicalId,
+                    verse: reference,
+                  );
+                  return ListTile(
+                    key: ValueKey(
+                      'journey-quran-${identity.canonicalId}-${reference.stableId}',
+                    ),
+                    leading: const Icon(Icons.menu_book_outlined),
+                    title: Text(copy.verseLabel(reference.surah, reference.ayah)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () async {
+                      final opened = await quranTargetOpener(context, link);
+                      if (!opened || !sheetContext.mounted) return;
+                      Navigator.of(sheetContext).pop();
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Future<bool> _openQuranTarget(
+  BuildContext context,
+  ProphetDeepLink link,
+) async {
+  if (!link.isValid ||
+      link.kind != ProphetDeepLinkKind.quranVerse ||
+      link.surah == null ||
+      link.ayah == null) {
+    return false;
+  }
+
+  final progressRepository = QuranReadingProgressRepository(
+    SecurePrivateUserStore(),
+  );
+  try {
+    final current = await progressRepository.load();
+    final target = current.copyWith(surah: link.surah, ayah: link.ayah);
+    await progressRepository.save(target);
+    if (!context.mounted) return false;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => QuranReaderPage(
+          progressRepository: progressRepository,
+        ),
+      ),
+    );
+    return true;
+  } catch (_) {
+    if (context.mounted) {
+      final copy = _JourneyCopy.forLocale(Localizations.localeOf(context));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(copy.quranOpenFailed)),
+      );
+    }
+    return false;
   }
 }
 
@@ -169,6 +329,8 @@ class _JourneyCopy {
     required this.approximateNotice,
     required this.parallelSemantics,
     required this.sequentialSemantics,
+    required this.quranReferences,
+    required this.quranOpenFailed,
     required this.periods,
   });
 
@@ -182,6 +344,8 @@ class _JourneyCopy {
         approximateNotice: 'الفترة تقريبية؛ التاريخ الدقيق غير مثبت هنا.',
         parallelSemantics: 'أنبياء معروضون في فترة متوازية',
         sequentialSemantics: 'مرحلة في التسلسل التقريبي',
+        quranReferences: 'مراجع القرآن الموثقة',
+        quranOpenFailed: 'تعذر فتح موضع الآية بأمان.',
         periods: {
           RevelationJourneyPeriod.firstProphets: 'الأنبياء الأوائل',
           RevelationJourneyPeriod.abrahamic: 'الفترة الإبراهيمية',
@@ -200,6 +364,8 @@ class _JourneyCopy {
         approximateNotice: 'Approximate period; no exact date is asserted here.',
         parallelSemantics: 'Prophets shown in a parallel period',
         sequentialSemantics: 'Stage in the approximate chronology',
+        quranReferences: 'Verified Quran references',
+        quranOpenFailed: 'The verse position could not be opened safely.',
         periods: {
           RevelationJourneyPeriod.firstProphets: 'First prophets',
           RevelationJourneyPeriod.abrahamic: 'Abrahamic period',
@@ -217,6 +383,8 @@ class _JourneyCopy {
       approximateNotice: 'Dönem yaklaşık gösterilir; burada kesin tarih iddia edilmez.',
       parallelSemantics: 'Paralel dönemde gösterilen peygamberler',
       sequentialSemantics: 'Yaklaşık kronolojide bir aşama',
+      quranReferences: 'Doğrulanmış Kur’an referansları',
+      quranOpenFailed: 'Ayet konumu güvenli biçimde açılamadı.',
       periods: {
         RevelationJourneyPeriod.firstProphets: 'İlk peygamberler',
         RevelationJourneyPeriod.abrahamic: 'İbrahimî dönem',
@@ -234,7 +402,11 @@ class _JourneyCopy {
   final String approximateNotice;
   final String parallelSemantics;
   final String sequentialSemantics;
+  final String quranReferences;
+  final String quranOpenFailed;
   final Map<RevelationJourneyPeriod, String> periods;
 
   String periodLabel(RevelationJourneyPeriod period) => periods[period]!;
+
+  String verseLabel(int surah, int ayah) => '$surah:$ayah';
 }
