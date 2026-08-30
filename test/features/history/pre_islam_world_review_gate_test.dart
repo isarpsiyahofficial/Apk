@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/features/history/data/pre_islam_world_context.dart';
+import 'package:islami_hayat/features/history/data/pre_islam_world_secondary_research.dart';
 import 'package:islami_hayat/features/history/domain/pre_islam_world_review_gate.dart';
 
 void main() {
   const gate = PreIslamWorldReviewGate(
     sourceFamilies: preIslamWorldSourceFamilies,
+    allowedSupportingSourceIdsByEntry: preIslamWorldTopicResearchSources,
   );
 
   PreIslamWorldContextEntry entryById(String id) {
@@ -34,7 +36,8 @@ void main() {
       entryId: entry.id,
       reviewedContentSnapshot: PreIslamWorldReviewGate.contentSnapshot(entry),
       certainty: certainty,
-      supportingSourceIds: supportingSourceIds ?? entry.sourceIds,
+      supportingSourceIds: supportingSourceIds ??
+          preIslamWorldTopicResearchSources[entry.id]!,
       factualReviewApproved: true,
       trNativeReviewApproved: true,
       enNativeReviewApproved: true,
@@ -50,27 +53,29 @@ void main() {
     expect(
       () => gate.requireProductionReady(
         entry: entry,
-        sources: preIslamWorldContextDataset.sources,
+        sources: preIslamWorldIndependentResearch.sources,
         evidence: approvedEvidence(entry),
       ),
       throwsStateError,
     );
   });
 
-  test('reviewed entry passes with exact snapshot and two independent works', () {
-    final entry = promoted(entryById('mecca'));
-
-    expect(
-      () => gate.requireProductionReady(
-        entry: entry,
-        sources: preIslamWorldContextDataset.sources,
-        evidence: approvedEvidence(entry),
-      ),
-      returnsNormally,
-    );
+  test('all 11 canonical topics can consume two-family research evidence', () {
+    for (final draft in preIslamWorldContextDataset.entries) {
+      final entry = promoted(draft);
+      expect(
+        () => gate.requireProductionReady(
+          entry: entry,
+          sources: preIslamWorldIndependentResearch.sources,
+          evidence: approvedEvidence(entry),
+        ),
+        returnsNormally,
+        reason: 'Independent evidence must be usable for ${entry.id}',
+      );
+    }
   });
 
-  test('two chapters from the same monograph do not count as two sources', () {
+  test('same-work chapters cannot satisfy the two-source production gate', () {
     final entry = promoted(entryById('south_arabia_yemen'));
     final evidence = approvedEvidence(
       entry,
@@ -80,7 +85,27 @@ void main() {
     expect(
       () => gate.requireProductionReady(
         entry: entry,
-        sources: preIslamWorldContextDataset.sources,
+        sources: preIslamWorldIndependentResearch.sources,
+        evidence: evidence,
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('unapproved source cannot be substituted even when academically known', () {
+    final entry = promoted(entryById('aksum'));
+    final evidence = approvedEvidence(
+      entry,
+      supportingSourceIds: const [
+        'grasso_2023_ch4',
+        'hoyland_2001_arabia_arabs',
+      ],
+    );
+
+    expect(
+      () => gate.requireProductionReady(
+        entry: entry,
+        sources: preIslamWorldIndependentResearch.sources,
         evidence: evidence,
       ),
       throwsStateError,
@@ -91,9 +116,10 @@ void main() {
     final entry = promoted(entryById('mecca'));
     final evidence = HistoryReviewEvidence(
       entryId: entry.id,
-      reviewedContentSnapshot: '${PreIslamWorldReviewGate.contentSnapshot(entry)}-stale',
+      reviewedContentSnapshot:
+          '${PreIslamWorldReviewGate.contentSnapshot(entry)}-stale',
       certainty: HistoricalCertainty.strong,
-      supportingSourceIds: entry.sourceIds,
+      supportingSourceIds: preIslamWorldTopicResearchSources[entry.id]!,
       factualReviewApproved: true,
       trNativeReviewApproved: true,
       enNativeReviewApproved: true,
@@ -104,7 +130,7 @@ void main() {
     expect(
       () => gate.requireProductionReady(
         entry: entry,
-        sources: preIslamWorldContextDataset.sources,
+        sources: preIslamWorldIndependentResearch.sources,
         evidence: evidence,
       ),
       throwsStateError,
@@ -117,7 +143,7 @@ void main() {
     expect(
       () => gate.requireProductionReady(
         entry: entry,
-        sources: preIslamWorldContextDataset.sources,
+        sources: preIslamWorldIndependentResearch.sources,
         evidence: approvedEvidence(
           entry,
           certainty: HistoricalCertainty.plausible,
@@ -129,7 +155,7 @@ void main() {
     expect(
       () => gate.requireProductionReady(
         entry: entry,
-        sources: preIslamWorldContextDataset.sources,
+        sources: preIslamWorldIndependentResearch.sources,
         evidence: approvedEvidence(
           entry,
           certainty: HistoricalCertainty.disputed,
@@ -150,7 +176,7 @@ void main() {
     expect(
       () => gate.requireProductionReady(
         entry: entry,
-        sources: preIslamWorldContextDataset.sources,
+        sources: preIslamWorldIndependentResearch.sources,
         evidence: approvedEvidence(
           entry,
           certainty: HistoricalCertainty.unknown,
@@ -161,7 +187,7 @@ void main() {
     expect(
       () => gate.requireProductionReady(
         entry: entry,
-        sources: preIslamWorldContextDataset.sources,
+        sources: preIslamWorldIndependentResearch.sources,
         evidence: approvedEvidence(entry, arNativeReviewApproved: false),
       ),
       throwsStateError,
