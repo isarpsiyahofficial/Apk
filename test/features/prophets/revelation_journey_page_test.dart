@@ -17,6 +17,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: locale,
+        supportedLocales: const [Locale('tr'), Locale('en'), Locale('ar')],
         home: Directionality(
           textDirection: direction,
           child: const RevelationJourneyPage(),
@@ -65,6 +66,8 @@ void main() {
 
     expect(find.text('رحلة الوحي'), findsOneWidget);
     expect(find.text('كل الفترات'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('journey-filter-israelite')));
+    await tester.pumpAndSettle();
     expect(find.text('موسى'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
