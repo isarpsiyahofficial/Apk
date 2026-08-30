@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_biography_t0194_dataset.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_verse_user_state_repository.dart';
 import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
+import 'package:islami_hayat/features/today/domain/daily_verse_prophet_story.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
 class TodayPage extends StatefulWidget {
@@ -16,6 +18,7 @@ class TodayPage extends StatefulWidget {
     this.now,
     this.onContinueQuran,
     this.onOpenDailyVerse,
+    this.onOpenProphetStory,
   }) : quranProgressRepository = quranProgressRepository ??
             QuranReadingProgressRepository(SecurePrivateUserStore()),
        verseUserStateRepository =
@@ -28,6 +31,7 @@ class TodayPage extends StatefulWidget {
   final DateTime Function()? now;
   final VoidCallback? onContinueQuran;
   final Future<void> Function(QuranAddress address)? onOpenDailyVerse;
+  final ValueChanged<String>? onOpenProphetStory;
 
   @override
   State<TodayPage> createState() => _TodayPageState();
@@ -109,6 +113,8 @@ class _TodayPageState extends State<TodayPage> {
                 verse: verse,
                 verseUserStateRepository: widget.verseUserStateRepository,
                 onTap: widget.onOpenDailyVerse,
+                prophetStoryIds: prophetStoryIdsForDailyVerse(verse.address),
+                onOpenProphetStory: widget.onOpenProphetStory,
               );
             },
           ),
@@ -187,12 +193,16 @@ class _DailyVerseBlock extends StatefulWidget {
     required this.verse,
     required this.verseUserStateRepository,
     required this.onTap,
+    required this.prophetStoryIds,
+    required this.onOpenProphetStory,
   });
 
   final String eyebrow;
   final DailyVerse verse;
   final QuranVerseUserStateDataSource verseUserStateRepository;
   final Future<void> Function(QuranAddress address)? onTap;
+  final List<String> prophetStoryIds;
+  final ValueChanged<String>? onOpenProphetStory;
 
   @override
   State<_DailyVerseBlock> createState() => _DailyVerseBlockState();
@@ -241,6 +251,7 @@ class _DailyVerseBlockState extends State<_DailyVerseBlock> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
+    final languageCode = Localizations.localeOf(context).languageCode;
     return Semantics(
       button: widget.onTap != null,
       child: InkWell(
@@ -306,6 +317,34 @@ class _DailyVerseBlockState extends State<_DailyVerseBlock> {
                         color: theme.colorScheme.primary,
                       ),
                     ),
+                    if (widget.onOpenProphetStory != null &&
+                        widget.prophetStoryIds.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          for (final prophetId in widget.prophetStoryIds)
+                            TextButton.icon(
+                              key: ValueKey(
+                                'daily-verse-prophet-story-$prophetId',
+                              ),
+                              onPressed: () =>
+                                  widget.onOpenProphetStory!(prophetId),
+                              icon: const Icon(Icons.auto_stories_outlined),
+                              label: Text(
+                                _prophetStoryActionLabel(
+                                  languageCode,
+                                  _prophetDisplayName(
+                                    prophetId,
+                                    languageCode,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -348,6 +387,25 @@ class _DailyVerseBlockState extends State<_DailyVerseBlock> {
       ),
     );
   }
+}
+
+String _prophetDisplayName(String prophetId, String languageCode) {
+  final biography = canonicalProphetBiographyT0194Dataset.firstWhere(
+    (entry) => entry.identity.canonicalId == prophetId,
+  );
+  return switch (languageCode) {
+    'ar' => biography.identity.name.ar,
+    'en' => biography.identity.name.en,
+    _ => biography.identity.name.tr,
+  };
+}
+
+String _prophetStoryActionLabel(String languageCode, String prophetName) {
+  return switch (languageCode) {
+    'ar' => 'استكشف هذه القصة · $prophetName',
+    'en' => 'Explore this story · $prophetName',
+    _ => 'Bu kıssayı keşfet · $prophetName',
+  };
 }
 
 class _EditorialBlock extends StatelessWidget {
