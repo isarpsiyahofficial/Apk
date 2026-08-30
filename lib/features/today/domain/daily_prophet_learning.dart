@@ -25,7 +25,9 @@ DailyProphetLearningSuggestion? dailyProphetLearningForDate(DateTime date) {
       final field = entry.value;
       if (field.status != ProphetBiographyFieldStatus.sourceBacked ||
           field.sources.isEmpty ||
-          field.sources.any((source) => source.locator?.trim().isEmpty ?? true)) {
+          field.sources.any(
+            (source) => source.locator?.trim().isEmpty ?? true,
+          )) {
         continue;
       }
       candidates.add(
