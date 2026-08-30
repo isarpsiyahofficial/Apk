@@ -27,6 +27,14 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> revealAndTapFilter(WidgetTester tester, String periodName) async {
+    final finder = find.byKey(ValueKey('journey-filter-$periodName'));
+    await tester.ensureVisible(finder);
+    await tester.pumpAndSettle();
+    await tester.tap(finder);
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('TR surface exposes period filters and parallel lanes', (tester) async {
     await pumpJourney(
       tester,
@@ -47,8 +55,7 @@ void main() {
       direction: TextDirection.ltr,
     );
 
-    await tester.tap(find.byKey(const ValueKey('journey-filter-isa')));
-    await tester.pumpAndSettle();
+    await revealAndTapFilter(tester, 'isa');
 
     expect(find.text('Jesus period'), findsWidgets);
     expect(find.text('Jesus'), findsOneWidget);
@@ -66,8 +73,7 @@ void main() {
 
     expect(find.text('رحلة الوحي'), findsOneWidget);
     expect(find.text('كل الفترات'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('journey-filter-israelite')));
-    await tester.pumpAndSettle();
+    await revealAndTapFilter(tester, 'israelite');
     expect(find.text('موسى'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
