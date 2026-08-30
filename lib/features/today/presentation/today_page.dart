@@ -6,7 +6,9 @@ import 'package:islami_hayat/features/quran/data/quran_reading_progress_reposito
 import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_verse_user_state_repository.dart';
 import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
+import 'package:islami_hayat/features/today/domain/daily_prophet_learning.dart';
 import 'package:islami_hayat/features/today/domain/daily_verse_prophet_story.dart';
+import 'package:islami_hayat/features/today/presentation/daily_prophet_learning_card.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
 class TodayPage extends StatefulWidget {
@@ -84,6 +86,7 @@ class _TodayPageState extends State<TodayPage> {
     final padding = AppBreakpoints.horizontalPadding(width);
     final l10n = AppLocalizations.of(context);
     final languageCode = Localizations.localeOf(context).languageCode;
+    final learningSuggestion = dailyProphetLearningForDate(_today);
 
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(padding, 28, padding, 44),
@@ -130,6 +133,20 @@ class _TodayPageState extends State<TodayPage> {
             icon: Icons.history_edu_outlined,
             body: l10n.contentPending,
           ),
+          if (learningSuggestion != null) ...[
+            const SizedBox(height: 22),
+            DailyProphetLearningCard(
+              suggestion: learningSuggestion,
+              title: l10n.dailyProphetLearningTitle,
+              prophetName: _prophetDisplayName(
+                learningSuggestion.prophetId,
+                languageCode,
+              ),
+              sourceLabel: l10n.sourceLabel,
+              openLabel: l10n.dailyProphetLearningOpen,
+              onOpen: widget.onOpenProphetStory,
+            ),
+          ],
           const SizedBox(height: 34),
           _QuickActions(
             items: [
