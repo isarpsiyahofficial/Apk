@@ -30,10 +30,7 @@ class _RevelationJourneyPageState extends State<RevelationJourneyPage> {
             return ListView(
               padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 32),
               children: [
-                Text(
-                  copy.intro,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
+                Text(copy.intro, style: Theme.of(context).textTheme.bodyLarge),
                 const SizedBox(height: 16),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -115,14 +112,16 @@ class _TimelineSegmentCard extends StatelessWidget {
                 runSpacing: 10,
                 children: [
                   for (final identity in identities)
-                    _ProphetNamePill(identity: identity),
+                    _ProphetNamePill(
+                      key: ValueKey(
+                        'journey-prophet-${identity.canonicalId}',
+                      ),
+                      identity: identity,
+                    ),
                 ],
               ),
               const SizedBox(height: 10),
-              Text(
-                copy.approximateNotice,
-                style: theme.textTheme.bodySmall,
-              ),
+              Text(copy.approximateNotice, style: theme.textTheme.bodySmall),
             ],
           ),
         ),
@@ -132,7 +131,7 @@ class _TimelineSegmentCard extends StatelessWidget {
 }
 
 class _ProphetNamePill extends StatelessWidget {
-  const _ProphetNamePill({required this.identity});
+  const _ProphetNamePill({required this.identity, super.key});
 
   final CanonicalProphetIdentity identity;
 
