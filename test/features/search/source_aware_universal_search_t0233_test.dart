@@ -171,6 +171,10 @@ void main() {
             ),
           ),
         ],
+        normalizer: (text) => normalizeSearchTextT0232(
+          text,
+          locale: SearchLocaleT0232.tr,
+        ),
       );
 
       final badge = index
