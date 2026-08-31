@@ -51,7 +51,7 @@ void main() {
           'Bedir—Medine, 624!',
           locale: SearchLocaleT0232.tr,
         ),
-        'bedir—medine 624',
+        'bedir medine 624',
       );
       expect(
         normalizeSearchTextT0232(
