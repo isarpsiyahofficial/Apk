@@ -75,7 +75,7 @@ class HistoryEventRecord {
     if (hasStart != hasEnd) {
       throw StateError('T0220 event dates must provide both range bounds or neither.');
     }
-    if (hasStart && startYearCe! > endYearCe!) {
+    if (startYearCe != null && endYearCe != null && startYearCe > endYearCe) {
       throw StateError('T0220 event date range is invalid.');
     }
     if (dateCertainty == HistoryDateCertainty.unknown) {
