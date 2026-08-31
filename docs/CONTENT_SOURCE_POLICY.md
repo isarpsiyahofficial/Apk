@@ -65,6 +65,14 @@ Rules:
 - Major historical events should be cross-checked against at least two reliable references when reasonably possible.
 - Copying encyclopedia prose is prohibited; sources are for verification and citation, not unlicensed reproduction.
 
+### TDV İslâm Ansiklopedisi / İSAM
+
+- Official rights/usage pages re-checked on 2026-08-31: `https://islamansiklopedisi.org.tr/hakk` and `https://islamansiklopedisi.org.tr/kullanim_sartlari.php`.
+- The site states that TDV İslâm Ansiklopedisi copyright belongs to TDV İslâm Araştırmaları Merkezi / İSAM; whole articles may not be republished, while short quotations require source attribution and a direct active link. Its visual material is not to be republished in another medium under those site terms.
+- Product decision: TDV is **verification/citation only by default**. Do not bundle TDV article prose, images, maps, tables, drawings or photographs.
+- A future direct quotation requires a separately reviewed quotation record and evidence that the exact intended use complies with the then-current terms. Source citation alone is not redistribution permission.
+- T0224 enforcement and audit evidence live in `docs/HISTORY_T0224_TEXT_RIGHTS_AUDIT.md` and `scripts/audit_history_text_rights.py`.
+
 ## 6. Production ingestion gate
 
 A religious content record may enter the production dataset only when all required conditions pass:
