@@ -36,7 +36,12 @@ String normalizeSearchTextT0232(
   }
 
   normalized = normalized
-      .replaceAll(RegExp(r'''[\u060C\u061B\u061F,.;:!?()\[\]{}"'“”‘’/\\|_-]+'''), ' ')
+      .replaceAll(
+        RegExp(
+          r'''[\u060C\u061B\u061F\u2013\u2014,.;:!?()\[\]{}"'“”‘’/\\|_-]+''',
+        ),
+        ' ',
+      )
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
 
