@@ -53,8 +53,8 @@ class HistoryEventRecord {
   factory HistoryEventRecord.validated({
     required String id,
     required LocalizedHistorySummary title,
-    required int startYearCe,
-    required int endYearCe,
+    required int? startYearCe,
+    required int? endYearCe,
     required HistoryDateCertainty dateCertainty,
     required LocalizedHistorySummary dateCaveat,
     required LocalizedHistorySummary beforeContext,
@@ -69,9 +69,23 @@ class HistoryEventRecord {
     if (id.trim().isEmpty || !title.isComplete) {
       throw StateError('T0220 event identity and TR/EN/AR title are required.');
     }
-    if (startYearCe > endYearCe) {
+
+    final hasStart = startYearCe != null;
+    final hasEnd = endYearCe != null;
+    if (hasStart != hasEnd) {
+      throw StateError('T0220 event dates must provide both range bounds or neither.');
+    }
+    if (hasStart && startYearCe! > endYearCe!) {
       throw StateError('T0220 event date range is invalid.');
     }
+    if (dateCertainty == HistoryDateCertainty.unknown) {
+      if (hasStart || hasEnd) {
+        throw StateError('Unknown T0220 dates must not carry invented year sentinels.');
+      }
+    } else if (!hasStart || !hasEnd) {
+      throw StateError('Known/estimated T0220 dates require an explicit year range.');
+    }
+
     if (!dateCaveat.isComplete || !beforeContext.isComplete) {
       throw StateError('T0220 date certainty and before-context require TR/EN/AR text.');
     }
@@ -95,7 +109,8 @@ class HistoryEventRecord {
       throw StateError('T0220 source references must be unique and known.');
     }
 
-    if (dateCertainty == HistoryDateCertainty.unknown && status == HistoryResearchStatus.reviewedForProduction) {
+    if (dateCertainty == HistoryDateCertainty.unknown &&
+        status == HistoryResearchStatus.reviewedForProduction) {
       throw StateError('Unknown event dates cannot be promoted to production.');
     }
 
@@ -118,8 +133,8 @@ class HistoryEventRecord {
 
   final String id;
   final LocalizedHistorySummary title;
-  final int startYearCe;
-  final int endYearCe;
+  final int? startYearCe;
+  final int? endYearCe;
   final HistoryDateCertainty dateCertainty;
   final LocalizedHistorySummary dateCaveat;
   final LocalizedHistorySummary beforeContext;

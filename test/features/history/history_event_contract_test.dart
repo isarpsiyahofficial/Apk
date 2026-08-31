@@ -12,8 +12,8 @@ const _place = HistoryGeographyRef(
 
 HistoryEventRecord buildEvent({
   String id = 'event',
-  int startYearCe = 622,
-  int endYearCe = 622,
+  int? startYearCe = 622,
+  int? endYearCe = 622,
   HistoryDateCertainty certainty = HistoryDateCertainty.exact,
   LocalizedHistorySummary dateCaveat = _text,
   LocalizedHistorySummary beforeContext = _text,
@@ -49,6 +49,7 @@ void main() {
       final event = buildEvent();
       expect(event.id, 'event');
       expect(event.dateCertainty, HistoryDateCertainty.exact);
+      expect(event.startYearCe, 622);
       expect(event.causes, hasLength(1));
       expect(event.consequences, hasLength(1));
       expect(event.people, hasLength(1));
@@ -56,8 +57,32 @@ void main() {
       expect(event.sourceIds, ['source_a']);
     });
 
-    test('rejects reversed event date ranges', () {
+    test('accepts genuinely unknown dates only with null bounds', () {
+      final event = buildEvent(
+        startYearCe: null,
+        endYearCe: null,
+        certainty: HistoryDateCertainty.unknown,
+      );
+      expect(event.startYearCe, isNull);
+      expect(event.endYearCe, isNull);
+      expect(event.dateCertainty, HistoryDateCertainty.unknown);
+    });
+
+    test('rejects reversed, half-present, sentinel-like or missing known date ranges', () {
       expect(() => buildEvent(startYearCe: 623, endYearCe: 622), throwsStateError);
+      expect(() => buildEvent(startYearCe: null), throwsStateError);
+      expect(
+        () => buildEvent(certainty: HistoryDateCertainty.unknown),
+        throwsStateError,
+      );
+      expect(
+        () => buildEvent(
+          startYearCe: null,
+          endYearCe: null,
+          certainty: HistoryDateCertainty.approximate,
+        ),
+        throwsStateError,
+      );
     });
 
     test('rejects missing before-context, cause and consequence evidence', () {
@@ -89,6 +114,8 @@ void main() {
     test('unknown date certainty cannot be promoted to production', () {
       expect(
         () => buildEvent(
+          startYearCe: null,
+          endYearCe: null,
           certainty: HistoryDateCertainty.unknown,
           status: HistoryResearchStatus.reviewedForProduction,
         ),
