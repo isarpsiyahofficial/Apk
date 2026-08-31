@@ -178,7 +178,7 @@ const medievalHistoryT0214Sources = <MedievalHistoryResearchSource>[
       id: 'lapidus_post_abbasid_states',
       kind: HistorySourceKind.academicChapter,
       citation: 'Ira M. Lapidus, “The Post-ʿAbbasid Middle Eastern State System”, Islamic Societies to the Nineteenth Century, Cambridge University Press.',
-      locator: 'Cambridge Core chapter 20; book doi:10.1017/CBO9781139027670',
+      locator: 'Cambridge Core chapter 20; book doi:10.1017/CBO9781139048828',
     ),
   ),
   MedievalHistoryResearchSource(
@@ -347,13 +347,13 @@ const medievalHistoryT0214Entries = <MedievalHistoryEntry>[
       en: 'The Buyids became a major regional power in Iran and Iraq in the tenth century and established effective political dominance in Baghdad from 945, while the Abbasid caliphate continued as a religious and symbolic institution.',
       ar: 'أصبح البويهيون قوة إقليمية مهمة في إيران والعراق في القرن العاشر، وفرضوا نفوذًا سياسيًا فعليًا في بغداد منذ سنة 945، بينما استمرت الخلافة العباسية مؤسسة دينية ورمزية.',
     ),
-    startYearCe: 934,
+    startYearCe: 932,
     endYearCe: 1062,
     certainty: MedievalHistoryCertainty.broadPeriod,
     caveat: LocalizedHistorySummary(
-      tr: 'Büveyhî hâkimiyetinin başlangıç ve bitiş tarihleri farklı bölgelerde aynı değildir; bu tarih aralığı hanedanın genel siyasi dönemi için yaklaşık çerçevedir.',
-      en: 'The beginning and end of Buyid authority were not identical in every region; this range is a broad frame for the dynasty’s political period.',
-      ar: 'لم تبدأ سلطة البويهيين وتنتهِ في التاريخ نفسه في جميع المناطق؛ وهذا المدى الزمني إطار عام تقريبي لفترة السلالة السياسية.',
+      tr: 'Büveyhî hâkimiyetinin başlangıç ve bitiş tarihleri farklı bölgelerde aynı değildir; 932–1062 burada hanedanın genel siyasi dönemi için yaklaşık çerçeve olarak kullanılır.',
+      en: 'The beginning and end of Buyid authority were not identical in every region; 932–1062 is used here as a broad frame for the dynasty’s political period.',
+      ar: 'لم تبدأ سلطة البويهيين وتنتهِ في التاريخ نفسه في جميع المناطق؛ وتُستخدم مدة 932–1062 هنا بوصفها إطارًا عامًا تقريبيًا لفترة السلالة السياسية.',
     ),
     sourceIds: <String>[
       'busse_buyids',
