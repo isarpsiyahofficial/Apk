@@ -41,11 +41,12 @@ Completed migrations:
 - **T0212 — Muhammad-period history / canonical Seerah bridge:** the complete canonical T0201 seerah list is projected 1:1 through `muhammad_period_events_t0220.dart`. History IDs, seerah IDs, order/phase bridge and source IDs are preserved. T0201 intentionally stores relative chronology without manufacturing Gregorian/Hijri years, therefore T0220 records use `HistoryDateCertainty.unknown` with `null/null` year bounds and remain `researchDraft`. `muhammad_period_events_t0220_test.dart` proves 1:1 coverage, source preservation, complete mandatory fields, geography overrides and zero production leakage.
 - **T0213 — Rashidun / First Fitna:** 5/5 canonical entries pass `HistoryEventRecord.validated` through `rashidun_first_fitna_events_t0220.dart`. First Fitna remains explicitly contested and research-only.
 - **T0214 — Umayyad / Abbasid / al-Andalus / Fatimid / Samanid / Buyid:** 6/6 canonical entries pass through `medieval_caliphates_events_t0220.dart`. Parallel historical tracks are preserved; migration does not linearize overlapping dynasties or promote any record to production.
+- **T0215 — Seljuq / Crusades / Ayyubid / Mongol / Mamluk:** 5/5 canonical entries pass through `high_medieval_events_t0220.dart`. Existing date ranges, source IDs and `researchDraft` status are preserved. Broad teaching ranges such as the Crusades and initial Mongol invasion waves remain `broadRange`; the Crusades retain multiple identified sides rather than being reduced to a single-party event.
 
 Still open before T0220 can be checked:
 
 - classify T0211 pre-Islam material into true event records versus contextual/background records so the contract does not force invented dates, causes or named actors onto non-event context;
-- audit/migrate event-shaped records in T0215–T0219;
+- audit/migrate event-shaped records in T0216–T0219;
 - run a final inventory proving that every history record classified as an event is represented exactly once in the T0220 contract dataset.
 
 T0220 therefore remains unchecked. D12/D14 also remain TODO until independent source/certainty review and real TR/EN/AR native review evidence are complete.
