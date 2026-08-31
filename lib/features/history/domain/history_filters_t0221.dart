@@ -228,7 +228,7 @@ Map<String, Set<HistorySubjectFacet>> _canonicalEventSubjects(List<HistoryEventR
 
 final historyFilterIndexT0221 = HistoryFilterIndex.validated(
   events: historyT0220Inventory.events,
-  horizontalThemes: islamicHistoryHorizontalThemes.entries,
+  horizontalThemes: islamicHistoryHorizontalThemesT0219.entries,
   dynastyIdsByEvent: _canonicalDynastyIds(historyT0220Inventory.events),
   subjectsByEvent: _canonicalEventSubjects(historyT0220Inventory.events),
 );
