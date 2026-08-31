@@ -8,7 +8,10 @@ void main() {
     final result = historyFilterIndexT0221.filter(HistoryFilterQuery());
 
     expect(result.events.length, historyT0220Inventory.events.length);
-    expect(result.horizontalThemes.length, islamicHistoryHorizontalThemes.entries.length);
+    expect(
+      result.horizontalThemes.length,
+      islamicHistoryHorizontalThemesT0219.entries.length,
+    );
   });
 
   test('period filter uses overlap and excludes unknown-date events rather than inventing years', () {
