@@ -46,6 +46,13 @@ jobs:
         working-directory: scripts
         run: python3 -m unittest -v test_validate_quran_dataset.py
 
+      - name: Test history text-rights audit failure paths
+        working-directory: scripts
+        run: python3 -m unittest -v test_audit_history_text_rights.py
+
+      - name: Audit history user-facing text rights
+        run: python3 scripts/audit_history_text_rights.py
+
       - name: Test
         shell: bash
         run: |
