@@ -9,16 +9,16 @@ void main() {
     test('migrates every canonical T0218 entry exactly once', () {
       expect(
         modernGlobalEventsT0220.events.map((event) => event.id).toSet(),
-        modernGlobalHistoryT0218.entries.map((entry) => entry.id).toSet(),
+        modernGlobalIslamicHistoryT0218.entries.map((entry) => entry.id).toSet(),
       );
       expect(
         modernGlobalEventsT0220.events.length,
-        modernGlobalHistoryT0218.entries.length,
+        modernGlobalIslamicHistoryT0218.entries.length,
       );
     });
 
     test('preserves chronology, source IDs, caveats and research status', () {
-      for (final source in modernGlobalHistoryT0218.entries) {
+      for (final source in modernGlobalIslamicHistoryT0218.entries) {
         final migrated = modernGlobalEventsT0220.events.singleWhere(
           (event) => event.id == source.id,
         );
@@ -73,7 +73,7 @@ void main() {
     });
 
     test('preserves broad, contested and snapshot-bounded uncertainty', () {
-      for (final source in modernGlobalHistoryT0218.entries) {
+      for (final source in modernGlobalIslamicHistoryT0218.entries) {
         final migrated = modernGlobalEventsT0220.events.singleWhere(
           (event) => event.id == source.id,
         );
@@ -106,7 +106,7 @@ void main() {
     });
 
     test('keeps 2026 as dataset currency boundary rather than exact endpoint', () {
-      final source = modernGlobalHistoryT0218.entries.singleWhere(
+      final source = modernGlobalIslamicHistoryT0218.entries.singleWhere(
         (entry) => entry.id == 'contemporary_global_muslim_societies',
       );
       final migrated = modernGlobalEventsT0220.events.singleWhere(
