@@ -53,7 +53,8 @@ class HistoryPagedIndexT0225 {
       throw RangeError.range(cursor, 0, ordered.length, 'cursor');
     }
 
-    final end = (cursor + pageSize).clamp(0, ordered.length);
+    final candidateEnd = cursor + pageSize;
+    final end = candidateEnd < ordered.length ? candidateEnd : ordered.length;
     final items = List<HistoryEventRecord>.unmodifiable(ordered.sublist(cursor, end));
     final nextCursor = end < ordered.length ? end : null;
     return HistoryEventPage(
@@ -98,7 +99,9 @@ class HistoryPagedIndexT0225 {
 
     for (final event in loaded) {
       if (event.id.trim().isEmpty || byId.containsKey(event.id)) {
-        throw StateError('T0225 history index requires unique non-empty event IDs: ${event.id}');
+        throw StateError(
+          'T0225 history index requires unique non-empty event IDs: ${event.id}',
+        );
       }
       byId[event.id] = event;
 
@@ -125,12 +128,18 @@ class HistoryPagedIndexT0225 {
     _byId = Map<String, HistoryEventRecord>.unmodifiable(byId);
     _byPersonId = Map<String, List<HistoryEventRecord>>.unmodifiable(
       byPersonId.map(
-        (key, value) => MapEntry(key, List<HistoryEventRecord>.unmodifiable(value..sort(_compareChronologically))),
+        (key, value) => MapEntry(
+          key,
+          List<HistoryEventRecord>.unmodifiable(value..sort(_compareChronologically)),
+        ),
       ),
     );
     _byGeographyId = Map<String, List<HistoryEventRecord>>.unmodifiable(
       byGeographyId.map(
-        (key, value) => MapEntry(key, List<HistoryEventRecord>.unmodifiable(value..sort(_compareChronologically))),
+        (key, value) => MapEntry(
+          key,
+          List<HistoryEventRecord>.unmodifiable(value..sort(_compareChronologically)),
+        ),
       ),
     );
   }
