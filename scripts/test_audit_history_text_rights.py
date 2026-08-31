@@ -19,8 +19,9 @@ class HistoryTextRightsAuditTest(unittest.TestCase):
                 "en: 'Editorial history summary.', "
                 "ar: 'ملخص تاريخي تحريري.');",
             )
-            files, findings = audit_tree(root)
+            files, count, findings = audit_tree(root)
             self.assertEqual(len(files), 1)
+            self.assertEqual(count, 3)
             self.assertEqual(findings, [])
 
     def test_tdv_reference_boilerplate_in_user_text_fails(self):
@@ -32,7 +33,7 @@ class HistoryTextRightsAuditTest(unittest.TestCase):
                 "tr: 'TDV İslâm Ansiklopedisi metni', "
                 "en: 'Editorial text', ar: 'نص تحريري');",
             )
-            _, findings = audit_tree(root)
+            _, _, findings = audit_tree(root)
             self.assertTrue(any('tdv islâm ansiklopedisi' == item.marker for item in findings))
 
     def test_source_url_in_localized_text_fails(self):
@@ -44,7 +45,7 @@ class HistoryTextRightsAuditTest(unittest.TestCase):
                 "tr: 'Kaynak https://example.org/article', "
                 "en: 'Editorial text', ar: 'نص تحريري');",
             )
-            _, findings = audit_tree(root)
+            _, _, findings = audit_tree(root)
             self.assertTrue(any(item.marker.startswith('http') for item in findings))
 
     def test_source_locator_outside_localized_text_is_allowed(self):
@@ -58,7 +59,19 @@ class HistoryTextRightsAuditTest(unittest.TestCase):
                 "const x = LocalizedHistorySummary("
                 "tr: 'Özgün özet', en: 'Original summary', ar: 'ملخص أصلي');",
             )
-            _, findings = audit_tree(root)
+            _, _, findings = audit_tree(root)
+            self.assertEqual(findings, [])
+
+    def test_escaped_apostrophe_keeps_unicode_and_is_audited(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            self._write(
+                root,
+                "const x = LocalizedHistorySummary("
+                "tr: 'İslam\\'ın tarih özeti', en: 'Editorial', ar: 'تحريري');",
+            )
+            _, count, findings = audit_tree(root)
+            self.assertEqual(count, 3)
             self.assertEqual(findings, [])
 
     def test_zero_parser_coverage_fails_closed(self):
