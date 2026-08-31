@@ -1,13 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/features/history/data/pre_islam_world_context.dart';
 import 'package:islami_hayat/features/history/data/rashidun_first_fitna_events_t0220.dart';
 import 'package:islami_hayat/features/history/data/rashidun_first_fitna_timeline.dart';
-import 'package:islami_hayat/features/history/data/pre_islam_world_context.dart';
 import 'package:islami_hayat/features/history/domain/history_event_contract.dart';
 
 void main() {
   group('T0220 Rashidun/First Fitna migration', () {
     test('migrates every T0213 timeline entry one-to-one', () {
-      expect(earlyCaliphateT0220Events, hasLength(earlyCaliphateResearchEntries.length));
+      expect(
+        earlyCaliphateT0220Events,
+        hasLength(earlyCaliphateResearchEntries.length),
+      );
       expect(
         earlyCaliphateT0220Events.map((event) => event.id).toList(),
         earlyCaliphateResearchEntries.map((entry) => entry.id).toList(),
@@ -31,13 +34,29 @@ void main() {
         expect(event.dateCaveat.isComplete, isTrue, reason: event.id);
         expect(event.beforeContext.isComplete, isTrue, reason: event.id);
         expect(event.causes, isNotEmpty, reason: event.id);
-        expect(event.causes.every((value) => value.isComplete), isTrue, reason: event.id);
+        expect(
+          event.causes.every((value) => value.isComplete),
+          isTrue,
+          reason: event.id,
+        );
         expect(event.consequences, isNotEmpty, reason: event.id);
-        expect(event.consequences.every((value) => value.isComplete), isTrue, reason: event.id);
+        expect(
+          event.consequences.every((value) => value.isComplete),
+          isTrue,
+          reason: event.id,
+        );
         expect(event.people, isNotEmpty, reason: event.id);
-        expect(event.people.every((value) => value.isComplete), isTrue, reason: event.id);
+        expect(
+          event.people.every((value) => value.isComplete),
+          isTrue,
+          reason: event.id,
+        );
         expect(event.geographies, isNotEmpty, reason: event.id);
-        expect(event.geographies.every((value) => value.isComplete), isTrue, reason: event.id);
+        expect(
+          event.geographies.every((value) => value.isComplete),
+          isTrue,
+          reason: event.id,
+        );
       }
     });
 
@@ -52,10 +71,15 @@ void main() {
     });
 
     test('contested First Fitna interpretation remains explicitly caveated', () {
-      final fitna = earlyCaliphateT0220Events.singleWhere((event) => event.id == 'first_fitna');
+      final fitna = earlyCaliphateT0220Events.singleWhere(
+        (event) => event.id == 'first_fitna',
+      );
       expect(fitna.dateCertainty, HistoryDateCertainty.contested);
       expect(fitna.dateCaveat.isComplete, isTrue);
-      expect(fitna.people.map((person) => person.id), containsAll(['ali_ibn_abi_talib', 'muawiya_ibn_abi_sufyan']));
+      expect(
+        fitna.people.map((person) => person.id),
+        containsAll(['ali_ibn_abi_talib', 'muawiya_ibn_abi_sufyan']),
+      );
     });
   });
 }
