@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:islamic_life/features/history/data/pre_islam_world_context.dart';
-import 'package:islamic_life/features/history/domain/history_event_contract.dart';
+import 'package:islami_hayat/features/history/data/pre_islam_world_context.dart';
+import 'package:islami_hayat/features/history/domain/history_event_contract.dart';
 
 const _text = LocalizedHistorySummary(tr: 'TR', en: 'EN', ar: 'AR');
 const _person = HistoryPersonRef(id: 'person', name: _text);
