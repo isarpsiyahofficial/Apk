@@ -34,22 +34,35 @@ Migration-specific tests additionally require legacy chronology, source IDs and 
 
 ## Migration status
 
-The shared gate does **not** imply that every legacy T0211–T0219 record already satisfies T0220.
+The shared gate does **not** imply that every legacy T0211–T0219 record is an event. T0220 is deliberately applied only after event-vs-context classification so contextual material is never forced to invent dates, causes or named actors.
 
-Completed migrations:
+Completed event migrations:
 
 - **T0212 — Muhammad-period history / canonical Seerah bridge:** the complete canonical T0201 seerah list is projected 1:1 through `muhammad_period_events_t0220.dart`. History IDs, seerah IDs, order/phase bridge and source IDs are preserved. T0201 intentionally stores relative chronology without manufacturing Gregorian/Hijri years, therefore T0220 records use `HistoryDateCertainty.unknown` with `null/null` year bounds and remain `researchDraft`. `muhammad_period_events_t0220_test.dart` proves 1:1 coverage, source preservation, complete mandatory fields, geography overrides and zero production leakage.
 - **T0213 — Rashidun / First Fitna:** 5/5 canonical entries pass `HistoryEventRecord.validated` through `rashidun_first_fitna_events_t0220.dart`. First Fitna remains explicitly contested and research-only.
 - **T0214 — Umayyad / Abbasid / al-Andalus / Fatimid / Samanid / Buyid:** 6/6 canonical entries pass through `medieval_caliphates_events_t0220.dart`. Parallel historical tracks are preserved; migration does not linearize overlapping dynasties or promote any record to production.
 - **T0215 — Seljuq / Crusades / Ayyubid / Mongol / Mamluk:** 5/5 canonical entries pass through `high_medieval_events_t0220.dart`. Existing date ranges, source IDs and `researchDraft` status are preserved. Broad teaching ranges such as the Crusades and initial Mongol invasion waves remain `broadRange`; the Crusades retain multiple identified sides rather than being reduced to a single-party event.
-- **T0216 — Ottoman / Safavid / Mughal:** 3/3 canonical entries pass through `early_modern_events_t0220.dart`. Existing broad date ranges, source IDs and `researchDraft` status are preserved. The migration adds source-bounded before-context, cause, consequence, actor and regional-geography fields without converting the Ottoman c.1300 start, the Safavid 1501–1736 teaching span or Mughal 1526–1858 dynastic span into false exactness. `early_modern_events_t0220_test.dart` proves 1:1 coverage, source/status/date preservation, complete TR/EN/AR mandatory fields, event-specific actors/geographies and zero production leakage.
-- **T0217 — Africa / Central Asia / Southeast Asia / Indian subcontinent / Europe:** 5/5 canonical regional entries pass through `regional_events_t0220.dart`. Existing teaching boundaries, source IDs, localized certainty caveats and `researchDraft` status are preserved. All five remain `broadRange`; the migration does not turn contact boundaries such as 615, 700, 1200 or 711 into exact continent-wide Islamization dates. `regional_events_t0220_test.dart` proves 1:1 coverage, source/status/date preservation, complete TR/EN/AR mandatory fields, region-isolated actor/geography mappings and zero production leakage.
-- **T0218 — colonial/imperial rule / decolonization and nation states / twentieth-century transformations / contemporary global Muslim societies:** 4/4 canonical entries pass through `modern_global_events_t0220.dart`. Existing date ranges, source IDs, localized caveats and `researchDraft` status are preserved. Broad periods remain `broadRange`, the decolonization track remains `contested`, and `snapshotBounded` is deliberately mapped to non-exact `broadRange`; the 2026 value stays only the dataset currency boundary and is not promoted into a permanent historical endpoint. `modern_global_events_t0220_test.dart` proves 1:1 coverage, source/status/caveat preservation, complete TR/EN/AR mandatory fields, uncertainty mapping, track-isolated actor/geography mappings and zero production leakage.
+- **T0216 — Ottoman / Safavid / Mughal:** 3/3 canonical entries pass through `early_modern_events_t0220.dart`. Existing broad date ranges, source IDs and `researchDraft` status are preserved. The migration adds source-bounded before-context, cause, consequence, actor and regional-geography fields without converting broad dynasty spans into false exactness.
+- **T0217 — Africa / Central Asia / Southeast Asia / Indian subcontinent / Europe:** 5/5 canonical regional entries pass through `regional_events_t0220.dart`. Existing teaching boundaries, source IDs, localized certainty caveats and `researchDraft` status are preserved. All five remain `broadRange`; contact boundaries such as 615, 700, 1200 or 711 are not promoted to exact continent-wide Islamization dates.
+- **T0218 — colonial/imperial rule / decolonization and nation states / twentieth-century transformations / contemporary global Muslim societies:** 4/4 canonical entries pass through `modern_global_events_t0220.dart`. Existing date ranges, source IDs, localized caveats and `researchDraft` status are preserved. Broad periods remain `broadRange`, the decolonization track remains `contested`, and `snapshotBounded` is deliberately mapped to non-exact `broadRange`; the 2026 value stays only the dataset currency boundary and is not promoted into a permanent historical endpoint.
 
-Still open before T0220 can be checked:
+## T0211 / T0219 event-vs-context classification
 
-- classify T0211 pre-Islam material into true event records versus contextual/background records so the contract does not force invented dates, causes or named actors onto non-event context;
-- audit/migrate event-shaped records in T0219;
-- run a final inventory proving that every history record classified as an event is represented exactly once in the T0220 contract dataset.
+`history_record_classification.dart` now performs the missing 1:1 classification instead of manufacturing event fields:
 
-T0220 therefore remains unchecked. D12/D14 also remain TODO until independent source/certainty review and real TR/EN/AR native review evidence are complete.
+- **T0211 — 11/11 records are `backgroundContext`.** Late Antiquity, Byzantine/Sasanian/Aksum settings, South Arabia, Mecca/Yathrib, tribal society and religious-community entries describe historical background rather than discrete events. They therefore remain outside `HistoryEventRecord`.
+- **T0219 — 9/9 records are `horizontalTheme`.** Science, medicine, mathematics/astronomy, philosophy/thought, hadith/tafsir/fiqh, art/architecture, trade/urbanization, education and women’s historical roles span multiple regions and periods. Their pedagogical ranges are not treated as one event’s start/end dates.
+- The classification dataset rejects missing canonical IDs, duplicate IDs, wrong task/kind mappings and any attempt to reclassify these non-event records as T0220 events.
+
+`history_record_classification_test.dart` proves exact T0211 and T0219 coverage and the failure paths above.
+
+## Final T0220 inventory audit
+
+`history_t0220_inventory.dart` aggregates all T0212–T0218 event datasets after their individual 1:1 migration gates and joins them with the explicit T0211/T0219 non-event registry. It fails closed when:
+
+- any event identity occurs more than once across the migrated tracks; or
+- an ID appears in both the event inventory and the non-event registry.
+
+`history_t0220_inventory_test.dart` proves the aggregate event count equals the sum of the seven migrated event tracks, every aggregate event ID is unique, event/non-event sets are disjoint, all inventoried events expose the mandatory T0220 fields, and duplicate identities are rejected.
+
+With this classification + aggregate inventory, the **T0220 engineering contract is implemented**. This does **not** promote religious/history content to production: TEST_MATRIX D12/D14 remain TODO until independent factual/source/certainty review and real TR/EN/AR native review evidence are complete. T0211/T0219 content status also remains `researchDraft` until those review gates are satisfied.
