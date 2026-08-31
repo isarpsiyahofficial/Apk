@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:islamic_life/features/history/data/history_t0220_inventory.dart';
-import 'package:islamic_life/features/history/domain/history_paged_index_t0225.dart';
+import 'package:islami_hayat/features/history/data/history_t0220_inventory.dart';
+import 'package:islami_hayat/features/history/domain/history_paged_index_t0225.dart';
 
 void main() {
   group('HistoryPagedIndexT0225', () {
@@ -34,8 +34,13 @@ void main() {
       final first = index.loadPage(pageSize: 4);
       final second = index.loadPage(cursor: first.nextCursor!, pageSize: 4);
 
-      expect(first.items.map((event) => event.id).toSet()
-          .intersection(second.items.map((event) => event.id).toSet()), isEmpty);
+      expect(
+        first.items
+            .map((event) => event.id)
+            .toSet()
+            .intersection(second.items.map((event) => event.id).toSet()),
+        isEmpty,
+      );
       expect(first.items.length, lessThanOrEqualTo(4));
       expect(second.items.length, lessThanOrEqualTo(4));
 
