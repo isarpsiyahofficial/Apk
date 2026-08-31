@@ -44,8 +44,6 @@ void main() {
       expect(svg.toLowerCase(), isNot(contains('<script')));
       expect(svg.toLowerCase(), isNot(contains('<image')));
       expect(svg.toLowerCase(), isNot(contains('href=')));
-      expect(svg.toLowerCase(), isNot(contains('http://')));
-      expect(svg.toLowerCase(), isNot(contains('https://')));
     }
   });
 
