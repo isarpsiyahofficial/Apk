@@ -19,6 +19,7 @@ import argparse
 import pathlib
 import re
 import sys
+import unicodedata
 from dataclasses import dataclass
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -64,7 +65,15 @@ def _dart_unescape_for_scan(text: str) -> str:
 
 
 def _normalize(text: str) -> str:
-    return " ".join(text.casefold().split())
+    # Unicode casefold of Turkish capital İ yields "i" + COMBINING DOT ABOVE.
+    # Strip combining marks after NFKD so rights markers cannot be bypassed by
+    # Turkish casing/diacritics. This normalized form is only used for marker
+    # matching; the original TR/EN/AR text is never rewritten.
+    folded = unicodedata.normalize("NFKD", text.casefold())
+    without_marks = "".join(
+        char for char in folded if unicodedata.category(char) != "Mn"
+    )
+    return " ".join(without_marks.split())
 
 
 def audit_file(path: pathlib.Path) -> tuple[int, list[Finding]]:
@@ -78,7 +87,7 @@ def audit_file(path: pathlib.Path) -> tuple[int, list[Finding]]:
         normalized = _normalize(text)
 
         for marker in FORBIDDEN_LOCALIZED_MARKERS:
-            if marker.casefold() in normalized:
+            if _normalize(marker) in normalized:
                 findings.append(
                     Finding(path, locale, marker, text[:180].replace("\n", " "))
                 )
