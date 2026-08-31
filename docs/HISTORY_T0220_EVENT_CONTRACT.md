@@ -29,8 +29,22 @@ An `unknown` date certainty cannot be promoted to `reviewedForProduction`.
 
 `test/features/history/history_event_contract_test.dart` covers valid construction plus reversed dates, missing before-context, missing causes/consequences, missing people/geography, incomplete Arabic localization, unknown/duplicate/blank source references, unknown-date production promotion and duplicate event IDs.
 
+Migration-specific tests additionally require legacy chronology, source IDs and `researchDraft` status to remain unchanged while mandatory T0220 fields are added.
+
 ## Migration status
 
-This commit establishes the shared gate but does **not** pretend that legacy T0211–T0219 records already contain all T0220 fields. Existing history datasets remain research-stage records until their event-shaped entries are migrated through this contract with source-backed before/cause/consequence/person/geography data.
+The shared gate does **not** imply that every legacy T0211–T0219 record already satisfies T0220.
 
-Therefore T0220 must remain unchecked until the migration audit proves every event record passes this contract. D12/D14 also remain TODO until the independent source/certainty and real TR/EN/AR review evidence is complete.
+Completed migrations:
+
+- **T0213 — Rashidun / First Fitna:** 5/5 canonical entries pass `HistoryEventRecord.validated` through `rashidun_first_fitna_events_t0220.dart`. First Fitna remains explicitly contested and research-only.
+- **T0214 — Umayyad / Abbasid / al-Andalus / Fatimid / Samanid / Buyid:** 6/6 canonical entries pass through `medieval_caliphates_events_t0220.dart`. Parallel historical tracks are preserved; migration does not linearize overlapping dynasties or promote any record to production.
+
+Still open before T0220 can be checked:
+
+- classify T0211 pre-Islam material into true event records versus contextual/background records so the contract does not force invented dates, causes or named actors onto non-event context;
+- audit/migrate T0212 event-shaped Muhammad-period history records while retaining the canonical Seerah bridge;
+- audit/migrate event-shaped records in T0215–T0219;
+- run a final inventory proving that every history record classified as an event is represented exactly once in the T0220 contract dataset.
+
+T0220 therefore remains unchecked. D12/D14 also remain TODO until independent source/certainty review and real TR/EN/AR native review evidence are complete.
