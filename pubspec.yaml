@@ -26,3 +26,4 @@ flutter:
   assets:
     - assets/quran/source/
     - assets/quran/meals/
+    - assets/history/maps/
