@@ -1,12 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/features/history/domain/biography_timeline_link_t0222.dart';
 import 'package:islami_hayat/features/prophets/presentation/prophet_story_page.dart';
 
-Widget _app({required Locale locale, required String prophetId}) {
+Widget _app({
+  required Locale locale,
+  required String prophetId,
+  double textScale = 1,
+}) {
   return MaterialApp(
     locale: locale,
     supportedLocales: const [Locale('tr'), Locale('en'), Locale('ar')],
+    localizationsDelegates: const [
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    builder: (context, child) {
+      final mediaQuery = MediaQuery.of(context);
+      return MediaQuery(
+        data: mediaQuery.copyWith(
+          textScaler: TextScaler.linear(textScale),
+        ),
+        child: child!,
+      );
+    },
     home: ProphetStoryPage(prophetId: prophetId),
   );
 }
@@ -74,9 +93,10 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
-        MediaQuery(
-          data: const MediaQueryData(textScaler: TextScaler.linear(1.6)),
-          child: _app(locale: const Locale('ar'), prophetId: 'muhammad'),
+        _app(
+          locale: const Locale('ar'),
+          prophetId: 'muhammad',
+          textScale: 1.6,
         ),
       );
       await tester.pumpAndSettle();
