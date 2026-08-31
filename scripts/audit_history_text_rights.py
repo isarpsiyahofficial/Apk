@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 """Fail-closed audit for user-facing Islamic history prose.
 
-T0224 exists to keep reference works (including TDV Islam Ansiklopedisi),
-academic books, articles and websites in a verification/citation role unless an
-explicit redistribution licence permits verbatim reuse. This script does not
-copy or download reference prose. Instead it audits every Dart history data
-file and fails when reference-site/copyright boilerplate leaks into localized
-TR/EN/AR strings or when obvious long-form verbatim/source markup is embedded
-there.
+T0224 keeps reference works (including TDV Islam Ansiklopedisi), academic
+books, articles and websites in a verification/citation role unless explicit
+redistribution rights permit verbatim reuse. The audit never downloads or
+stores reference prose. It scans every Dart history data file and fails when
+reference-site/copyright boilerplate or source markup leaks into localized
+TR/EN/AR strings.
 
-The audit is intentionally conservative: source citations and locators may name
-publishers/DOIs outside LocalizedHistorySummary fields; user-facing prose may
-not contain those source-site artefacts.
+This automated gate complements the documented editorial review. It cannot
+prove semantic originality against every copyrighted book; it does make source
+text leakage and future paste-ins visible and CI-blocking.
 """
 
 from __future__ import annotations
@@ -25,8 +24,6 @@ from dataclasses import dataclass
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_HISTORY_ROOT = ROOT / "lib" / "features" / "history" / "data"
 
-# Strings that belong to a source/reference interface or copyright notice,
-# never to editorial user-facing history narration.
 FORBIDDEN_LOCALIZED_MARKERS = (
     "islamansiklopedisi.org.tr",
     "tdv islâm ansiklopedisi",
@@ -40,15 +37,14 @@ FORBIDDEN_LOCALIZED_MARKERS = (
     "©",
 )
 
-# Extract Dart single-quoted strings assigned to localized TR/EN/AR fields.
-# Current history datasets use these fields for all user-facing summaries.
+# Current history datasets use single-quoted tr/en/ar fields for user-facing
+# LocalizedHistorySummary content. Dart escapes are kept as text; only the two
+# quote/backslash escapes needed for marker scanning are normalized, avoiding
+# accidental re-decoding of UTF-8 Turkish/Arabic characters.
 LOCALIZED_FIELD_RE = re.compile(
     r"\b(?P<locale>tr|en|ar)\s*:\s*'(?P<text>(?:\\.|[^'\\])*)'",
     re.MULTILINE,
 )
-
-# Source/article HTML or block-copy artefacts should never be present inside
-# localized prose even if a forbidden publisher name is absent.
 SOURCE_ARTEFACT_RE = re.compile(
     r"(?:https?://|<\/?(?:p|div|span|article|blockquote)\b|\[/?(?:quote|url)\])",
     re.IGNORECASE,
@@ -63,17 +59,22 @@ class Finding:
     preview: str
 
 
+def _dart_unescape_for_scan(text: str) -> str:
+    return text.replace("\\'", "'").replace("\\\\", "\\")
+
+
 def _normalize(text: str) -> str:
     return " ".join(text.casefold().split())
 
 
-def audit_file(path: pathlib.Path) -> list[Finding]:
+def audit_file(path: pathlib.Path) -> tuple[int, list[Finding]]:
     source = path.read_text(encoding="utf-8")
+    matches = list(LOCALIZED_FIELD_RE.finditer(source))
     findings: list[Finding] = []
 
-    for match in LOCALIZED_FIELD_RE.finditer(source):
+    for match in matches:
         locale = match.group("locale")
-        text = bytes(match.group("text"), "utf-8").decode("unicode_escape") if "\\" in match.group("text") else match.group("text")
+        text = _dart_unescape_for_scan(match.group("text"))
         normalized = _normalize(text)
 
         for marker in FORBIDDEN_LOCALIZED_MARKERS:
@@ -88,10 +89,10 @@ def audit_file(path: pathlib.Path) -> list[Finding]:
                 Finding(path, locale, artefact.group(0), text[:180].replace("\n", " "))
             )
 
-    return findings
+    return len(matches), findings
 
 
-def audit_tree(history_root: pathlib.Path) -> tuple[list[pathlib.Path], list[Finding]]:
+def audit_tree(history_root: pathlib.Path) -> tuple[list[pathlib.Path], int, list[Finding]]:
     if not history_root.is_dir():
         raise SystemExit(f"History data directory does not exist: {history_root}")
 
@@ -102,14 +103,14 @@ def audit_tree(history_root: pathlib.Path) -> tuple[list[pathlib.Path], list[Fin
     findings: list[Finding] = []
     localized_string_count = 0
     for path in files:
-        source = path.read_text(encoding="utf-8")
-        localized_string_count += len(list(LOCALIZED_FIELD_RE.finditer(source)))
-        findings.extend(audit_file(path))
+        count, file_findings = audit_file(path)
+        localized_string_count += count
+        findings.extend(file_findings)
 
     if localized_string_count == 0:
         raise SystemExit("No localized history strings were audited; parser coverage is zero.")
 
-    return files, findings
+    return files, localized_string_count, findings
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -122,7 +123,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    files, findings = audit_tree(args.history_root)
+    files, localized_string_count, findings = audit_tree(args.history_root)
     if findings:
         print("T0224 history text-rights audit FAILED", file=sys.stderr)
         for finding in findings:
@@ -140,8 +141,8 @@ def main(argv: list[str] | None = None) -> int:
 
     print(
         "T0224 history text-rights audit PASS: "
-        f"{len(files)} history data files scanned; no reference/copyright "
-        "boilerplate or source URLs detected in localized user-facing prose."
+        f"{len(files)} data files / {localized_string_count} localized strings scanned; "
+        "no reference/copyright boilerplate or source URLs detected in user-facing prose."
     )
     return 0
 
