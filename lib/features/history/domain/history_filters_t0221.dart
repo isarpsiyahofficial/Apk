@@ -12,9 +12,15 @@ class HistoryFilterQuery {
     Set<String> dynastyIds = const {},
     Set<String> personIds = const {},
     Set<HistorySubjectFacet> subjects = const {},
-  })  : regionIds = Set.unmodifiable(regionIds.map((value) => value.trim()).where((value) => value.isNotEmpty)),
-        dynastyIds = Set.unmodifiable(dynastyIds.map((value) => value.trim()).where((value) => value.isNotEmpty)),
-        personIds = Set.unmodifiable(personIds.map((value) => value.trim()).where((value) => value.isNotEmpty)),
+  })  : regionIds = Set.unmodifiable(
+          regionIds.map((value) => value.trim()).where((value) => value.isNotEmpty),
+        ),
+        dynastyIds = Set.unmodifiable(
+          dynastyIds.map((value) => value.trim()).where((value) => value.isNotEmpty),
+        ),
+        personIds = Set.unmodifiable(
+          personIds.map((value) => value.trim()).where((value) => value.isNotEmpty),
+        ),
         subjects = Set.unmodifiable(subjects) {
     if ((startYearCe == null) != (endYearCe == null)) {
       throw StateError('T0221 period filter requires both start and end year.');
@@ -32,6 +38,7 @@ class HistoryFilterQuery {
   final Set<HistorySubjectFacet> subjects;
 
   bool get hasPeriod => startYearCe != null && endYearCe != null;
+
   bool get isEmpty =>
       !hasPeriod && regionIds.isEmpty && dynastyIds.isEmpty && personIds.isEmpty && subjects.isEmpty;
 }
@@ -98,7 +105,8 @@ class HistoryFilterIndex {
 
   HistoryFilterResult filter(HistoryFilterQuery query) {
     final matchedEvents = events.where((event) => _matchesEvent(event, query)).toList(growable: false);
-    final matchedThemes = horizontalThemes.where((theme) => _matchesTheme(theme, query)).toList(growable: false);
+    final matchedThemes =
+        horizontalThemes.where((theme) => _matchesTheme(theme, query)).toList(growable: false);
     return HistoryFilterResult(
       events: List.unmodifiable(matchedEvents),
       horizontalThemes: List.unmodifiable(matchedThemes),
@@ -122,7 +130,9 @@ class HistoryFilterIndex {
       return false;
     }
     if (query.subjects.isNotEmpty &&
-        (subjectsByEvent[event.id] ?? const <HistorySubjectFacet>{}).intersection(query.subjects).isEmpty) {
+        (subjectsByEvent[event.id] ?? const <HistorySubjectFacet>{})
+            .intersection(query.subjects)
+            .isEmpty) {
       return false;
     }
     return true;
@@ -130,15 +140,22 @@ class HistoryFilterIndex {
 
   bool _matchesTheme(IslamicHistoryThemeEntry theme, HistoryFilterQuery query) {
     // Horizontal themes do not claim a single dynasty, person or region. If one
-    // of those event-only dimensions is active, they are deliberately excluded
-    // instead of manufacturing an association.
+    // of those event-only dimensions is active, exclude them rather than
+    // manufacturing an association.
     if (query.regionIds.isNotEmpty || query.dynastyIds.isNotEmpty || query.personIds.isNotEmpty) {
       return false;
     }
-    if (query.hasPeriod && !_rangesOverlap(theme.startYearCe, theme.endYearCe, query.startYearCe!, query.endYearCe!)) {
+    if (query.hasPeriod &&
+        !_rangesOverlap(
+          theme.startYearCe,
+          theme.endYearCe,
+          query.startYearCe!,
+          query.endYearCe!,
+        )) {
       return false;
     }
-    if (query.subjects.isNotEmpty && !_subjectsForTheme(theme.theme).intersection(query.subjects).isNotEmpty) {
+    if (query.subjects.isNotEmpty &&
+        _subjectsForTheme(theme.theme).intersection(query.subjects).isEmpty) {
       return false;
     }
     return true;
