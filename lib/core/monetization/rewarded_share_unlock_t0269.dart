@@ -42,14 +42,41 @@ final class RewardedShareGrant {
   }
 }
 
-/// Orchestrates the successful T0269 path without granting religious content or
-/// changing entitlement. Rewarded unlocks affect only visual-design usage.
+enum RewardedAdTerminalOutcome { completed, cancelled, failed, noFill }
+
+/// Terminal result for T0270 failure paths and the T0269 success path.
+///
+/// Failed/cancelled/no-fill outcomes deliberately keep religious content
+/// available and never request a forced PRO upsell. They only deny the premium
+/// visual-design use that depended on completing the optional ad.
+final class RewardedShareTerminalResult {
+  const RewardedShareTerminalResult._({
+    required this.outcome,
+    required this.grant,
+    required this.messageLocalizationKey,
+  });
+
+  final RewardedAdTerminalOutcome outcome;
+  final RewardedShareGrant? grant;
+  final String? messageLocalizationKey;
+
+  bool get hasGrant => grant != null;
+  bool get religiousContentRemainsAvailable => true;
+  bool get shouldForceProPurchase => false;
+}
+
+/// Orchestrates the opt-in rewarded design-unlock flow without granting
+/// religious content or changing entitlement. Rewarded unlocks affect only
+/// visual-design usage.
 final class RewardedShareUnlockT0269 {
   RewardedShareUnlockT0269({
     required EntitlementGatedAdSdkCoordinator adCoordinator,
   }) : _adCoordinator = adCoordinator;
 
   static const disclosureLocalizationKey = 'rewardedShareOneUseDisclosure';
+  static const cancelledLocalizationKey = 'rewardedShareCancelled';
+  static const failedLocalizationKey = 'rewardedShareFailed';
+  static const noFillLocalizationKey = 'rewardedShareNoFill';
   static const shareUsesPerCompletedReward = 1;
 
   final EntitlementGatedAdSdkCoordinator _adCoordinator;
@@ -85,20 +112,59 @@ final class RewardedShareUnlockT0269 {
     );
   }
 
+  RewardedShareTerminalResult finish({
+    required String designId,
+    required RewardedAdTerminalOutcome outcome,
+  }) {
+    final normalizedDesignId = designId.trim();
+    final activeDesignId = _activeDesignId;
+    _activeDesignId = null;
+
+    if (activeDesignId == null || activeDesignId != normalizedDesignId) {
+      throw StateError('Rewarded result does not match the active design.');
+    }
+
+    return switch (outcome) {
+      RewardedAdTerminalOutcome.completed => RewardedShareTerminalResult._(
+          outcome: outcome,
+          grant: RewardedShareGrant._(designId: activeDesignId),
+          messageLocalizationKey: null,
+        ),
+      RewardedAdTerminalOutcome.cancelled => RewardedShareTerminalResult._(
+          outcome: outcome,
+          grant: null,
+          messageLocalizationKey: cancelledLocalizationKey,
+        ),
+      RewardedAdTerminalOutcome.failed => RewardedShareTerminalResult._(
+          outcome: outcome,
+          grant: null,
+          messageLocalizationKey: failedLocalizationKey,
+        ),
+      RewardedAdTerminalOutcome.noFill => RewardedShareTerminalResult._(
+          outcome: outcome,
+          grant: null,
+          messageLocalizationKey: noFillLocalizationKey,
+        ),
+    };
+  }
+
   RewardedShareGrant complete({
     required String designId,
     required bool adCompleted,
   }) {
-    final activeDesignId = _activeDesignId;
-    _activeDesignId = null;
-
     if (!adCompleted) {
+      final activeDesignId = _activeDesignId;
+      _activeDesignId = null;
+      if (activeDesignId == null || activeDesignId != designId.trim()) {
+        throw StateError('Reward completion does not match the active design.');
+      }
       throw StateError('Rewarded ad did not complete; no share grant created.');
     }
-    if (activeDesignId == null || activeDesignId != designId.trim()) {
-      throw StateError('Reward completion does not match the active design.');
-    }
 
-    return RewardedShareGrant._(designId: activeDesignId);
+    final result = finish(
+      designId: designId,
+      outcome: RewardedAdTerminalOutcome.completed,
+    );
+    return result.grant!;
   }
 }
