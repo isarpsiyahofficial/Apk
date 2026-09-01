@@ -46,6 +46,7 @@ void main() {
       canExportRepeatedly: true,
       isAiGenerated: true,
       isCanvaProContent: false,
+      hasIndependentReusableLicense: true,
     );
 
     final proEntry = VisualAssetManifestEntry(
@@ -60,25 +61,45 @@ void main() {
       canExportRepeatedly: true,
       isAiGenerated: false,
       isCanvaProContent: true,
+      hasIndependentReusableLicense: true,
     );
 
     expect(aiEntry.canBeFinalReusableBackground, isFalse);
     expect(proEntry.canBeFinalReusableBackground, isFalse);
   });
 
-  test('only fully licensed non-AI non-Pro visual passes final gate', () {
+  test('generic Canva Free license alone cannot pass reusable app gate', () {
     final entry = VisualAssetManifestEntry(
-      id: 'visual-free',
-      title: 'Licensed visual',
+      id: 'visual-free-only',
+      title: 'Canva Free only',
       sourceUrl: Uri.parse('https://www.canva.com/'),
-      licenseId: 'verified-free-license',
-      retrievedAt: DateTime.utc(2026, 8, 27),
+      licenseId: 'canva-free',
+      retrievedAt: DateTime.utc(2026, 9, 1),
       sha256: validSha,
       attribution: 'Canva source recorded',
       canRedistributeInApp: true,
       canExportRepeatedly: true,
       isAiGenerated: false,
       isCanvaProContent: false,
+    );
+
+    expect(entry.canBeFinalReusableBackground, isFalse);
+  });
+
+  test('only independently licensed non-AI non-Pro visual passes final gate', () {
+    final entry = VisualAssetManifestEntry(
+      id: 'visual-cc0',
+      title: 'Independently reusable visual',
+      sourceUrl: Uri.parse('https://www.canva.com/'),
+      licenseId: 'CC0-1.0',
+      retrievedAt: DateTime.utc(2026, 9, 1),
+      sha256: validSha,
+      attribution: 'Underlying source and license recorded',
+      canRedistributeInApp: true,
+      canExportRepeatedly: true,
+      isAiGenerated: false,
+      isCanvaProContent: false,
+      hasIndependentReusableLicense: true,
     );
 
     expect(entry.canBeFinalReusableBackground, isTrue);
