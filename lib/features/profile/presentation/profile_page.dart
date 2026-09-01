@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
+import 'package:islami_hayat/features/notifications/data/android_local_notification_scheduler_t0291.dart';
 import 'package:islami_hayat/features/notifications/data/secure_notification_preferences_store.dart';
 import 'package:islami_hayat/features/notifications/domain/notification_preferences.dart';
 import 'package:islami_hayat/features/notifications/presentation/notification_settings_page.dart';
@@ -11,9 +12,15 @@ class ProfilePage extends StatelessWidget {
   const ProfilePage({
     super.key,
     this.notificationPreferencesStore,
+    this.notificationPermissionRequester,
   });
 
   final NotificationPreferencesStore? notificationPreferencesStore;
+
+  /// Injectable for widget tests. Production requests Android notification
+  /// permission only after the user explicitly enables a notification category.
+  final Future<bool> Function(NotificationCategory category)?
+      notificationPermissionRequester;
 
   @override
   Widget build(BuildContext context) {
@@ -52,9 +59,17 @@ class ProfilePage extends StatelessWidget {
                   SecureNotificationPreferencesStore(
                     SecurePrivateUserStore(),
                   );
+              final injectedRequester = notificationPermissionRequester;
+              final scheduler = injectedRequester == null
+                  ? AndroidLocalNotificationSchedulerT0291()
+                  : null;
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (_) => NotificationSettingsPage(store: store),
+                  builder: (_) => NotificationSettingsPage(
+                    store: store,
+                    onEnableRequested: injectedRequester ??
+                        (_) => scheduler!.requestUserPermission(),
+                  ),
                 ),
               );
             },
