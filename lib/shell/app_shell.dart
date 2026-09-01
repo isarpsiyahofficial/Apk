@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:islami_hayat/core/monetization/free_home_banner_surface.dart';
 import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_hub_page.dart';
+import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.dart';
 import 'package:islami_hayat/features/premium/presentation/startup_access_gate.dart';
 import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
 import 'package:islami_hayat/features/prophets/presentation/prophet_story_page.dart';
@@ -22,6 +24,8 @@ class AppShell extends StatefulWidget {
     this.dailyVerseRepository,
     this.todayNow,
     this.canEnterNewContent,
+    this.entitlement = const EntitlementState.free(),
+    this.freeHomeBanner,
   });
 
   final QuranReadingProgressRepository? quranProgressRepository;
@@ -31,6 +35,14 @@ class AppShell extends StatefulWidget {
   /// Re-checks FREE reachability before moving to a different content surface.
   /// Null is used by isolated shell tests and means no monetization gate.
   final Future<bool> Function()? canEnterNewContent;
+
+  /// Current entitlement used only to decide whether the injected home banner
+  /// is eligible to be mounted. Concrete SDK lifecycle remains outside widgets.
+  final EntitlementState entitlement;
+
+  /// Filled banner widget from the concrete ad integration. Null means no-fill
+  /// or not loaded and must collapse without affecting religious content.
+  final Widget? freeHomeBanner;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -139,14 +151,18 @@ class _AppShellState extends State<AppShell> {
     ];
 
     final pages = <Widget>[
-      TodayPage(
-        quranProgressRepository: _quranProgressRepository,
-        dailyVerseRepository: widget.dailyVerseRepository,
-        now: widget.todayNow,
-        onContinueQuran: () => unawaited(_select(1)),
-        onOpenDailyVerse: _openQuranAt,
-        onOpenProphetStory: (prophetId) =>
-            unawaited(_openProphetStory(prophetId)),
+      _TodayHomeWithBanner(
+        entitlement: widget.entitlement,
+        banner: widget.freeHomeBanner,
+        child: TodayPage(
+          quranProgressRepository: _quranProgressRepository,
+          dailyVerseRepository: widget.dailyVerseRepository,
+          now: widget.todayNow,
+          onContinueQuran: () => unawaited(_select(1)),
+          onOpenDailyVerse: _openQuranAt,
+          onOpenProphetStory: (prophetId) =>
+              unawaited(_openProphetStory(prophetId)),
+        ),
       ),
       QuranHubPage(progressRepository: _quranProgressRepository),
       const DiscoverPage(),
@@ -226,6 +242,31 @@ class _AppShellState extends State<AppShell> {
           ),
         );
       },
+    );
+  }
+}
+
+class _TodayHomeWithBanner extends StatelessWidget {
+  const _TodayHomeWithBanner({
+    required this.child,
+    required this.entitlement,
+    required this.banner,
+  });
+
+  final Widget child;
+  final EntitlementState entitlement;
+  final Widget? banner;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(child: child),
+        FreeHomeBannerSurface(
+          entitlement: entitlement,
+          adContent: banner,
+        ),
+      ],
     );
   }
 }
