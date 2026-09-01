@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/core/monetization/ad_safety_policy_t0272.dart';
 import 'package:islami_hayat/core/monetization/entitlement_gated_ad_sdk.dart';
 import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.dart';
 
@@ -9,11 +10,17 @@ final class _FakeAdSdk implements AdSdkAdapter {
   int initializeCalls = 0;
 
   @override
-  Future<void> initialize() async {
+  Future<AdSafetyConfigurationEvidenceT0272> initialize({
+    required AdSafetyProfileT0272 safetyProfile,
+  }) async {
     initializeCalls += 1;
     if (failInitialization) {
       throw StateError('simulated SDK init failure');
     }
+    return const AdSafetyConfigurationEvidenceT0272(
+      runtimeMaxContentRatingApplied: true,
+      accountCategoryBlocksVerified: true,
+    );
   }
 }
 
