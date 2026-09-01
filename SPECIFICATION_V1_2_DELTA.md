@@ -38,3 +38,11 @@ Bu dosya `SPECIFICATION.md` v1.1 üzerinde alınan son kararları kilitler. `SPE
 - Bir ekran yalnız görünür olduğu için tamamlanmış sayılmaz: navigation, state, empty/error/loading, localization, RTL ve responsive davranışı test edilmelidir.
 - Bir monetizasyon özelliği yalnız SDK entegrasyonu ile tamamlanmış sayılmaz: FREE/PRO, offline, rewarded success/cancel/fail, restore/reinstall/revoke ve PRO sıfır reklam davranışı gerçek test ister.
 - Dini/tarihsel içerik yalnız veri tabanına girdiği için tamamlanmış sayılmaz: kaynak, doğruluk, kesinlik seviyesi, lisans, üç dil ve yazım kontrolü geçmelidir.
+
+## 4. Google Play Lifetime PRO
+
+- V1 Premium modeli abonelik değildir; Android'de tek seferlik **non-consumable one-time Lifetime PRO** ürünüdür.
+- Kalıcı Google Play product ID **`islami_hayat_lifetime_pro`** olarak kilitlenmiştir.
+- Bu ID lokalize UI adı, fiyat veya kampanya metninden bağımsızdır; kodda başka bir production PRO ürün ID'si kabul edilmeyecektir.
+- Product ID oluşturulduktan sonra değiştirilemez/yeniden kullanılamaz kabul edilerek billing, restore ve entitlement doğrulama akışlarının tamamı bu canonical ID üzerinden ilerleyecektir.
+- Bilinmeyen, aylık/yıllık abonelik izlenimi veren veya canonical ID dışındaki ürünler Lifetime PRO entitlement üretmeyecektir; failure-path fail-closed olacaktır.
