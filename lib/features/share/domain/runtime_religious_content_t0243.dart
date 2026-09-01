@@ -10,6 +10,7 @@ class RuntimeReligiousShareContentT0243 {
     required this.text,
     required this.sourceLabel,
     required this.sourceClass,
+    required this.requiresGeneralDuaLabel,
   });
 
   factory RuntimeReligiousShareContentT0243.fromCanonicalQuranAyah(
@@ -24,6 +25,7 @@ class RuntimeReligiousShareContentT0243 {
       text: ayah.arabic,
       sourceLabel: 'Quran ${ayah.sura}:${ayah.ayah}',
       sourceClass: ReligiousSourceClass.quran,
+      requiresGeneralDuaLabel: false,
     );
   }
 
@@ -44,6 +46,18 @@ class RuntimeReligiousShareContentT0243 {
       throw StateError('T0243 record type is not eligible for religious sharing.');
     }
 
+    final requiresGeneralDuaLabel =
+        record.type == ContentType.dua &&
+        record.sourceStatus == ReligiousSourceClass.meaningBasedDua;
+    if (requiresGeneralDuaLabel &&
+        !record.sources.any(
+          (source) => source.sourceClass == ReligiousSourceClass.meaningBasedDua,
+        )) {
+      throw StateError(
+        'T0245 general editorial dua requires meaning-based dua provenance.',
+      );
+    }
+
     final text = switch (locale) {
       ShareContentLocaleT0243.tr => record.text.tr,
       ShareContentLocaleT0243.en => record.text.en,
@@ -60,6 +74,7 @@ class RuntimeReligiousShareContentT0243 {
       text: text,
       sourceLabel: sourceLabel,
       sourceClass: record.sourceStatus,
+      requiresGeneralDuaLabel: requiresGeneralDuaLabel,
     );
   }
 
@@ -68,4 +83,9 @@ class RuntimeReligiousShareContentT0243 {
   final String text;
   final String sourceLabel;
   final ReligiousSourceClass sourceClass;
+
+  /// SPEC 415 / T0245: a meaning-based editorial dua must remain visibly
+  /// classified as a general dua on the exported card. Presentation owns the
+  /// localized label; callers cannot override this trusted-content decision.
+  final bool requiresGeneralDuaLabel;
 }
