@@ -7,11 +7,17 @@ class NotificationSettingsPage extends StatefulWidget {
     this.initialPreferences = const NotificationPreferences(),
     this.store,
     this.onChanged,
+    this.onEnableRequested,
   });
 
   final NotificationPreferences initialPreferences;
   final NotificationPreferencesStore? store;
   final ValueChanged<NotificationPreferences>? onChanged;
+
+  /// Runs only for an explicit OFF -> ON user action. Returning false keeps
+  /// the category disabled. This lets Android request POST_NOTIFICATIONS only
+  /// after a user opt-in instead of at app startup.
+  final Future<bool> Function(NotificationCategory category)? onEnableRequested;
 
   @override
   State<NotificationSettingsPage> createState() =>
@@ -23,6 +29,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   late bool _loading;
   bool _saving = false;
   bool _storageError = false;
+  bool _permissionError = false;
 
   @override
   void initState() {
@@ -58,6 +65,29 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     bool enabled,
   ) async {
     if (_saving) return;
+
+    if (enabled && widget.onEnableRequested != null) {
+      setState(() {
+        _saving = true;
+        _permissionError = false;
+      });
+      var allowed = false;
+      try {
+        allowed = await widget.onEnableRequested!(category);
+      } on Object {
+        allowed = false;
+      }
+      if (!mounted) return;
+      if (!allowed) {
+        setState(() {
+          _saving = false;
+          _permissionError = true;
+        });
+        return;
+      }
+      setState(() => _saving = false);
+    }
+
     final previous = _preferences;
     final next = previous.withCategory(category, enabled);
 
@@ -65,6 +95,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       _preferences = next;
       _saving = widget.store != null;
       _storageError = false;
+      _permissionError = false;
     });
     widget.onChanged?.call(next);
 
@@ -107,6 +138,19 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                     child: Text(
                       strings.storageError,
                       key: const Key('notification-storage-error'),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
+                  ),
+                ],
+                if (_permissionError) ...[
+                  const SizedBox(height: 12),
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      strings.permissionError,
+                      key: const Key('notification-permission-error'),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.error,
                       ),
@@ -202,6 +246,7 @@ class _NotificationStrings {
     required this.religiousDaySubtitle,
     required this.footnote,
     required this.storageError,
+    required this.permissionError,
   });
 
   final String title;
@@ -216,6 +261,7 @@ class _NotificationStrings {
   final String religiousDaySubtitle;
   final String footnote;
   final String storageError;
+  final String permissionError;
 
   static _NotificationStrings forLocale(Locale locale) {
     return switch (locale.languageCode) {
@@ -236,6 +282,8 @@ class _NotificationStrings {
               'لا توجد إشعارات للأذان أو مواقيت الصلاة في الإصدار الأول.',
           storageError:
               'تعذّر حفظ إعدادات الإشعارات. بقيت الفئات غير المحفوظة مغلقة.',
+          permissionError:
+              'لم يتم منح إذن الإشعارات. بقي هذا النوع من التذكيرات مغلقًا.',
         ),
       'en' => const _NotificationStrings(
           title: 'Notifications',
@@ -255,6 +303,8 @@ class _NotificationStrings {
           footnote: 'V1 does not send adhan or prayer-time notifications.',
           storageError:
               'Notification settings could not be saved. Unsaved categories remain off.',
+          permissionError:
+              'Notification permission was not granted. This reminder stayed off.',
         ),
       _ => const _NotificationStrings(
           title: 'Bildirimler',
@@ -276,6 +326,8 @@ class _NotificationStrings {
               'V1 içinde ezan veya namaz vakti bildirimi gönderilmez.',
           storageError:
               'Bildirim ayarları kaydedilemedi. Kaydedilemeyen kategoriler kapalı kaldı.',
+          permissionError:
+              'Bildirim izni verilmedi. Bu hatırlatma kapalı kaldı.',
         ),
     };
   }
