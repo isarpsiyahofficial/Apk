@@ -1,3 +1,4 @@
+import 'ad_placement_policy.dart';
 import '../../features/premium/domain/entitlement_state_machine.dart';
 
 /// Narrow production boundary around the platform advertisement SDK.
@@ -126,10 +127,42 @@ final class EntitlementGatedAdSdkCoordinator {
         _state == AdSdkBootstrapState.initializedForFree;
   }
 
+  /// Product-facing request eligibility. Concrete banner/interstitial/rewarded
+  /// integrations should call this instead of checking entitlement or placement
+  /// separately, so a sacred-content surface cannot accidentally bypass policy.
+  bool canIssueAdRequestFor({
+    required EntitlementState entitlement,
+    required AppAdSurface surface,
+    required AdFormat format,
+  }) {
+    return canIssueAdRequest(entitlement) &&
+        AdPlacementPolicy.canRequest(
+          surface: surface,
+          format: format,
+          isPro: entitlement.isPro,
+        );
+  }
+
   void requireAdRequestAllowed(EntitlementState entitlement) {
     if (!canIssueAdRequest(entitlement)) {
       throw StateError(
         'Ad request blocked: entitlement is PRO or SDK is not safely initialized.',
+      );
+    }
+  }
+
+  void requireAdRequestAllowedFor({
+    required EntitlementState entitlement,
+    required AppAdSurface surface,
+    required AdFormat format,
+  }) {
+    if (!canIssueAdRequestFor(
+      entitlement: entitlement,
+      surface: surface,
+      format: format,
+    )) {
+      throw StateError(
+        'Ad request blocked: placement is forbidden, entitlement is PRO, or SDK is not safely initialized.',
       );
     }
   }
