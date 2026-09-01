@@ -76,6 +76,7 @@ class _AppShellState extends State<AppShell> {
 
   Future<void> _openQuranAt(QuranAddress address) async {
     if (!await _guardNewContent()) return;
+    if (!mounted) return;
     final l10n = AppLocalizations.of(context);
     try {
       final current = await _quranProgressRepository.load();
