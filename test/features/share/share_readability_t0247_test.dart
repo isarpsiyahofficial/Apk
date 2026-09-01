@@ -1,7 +1,10 @@
 import 'dart:ui';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/features/share/domain/share_canvas_layout_t0242.dart';
 import 'package:islami_hayat/features/share/domain/share_readability_t0247.dart';
+import 'package:islami_hayat/features/share/presentation/share_layout_renderer_t0242.dart';
 
 void main() {
   const policy = ShareReadabilityPolicyT0247();
@@ -73,5 +76,62 @@ void main() {
       ).evaluate(backgroundSamples: const [Color(0xFFFFFFFF)]),
       throwsArgumentError,
     );
+  });
+
+  testWidgets('T0247 renderer applies the automatically selected foreground', (
+    tester,
+  ) async {
+    final decision = policy.evaluate(
+      backgroundSamples: const [Color(0xFFFFFFFF), Color(0xFFF4F0E8)],
+    );
+
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: SizedBox(
+          width: 320,
+          child: ShareLayoutRendererT0242(
+            format: ShareCanvasFormatT0242.square11,
+            background: const ColoredBox(color: Color(0xFFFFFFFF)),
+            readabilityDecision: decision,
+            content: const Text('Readable content'),
+          ),
+        ),
+      ),
+    );
+
+    final defaultStyle = tester.widget<DefaultTextStyle>(
+      find.ancestor(
+        of: find.text('Readable content'),
+        matching: find.byType(DefaultTextStyle),
+      ).first,
+    );
+    expect(defaultStyle.style.color, const Color(0xFF111111));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('T0247 renderer blocks a non-readable export candidate', (
+    tester,
+  ) async {
+    final decision = policy.evaluate(
+      backgroundSamples: const [Color(0xFFFFFFFF), Color(0xFF000000)],
+    );
+
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: SizedBox(
+          width: 320,
+          child: ShareLayoutRendererT0242(
+            format: ShareCanvasFormatT0242.square11,
+            background: const SizedBox.expand(),
+            readabilityDecision: decision,
+            content: const Text('Blocked content'),
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isA<StateError>());
   });
 }
