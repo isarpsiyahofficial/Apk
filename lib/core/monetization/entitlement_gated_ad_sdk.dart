@@ -1,5 +1,6 @@
 import '../../features/premium/domain/entitlement_state_machine.dart';
 import 'ad_placement_policy.dart';
+import 'ad_privacy_policy_t0273.dart';
 import 'ad_safety_policy_t0272.dart';
 
 /// Narrow production boundary around the platform advertisement SDK.
@@ -53,6 +54,12 @@ final class AdDisposalFailure {
 /// adapter must prove both runtime G-rating configuration and account-side
 /// sensitive-category blocking were applied. Missing safety evidence is treated
 /// exactly like an initialization failure and leaves all ad request paths closed.
+///
+/// Product code must obtain advertisement requests through
+/// [buildPrivacySafeAdRequestFor]. That boundary emits only the T0273 strict
+/// contextual/non-personalized descriptor and intentionally has no channel for
+/// query text, religious interests, notes, history, verse/dua/dhikr IDs or other
+/// sensitive user-derived targeting signals.
 final class EntitlementGatedAdSdkCoordinator {
   EntitlementGatedAdSdkCoordinator({required AdSdkAdapter sdk}) : _sdk = sdk;
 
@@ -149,6 +156,34 @@ final class EntitlementGatedAdSdkCoordinator {
           format: format,
           isPro: entitlement.isPro,
         );
+  }
+
+  /// Builds the only product-approved ad request descriptor.
+  ///
+  /// The descriptor is intentionally data-minimized. A caller cannot attach a
+  /// religious topic, raw search text, note, reading history or inferred
+  /// interest. Sacred/unsupported placements, PRO and an uninitialized SDK all
+  /// fail closed before a descriptor is returned.
+  PrivacySafeAdRequestT0273 buildPrivacySafeAdRequestFor({
+    required EntitlementState entitlement,
+    required AppAdSurface surface,
+    required AdFormat format,
+  }) {
+    requireAdRequestAllowedFor(
+      entitlement: entitlement,
+      surface: surface,
+      format: format,
+    );
+
+    final contextSurface = switch (surface) {
+      AppAdSurface.todayHome => AdContextSurfaceT0273.homeGeneral,
+      AppAdSurface.shareDesignUnlock => AdContextSurfaceT0273.shareVisualUnlock,
+      _ => throw StateError(
+          'Ad request blocked: sacred or unsupported surface cannot create an ad privacy descriptor.',
+        ),
+    };
+
+    return PrivacySafeAdRequestT0273.strictV1(surface: contextSurface);
   }
 
   void requireAdRequestAllowed(EntitlementState entitlement) {
