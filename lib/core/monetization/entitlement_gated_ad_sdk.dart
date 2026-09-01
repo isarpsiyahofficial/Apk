@@ -1,5 +1,5 @@
-import 'ad_placement_policy.dart';
 import '../../features/premium/domain/entitlement_state_machine.dart';
+import 'ad_placement_policy.dart';
 
 /// Narrow production boundary around the platform advertisement SDK.
 ///
