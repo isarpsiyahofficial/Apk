@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/core/monetization/ad_safety_policy_t0272.dart';
 import 'package:islami_hayat/core/monetization/entitlement_gated_ad_sdk.dart';
 import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.dart';
 
@@ -6,8 +7,14 @@ final class _FakeAdSdk implements AdSdkAdapter {
   int initializeCalls = 0;
 
   @override
-  Future<void> initialize() async {
+  Future<AdSafetyConfigurationEvidenceT0272> initialize({
+    required AdSafetyProfileT0272 safetyProfile,
+  }) async {
     initializeCalls += 1;
+    return const AdSafetyConfigurationEvidenceT0272(
+      runtimeMaxContentRatingApplied: true,
+      accountCategoryBlocksVerified: true,
+    );
   }
 }
 
@@ -38,31 +45,12 @@ void main() {
       final rewarded = _FakeLoadedAd();
 
       await coordinator.evaluateAndInitialize(free);
-      await coordinator.retainLoadedAd(
-        kind: LoadedAdKind.banner,
-        ad: banner,
-        entitlement: free,
-      );
-      await coordinator.retainLoadedAd(
-        kind: LoadedAdKind.interstitial,
-        ad: interstitial,
-        entitlement: free,
-      );
-      await coordinator.retainLoadedAd(
-        kind: LoadedAdKind.rewarded,
-        ad: rewarded,
-        entitlement: free,
-      );
+      await coordinator.retainLoadedAd(kind: LoadedAdKind.banner, ad: banner, entitlement: free);
+      await coordinator.retainLoadedAd(kind: LoadedAdKind.interstitial, ad: interstitial, entitlement: free);
+      await coordinator.retainLoadedAd(kind: LoadedAdKind.rewarded, ad: rewarded, entitlement: free);
 
       expect(coordinator.loadedAdCount, 3);
-      expect(
-        coordinator.loadedAdKinds,
-        containsAll(<LoadedAdKind>{
-          LoadedAdKind.banner,
-          LoadedAdKind.interstitial,
-          LoadedAdKind.rewarded,
-        }),
-      );
+      expect(coordinator.loadedAdKinds, containsAll(<LoadedAdKind>{LoadedAdKind.banner, LoadedAdKind.interstitial, LoadedAdKind.rewarded}));
 
       await coordinator.evaluateAndInitialize(pro);
 
@@ -81,12 +69,7 @@ void main() {
       final banner = _FakeLoadedAd();
 
       await coordinator.evaluateAndInitialize(free);
-      await coordinator.retainLoadedAd(
-        kind: LoadedAdKind.banner,
-        ad: banner,
-        entitlement: free,
-      );
-
+      await coordinator.retainLoadedAd(kind: LoadedAdKind.banner, ad: banner, entitlement: free);
       await coordinator.evaluateAndInitialize(const EntitlementState.cachedPro());
 
       expect(banner.disposeCalls, 1);
@@ -100,11 +83,7 @@ void main() {
       final lateRewarded = _FakeLoadedAd();
 
       await coordinator.evaluateAndInitialize(pro);
-      await coordinator.retainLoadedAd(
-        kind: LoadedAdKind.rewarded,
-        ad: lateRewarded,
-        entitlement: pro,
-      );
+      await coordinator.retainLoadedAd(kind: LoadedAdKind.rewarded, ad: lateRewarded, entitlement: pro);
 
       expect(lateRewarded.disposeCalls, 1);
       expect(coordinator.loadedAdCount, 0);
@@ -119,21 +98,9 @@ void main() {
       final rewarded = _FakeLoadedAd();
 
       await coordinator.evaluateAndInitialize(free);
-      await coordinator.retainLoadedAd(
-        kind: LoadedAdKind.banner,
-        ad: brokenBanner,
-        entitlement: free,
-      );
-      await coordinator.retainLoadedAd(
-        kind: LoadedAdKind.interstitial,
-        ad: interstitial,
-        entitlement: free,
-      );
-      await coordinator.retainLoadedAd(
-        kind: LoadedAdKind.rewarded,
-        ad: rewarded,
-        entitlement: free,
-      );
+      await coordinator.retainLoadedAd(kind: LoadedAdKind.banner, ad: brokenBanner, entitlement: free);
+      await coordinator.retainLoadedAd(kind: LoadedAdKind.interstitial, ad: interstitial, entitlement: free);
+      await coordinator.retainLoadedAd(kind: LoadedAdKind.rewarded, ad: rewarded, entitlement: free);
 
       await coordinator.evaluateAndInitialize(pro);
 
@@ -142,10 +109,7 @@ void main() {
       expect(rewarded.disposeCalls, 1);
       expect(coordinator.loadedAdCount, 0);
       expect(coordinator.lastDisposalFailures, hasLength(1));
-      expect(
-        coordinator.lastDisposalFailures.single.kind,
-        LoadedAdKind.banner,
-      );
+      expect(coordinator.lastDisposalFailures.single.kind, LoadedAdKind.banner);
       expect(coordinator.canIssueAdRequest(pro), isFalse);
     });
 
@@ -156,12 +120,7 @@ void main() {
       final interstitial = _FakeLoadedAd();
 
       await coordinator.evaluateAndInitialize(free);
-      await coordinator.retainLoadedAd(
-        kind: LoadedAdKind.interstitial,
-        ad: interstitial,
-        entitlement: free,
-      );
-
+      await coordinator.retainLoadedAd(kind: LoadedAdKind.interstitial, ad: interstitial, entitlement: free);
       await coordinator.evaluateAndInitialize(pro);
       await coordinator.evaluateAndInitialize(pro);
 
@@ -176,16 +135,8 @@ void main() {
       final replacement = _FakeLoadedAd();
 
       await coordinator.evaluateAndInitialize(free);
-      await coordinator.retainLoadedAd(
-        kind: LoadedAdKind.banner,
-        ad: first,
-        entitlement: free,
-      );
-      await coordinator.retainLoadedAd(
-        kind: LoadedAdKind.banner,
-        ad: replacement,
-        entitlement: free,
-      );
+      await coordinator.retainLoadedAd(kind: LoadedAdKind.banner, ad: first, entitlement: free);
+      await coordinator.retainLoadedAd(kind: LoadedAdKind.banner, ad: replacement, entitlement: free);
 
       expect(first.disposeCalls, 1);
       expect(replacement.disposeCalls, 0);
