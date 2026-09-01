@@ -13,15 +13,8 @@ final class _FakeAdSdk implements AdSdkAdapter {
 }
 
 void main() {
-  EntitlementState freeState() => const EntitlementState(
-        tier: EntitlementTier.free,
-        source: EntitlementSource.verifiedOnline,
-      );
-
-  EntitlementState proState() => const EntitlementState(
-        tier: EntitlementTier.pro,
-        source: EntitlementSource.verifiedOnline,
-      );
+  EntitlementState freeState() => const EntitlementState.free();
+  EntitlementState proState() => const EntitlementState.verifiedPro();
 
   test('locked FREE design exposes explicit one-use rewarded contract', () async {
     final sdk = _FakeAdSdk();
