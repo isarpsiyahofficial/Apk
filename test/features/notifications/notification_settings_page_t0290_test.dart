@@ -188,10 +188,15 @@ void main() {
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
     await tester.pumpWidget(_app(locale: const Locale('en')));
-    await tester.drag(find.byType(ListView), const Offset(0, -500));
-    await tester.pump();
+    final footnote = find.textContaining('adhan or prayer-time');
+    await tester.scrollUntilVisible(
+      footnote,
+      240,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
 
-    expect(find.textContaining('adhan or prayer-time'), findsOneWidget);
+    expect(footnote, findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
