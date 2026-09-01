@@ -37,7 +37,9 @@ void main() {
     for (final preset in ShareFontSizePresetT0246.values) {
       final preferences = ShareTextPreferencesT0246(fontSizePreset: preset);
       expect(preset.scale, inInclusiveRange(0.90, 1.12));
-      expect(preferences.fontSizeFor(20), inInclusiveRange(18, 22.4));
+      expect(preferences.fontSizeFor(20), closeTo(20 * preset.scale, 1e-9));
+      expect(preferences.fontSizeFor(20), greaterThanOrEqualTo(18));
+      expect(preferences.fontSizeFor(20), lessThanOrEqualTo(22.4 + 1e-9));
     }
   });
 
@@ -62,13 +64,15 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: StatefulBuilder(
-          builder: (context, setState) {
-            return ShareTextCustomizationControlsT0246(
-              preferences: preferences,
-              onChanged: (next) => setState(() => preferences = next),
-            );
-          },
+        home: Scaffold(
+          body: StatefulBuilder(
+            builder: (context, setState) {
+              return ShareTextCustomizationControlsT0246(
+                preferences: preferences,
+                onChanged: (next) => setState(() => preferences = next),
+              );
+            },
+          ),
         ),
       ),
     );
