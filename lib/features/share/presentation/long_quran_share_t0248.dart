@@ -121,65 +121,86 @@ class QuranLongTextPaginatorT0248 {
     required double maxWidth,
     required double maxHeight,
   }) {
-    final boundaries = <int>{
-      for (final match in RegExp(r'\s+').allMatches(text)) match.end,
-      text.length,
-    }.toList()
-      ..sort();
-
     final segments = <String>[];
     var start = 0;
-    var boundaryStart = 0;
     while (start < text.length) {
-      while (boundaryStart < boundaries.length &&
-          boundaries[boundaryStart] <= start) {
-        boundaryStart++;
+      final remaining = text.substring(start);
+      final relativeEnd = _largestSafeLineBoundary(
+        remaining,
+        preferences: preferences,
+        textDirection: textDirection,
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
+      );
+      if (relativeEnd <= 0 || relativeEnd > remaining.length) {
+        throw StateError('T0248 produced an invalid Quran page boundary.');
       }
-      if (boundaryStart >= boundaries.length) {
-        throw StateError(
-          'T0248 cannot find a Quran word boundary after the current page.',
-        );
-      }
-
-      // Fitting is monotonic as candidate text grows. Search the largest safe
-      // word boundary instead of laying out every progressively longer prefix.
-      // This keeps long Uthmani verses bounded even on slower CI/emulators.
-      var low = boundaryStart;
-      var high = boundaries.length - 1;
-      var bestBoundaryIndex = -1;
-      while (low <= high) {
-        final middle = low + ((high - low) ~/ 2);
-        final end = boundaries[middle];
-        final candidate = text.substring(start, end);
-        if (_fits(
-          candidate,
-          preferences: preferences,
-          textDirection: textDirection,
-          maxWidth: maxWidth,
-          maxHeight: maxHeight,
-        )) {
-          bestBoundaryIndex = middle;
-          low = middle + 1;
-        } else {
-          high = middle - 1;
-        }
-      }
-
-      if (bestBoundaryIndex < boundaryStart) {
-        throw StateError(
-          'T0248 cannot fit the next Quran word without splitting it.',
-        );
-      }
-      final bestEnd = boundaries[bestBoundaryIndex];
-      segments.add(text.substring(start, bestEnd));
-      start = bestEnd;
-      boundaryStart = bestBoundaryIndex + 1;
+      final end = start + relativeEnd;
+      segments.add(text.substring(start, end));
+      start = end;
     }
 
     if (segments.isEmpty || segments.join() != text) {
       throw StateError('T0248 pagination must preserve Quran text byte-for-byte.');
     }
     return segments;
+  }
+
+  int _largestSafeLineBoundary(
+    String text, {
+    required ShareTextPreferencesT0246 preferences,
+    required TextDirection textDirection,
+    required double maxWidth,
+    required double maxHeight,
+  }) {
+    final painter = _layoutPainter(
+      text,
+      preferences: preferences,
+      textDirection: textDirection,
+      maxWidth: maxWidth,
+    );
+    if (painter.height <= maxHeight) {
+      return text.length;
+    }
+
+    final lines = painter.computeLineMetrics();
+    var lastFittingLine = -1;
+    for (var index = 0; index < lines.length; index++) {
+      final line = lines[index];
+      final lineTop = line.baseline - line.ascent;
+      final lineBottom = lineTop + line.height;
+      if (lineBottom <= maxHeight + 0.001) {
+        lastFittingLine = index;
+      } else {
+        break;
+      }
+    }
+    if (lastFittingLine < 0) {
+      throw StateError('T0248 safe area cannot fit even one Quran text line.');
+    }
+
+    final line = lines[lastFittingLine];
+    final lineMidY = line.baseline - line.ascent + (line.height / 2);
+    final position = painter.getPositionForOffset(
+      Offset(maxWidth / 2, lineMidY),
+    );
+    final lineRange = painter.getLineBoundary(position);
+    if (lineRange.end >= text.length) {
+      return text.length;
+    }
+
+    // Flutter may wrap a single exceptionally long token. Page boundaries are
+    // stricter: never split a Quran word. Move back to the last whitespace
+    // boundary on the final fully fitting line and preserve that whitespace in
+    // the preceding page so joining pages reproduces the exact source bytes.
+    final prefix = text.substring(0, lineRange.end);
+    final whitespace = RegExp(r'\s+').allMatches(prefix).toList(growable: false);
+    if (whitespace.isEmpty) {
+      throw StateError(
+        'T0248 cannot fit the next Quran word without splitting it.',
+      );
+    }
+    return whitespace.last.end;
   }
 
   bool _fits(
@@ -189,7 +210,22 @@ class QuranLongTextPaginatorT0248 {
     required double maxWidth,
     required double maxHeight,
   }) {
-    final painter = TextPainter(
+    return _layoutPainter(
+          text,
+          preferences: preferences,
+          textDirection: textDirection,
+          maxWidth: maxWidth,
+        ).height <=
+        maxHeight;
+  }
+
+  TextPainter _layoutPainter(
+    String text, {
+    required ShareTextPreferencesT0246 preferences,
+    required TextDirection textDirection,
+    required double maxWidth,
+  }) {
+    return TextPainter(
       text: TextSpan(
         text: text,
         style: TextStyle(fontSize: preferences.fontSizeFor(_baseFontSize)),
@@ -197,7 +233,6 @@ class QuranLongTextPaginatorT0248 {
       textAlign: preferences.textAlign,
       textDirection: textDirection,
     )..layout(maxWidth: maxWidth);
-    return painter.height <= maxHeight;
   }
 }
 
