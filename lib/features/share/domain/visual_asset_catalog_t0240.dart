@@ -3,10 +3,6 @@ import 'package:islami_hayat/core/content/source_manifest.dart';
 class VisualAssetCatalogT0240 {
   VisualAssetCatalogT0240._(this.entries);
 
-  static const requiredFinalAssetCount = 100;
-
-  final List<VisualAssetManifestEntry> entries;
-
   factory VisualAssetCatalogT0240.finalCatalog(
     Iterable<VisualAssetManifestEntry> candidates,
   ) {
@@ -42,4 +38,8 @@ class VisualAssetCatalogT0240 {
 
     return VisualAssetCatalogT0240._(entries);
   }
+
+  static const requiredFinalAssetCount = 100;
+
+  final List<VisualAssetManifestEntry> entries;
 }
