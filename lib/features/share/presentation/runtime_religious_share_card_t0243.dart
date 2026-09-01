@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:islami_hayat/features/share/domain/runtime_religious_content_t0243.dart';
 import 'package:islami_hayat/features/share/domain/share_canvas_layout_t0242.dart';
 import 'package:islami_hayat/features/share/presentation/share_layout_renderer_t0242.dart';
+import 'package:islami_hayat/l10n/app_localizations.dart';
 
 class RuntimeReligiousShareCardT0243 extends StatelessWidget {
   const RuntimeReligiousShareCardT0243({
@@ -17,12 +18,22 @@ class RuntimeReligiousShareCardT0243 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return ShareLayoutRendererT0242(
       format: format,
       background: background,
       content: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          if (content.requiresGeneralDuaLabel) ...[
+            Text(
+              l10n.duaSourceEditorial,
+              key: const ValueKey('general-dua-label-t0245'),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+          ],
           Text(
             content.text,
             textAlign: TextAlign.center,
