@@ -30,6 +30,9 @@ jobs:
       - name: Generate clean Android runner
         run: flutter create --platforms=android --project-name islami_hayat .
 
+      - name: Configure generated runner for notification desugaring
+        run: python3 scripts/configure_android_desugaring.py
+
       - name: Remove template-only generated test
         shell: bash
         run: |
