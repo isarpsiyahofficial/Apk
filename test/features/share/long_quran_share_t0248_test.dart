@@ -9,22 +9,23 @@ import 'package:islami_hayat/features/share/presentation/long_quran_share_t0248.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  Future<RuntimeReligiousShareContentT0243> longestCanonicalAyah() async {
+  late RuntimeReligiousShareContentT0243 longestAyah;
+
+  setUpAll(() async {
     final dataset = await CanonicalQuranAssetLoader().load();
-    return RuntimeReligiousShareContentT0243.fromCanonicalQuranAyah(
+    longestAyah = RuntimeReligiousShareContentT0243.fromCanonicalQuranAyah(
       dataset.ayah(2, 282),
     );
-  }
+  });
 
   testWidgets('T0248 preserves the longest canonical ayah byte-for-byte', (
     tester,
   ) async {
-    final content = await longestCanonicalAyah();
     const paginator = QuranLongTextPaginatorT0248();
 
     for (final format in ShareCanvasFormatT0242.values) {
       final pages = paginator.paginate(
-        content: content,
+        content: longestAyah,
         format: format,
         textDirection: TextDirection.rtl,
       );
@@ -32,7 +33,7 @@ void main() {
       expect(pages, isNotEmpty, reason: format.name);
       expect(
         pages.map((page) => page.text).join(),
-        content.text,
+        longestAyah.text,
         reason: '${format.name} must not truncate or rewrite Quran text',
       );
       expect(
@@ -50,11 +51,10 @@ void main() {
   testWidgets('T0248 square long ayah falls back to compact multi-card', (
     tester,
   ) async {
-    final content = await longestCanonicalAyah();
     const paginator = QuranLongTextPaginatorT0248();
 
     final pages = paginator.paginate(
-      content: content,
+      content: longestAyah,
       format: ShareCanvasFormatT0242.square11,
       textDirection: TextDirection.rtl,
       requestedPreferences: const ShareTextPreferencesT0246(
@@ -71,16 +71,15 @@ void main() {
       ),
       isTrue,
     );
-    expect(pages.map((page) => page.text).join(), content.text);
+    expect(pages.map((page) => page.text).join(), longestAyah.text);
   });
 
   testWidgets('T0248 every generated card keeps the locked Quran source', (
     tester,
   ) async {
-    final content = await longestCanonicalAyah();
     const paginator = QuranLongTextPaginatorT0248();
     final pages = paginator.paginate(
-      content: content,
+      content: longestAyah,
       format: ShareCanvasFormatT0242.square11,
       textDirection: TextDirection.rtl,
     );
@@ -94,7 +93,7 @@ void main() {
             child: QuranSharePageCardT0248(
               format: ShareCanvasFormatT0242.square11,
               background: const SizedBox.expand(),
-              content: content,
+              content: longestAyah,
               page: page,
             ),
           ),
@@ -114,7 +113,6 @@ void main() {
   testWidgets('T0248 rejects invalid page coordinates before rendering', (
     tester,
   ) async {
-    final content = await longestCanonicalAyah();
     const invalidPage = QuranSharePageT0248(
       text: 'x',
       textPreferences: ShareTextPreferencesT0246(),
@@ -130,7 +128,7 @@ void main() {
           child: QuranSharePageCardT0248(
             format: ShareCanvasFormatT0242.square11,
             background: const SizedBox.expand(),
-            content: content,
+            content: longestAyah,
             page: invalidPage,
           ),
         ),
