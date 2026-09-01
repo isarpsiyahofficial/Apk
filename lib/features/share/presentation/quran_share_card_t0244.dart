@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:islami_hayat/features/share/domain/quran_source_lock_t0244.dart';
 import 'package:islami_hayat/features/share/domain/runtime_religious_content_t0243.dart';
 import 'package:islami_hayat/features/share/domain/share_canvas_layout_t0242.dart';
+import 'package:islami_hayat/features/share/domain/share_readability_t0247.dart';
 import 'package:islami_hayat/features/share/domain/share_text_preferences_t0246.dart';
 import 'package:islami_hayat/features/share/presentation/share_layout_renderer_t0242.dart';
 
@@ -11,6 +12,7 @@ class QuranShareCardT0244 extends StatelessWidget {
     required this.background,
     required this.content,
     this.textPreferences = const ShareTextPreferencesT0246(),
+    this.readabilityDecision,
     super.key,
   });
 
@@ -18,6 +20,7 @@ class QuranShareCardT0244 extends StatelessWidget {
   final Widget background;
   final RuntimeReligiousShareContentT0243 content;
   final ShareTextPreferencesT0246 textPreferences;
+  final ShareReadabilityDecisionT0247? readabilityDecision;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +29,7 @@ class QuranShareCardT0244 extends StatelessWidget {
     return ShareLayoutRendererT0242(
       format: format,
       background: background,
+      readabilityDecision: readabilityDecision,
       content: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
