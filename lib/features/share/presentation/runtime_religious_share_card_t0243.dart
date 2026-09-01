@@ -18,7 +18,9 @@ class RuntimeReligiousShareCardT0243 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final generalDuaLabel = content.requiresGeneralDuaLabel
+        ? AppLocalizations.of(context).duaSourceEditorial
+        : null;
 
     return ShareLayoutRendererT0242(
       format: format,
@@ -26,9 +28,9 @@ class RuntimeReligiousShareCardT0243 extends StatelessWidget {
       content: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (content.requiresGeneralDuaLabel) ...[
+          if (generalDuaLabel != null) ...[
             Text(
-              l10n.duaSourceEditorial,
+              generalDuaLabel,
               key: const ValueKey('general-dua-label-t0245'),
               textAlign: TextAlign.center,
             ),
