@@ -33,6 +33,18 @@ Future<void> _setSurface(
   });
 }
 
+Future<void> _scrollUntilVisible(
+  WidgetTester tester,
+  Finder target,
+) async {
+  await tester.scrollUntilVisible(
+    target,
+    240,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('TR value proposition states comfort benefits and no truth paywall', (
     tester,
@@ -46,8 +58,12 @@ void main() {
     expect(find.text('Temel içeriklere çevrimdışı erişim'), findsOneWidget);
     expect(find.text('100 tasarımın tamamı'), findsOneWidget);
     expect(find.text('Gelişmiş kişiselleştirme'), findsOneWidget);
+
+    await _scrollUntilVisible(tester, find.byKey(PremiumValuePage.truthBoundaryKey));
     expect(find.text('Dini doğruluk paywall değildir'), findsOneWidget);
     expect(find.textContaining('Kur’an’ın temel metni'), findsOneWidget);
+
+    await _scrollUntilVisible(tester, find.textContaining('abonelik değildir'));
     expect(find.textContaining('abonelik değildir'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -63,9 +79,10 @@ void main() {
     await tester.pumpWidget(_app(const Locale('en')));
     await tester.pumpAndSettle();
 
+    await _scrollUntilVisible(tester, find.text('Zero ads'));
     expect(find.text('Zero ads'), findsOneWidget);
-    await tester.drag(find.byType(ListView), const Offset(0, -600));
-    await tester.pumpAndSettle();
+
+    await _scrollUntilVisible(tester, find.byKey(PremiumValuePage.truthBoundaryKey));
     expect(find.text('Religious truth is not paywalled'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
