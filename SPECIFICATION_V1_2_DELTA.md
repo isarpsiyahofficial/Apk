@@ -12,7 +12,8 @@ Bu dosya `SPECIFICATION.md` v1.1 üzerinde alınan son kararları kilitler. `SPE
 - Uygulamanın ayet, dua ve kaynak metni Canva şablonundan alınmayacak; doğrulanmış yerel içerik veritabanından runtime'da render edilecektir.
 - Story 9:16, WhatsApp Status 9:16, Post 4:5 ve kare 1:1 formatlarının tamamı desteklenecek ve gerçek cihazda test edilecektir.
 - Uzun ayet, TR/EN/AR, Arapça RTL ve source-lock her formatta doğrulanacaktır.
-- İlk ürün modeli 3 ücretsiz tasarım + kalan kilitli tasarımlar yaklaşımını korur; 100 görselde Rewarded/PRO dağılımının nihai matrisi implementasyon başlamadan yazılı olarak sabitlenecektir.
+- **Nihai V1 erişim matrisi 100 tasarım için sabittir: 3 kalıcı FREE + 97 Rewarded/PRO.** FREE kullanıcı ilk üç tasarımı sınırsız kullanır; 004–100 arasındaki kilitli tasarımlarda yalnız başarıyla tamamlanan gönüllü rewarded reklam seçilen tasarım için 1 paylaşım hakkı üretir; PRO kullanıcı 100 tasarımın tamamını sınırsız ve rewarded teklif edilmeden kullanır.
+- Bu erişim kararı herhangi bir Canva adayını final asset yapmaz; lisans/hash/AI/re-export ve dört-format görsel QA kapıları ayrıca geçilmelidir.
 
 ## 2. UI/UX ve responsive cihaz matrisi
 
