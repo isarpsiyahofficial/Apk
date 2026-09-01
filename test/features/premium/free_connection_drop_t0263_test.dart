@@ -41,7 +41,7 @@ void main() {
       client.response = null;
       await tester.tap(find.byKey(const ValueKey('nav-quran')));
       await tester.pump();
-      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(
         tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
@@ -49,6 +49,7 @@ void main() {
         reason: 'current screen must remain visible when connectivity drops',
       );
       expect(client.calls, 2, reason: 'new content transition must re-check');
+      expect(find.byType(SnackBar), findsOneWidget);
       expect(
         find.textContaining('Ücretsiz mod internet erişimi gerektirir'),
         findsOneWidget,
@@ -57,7 +58,7 @@ void main() {
       client.response = 204;
       await tester.tap(find.byKey(const ValueKey('nav-quran')));
       await tester.pump();
-      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex, 1);
       expect(client.calls, 3);
