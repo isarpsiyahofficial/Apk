@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_hub_page.dart';
+import 'package:islami_hayat/features/premium/presentation/startup_access_gate.dart';
 import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
 import 'package:islami_hayat/features/prophets/presentation/prophet_story_page.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
@@ -18,11 +21,16 @@ class AppShell extends StatefulWidget {
     this.quranProgressRepository,
     this.dailyVerseRepository,
     this.todayNow,
+    this.canEnterNewContent,
   });
 
   final QuranReadingProgressRepository? quranProgressRepository;
   final DailyVerseDataSource? dailyVerseRepository;
   final DateTime Function()? todayNow;
+
+  /// Re-checks FREE reachability before moving to a different content surface.
+  /// Null is used by isolated shell tests and means no monetization gate.
+  final Future<bool> Function()? canEnterNewContent;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -39,12 +47,35 @@ class _AppShellState extends State<AppShell> {
         QuranReadingProgressRepository(SecurePrivateUserStore());
   }
 
-  void _select(int value) {
+  Future<bool> _guardNewContent() async {
+    final guard = widget.canEnterNewContent;
+    if (guard == null) return true;
+
+    var allowed = false;
+    try {
+      allowed = await guard();
+    } on Object {
+      allowed = false;
+    }
+    if (!mounted) return false;
+    if (allowed) return true;
+
+    final copy = StartupAccessCopy.resolve(Localizations.localeOf(context));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(copy.offlineBody)));
+    return false;
+  }
+
+  Future<void> _select(int value) async {
     if (_selectedIndex == value) return;
+    if (!await _guardNewContent()) return;
+    if (!mounted) return;
     setState(() => _selectedIndex = value);
   }
 
   Future<void> _openQuranAt(QuranAddress address) async {
+    if (!await _guardNewContent()) return;
     final l10n = AppLocalizations.of(context);
     try {
       final current = await _quranProgressRepository.load();
@@ -52,7 +83,7 @@ class _AppShellState extends State<AppShell> {
         current.copyWith(surah: address.surah, ayah: address.ayah),
       );
       if (!mounted) return;
-      _select(1);
+      setState(() => _selectedIndex = 1);
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -61,8 +92,9 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
-  void _openProphetStory(String prophetId) {
-    Navigator.of(context).push(
+  Future<void> _openProphetStory(String prophetId) async {
+    if (!await _guardNewContent() || !mounted) return;
+    await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => ProphetStoryPage(prophetId: prophetId),
       ),
@@ -110,9 +142,10 @@ class _AppShellState extends State<AppShell> {
         quranProgressRepository: _quranProgressRepository,
         dailyVerseRepository: widget.dailyVerseRepository,
         now: widget.todayNow,
-        onContinueQuran: () => _select(1),
+        onContinueQuran: () => unawaited(_select(1)),
         onOpenDailyVerse: _openQuranAt,
-        onOpenProphetStory: _openProphetStory,
+        onOpenProphetStory: (prophetId) =>
+            unawaited(_openProphetStory(prophetId)),
       ),
       QuranHubPage(progressRepository: _quranProgressRepository),
       const DiscoverPage(),
@@ -134,7 +167,7 @@ class _AppShellState extends State<AppShell> {
             body: SafeArea(child: currentPage),
             bottomNavigationBar: NavigationBar(
               selectedIndex: _selectedIndex,
-              onDestinationSelected: _select,
+              onDestinationSelected: (value) => unawaited(_select(value)),
               destinations: [
                 for (final item in destinations)
                   NavigationDestination(
@@ -154,7 +187,7 @@ class _AppShellState extends State<AppShell> {
               children: [
                 NavigationRail(
                   selectedIndex: _selectedIndex,
-                  onDestinationSelected: _select,
+                  onDestinationSelected: (value) => unawaited(_select(value)),
                   labelType: width >= 1100
                       ? NavigationRailLabelType.none
                       : NavigationRailLabelType.selected,

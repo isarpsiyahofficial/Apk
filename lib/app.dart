@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:islami_hayat/core/network/internet_reachability.dart';
 import 'package:islami_hayat/core/theme/app_theme.dart';
+import 'package:islami_hayat/features/premium/domain/content_transition_access_guard.dart';
 import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.dart';
 import 'package:islami_hayat/features/premium/presentation/startup_access_gate.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
@@ -28,8 +29,16 @@ class IslamiHayatApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = const AppShell();
     final verifier = startupAccessVerifier;
+    final transitionGuard = verifier == null
+        ? null
+        : ContentTransitionAccessGuard(
+            entitlement: initialEntitlement,
+            verifier: verifier,
+          );
+    final shell = AppShell(
+      canEnterNewContent: transitionGuard?.canEnterNewContent,
+    );
     final home = verifier == null
         ? shell
         : StartupAccessGate(
