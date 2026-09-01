@@ -1,72 +1,16 @@
 import 'package:flutter/material.dart';
-
-enum NotificationCategory {
-  dailyVerse,
-  dailyDua,
-  dhikrReminder,
-  religiousDay,
-}
-
-class NotificationPreferences {
-  const NotificationPreferences({
-    this.dailyVerse = false,
-    this.dailyDua = false,
-    this.dhikrReminder = false,
-    this.religiousDay = false,
-  });
-
-  final bool dailyVerse;
-  final bool dailyDua;
-  final bool dhikrReminder;
-  final bool religiousDay;
-
-  bool enabled(NotificationCategory category) => switch (category) {
-        NotificationCategory.dailyVerse => dailyVerse,
-        NotificationCategory.dailyDua => dailyDua,
-        NotificationCategory.dhikrReminder => dhikrReminder,
-        NotificationCategory.religiousDay => religiousDay,
-      };
-
-  NotificationPreferences withCategory(
-    NotificationCategory category,
-    bool enabled,
-  ) =>
-      switch (category) {
-        NotificationCategory.dailyVerse => NotificationPreferences(
-            dailyVerse: enabled,
-            dailyDua: dailyDua,
-            dhikrReminder: dhikrReminder,
-            religiousDay: religiousDay,
-          ),
-        NotificationCategory.dailyDua => NotificationPreferences(
-            dailyVerse: dailyVerse,
-            dailyDua: enabled,
-            dhikrReminder: dhikrReminder,
-            religiousDay: religiousDay,
-          ),
-        NotificationCategory.dhikrReminder => NotificationPreferences(
-            dailyVerse: dailyVerse,
-            dailyDua: dailyDua,
-            dhikrReminder: enabled,
-            religiousDay: religiousDay,
-          ),
-        NotificationCategory.religiousDay => NotificationPreferences(
-            dailyVerse: dailyVerse,
-            dailyDua: dailyDua,
-            dhikrReminder: dhikrReminder,
-            religiousDay: enabled,
-          ),
-      };
-}
+import 'package:islami_hayat/features/notifications/domain/notification_preferences.dart';
 
 class NotificationSettingsPage extends StatefulWidget {
   const NotificationSettingsPage({
     super.key,
     this.initialPreferences = const NotificationPreferences(),
+    this.store,
     this.onChanged,
   });
 
   final NotificationPreferences initialPreferences;
+  final NotificationPreferencesStore? store;
   final ValueChanged<NotificationPreferences>? onChanged;
 
   @override
@@ -76,68 +20,140 @@ class NotificationSettingsPage extends StatefulWidget {
 
 class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   late NotificationPreferences _preferences;
+  late bool _loading;
+  bool _saving = false;
+  bool _storageError = false;
 
   @override
   void initState() {
     super.initState();
     _preferences = widget.initialPreferences;
+    _loading = widget.store != null;
+    if (widget.store != null) {
+      _loadPreferences();
+    }
   }
 
-  void _setCategory(NotificationCategory category, bool enabled) {
+  Future<void> _loadPreferences() async {
+    try {
+      final preferences = await widget.store!.load();
+      if (!mounted) return;
+      setState(() {
+        _preferences = preferences;
+        _loading = false;
+        _storageError = false;
+      });
+    } on Object {
+      if (!mounted) return;
+      setState(() {
+        _preferences = const NotificationPreferences();
+        _loading = false;
+        _storageError = true;
+      });
+    }
+  }
+
+  Future<void> _setCategory(
+    NotificationCategory category,
+    bool enabled,
+  ) async {
+    if (_saving) return;
+    final previous = _preferences;
+    final next = previous.withCategory(category, enabled);
+
     setState(() {
-      _preferences = _preferences.withCategory(category, enabled);
+      _preferences = next;
+      _saving = widget.store != null;
+      _storageError = false;
     });
-    widget.onChanged?.call(_preferences);
+    widget.onChanged?.call(next);
+
+    final store = widget.store;
+    if (store == null) return;
+
+    try {
+      await store.save(next);
+      if (!mounted) return;
+      setState(() => _saving = false);
+    } on Object {
+      if (!mounted) return;
+      setState(() {
+        _preferences = previous;
+        _saving = false;
+        _storageError = true;
+      });
+      widget.onChanged?.call(previous);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final strings = _NotificationStrings.forLocale(Localizations.localeOf(context));
+    final strings =
+        _NotificationStrings.forLocale(Localizations.localeOf(context));
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(strings.title)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-        children: [
-          Text(strings.intro, style: theme.textTheme.bodyLarge),
-          const SizedBox(height: 20),
-          _CategorySwitch(
-            icon: Icons.menu_book_outlined,
-            title: strings.dailyVerse,
-            subtitle: strings.dailyVerseSubtitle,
-            value: _preferences.dailyVerse,
-            onChanged: (value) =>
-                _setCategory(NotificationCategory.dailyVerse, value),
-          ),
-          _CategorySwitch(
-            icon: Icons.volunteer_activism_outlined,
-            title: strings.dailyDua,
-            subtitle: strings.dailyDuaSubtitle,
-            value: _preferences.dailyDua,
-            onChanged: (value) =>
-                _setCategory(NotificationCategory.dailyDua, value),
-          ),
-          _CategorySwitch(
-            icon: Icons.touch_app_outlined,
-            title: strings.dhikrReminder,
-            subtitle: strings.dhikrReminderSubtitle,
-            value: _preferences.dhikrReminder,
-            onChanged: (value) =>
-                _setCategory(NotificationCategory.dhikrReminder, value),
-          ),
-          _CategorySwitch(
-            icon: Icons.event_available_outlined,
-            title: strings.religiousDay,
-            subtitle: strings.religiousDaySubtitle,
-            value: _preferences.religiousDay,
-            onChanged: (value) =>
-                _setCategory(NotificationCategory.religiousDay, value),
-          ),
-          const SizedBox(height: 12),
-          Text(strings.footnote, style: theme.textTheme.bodySmall),
-        ],
-      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+              children: [
+                Text(strings.intro, style: theme.textTheme.bodyLarge),
+                if (_storageError) ...[
+                  const SizedBox(height: 12),
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      strings.storageError,
+                      key: const Key('notification-storage-error'),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 20),
+                _CategorySwitch(
+                  icon: Icons.menu_book_outlined,
+                  title: strings.dailyVerse,
+                  subtitle: strings.dailyVerseSubtitle,
+                  value: _preferences.dailyVerse,
+                  enabled: !_saving,
+                  onChanged: (value) =>
+                      _setCategory(NotificationCategory.dailyVerse, value),
+                ),
+                _CategorySwitch(
+                  icon: Icons.volunteer_activism_outlined,
+                  title: strings.dailyDua,
+                  subtitle: strings.dailyDuaSubtitle,
+                  value: _preferences.dailyDua,
+                  enabled: !_saving,
+                  onChanged: (value) =>
+                      _setCategory(NotificationCategory.dailyDua, value),
+                ),
+                _CategorySwitch(
+                  icon: Icons.touch_app_outlined,
+                  title: strings.dhikrReminder,
+                  subtitle: strings.dhikrReminderSubtitle,
+                  value: _preferences.dhikrReminder,
+                  enabled: !_saving,
+                  onChanged: (value) =>
+                      _setCategory(NotificationCategory.dhikrReminder, value),
+                ),
+                _CategorySwitch(
+                  icon: Icons.event_available_outlined,
+                  title: strings.religiousDay,
+                  subtitle: strings.religiousDaySubtitle,
+                  value: _preferences.religiousDay,
+                  enabled: !_saving,
+                  onChanged: (value) =>
+                      _setCategory(NotificationCategory.religiousDay, value),
+                ),
+                const SizedBox(height: 12),
+                Text(strings.footnote, style: theme.textTheme.bodySmall),
+              ],
+            ),
     );
   }
 }
@@ -148,6 +164,7 @@ class _CategorySwitch extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.value,
+    required this.enabled,
     required this.onChanged,
   });
 
@@ -155,6 +172,7 @@ class _CategorySwitch extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool value;
+  final bool enabled;
   final ValueChanged<bool> onChanged;
 
   @override
@@ -165,7 +183,7 @@ class _CategorySwitch extends StatelessWidget {
       title: Text(title),
       subtitle: Text(subtitle),
       value: value,
-      onChanged: onChanged,
+      onChanged: enabled ? onChanged : null,
     );
   }
 }
@@ -183,6 +201,7 @@ class _NotificationStrings {
     required this.religiousDay,
     required this.religiousDaySubtitle,
     required this.footnote,
+    required this.storageError,
   });
 
   final String title;
@@ -196,12 +215,14 @@ class _NotificationStrings {
   final String religiousDay;
   final String religiousDaySubtitle;
   final String footnote;
+  final String storageError;
 
   static _NotificationStrings forLocale(Locale locale) {
     return switch (locale.languageCode) {
       'ar' => const _NotificationStrings(
           title: 'الإشعارات',
-          intro: 'الإشعارات اختيارية بالكامل. فعّل فقط الفئات التي تريدها، ويمكنك إيقاف كل فئة بشكل مستقل.',
+          intro:
+              'الإشعارات اختيارية بالكامل. فعّل فقط الفئات التي تريدها، ويمكنك إيقاف كل فئة بشكل مستقل.',
           dailyVerse: 'آية اليوم',
           dailyVerseSubtitle: 'تذكير محلي اختياري بآية اليوم.',
           dailyDua: 'دعاء اليوم',
@@ -209,34 +230,52 @@ class _NotificationStrings {
           dhikrReminder: 'تذكير الذكر',
           dhikrReminderSubtitle: 'ذكّرني بالذكر دون ضغط أو مقارنة.',
           religiousDay: 'الأيام الدينية',
-          religiousDaySubtitle: 'يعمل فقط عندما يكون تاريخ اليوم موثّقًا من مصدر موثوق.',
-          footnote: 'لا توجد إشعارات للأذان أو مواقيت الصلاة في الإصدار الأول.',
+          religiousDaySubtitle:
+              'يعمل فقط عندما يكون تاريخ اليوم موثّقًا من مصدر موثوق.',
+          footnote:
+              'لا توجد إشعارات للأذان أو مواقيت الصلاة في الإصدار الأول.',
+          storageError:
+              'تعذّر حفظ إعدادات الإشعارات. بقيت الفئات غير المحفوظة مغلقة.',
         ),
       'en' => const _NotificationStrings(
           title: 'Notifications',
-          intro: 'Notifications are fully opt-in. Enable only the categories you want, and turn each category off independently at any time.',
+          intro:
+              'Notifications are fully opt-in. Enable only the categories you want, and turn each category off independently at any time.',
           dailyVerse: 'Verse of the day',
-          dailyVerseSubtitle: 'Optional local reminder for the verse of the day.',
+          dailyVerseSubtitle:
+              'Optional local reminder for the verse of the day.',
           dailyDua: 'Dua of the day',
           dailyDuaSubtitle: 'Optional local reminder for the dua of the day.',
           dhikrReminder: 'Dhikr reminder',
-          dhikrReminderSubtitle: 'A personal reminder without pressure or comparison.',
+          dhikrReminderSubtitle:
+              'A personal reminder without pressure or comparison.',
           religiousDay: 'Religious days',
-          religiousDaySubtitle: 'Enabled only when the date is backed by a trusted calendar source.',
+          religiousDaySubtitle:
+              'Enabled only when the date is backed by a trusted calendar source.',
           footnote: 'V1 does not send adhan or prayer-time notifications.',
+          storageError:
+              'Notification settings could not be saved. Unsaved categories remain off.',
         ),
       _ => const _NotificationStrings(
           title: 'Bildirimler',
-          intro: 'Bildirimlerin tamamı isteğe bağlıdır. Yalnız istediğin kategorileri açabilir, her birini ayrı ayrı kapatabilirsin.',
+          intro:
+              'Bildirimlerin tamamı isteğe bağlıdır. Yalnız istediğin kategorileri açabilir, her birini ayrı ayrı kapatabilirsin.',
           dailyVerse: 'Günün Ayeti',
-          dailyVerseSubtitle: 'Günün ayeti için isteğe bağlı yerel hatırlatma.',
+          dailyVerseSubtitle:
+              'Günün ayeti için isteğe bağlı yerel hatırlatma.',
           dailyDua: 'Günün Duası',
-          dailyDuaSubtitle: 'Günün duası için isteğe bağlı yerel hatırlatma.',
+          dailyDuaSubtitle:
+              'Günün duası için isteğe bağlı yerel hatırlatma.',
           dhikrReminder: 'Zikir Hatırlatması',
-          dhikrReminderSubtitle: 'Baskı veya karşılaştırma olmadan kişisel hatırlatma.',
+          dhikrReminderSubtitle:
+              'Baskı veya karşılaştırma olmadan kişisel hatırlatma.',
           religiousDay: 'Dini Günler',
-          religiousDaySubtitle: 'Yalnız tarih güvenilir bir takvim kaynağıyla doğrulandığında etkinleştirilir.',
-          footnote: 'V1 içinde ezan veya namaz vakti bildirimi gönderilmez.',
+          religiousDaySubtitle:
+              'Yalnız tarih güvenilir bir takvim kaynağıyla doğrulandığında etkinleştirilir.',
+          footnote:
+              'V1 içinde ezan veya namaz vakti bildirimi gönderilmez.',
+          storageError:
+              'Bildirim ayarları kaydedilemedi. Kaydedilemeyen kategoriler kapalı kaldı.',
         ),
     };
   }

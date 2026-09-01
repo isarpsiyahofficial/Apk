@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
+import 'package:islami_hayat/features/notifications/data/secure_notification_preferences_store.dart';
+import 'package:islami_hayat/features/notifications/domain/notification_preferences.dart';
 import 'package:islami_hayat/features/notifications/presentation/notification_settings_page.dart';
 import 'package:islami_hayat/features/premium/presentation/premium_value_page.dart';
 import 'package:islami_hayat/features/profile/presentation/sources_licenses_page.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+  const ProfilePage({
+    super.key,
+    this.notificationPreferencesStore,
+  });
+
+  final NotificationPreferencesStore? notificationPreferencesStore;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +27,8 @@ class ProfilePage extends StatelessWidget {
     };
     final notificationSubtitle = switch (languageCode) {
       'ar' => 'تحكم بكل فئة بشكل مستقل. جميع الإشعارات اختيارية.',
-      'en' => 'Control each category independently. All notifications are opt-in.',
+      'en' =>
+        'Control each category independently. All notifications are opt-in.',
       _ => 'Her kategoriyi ayrı yönet. Tüm bildirimler isteğe bağlıdır.',
     };
 
@@ -39,9 +48,13 @@ class ProfilePage extends StatelessWidget {
             subtitle: Text(notificationSubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
+              final store = notificationPreferencesStore ??
+                  SecureNotificationPreferencesStore(
+                    SecurePrivateUserStore(),
+                  );
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (_) => const NotificationSettingsPage(),
+                  builder: (_) => NotificationSettingsPage(store: store),
                 ),
               );
             },
