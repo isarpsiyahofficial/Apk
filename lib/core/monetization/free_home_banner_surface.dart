@@ -44,7 +44,7 @@ final class FreeHomeBannerSurface extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        minimum: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 10),
+        minimum: const EdgeInsets.fromLTRB(16, 8, 16, 10),
         child: Align(
           alignment: AlignmentDirectional.center,
           child: ConstrainedBox(
