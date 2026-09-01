@@ -13,9 +13,19 @@ Future<void> _openSources(
 
   await tester.tap(find.text(profileLabel).last);
   await tester.pumpAndSettle();
-  expect(find.text(sourcesLabel), findsOneWidget);
 
-  await tester.tap(find.text(sourcesLabel));
+  final sourcesFinder = find.text(sourcesLabel);
+  if (sourcesFinder.evaluate().isEmpty) {
+    await tester.scrollUntilVisible(
+      sourcesFinder,
+      240,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+  }
+  expect(sourcesFinder, findsOneWidget);
+
+  await tester.tap(sourcesFinder);
   await tester.pumpAndSettle();
 }
 
