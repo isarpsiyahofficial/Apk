@@ -1,11 +1,13 @@
 import 'package:flutter/widgets.dart';
 import 'package:islami_hayat/features/share/domain/share_canvas_layout_t0242.dart';
+import 'package:islami_hayat/features/share/domain/share_readability_t0247.dart';
 
 class ShareLayoutRendererT0242 extends StatelessWidget {
   const ShareLayoutRendererT0242({
     required this.format,
     required this.background,
     required this.content,
+    this.readabilityDecision,
     this.repaintBoundaryKey,
     super.key,
   });
@@ -13,11 +15,20 @@ class ShareLayoutRendererT0242 extends StatelessWidget {
   final ShareCanvasFormatT0242 format;
   final Widget background;
   final Widget content;
+  final ShareReadabilityDecisionT0247? readabilityDecision;
   final Key? repaintBoundaryKey;
 
   @override
   Widget build(BuildContext context) {
     final layout = ShareCanvasLayoutT0242.forFormat(format)..validate();
+    readabilityDecision?.requireExportable();
+
+    final readableContent = readabilityDecision == null
+        ? content
+        : DefaultTextStyle.merge(
+            style: TextStyle(color: readabilityDecision!.foregroundColor),
+            child: content,
+          );
 
     return RepaintBoundary(
       key: repaintBoundaryKey,
@@ -42,7 +53,7 @@ class ShareLayoutRendererT0242 extends StatelessWidget {
                     horizontal,
                     bottom,
                   ),
-                  child: content,
+                  child: readableContent,
                 ),
               ],
             );
