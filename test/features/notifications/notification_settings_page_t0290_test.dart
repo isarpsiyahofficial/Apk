@@ -35,6 +35,7 @@ Widget _app({
   NotificationPreferences initial = const NotificationPreferences(),
   NotificationPreferencesStore? store,
   ValueChanged<NotificationPreferences>? onChanged,
+  Future<bool> Function(NotificationCategory category)? onEnableRequested,
 }) {
   return MaterialApp(
     locale: locale,
@@ -44,6 +45,7 @@ Widget _app({
       initialPreferences: initial,
       store: store,
       onChanged: onChanged,
+      onEnableRequested: onEnableRequested,
     ),
   );
 }
@@ -116,6 +118,61 @@ void main() {
         .map((tile) => tile.value)
         .toList();
     expect(values, [true, true, false, false]);
+  });
+
+  testWidgets('T0291 denied runtime permission keeps opt-in off and unsaved', (
+    tester,
+  ) async {
+    final store = _FakeStore();
+    var permissionRequests = 0;
+    await tester.pumpWidget(
+      _app(
+        store: store,
+        onEnableRequested: (category) async {
+          permissionRequests += 1;
+          expect(category, NotificationCategory.dailyVerse);
+          return false;
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Günün Ayeti'));
+    await tester.pumpAndSettle();
+
+    final firstSwitch = tester.widget<SwitchListTile>(
+      find.byType(SwitchListTile).first,
+    );
+    expect(firstSwitch.value, isFalse);
+    expect(permissionRequests, 1);
+    expect(store.saveCount, 0);
+    expect(
+      find.byKey(const Key('notification-permission-error')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('T0291 granted runtime permission persists explicit opt-in', (
+    tester,
+  ) async {
+    final store = _FakeStore();
+    await tester.pumpWidget(
+      _app(
+        store: store,
+        onEnableRequested: (_) async => true,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Günün Ayeti'));
+    await tester.pumpAndSettle();
+
+    expect(store.saveCount, 1);
+    expect(store.value.dailyVerse, isTrue);
+    expect(
+      find.byKey(const Key('notification-permission-error')),
+      findsNothing,
+    );
   });
 
   testWidgets('T0290 load failure fails closed to all categories off', (
