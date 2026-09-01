@@ -45,6 +45,7 @@ class VisualAssetManifestEntry extends SourceManifestEntry {
     required this.canExportRepeatedly,
     required this.isAiGenerated,
     required this.isCanvaProContent,
+    this.hasIndependentReusableLicense = false,
     super.version,
     super.licenseEvidenceUrl,
   });
@@ -54,10 +55,18 @@ class VisualAssetManifestEntry extends SourceManifestEntry {
   final bool isAiGenerated;
   final bool isCanvaProContent;
 
+  /// True only when the underlying asset has a source/license grant that is
+  /// independent from Canva's general Content License and explicitly permits
+  /// the app to bundle the asset and repeatedly export derivative share cards.
+  /// Examples can include CC0/Public Domain or another separately verified
+  /// source license whose exact terms allow both operations.
+  final bool hasIndependentReusableLicense;
+
   bool get canBeFinalReusableBackground =>
       isComplete &&
       canRedistributeInApp &&
       canExportRepeatedly &&
       !isAiGenerated &&
-      !isCanvaProContent;
+      !isCanvaProContent &&
+      hasIndependentReusableLicense;
 }
