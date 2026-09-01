@@ -129,12 +129,27 @@ class QuranLongTextPaginatorT0248 {
 
     final segments = <String>[];
     var start = 0;
+    var boundaryStart = 0;
     while (start < text.length) {
-      var bestEnd = -1;
-      for (final end in boundaries) {
-        if (end <= start) {
-          continue;
-        }
+      while (boundaryStart < boundaries.length &&
+          boundaries[boundaryStart] <= start) {
+        boundaryStart++;
+      }
+      if (boundaryStart >= boundaries.length) {
+        throw StateError(
+          'T0248 cannot find a Quran word boundary after the current page.',
+        );
+      }
+
+      // Fitting is monotonic as candidate text grows. Search the largest safe
+      // word boundary instead of laying out every progressively longer prefix.
+      // This keeps long Uthmani verses bounded even on slower CI/emulators.
+      var low = boundaryStart;
+      var high = boundaries.length - 1;
+      var bestBoundaryIndex = -1;
+      while (low <= high) {
+        final middle = low + ((high - low) ~/ 2);
+        final end = boundaries[middle];
         final candidate = text.substring(start, end);
         if (_fits(
           candidate,
@@ -143,19 +158,22 @@ class QuranLongTextPaginatorT0248 {
           maxWidth: maxWidth,
           maxHeight: maxHeight,
         )) {
-          bestEnd = end;
-          continue;
+          bestBoundaryIndex = middle;
+          low = middle + 1;
+        } else {
+          high = middle - 1;
         }
-        break;
       }
 
-      if (bestEnd <= start) {
+      if (bestBoundaryIndex < boundaryStart) {
         throw StateError(
           'T0248 cannot fit the next Quran word without splitting it.',
         );
       }
+      final bestEnd = boundaries[bestBoundaryIndex];
       segments.add(text.substring(start, bestEnd));
       start = bestEnd;
+      boundaryStart = bestBoundaryIndex + 1;
     }
 
     if (segments.isEmpty || segments.join() != text) {
