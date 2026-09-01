@@ -29,7 +29,10 @@ void main() {
       );
 
       await tester.pumpWidget(
-        IslamiHayatApp(startupAccessVerifier: verifier),
+        IslamiHayatApp(
+          locale: const Locale('tr'),
+          startupAccessVerifier: verifier,
+        ),
       );
       await tester.pump();
       await tester.pump();
