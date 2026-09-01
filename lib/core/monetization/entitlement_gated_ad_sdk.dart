@@ -1,13 +1,17 @@
 import '../../features/premium/domain/entitlement_state_machine.dart';
 import 'ad_placement_policy.dart';
+import 'ad_safety_policy_t0272.dart';
 
 /// Narrow production boundary around the platform advertisement SDK.
 ///
 /// Concrete SDK integrations must be injected here instead of initializing
 /// themselves from widgets, app startup code, or feature pages. This keeps the
-/// FREE/PRO entitlement decision in front of every SDK initialization path.
+/// FREE/PRO entitlement decision and strict brand-safety configuration in front
+/// of every SDK initialization path.
 abstract interface class AdSdkAdapter {
-  Future<void> initialize();
+  Future<AdSafetyConfigurationEvidenceT0272> initialize({
+    required AdSafetyProfileT0272 safetyProfile,
+  });
 }
 
 /// SDK-owned ad object kept in memory after a successful load.
@@ -45,9 +49,10 @@ final class AdDisposalFailure {
 /// observed. A late load callback that arrives after PRO is active is disposed
 /// immediately instead of being retained.
 ///
-/// FREE may initialize once. A failed SDK initialization leaves the coordinator
-/// unready so callers cannot request an advertisement from a partially
-/// initialized SDK.
+/// FREE may initialize once, but only with the strict V1 ad-safety profile. The
+/// adapter must prove both runtime G-rating configuration and account-side
+/// sensitive-category blocking were applied. Missing safety evidence is treated
+/// exactly like an initialization failure and leaves all ad request paths closed.
 final class EntitlementGatedAdSdkCoordinator {
   EntitlementGatedAdSdkCoordinator({required AdSdkAdapter sdk}) : _sdk = sdk;
 
@@ -84,7 +89,10 @@ final class EntitlementGatedAdSdkCoordinator {
     }
 
     try {
-      await _sdk.initialize();
+      const profile = AdSafetyProfileT0272.strictV1;
+      profile.requireStrictV1();
+      final evidence = await _sdk.initialize(safetyProfile: profile);
+      evidence.requireComplete();
       _initializedSuccessfully = true;
       _state = AdSdkBootstrapState.initializedForFree;
       return _state;
