@@ -343,7 +343,10 @@ WIDGET_LAYOUT = '''<?xml version="1.0" encoding="utf-8"?>
             android:textColor="#30352F"
             android:textSize="13sp" />
 
-        <View
+        <!-- RemoteViews accepts only a restricted set of widget classes. A raw
+             android.view.View divider causes Launcher3 to show "Can't load
+             widget" even though AppWidgetService accepted the RemoteViews. -->
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginVertical="8dp"
