@@ -94,6 +94,14 @@ class ConfigureAndroidHomeWidgetT0297Test(unittest.TestCase):
             self.assertIn('@+id/widget_verse_arabic', layout)
             self.assertIn('@string/islami_hayat_widget_empty_en', layout)
             self.assertNotIn('android:text="İslami Hayat"', layout)
+
+            # RemoteViews can inflate only its allowlisted widget classes. A raw
+            # android.view.View divider was accepted into the APK but caused the
+            # real Launcher3 host to render "Can't load widget". Keep every
+            # layout node on RemoteViews-safe classes.
+            self.assertNotIn('\n        <View\n', layout)
+            self.assertGreaterEqual(layout.count('<TextView'), 5)
+
             self.assertIn('name="islami_hayat_widget_empty_en"', strings)
             self.assertIn('Open Islami Hayat to prepare today’s widget.', strings)
             self.assertIn('name="islami_hayat_widget_empty_tr"', strings)
