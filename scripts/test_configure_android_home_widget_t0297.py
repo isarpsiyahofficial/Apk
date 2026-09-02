@@ -42,6 +42,13 @@ class ConfigureAndroidHomeWidgetT0297Test(unittest.TestCase):
             self.assertIn('R.id.widget_verse_translation, if (hasContent && verseTranslation.isNotBlank()) View.VISIBLE else View.GONE', provider)
             self.assertIn('PendingIntent.FLAG_IMMUTABLE', provider)
 
+            # Tap routing must be explicit to our MainActivity rather than
+            # depending on OEM/package launcher intent resolution.
+            self.assertIn('Intent(context, MainActivity::class.java).apply', provider)
+            self.assertIn('OPEN_FROM_WIDGET_ACTION', provider)
+            self.assertIn('putExtra("fromHomeWidgetT0297", true)', provider)
+            self.assertNotIn('getLaunchIntentForPackage', provider)
+
             # Empty-state language must follow the language stored in the app
             # snapshot rather than Android's independently configured locale.
             self.assertIn('val emptyTextRes = when (languageCode)', provider)
