@@ -13,6 +13,7 @@ final class AndroidHomeWidgetBridgeT0297 {
       return false;
     }
     final result = await _channel.invokeMethod<bool>('updateWidget', <String, Object>{
+      'civilDateKey': snapshot.civilDateKey,
       'languageCode': snapshot.languageCode,
       'verseArabic': snapshot.verse.arabic,
       'verseTranslation': snapshot.verse.translation ?? '',
