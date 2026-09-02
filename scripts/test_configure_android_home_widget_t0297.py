@@ -75,6 +75,16 @@ class ConfigureAndroidHomeWidgetT0297Test(unittest.TestCase):
             self.assertIn('AppWidgetManager.INVALID_APPWIDGET_ID', pin_probe)
             self.assertIn('.putString("status", "pinned")', pin_probe)
             self.assertIn('.putInt("widgetId", widgetId)', pin_probe)
+
+            # Android's requestPinAppWidget success sender fills the newly
+            # allocated appWidgetId into the callback. This one callback must
+            # therefore be mutable, while remaining explicit, debug-only and
+            # one-shot. Production widget taps above stay immutable.
+            self.assertIn('Intent(this, WidgetPinSmokeResultReceiver::class.java)', pin_probe)
+            self.assertIn('PendingIntent.FLAG_ONE_SHOT', pin_probe)
+            self.assertIn('PendingIntent.FLAG_MUTABLE', pin_probe)
+            self.assertNotIn('PendingIntent.FLAG_IMMUTABLE', pin_probe)
+
             self.assertIn('android:name=".WidgetPinSmokeActivity"', debug_manifest)
             self.assertIn('android:name=".WidgetPinSmokeResultReceiver"', debug_manifest)
             self.assertIn('android:exported="true"', debug_manifest)
