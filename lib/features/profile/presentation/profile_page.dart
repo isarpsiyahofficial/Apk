@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/notifications/data/android_local_notification_scheduler_t0291.dart';
 import 'package:islami_hayat/features/notifications/data/secure_notification_preferences_store.dart';
+import 'package:islami_hayat/features/notifications/domain/daily_verse_notification_t0291.dart';
 import 'package:islami_hayat/features/notifications/domain/notification_preferences.dart';
 import 'package:islami_hayat/features/notifications/presentation/notification_settings_page.dart';
 import 'package:islami_hayat/features/premium/presentation/premium_value_page.dart';
 import 'package:islami_hayat/features/profile/presentation/sources_licenses_page.dart';
+import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -13,6 +17,7 @@ class ProfilePage extends StatelessWidget {
     super.key,
     this.notificationPreferencesStore,
     this.notificationPermissionRequester,
+    this.notificationScheduleSync,
   });
 
   final NotificationPreferencesStore? notificationPreferencesStore;
@@ -21,6 +26,14 @@ class ProfilePage extends StatelessWidget {
   /// permission only after the user explicitly enables a notification category.
   final Future<bool> Function(NotificationCategory category)?
       notificationPermissionRequester;
+
+  /// Injectable scheduling seam. Production wires the verified daily-verse
+  /// repository to the Android local notification scheduler. Isolated widget
+  /// tests can inject a recorder without invoking platform channels.
+  final Future<void> Function(
+    NotificationPreferences preferences,
+    String languageCode,
+  )? notificationScheduleSync;
 
   @override
   Widget build(BuildContext context) {
@@ -63,12 +76,43 @@ class ProfilePage extends StatelessWidget {
               final scheduler = injectedRequester == null
                   ? NotificationRuntimeT0291.instance.scheduler
                   : null;
+
+              Future<void> syncSchedule(NotificationPreferences preferences) {
+                final injectedSync = notificationScheduleSync;
+                if (injectedSync != null) {
+                  return injectedSync(preferences, languageCode);
+                }
+                if (injectedRequester != null) {
+                  // Isolated widget tests that inject only permission handling
+                  // intentionally avoid production platform channels.
+                  return Future<void>.value();
+                }
+                final coordinator = DailyVerseNotificationCoordinatorT0291(
+                  dailyVerseDataSource: DailyVerseRepository(),
+                  preferencesStore: store,
+                  scheduler: scheduler!,
+                );
+                return DailyVerseNotificationOrchestratorT0291(
+                  coordinator: coordinator,
+                ).sync(
+                  languageCode: languageCode,
+                  preferences: preferences,
+                );
+              }
+
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => NotificationSettingsPage(
                     store: store,
                     onEnableRequested: injectedRequester ??
                         (_) => scheduler!.requestUserPermission(),
+                    onChanged: (preferences) {
+                      unawaited(syncSchedule(preferences).catchError((Object _) {
+                        // Preferences remain user-controlled. Scheduling is
+                        // fail-closed and will be retried on the next explicit
+                        // preference change/reconciliation pass.
+                      }));
+                    },
                   ),
                 ),
               );
