@@ -12,7 +12,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import time
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from validate_quran_dataset import AYAH_COUNTS, EXPECTED_AYAHS, EXPECTED_SURAS
@@ -23,13 +25,43 @@ SOURCES = {
     "en": {"key": "english_rwwad", "language": "en", "publisher": "Rowwad Translation Center"},
 }
 
+# Network retries are intentionally limited to transient transport/server
+# failures. Content, schema, locator, source version and hash validation remains
+# fail-closed and is never retried into acceptance.
+_GET_ATTEMPTS = 3
+_GET_TIMEOUT_SECONDS = 30
+_RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
+
 
 def _get(url: str) -> bytes:
     req = Request(url, headers={"User-Agent": "IslamicLifeSourceVerifier/1.0"})
-    with urlopen(req, timeout=30) as response:
-        if response.status != 200:
-            raise ValueError(f"HTTP {response.status} for {url}")
-        return response.read()
+    for attempt in range(1, _GET_ATTEMPTS + 1):
+        try:
+            with urlopen(req, timeout=_GET_TIMEOUT_SECONDS) as response:
+                if response.status != 200:
+                    raise ValueError(f"HTTP {response.status} for {url}")
+                return response.read()
+        except HTTPError as exc:
+            if exc.code not in _RETRYABLE_HTTP or attempt == _GET_ATTEMPTS:
+                raise
+            delay = 2 ** (attempt - 1)
+            print(
+                f"Transient HTTP {exc.code} for {url}; "
+                f"retry {attempt + 1}/{_GET_ATTEMPTS} in {delay}s",
+                flush=True,
+            )
+            time.sleep(delay)
+        except (TimeoutError, URLError) as exc:
+            if attempt == _GET_ATTEMPTS:
+                raise
+            delay = 2 ** (attempt - 1)
+            print(
+                f"Transient network error for {url}: {type(exc).__name__}; "
+                f"retry {attempt + 1}/{_GET_ATTEMPTS} in {delay}s",
+                flush=True,
+            )
+            time.sleep(delay)
+    raise RuntimeError(f"Unreachable retry state for {url}")
 
 
 def _json(raw: bytes, url: str):
