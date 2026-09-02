@@ -35,10 +35,17 @@ def configure() -> None:
 
     layout_dir = ANDROID_MAIN / "res" / "layout"
     xml_dir = ANDROID_MAIN / "res" / "xml"
-    layout_dir.mkdir(parents=True, exist_ok=True)
-    xml_dir.mkdir(parents=True, exist_ok=True)
+    values_dir = ANDROID_MAIN / "res" / "values"
+    values_tr_dir = ANDROID_MAIN / "res" / "values-tr"
+    values_ar_dir = ANDROID_MAIN / "res" / "values-ar"
+    for directory in (layout_dir, xml_dir, values_dir, values_tr_dir, values_ar_dir):
+        directory.mkdir(parents=True, exist_ok=True)
+
     (layout_dir / "islami_hayat_widget.xml").write_text(WIDGET_LAYOUT, encoding="utf-8")
     (xml_dir / "islami_hayat_widget_info.xml").write_text(WIDGET_INFO, encoding="utf-8")
+    (values_dir / "islami_hayat_widget_strings.xml").write_text(WIDGET_STRINGS_EN, encoding="utf-8")
+    (values_tr_dir / "islami_hayat_widget_strings.xml").write_text(WIDGET_STRINGS_TR, encoding="utf-8")
+    (values_ar_dir / "islami_hayat_widget_strings.xml").write_text(WIDGET_STRINGS_AR, encoding="utf-8")
 
     print(f"Configured T0297 Android home widget bridge for package {package_name}")
 
@@ -166,7 +173,7 @@ WIDGET_LAYOUT = '''<?xml version="1.0" encoding="utf-8"?>
         android:id="@+id/widget_empty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="İslami Hayat"
+        android:text="@string/islami_hayat_widget_empty"
         android:textColor="#244A36"
         android:textSize="16sp" />
 
@@ -234,6 +241,24 @@ WIDGET_INFO = '''<?xml version="1.0" encoding="utf-8"?>
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="0"
     android:widgetCategory="home_screen" />
+'''
+
+WIDGET_STRINGS_EN = '''<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="islami_hayat_widget_empty">Open Islami Hayat to prepare today’s widget.</string>
+</resources>
+'''
+
+WIDGET_STRINGS_TR = '''<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="islami_hayat_widget_empty">Bugünün widget’ını hazırlamak için İslami Hayat’ı açın.</string>
+</resources>
+'''
+
+WIDGET_STRINGS_AR = '''<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="islami_hayat_widget_empty">افتح إسلامي حيات لإعداد أداة اليوم.</string>
+</resources>
 '''
 
 
