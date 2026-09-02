@@ -4,6 +4,8 @@ set -eu
 PACKAGE='com.example.islami_hayat'
 ACTIVITY="$PACKAGE/.MainActivity"
 APK='build/app/outputs/flutter-apk/app-debug.apk'
+BOOT_RECEIVER='com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver'
+SCHEDULE_RECEIVER='com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver'
 
 if [ -n "${MAX_MEMTOTAL_KB:-}" ]; then
   MEMTOTAL_KB="$(adb shell cat /proc/meminfo | awk '/MemTotal:/ {print $2}' | tr -d '\r')"
@@ -19,6 +21,18 @@ if [ -n "${MAX_MEMTOTAL_KB:-}" ]; then
 fi
 
 adb install -r "$APK"
+
+# T0295 reboot-restore packaging gate. flutter_local_notifications restores
+# scheduled Android alarms through its boot receiver; this audit proves that the
+# receiver and RECEIVE_BOOT_COMPLETED permission survived manifest merge into
+# the APK actually installed on the emulator. A source-only manifest check is
+# not sufficient because dependency/plugin manifest merging happens at build.
+PACKAGE_DUMP="$(adb shell dumpsys package "$PACKAGE" | tr -d '\r')"
+printf '%s\n' "$PACKAGE_DUMP" | grep -F 'android.permission.RECEIVE_BOOT_COMPLETED'
+printf '%s\n' "$PACKAGE_DUMP" | grep -F "$BOOT_RECEIVER"
+printf '%s\n' "$PACKAGE_DUMP" | grep -F "$SCHEDULE_RECEIVER"
+echo 'Notification reboot-restore manifest packaging audit PASS'
+
 adb shell am force-stop "$PACKAGE"
 adb logcat -c
 adb shell am start -n "$ACTIVITY" | tee /tmp/start.txt
