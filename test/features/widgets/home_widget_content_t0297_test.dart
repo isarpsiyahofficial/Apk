@@ -17,11 +17,22 @@ void main() {
         civilDate: DateTime(2030, 1, 2), languageCode: 'tr', hasLifetimePro: true,
       );
 
+      expect(free.civilDateKey, '2030-01-02');
+      expect(pro.civilDateKey, free.civilDateKey);
       expect(free.verse.address.key, pro.verse.address.key);
       expect(free.duaId, pro.duaId);
       expect(free.duaText, pro.duaText);
       expect(free.proVisualsEnabled, isFalse);
       expect(pro.proVisualsEnabled, isTrue);
+    });
+
+    test('civil date key is zero-padded and ignores time of day', () async {
+      final snapshot = await _coordinator(_publishedDua()).buildSnapshot(
+        civilDate: DateTime(2031, 3, 4, 23, 59, 58),
+        languageCode: 'tr',
+        hasLifetimePro: false,
+      );
+      expect(snapshot.civilDateKey, '2031-03-04');
     });
 
     test('widget content remains teaser/reference-safe for offline surfaces', () async {
