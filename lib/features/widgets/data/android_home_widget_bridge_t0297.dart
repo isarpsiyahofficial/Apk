@@ -1,5 +1,5 @@
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:islami_hayat/features/widgets/domain/home_widget_content_t0297.dart';
 
 final class AndroidHomeWidgetBridgeT0297 {
@@ -15,7 +15,7 @@ final class AndroidHomeWidgetBridgeT0297 {
     final result = await _channel.invokeMethod<bool>('updateWidget', <String, Object>{
       'languageCode': snapshot.languageCode,
       'verseArabic': snapshot.verse.arabic,
-      'verseTranslation': snapshot.verse.translation,
+      'verseTranslation': snapshot.verse.translation ?? '',
       'duaText': snapshot.duaText,
       'proVisualsEnabled': snapshot.proVisualsEnabled,
     });
