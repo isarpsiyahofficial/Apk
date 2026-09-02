@@ -22,16 +22,38 @@ fi
 
 adb install -r "$APK"
 
-# T0295 reboot-restore packaging gate. flutter_local_notifications restores
-# scheduled Android alarms through its boot receiver; this audit proves that the
-# receiver and RECEIVE_BOOT_COMPLETED permission survived manifest merge into
-# the APK actually installed on the emulator. A source-only manifest check is
-# not sufficient because dependency/plugin manifest merging happens at build.
-PACKAGE_DUMP="$(adb shell dumpsys package "$PACKAGE" | tr -d '\r')"
-printf '%s\n' "$PACKAGE_DUMP" | grep -F 'android.permission.RECEIVE_BOOT_COMPLETED'
-printf '%s\n' "$PACKAGE_DUMP" | grep -F "$BOOT_RECEIVER"
-printf '%s\n' "$PACKAGE_DUMP" | grep -F "$SCHEDULE_RECEIVER"
-echo 'Notification reboot-restore manifest packaging audit PASS'
+# T0295 reboot-restore packaging gate. Verify the exact APK that Android installed,
+# not the source manifest and not dumpsys' resolver summary (which does not list
+# receivers without intent filters consistently across Android API levels).
+INSTALLED_APK_PATH="$(adb shell pm path "$PACKAGE" | sed -n 's/^package://p' | head -n 1 | tr -d '\r')"
+if [ -z "$INSTALLED_APK_PATH" ]; then
+  echo 'Could not resolve installed base APK path' >&2
+  exit 1
+fi
+adb pull "$INSTALLED_APK_PATH" /tmp/islami-hayat-installed.apk >/dev/null
+
+if ! cmp -s "$APK" /tmp/islami-hayat-installed.apk; then
+  echo 'Installed base APK bytes differ from the debug APK produced by this run' >&2
+  sha256sum "$APK" /tmp/islami-hayat-installed.apk >&2 || true
+  exit 1
+fi
+
+ANDROID_SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+if [ -z "$ANDROID_SDK" ]; then
+  echo 'ANDROID_HOME/ANDROID_SDK_ROOT is unavailable for merged-manifest audit' >&2
+  exit 1
+fi
+AAPT2="$(find "$ANDROID_SDK/build-tools" -type f -name aapt2 -perm -u+x 2>/dev/null | sort -V | tail -n 1)"
+if [ -z "$AAPT2" ]; then
+  echo 'aapt2 not found for installed APK merged-manifest audit' >&2
+  exit 1
+fi
+
+INSTALLED_MANIFEST="$($AAPT2 dump xmltree --file AndroidManifest.xml /tmp/islami-hayat-installed.apk)"
+printf '%s\n' "$INSTALLED_MANIFEST" | grep -F 'android.permission.RECEIVE_BOOT_COMPLETED'
+printf '%s\n' "$INSTALLED_MANIFEST" | grep -F "$BOOT_RECEIVER"
+printf '%s\n' "$INSTALLED_MANIFEST" | grep -F "$SCHEDULE_RECEIVER"
+echo 'Notification reboot-restore installed-APK manifest audit PASS'
 
 adb shell am force-stop "$PACKAGE"
 adb logcat -c
