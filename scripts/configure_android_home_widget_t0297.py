@@ -36,16 +36,12 @@ def configure() -> None:
     layout_dir = ANDROID_MAIN / "res" / "layout"
     xml_dir = ANDROID_MAIN / "res" / "xml"
     values_dir = ANDROID_MAIN / "res" / "values"
-    values_tr_dir = ANDROID_MAIN / "res" / "values-tr"
-    values_ar_dir = ANDROID_MAIN / "res" / "values-ar"
-    for directory in (layout_dir, xml_dir, values_dir, values_tr_dir, values_ar_dir):
+    for directory in (layout_dir, xml_dir, values_dir):
         directory.mkdir(parents=True, exist_ok=True)
 
     (layout_dir / "islami_hayat_widget.xml").write_text(WIDGET_LAYOUT, encoding="utf-8")
     (xml_dir / "islami_hayat_widget_info.xml").write_text(WIDGET_INFO, encoding="utf-8")
-    (values_dir / "islami_hayat_widget_strings.xml").write_text(WIDGET_STRINGS_EN, encoding="utf-8")
-    (values_tr_dir / "islami_hayat_widget_strings.xml").write_text(WIDGET_STRINGS_TR, encoding="utf-8")
-    (values_ar_dir / "islami_hayat_widget_strings.xml").write_text(WIDGET_STRINGS_AR, encoding="utf-8")
+    (values_dir / "islami_hayat_widget_strings.xml").write_text(WIDGET_STRINGS, encoding="utf-8")
 
     print(f"Configured T0297 Android home widget bridge for package {package_name}")
 
@@ -134,6 +130,11 @@ class IslamiHayatWidgetProvider : AppWidgetProvider() {{
             val languageCode = prefs.getString("languageCode", "tr").orEmpty()
             val proVisuals = prefs.getBoolean("proVisualsEnabled", false)
             val isCurrentCivilDate = civilDateKey == currentCivilDateKey()
+            val emptyTextRes = when (languageCode) {{
+                "tr" -> R.string.islami_hayat_widget_empty_tr
+                "ar" -> R.string.islami_hayat_widget_empty_ar
+                else -> R.string.islami_hayat_widget_empty_en
+            }}
 
             for (id in ids) {{
                 val views = RemoteViews(context.packageName, R.layout.islami_hayat_widget)
@@ -142,6 +143,7 @@ class IslamiHayatWidgetProvider : AppWidgetProvider() {{
                     (languageCode == "ar" || verseTranslation.isNotBlank())
                 views.setViewVisibility(R.id.widget_content, if (hasContent) View.VISIBLE else View.GONE)
                 views.setViewVisibility(R.id.widget_empty, if (hasContent) View.GONE else View.VISIBLE)
+                views.setTextViewText(R.id.widget_empty, context.getString(emptyTextRes))
                 views.setTextViewText(R.id.widget_verse_arabic, if (hasContent) verseArabic else "")
                 views.setTextViewText(R.id.widget_verse_translation, if (hasContent) verseTranslation else "")
                 views.setViewVisibility(R.id.widget_verse_translation, if (hasContent && verseTranslation.isNotBlank()) View.VISIBLE else View.GONE)
@@ -192,7 +194,7 @@ WIDGET_LAYOUT = '''<?xml version="1.0" encoding="utf-8"?>
         android:id="@+id/widget_empty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/islami_hayat_widget_empty"
+        android:text="@string/islami_hayat_widget_empty_en"
         android:textColor="#244A36"
         android:textSize="16sp" />
 
@@ -262,21 +264,14 @@ WIDGET_INFO = '''<?xml version="1.0" encoding="utf-8"?>
     android:widgetCategory="home_screen" />
 '''
 
-WIDGET_STRINGS_EN = '''<?xml version="1.0" encoding="utf-8"?>
+WIDGET_STRINGS = '''<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="islami_hayat_widget_empty">Open Islami Hayat to prepare today’s widget.</string>
-</resources>
-'''
-
-WIDGET_STRINGS_TR = '''<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="islami_hayat_widget_empty">Bugünün widget’ını hazırlamak için İslami Hayat’ı açın.</string>
-</resources>
-'''
-
-WIDGET_STRINGS_AR = '''<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="islami_hayat_widget_empty">افتح إسلامي حيات لإعداد أداة اليوم.</string>
+    <!-- Explicit ids are selected from the app snapshot language, not the
+         Android system locale. This prevents a device-locale leak when the
+         user selected a different language inside Islami Hayat. -->
+    <string name="islami_hayat_widget_empty_en">Open Islami Hayat to prepare today’s widget.</string>
+    <string name="islami_hayat_widget_empty_tr">Bugünün widget’ını hazırlamak için İslami Hayat’ı açın.</string>
+    <string name="islami_hayat_widget_empty_ar">افتح إسلامي حيات لإعداد أداة اليوم.</string>
 </resources>
 '''
 
