@@ -5,6 +5,7 @@ import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/notifications/data/android_local_notification_scheduler_t0291.dart';
 import 'package:islami_hayat/features/notifications/data/secure_notification_preferences_store.dart';
 import 'package:islami_hayat/features/notifications/domain/daily_verse_notification_t0291.dart';
+import 'package:islami_hayat/features/notifications/domain/dhikr_reminder_t0293.dart';
 import 'package:islami_hayat/features/notifications/domain/notification_preferences.dart';
 import 'package:islami_hayat/features/notifications/presentation/notification_settings_page.dart';
 import 'package:islami_hayat/features/premium/presentation/premium_value_page.dart';
@@ -27,9 +28,9 @@ class ProfilePage extends StatelessWidget {
   final Future<bool> Function(NotificationCategory category)?
       notificationPermissionRequester;
 
-  /// Injectable scheduling seam. Production wires the verified daily-verse
-  /// repository to the Android local notification scheduler. Isolated widget
-  /// tests can inject a recorder without invoking platform channels.
+  /// Injectable scheduling seam. Production wires verified/local notification
+  /// coordinators to the Android scheduler. Isolated widget tests can inject a
+  /// recorder without invoking platform channels.
   final Future<void> Function(
     NotificationPreferences preferences,
     String languageCode,
@@ -77,23 +78,36 @@ class ProfilePage extends StatelessWidget {
                   ? NotificationRuntimeT0291.instance.scheduler
                   : null;
 
-              Future<void> syncSchedule(NotificationPreferences preferences) {
+              Future<void> syncSchedule(NotificationPreferences preferences) async {
                 final injectedSync = notificationScheduleSync;
                 if (injectedSync != null) {
-                  return injectedSync(preferences, languageCode);
+                  await injectedSync(preferences, languageCode);
+                  return;
                 }
                 if (injectedRequester != null) {
                   // Isolated widget tests that inject only permission handling
                   // intentionally avoid production platform channels.
-                  return Future<void>.value();
+                  return;
                 }
-                final coordinator = DailyVerseNotificationCoordinatorT0291(
+
+                final dailyVerseCoordinator = DailyVerseNotificationCoordinatorT0291(
                   dailyVerseDataSource: DailyVerseRepository(),
                   preferencesStore: store,
                   scheduler: scheduler!,
                 );
-                return DailyVerseNotificationOrchestratorT0291(
-                  coordinator: coordinator,
+                await DailyVerseNotificationOrchestratorT0291(
+                  coordinator: dailyVerseCoordinator,
+                ).sync(
+                  languageCode: languageCode,
+                  preferences: preferences,
+                );
+
+                final dhikrCoordinator = DhikrReminderCoordinatorT0293(
+                  preferencesStore: store,
+                  scheduler: scheduler,
+                );
+                await DhikrReminderOrchestratorT0293(
+                  coordinator: dhikrCoordinator,
                 ).sync(
                   languageCode: languageCode,
                   preferences: preferences,
