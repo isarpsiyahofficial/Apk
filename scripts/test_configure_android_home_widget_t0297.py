@@ -28,7 +28,10 @@ class ConfigureAndroidHomeWidgetT0297Test(unittest.TestCase):
 
             self.assertIn('MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "islami_hayat/home_widget")', activity)
             self.assertIn('INVALID_WIDGET_SNAPSHOT', activity)
+            self.assertIn('(languageCode != "ar" && verseTranslation.isEmpty())', activity)
             self.assertIn('class IslamiHayatWidgetProvider', provider)
+            self.assertIn('(languageCode == "ar" || verseTranslation.isNotBlank())', provider)
+            self.assertIn('R.id.widget_verse_translation, if (verseTranslation.isBlank()) View.GONE else View.VISIBLE', provider)
             self.assertIn('PendingIntent.FLAG_IMMUTABLE', provider)
             self.assertIn('@+id/widget_verse_arabic', layout)
             self.assertIn('android:resizeMode="horizontal|vertical"', info)
