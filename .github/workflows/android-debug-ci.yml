@@ -55,7 +55,25 @@ jobs:
         run: flutter gen-l10n
 
       - name: Build Android debug APK
-        run: flutter build apk --debug
+        shell: bash
+        run: |
+          set -euo pipefail
+          max_attempts=3
+          attempt=1
+          while true; do
+            echo "Android debug build attempt ${attempt}/${max_attempts}"
+            if flutter build apk --debug; then
+              break
+            fi
+            if [ "$attempt" -ge "$max_attempts" ]; then
+              echo "Android debug build failed after ${max_attempts} attempts" >&2
+              exit 1
+            fi
+            delay=$((attempt * 15))
+            echo "Build failed; waiting ${delay}s before retrying transient dependency/network failures"
+            sleep "$delay"
+            attempt=$((attempt + 1))
+          done
 
       - name: Audit final APK permissions
         shell: bash
