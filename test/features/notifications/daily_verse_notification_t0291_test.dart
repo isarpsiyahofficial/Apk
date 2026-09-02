@@ -72,7 +72,9 @@ void main() {
     expect(scheduler.cancelled, [dailyVerseNotificationIdT0291]);
   });
 
-  test('T0291 opt-in schedules canonical source deep-link without copied sacred text', () async {
+  test(
+      'T0291 opt-in schedules canonical source deep-link without copied sacred text',
+      () async {
     final source = _DailyVerseSource();
     final scheduler = _Scheduler();
     final coordinator = DailyVerseNotificationCoordinatorT0291(
@@ -123,7 +125,8 @@ void main() {
     }
   });
 
-  test('T0291 rejects unsupported locale before reading religious content', () async {
+  test('T0291 rejects unsupported locale before reading religious content',
+      () async {
     final source = _DailyVerseSource();
     final coordinator = DailyVerseNotificationCoordinatorT0291(
       dailyVerseDataSource: source,
@@ -144,7 +147,8 @@ void main() {
     expect(source.calls, 0);
   });
 
-  test('T0291 rejects cross-day schedule to prevent stale daily verse', () async {
+  test('T0291 rejects cross-day schedule to prevent stale daily verse',
+      () async {
     final source = _DailyVerseSource();
     final coordinator = DailyVerseNotificationCoordinatorT0291(
       dailyVerseDataSource: source,
@@ -163,5 +167,50 @@ void main() {
       throwsA(isA<ArgumentError>()),
     );
     expect(source.calls, 0);
+  });
+
+  test('T0291 canonical notification deep-link resolves exact Quran address', () {
+    final address = parseNotificationQuranDeepLinkT0291(
+      'islami-hayat://quran/3/159',
+    );
+
+    expect(address, isNotNull);
+    expect(address!.surah, 3);
+    expect(address.ayah, 159);
+  });
+
+  test('T0291 notification deep-link parser rejects tampered routes', () {
+    const invalid = <String>[
+      '',
+      'https://quran/3/159',
+      'islami-hayat://dua/3/159',
+      'islami-hayat://quran/0/1',
+      'islami-hayat://quran/115/1',
+      'islami-hayat://quran/1/8',
+      'islami-hayat://quran/3/159/extra',
+      'islami-hayat://quran/3/159?tracking=1',
+      'islami-hayat://quran/3/159#fragment',
+      'not a uri %',
+    ];
+
+    for (final payload in invalid) {
+      expect(
+        parseNotificationQuranDeepLinkT0291(payload),
+        isNull,
+        reason: payload,
+      );
+    }
+  });
+
+  test('T0291 tap controller delivers repeated identical payloads', () {
+    final controller = NotificationTapControllerT0291();
+    var notifications = 0;
+    controller.addListener(() => notifications += 1);
+
+    controller.emit('islami-hayat://quran/3/159');
+    expect(controller.takePendingPayload(), 'islami-hayat://quran/3/159');
+    controller.emit('islami-hayat://quran/3/159');
+    expect(controller.takePendingPayload(), 'islami-hayat://quran/3/159');
+    expect(notifications, 2);
   });
 }
