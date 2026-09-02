@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:islami_hayat/features/notifications/domain/daily_verse_notification_t0291.dart';
+import 'package:islami_hayat/features/notifications/domain/notification_content_policy_t0296.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -106,6 +107,13 @@ final class AndroidLocalNotificationSchedulerT0291
 
   @override
   Future<void> schedule(LocalNotificationRequestT0291 request) async {
+    // T0296: this generic scheduler may survive entitlement/network changes
+    // between scheduling and OS delivery. Keep it reference/teaser-only so a
+    // FREE user who is offline can never receive expanded Premium content.
+    NotificationContentPolicyT0296.requireSafeForGenericLocalScheduler(
+      request.contentExposure,
+    );
+
     await initialize();
     if (!await notificationsEnabled()) {
       throw StateError(
