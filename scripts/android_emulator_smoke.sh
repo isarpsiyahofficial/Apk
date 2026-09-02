@@ -107,18 +107,28 @@ for node in root.iter("node"):
     if point is None:
         continue
     haystack = " ".join((text, desc, resource)).lower()
+    clickable = node.attrib.get("clickable") == "true"
     score = None
     if mode == "pin":
         if any(bad in haystack for bad in ("cancel", "not now", "dismiss")):
             continue
-        if "add_item" in resource or "add_to_home" in resource:
+        # Launcher3's confirmation UI contains non-clickable containers whose
+        # resource ids also start with add_item*. Never tap those containers:
+        # the real request is accepted only by an actionable confirmation
+        # control. Prefer the canonical AOSP label, then clickable fallbacks for
+        # OEM/locale variants.
+        if clickable and text.lower() == "add to home screen":
+            score = 120
+        elif clickable and desc.lower() == "add to home screen":
+            score = 115
+        elif clickable and "automatically" in haystack:
             score = 100
-        elif "automatically" in haystack:
+        elif clickable and text.lower() == "add":
+            score = 95
+        elif clickable and ("add_to_home" in resource or "add_item" in resource):
             score = 90
-        elif text.lower() in {"add", "add to home screen"}:
+        elif clickable and "add" in haystack:
             score = 80
-        elif "add" in haystack and node.attrib.get("clickable") == "true":
-            score = 70
     elif mode == "widget":
         if "bugünün widget" in text.lower() or "bugünün widget" in desc.lower():
             score = 100
@@ -134,7 +144,26 @@ print(f"selected score={score} text={text!r} desc={desc!r} resource={resource!r}
 PY
 }
 
+verify_pin_target_selector() {
+  cat > /tmp/t0297-pin-selector-fixture.xml <<'XML'
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<hierarchy rotation="0">
+  <node text="" resource-id="com.android.launcher3:id/add_item_bottom_sheet_content" clickable="false" bounds="[0,100][1080,1800]">
+    <node text="Add to home screen" resource-id="com.android.launcher3:id/add_item_button" clickable="true" bounds="[300,1500][780,1650]" />
+  </node>
+</hierarchy>
+XML
+  selector_target="$(find_click_target /tmp/t0297-pin-selector-fixture.xml pin 2>/tmp/t0297-pin-selector-fixture.log || true)"
+  if [ "$selector_target" != '540 1575' ]; then
+    echo 'T0297 pin selector regression: actionable confirmation button was not preferred over its container' >&2
+    cat /tmp/t0297-pin-selector-fixture.log >&2 || true
+    exit 1
+  fi
+  echo 'T0297 pin selector regression PASS'
+}
+
 if [ "${VERIFY_WIDGET_LAUNCHER_PIN:-0}" = "1" ]; then
+  verify_pin_target_selector
   echo 'T0297 starting real launcher pin/render/tap smoke'
   adb shell am force-stop "$PACKAGE"
   adb shell am start -n "$WIDGET_PIN_ACTIVITY" | tee /tmp/widget-pin-start.txt
