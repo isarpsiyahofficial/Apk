@@ -63,14 +63,16 @@ jobs:
           python3 scripts/validate_quran_dataset.py
           assets/quran/source/quran-uthmani.txt
 
-      - name: Fetch pinned QuranEnc meal datasets
-        working-directory: scripts
-        run: python3 fetch_quranenc_meals.py --output-dir ../build/quranenc-meals --locale all
-
-      - name: Prepare verified QuranEnc meal assets
+      - name: Validate pinned bundled QuranEnc meal datasets
         run: >-
           python3 scripts/prepare_quranenc_meal_assets.py
-          --input-dir build/quranenc-meals
+          --input-dir assets/quran/meals
+          --output-dir build/release-meal-assets
+
+      - name: Re-materialize verified QuranEnc meal assets
+        run: >-
+          python3 scripts/prepare_quranenc_meal_assets.py
+          --input-dir build/release-meal-assets
           --output-dir assets/quran/meals
 
       - name: Install dependencies
