@@ -64,6 +64,17 @@ printf '%s\n' "$INSTALLED_ZIP_ENTRIES" | grep -Fx 'res/xml/islami_hayat_widget_i
 printf '%s\n' "$INSTALLED_ZIP_ENTRIES" | grep -Fx 'res/layout/islami_hayat_widget.xml'
 echo 'T0297 installed-APK widget manifest/resource audit PASS'
 
+# Manifest presence alone is not enough: after installation Android's
+# AppWidgetService must discover the provider. This catches malformed provider
+# metadata/resource combinations that still package successfully.
+APPWIDGET_DUMP="$(adb shell dumpsys appwidget 2>&1 | tr -d '\r')"
+if ! printf '%s\n' "$APPWIDGET_DUMP" | grep -F "$WIDGET_PROVIDER"; then
+  echo 'T0297 widget provider was packaged but not registered by AppWidgetService' >&2
+  printf '%s\n' "$APPWIDGET_DUMP" >&2
+  exit 1
+fi
+echo 'T0297 emulator AppWidgetService provider-registration audit PASS'
+
 adb shell am force-stop "$PACKAGE"
 adb logcat -c
 adb shell am start -n "$ACTIVITY" | tee /tmp/start.txt
