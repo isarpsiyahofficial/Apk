@@ -7,7 +7,7 @@ import configure_android_home_widget_t0297 as module
 
 
 class ConfigureAndroidHomeWidgetT0297Test(unittest.TestCase):
-    def test_generates_bridge_provider_and_app_selected_language_resources(self):
+    def test_generates_bridge_provider_app_language_resources_and_debug_pin_probe(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             main = root / "android/app/src/main/kotlin/com/example/islami_hayat/MainActivity.kt"
@@ -26,6 +26,13 @@ class ConfigureAndroidHomeWidgetT0297Test(unittest.TestCase):
             layout = (root / "android/app/src/main/res/layout/islami_hayat_widget.xml").read_text(encoding="utf-8")
             info = (root / "android/app/src/main/res/xml/islami_hayat_widget_info.xml").read_text(encoding="utf-8")
             strings = (root / "android/app/src/main/res/values/islami_hayat_widget_strings.xml").read_text(encoding="utf-8")
+            pin_probe = (
+                root
+                / "android/app/src/debug/kotlin/com/example/islami_hayat/WidgetPinSmokeActivity.kt"
+            ).read_text(encoding="utf-8")
+            debug_manifest = (root / "android/app/src/debug/AndroidManifest.xml").read_text(
+                encoding="utf-8"
+            )
 
             self.assertIn('MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "islami_hayat/home_widget")', activity)
             self.assertIn('INVALID_WIDGET_SNAPSHOT', activity)
@@ -56,6 +63,23 @@ class ConfigureAndroidHomeWidgetT0297Test(unittest.TestCase):
             self.assertIn('"ar" -> R.string.islami_hayat_widget_empty_ar', provider)
             self.assertIn('else -> R.string.islami_hayat_widget_empty_en', provider)
             self.assertIn('context.getString(emptyTextRes)', provider)
+
+            # The real-launcher pin probe must be debug-only. It requests the
+            # platform pin flow, records only a valid callback appWidgetId and
+            # is never merged into release because it lives in src/debug.
+            self.assertIn('class WidgetPinSmokeActivity : Activity()', pin_probe)
+            self.assertIn('manager.isRequestPinAppWidgetSupported', pin_probe)
+            self.assertIn('manager.requestPinAppWidget(', pin_probe)
+            self.assertIn('ComponentName(this, IslamiHayatWidgetProvider::class.java)', pin_probe)
+            self.assertIn('AppWidgetManager.EXTRA_APPWIDGET_ID', pin_probe)
+            self.assertIn('AppWidgetManager.INVALID_APPWIDGET_ID', pin_probe)
+            self.assertIn('.putString("status", "pinned")', pin_probe)
+            self.assertIn('.putInt("widgetId", widgetId)', pin_probe)
+            self.assertIn('android:name=".WidgetPinSmokeActivity"', debug_manifest)
+            self.assertIn('android:name=".WidgetPinSmokeResultReceiver"', debug_manifest)
+            self.assertIn('android:exported="true"', debug_manifest)
+            self.assertIn('android:exported="false"', debug_manifest)
+            self.assertFalse((root / "android/app/src/main/kotlin/com/example/islami_hayat/WidgetPinSmokeActivity.kt").exists())
 
             self.assertIn('@+id/widget_verse_arabic', layout)
             self.assertIn('@string/islami_hayat_widget_empty_en', layout)
