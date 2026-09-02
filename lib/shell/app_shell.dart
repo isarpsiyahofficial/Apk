@@ -6,6 +6,7 @@ import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_hub_page.dart';
 import 'package:islami_hayat/features/notifications/domain/daily_verse_notification_t0291.dart';
+import 'package:islami_hayat/features/notifications/domain/dhikr_reminder_t0293.dart';
 import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.dart';
 import 'package:islami_hayat/features/premium/presentation/startup_access_gate.dart';
 import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
@@ -46,8 +47,8 @@ class AppShell extends StatefulWidget {
   /// or not loaded and must collapse without affecting religious content.
   final Widget? freeHomeBanner;
 
-  /// App-lifecycle notification taps are consumed here so the same guarded
-  /// navigation path as an in-app Quran transition is used.
+  /// App-lifecycle notification taps are consumed here so every app-local
+  /// notification route reuses the same guarded navigation as in-app actions.
   final NotificationTapControllerT0291? notificationTapController;
 
   @override
@@ -92,9 +93,16 @@ class _AppShellState extends State<AppShell> {
     if (!mounted) return;
     final payload = widget.notificationTapController?.takePendingPayload();
     if (payload == null) return;
-    final address = parseNotificationQuranDeepLinkT0291(payload);
-    if (address == null) return;
-    unawaited(_openQuranAt(address));
+
+    final quranAddress = parseNotificationQuranDeepLinkT0291(payload);
+    if (quranAddress != null) {
+      unawaited(_openQuranAt(quranAddress));
+      return;
+    }
+
+    if (isCanonicalDhikrReminderDeepLinkT0293(payload)) {
+      unawaited(_select(3));
+    }
   }
 
   Future<bool> _guardNewContent() async {
