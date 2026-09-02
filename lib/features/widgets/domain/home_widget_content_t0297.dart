@@ -9,6 +9,7 @@ import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
 /// plus a visual entitlement flag, while the religious payload remains the same.
 final class HomeWidgetSnapshotT0297 {
   const HomeWidgetSnapshotT0297({
+    required this.civilDateKey,
     required this.languageCode,
     required this.verse,
     required this.duaId,
@@ -17,6 +18,10 @@ final class HomeWidgetSnapshotT0297 {
     required this.proVisualsEnabled,
   });
 
+  /// Gregorian device-local civil date the religious daily selection belongs
+  /// to. Native Android compares this key with its current local date and hides
+  /// stale content rather than showing yesterday's ayet/dua indefinitely.
+  final String civilDateKey;
   final String languageCode;
   final DailyVerse verse;
   final String duaId;
@@ -69,6 +74,7 @@ final class HomeWidgetContentCoordinatorT0297 {
     }
 
     return HomeWidgetSnapshotT0297(
+      civilDateKey: _civilDateKey(civilDate),
       languageCode: languageCode,
       verse: verse,
       duaId: dua.id,
@@ -76,6 +82,11 @@ final class HomeWidgetContentCoordinatorT0297 {
       duaSourceStatus: dua.sourceStatus,
       proVisualsEnabled: hasLifetimePro,
     );
+  }
+
+  static String _civilDateKey(DateTime value) {
+    String twoDigits(int part) => part.toString().padLeft(2, '0');
+    return '${value.year.toString().padLeft(4, '0')}-${twoDigits(value.month)}-${twoDigits(value.day)}';
   }
 
   static void _validateLocale(String languageCode) {
