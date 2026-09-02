@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ANDROID_MAIN = ROOT / "android" / "app" / "src" / "main"
 CHANNEL = "islami_hayat/home_widget"
 PREFS = "islami_hayat_widget"
+SMOKE_PREFS = "islami_hayat_widget_smoke"
 
 
 def _main_activity() -> Path:
@@ -42,6 +43,18 @@ def configure() -> None:
     (layout_dir / "islami_hayat_widget.xml").write_text(WIDGET_LAYOUT, encoding="utf-8")
     (xml_dir / "islami_hayat_widget_info.xml").write_text(WIDGET_INFO, encoding="utf-8")
     (values_dir / "islami_hayat_widget_strings.xml").write_text(WIDGET_STRINGS, encoding="utf-8")
+
+    debug_package_dir = ROOT / "android" / "app" / "src" / "debug" / "kotlin" / Path(
+        package_name.replace(".", "/")
+    )
+    debug_package_dir.mkdir(parents=True, exist_ok=True)
+    (debug_package_dir / "WidgetPinSmokeActivity.kt").write_text(
+        _pin_smoke_source(package_name), encoding="utf-8"
+    )
+
+    debug_manifest = ROOT / "android" / "app" / "src" / "debug" / "AndroidManifest.xml"
+    debug_manifest.parent.mkdir(parents=True, exist_ok=True)
+    debug_manifest.write_text(_debug_manifest_source(), encoding="utf-8")
 
     print(f"Configured T0297 Android home widget bridge for package {package_name}")
 
@@ -185,6 +198,100 @@ class IslamiHayatWidgetProvider : AppWidgetProvider() {{
         }}
     }}
 }}
+'''
+
+
+def _pin_smoke_source(package_name: str) -> str:
+    return f'''package {package_name}
+
+import android.app.Activity
+import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
+import android.content.BroadcastReceiver
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+
+/** Debug-only bridge used by CI to exercise the real launcher pin flow. */
+class WidgetPinSmokeActivity : Activity() {{
+    private var requested = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {{
+        super.onCreate(savedInstanceState)
+        getSharedPreferences("{SMOKE_PREFS}", Context.MODE_PRIVATE).edit().clear().commit()
+    }}
+
+    override fun onResume() {{
+        super.onResume()
+        if (requested) return
+        requested = true
+        Handler(Looper.getMainLooper()).post {{ requestPin() }}
+    }}
+
+    private fun requestPin() {{
+        val manager = AppWidgetManager.getInstance(this)
+        val prefs = getSharedPreferences("{SMOKE_PREFS}", Context.MODE_PRIVATE)
+        if (!manager.isRequestPinAppWidgetSupported) {{
+            prefs.edit().putString("status", "unsupported").commit()
+            finish()
+            return
+        }}
+
+        val callbackIntent = Intent(this, WidgetPinSmokeResultReceiver::class.java)
+        val callback = PendingIntent.getBroadcast(
+            this,
+            29701,
+            callbackIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        prefs.edit().putString("status", "requested").commit()
+        val accepted = manager.requestPinAppWidget(
+            ComponentName(this, IslamiHayatWidgetProvider::class.java),
+            null,
+            callback,
+        )
+        if (!accepted) {{
+            prefs.edit().putString("status", "request_rejected").commit()
+            finish()
+        }}
+    }}
+}}
+
+class WidgetPinSmokeResultReceiver : BroadcastReceiver() {{
+    override fun onReceive(context: Context, intent: Intent) {{
+        val widgetId = intent.getIntExtra(
+            AppWidgetManager.EXTRA_APPWIDGET_ID,
+            AppWidgetManager.INVALID_APPWIDGET_ID,
+        )
+        val prefs = context.getSharedPreferences("{SMOKE_PREFS}", Context.MODE_PRIVATE)
+        if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {{
+            prefs.edit().putString("status", "invalid_callback").commit()
+            return
+        }}
+        prefs.edit()
+            .putString("status", "pinned")
+            .putInt("widgetId", widgetId)
+            .commit()
+    }}
+}}
+'''
+
+
+def _debug_manifest_source() -> str:
+    return '''<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <activity
+            android:name=".WidgetPinSmokeActivity"
+            android:exported="true"
+            android:excludeFromRecents="true" />
+        <receiver
+            android:name=".WidgetPinSmokeResultReceiver"
+            android:exported="false" />
+    </application>
+</manifest>
 '''
 
 
