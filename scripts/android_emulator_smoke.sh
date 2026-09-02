@@ -125,10 +125,19 @@ for node in root.iter("node"):
             score = 100
         elif clickable and text.lower() == "add":
             score = 95
-        elif clickable and ("add_to_home" in resource or "add_item" in resource):
+        elif clickable and ("add_to_home" in resource or "widget_add_button" in resource):
             score = 90
         elif clickable and "add" in haystack:
             score = 80
+    elif mode == "anr-wait":
+        # The hosted headless AOSP image may show a bounded Launcher3 ANR while
+        # first rendering the widget preview. Recovery is allowed only through
+        # the system "Wait" action; Close app is never selected and the real
+        # pin callback/render/tap checks remain mandatory afterwards.
+        if clickable and resource == "android:id/aerr_wait":
+            score = 120
+        elif clickable and text.lower() == "wait":
+            score = 100
     elif mode == "widget":
         if "bugünün widget" in text.lower() or "bugünün widget" in desc.lower():
             score = 100
@@ -159,26 +168,66 @@ XML
     cat /tmp/t0297-pin-selector-fixture.log >&2 || true
     exit 1
   fi
-  echo 'T0297 pin selector regression PASS'
+
+  cat > /tmp/t0297-anr-selector-fixture.xml <<'XML'
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<hierarchy rotation="0">
+  <node text="Quickstep isn't responding" resource-id="android:id/alertTitle" clickable="false" bounds="[100,900][900,1050]" />
+  <node text="Close app" resource-id="android:id/aerr_close" clickable="true" bounds="[100,1100][900,1230]" />
+  <node text="Wait" resource-id="android:id/aerr_wait" clickable="true" bounds="[100,1230][900,1360]" />
+</hierarchy>
+XML
+  anr_target="$(find_click_target /tmp/t0297-anr-selector-fixture.xml anr-wait 2>/tmp/t0297-anr-selector-fixture.log || true)"
+  if [ "$anr_target" != '500 1295' ]; then
+    echo 'T0297 ANR selector regression: system Wait action was not selected safely' >&2
+    cat /tmp/t0297-anr-selector-fixture.log >&2 || true
+    exit 1
+  fi
+  echo 'T0297 pin/ANR selector regressions PASS'
 }
 
 if [ "${VERIFY_WIDGET_LAUNCHER_PIN:-0}" = "1" ]; then
   verify_pin_target_selector
   echo 'T0297 starting real launcher pin/render/tap smoke'
+
+  # Warm the real launcher before asking it to inflate the widget preview. This
+  # avoids conflating first-home initialization with the pin request itself.
+  adb shell input keyevent KEYCODE_HOME
+  sleep 3
+  adb shell uiautomator dump /sdcard/t0297-home-warm.xml >/dev/null 2>&1 || true
+
   adb shell am force-stop "$PACKAGE"
   adb shell am start -n "$WIDGET_PIN_ACTIVITY" | tee /tmp/widget-pin-start.txt
   grep -F 'Starting: Intent' /tmp/widget-pin-start.txt
 
   PIN_TARGET=''
+  ANR_RECOVERIES=0
   attempt=0
-  while [ "$attempt" -lt 20 ]; do
+  while [ "$attempt" -lt 40 ]; do
     adb shell uiautomator dump /sdcard/t0297-pin.xml >/dev/null 2>&1 || true
     adb pull /sdcard/t0297-pin.xml /tmp/t0297-pin.xml >/dev/null 2>&1 || true
     if [ -s /tmp/t0297-pin.xml ]; then
       PIN_TARGET="$(find_click_target /tmp/t0297-pin.xml pin 2>/tmp/t0297-pin-target.log || true)"
-    fi
-    if [ -n "$PIN_TARGET" ]; then
-      break
+      if [ -n "$PIN_TARGET" ]; then
+        break
+      fi
+
+      ANR_TARGET="$(find_click_target /tmp/t0297-pin.xml anr-wait 2>/tmp/t0297-anr-target.log || true)"
+      if [ -n "$ANR_TARGET" ]; then
+        if [ "$ANR_RECOVERIES" -ge 2 ]; then
+          echo 'T0297 Launcher3 remained unresponsive after bounded Wait recovery' >&2
+          cat /tmp/t0297-pin.xml >&2 || true
+          exit 1
+        fi
+        ANR_RECOVERIES=$((ANR_RECOVERIES + 1))
+        echo "T0297 hosted-emulator Launcher3 ANR detected; selecting system Wait recovery ($ANR_RECOVERIES/2)"
+        cat /tmp/t0297-anr-target.log
+        set -- $ANR_TARGET
+        adb shell input tap "$1" "$2"
+        sleep 3
+        attempt=$((attempt + 1))
+        continue
+      fi
     fi
     attempt=$((attempt + 1))
     sleep 1
