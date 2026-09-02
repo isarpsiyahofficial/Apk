@@ -70,7 +70,8 @@ class MainActivity : FlutterActivity() {{
                 val proVisualsEnabled = call.argument<Boolean>("proVisualsEnabled") ?: false
 
                 if (languageCode !in setOf("tr", "en", "ar") ||
-                    verseArabic.isEmpty() || verseTranslation.isEmpty() || duaText.isEmpty()) {{
+                    verseArabic.isEmpty() || duaText.isEmpty() ||
+                    (languageCode != "ar" && verseTranslation.isEmpty())) {{
                     result.error("INVALID_WIDGET_SNAPSHOT", "Widget snapshot is incomplete or unsupported.", null)
                     return@setMethodCallHandler
                 }}
@@ -122,11 +123,13 @@ class IslamiHayatWidgetProvider : AppWidgetProvider() {{
 
             for (id in ids) {{
                 val views = RemoteViews(context.packageName, R.layout.islami_hayat_widget)
-                val hasContent = verseArabic.isNotBlank() && verseTranslation.isNotBlank() && duaText.isNotBlank()
+                val hasContent = verseArabic.isNotBlank() && duaText.isNotBlank() &&
+                    (languageCode == "ar" || verseTranslation.isNotBlank())
                 views.setViewVisibility(R.id.widget_content, if (hasContent) View.VISIBLE else View.GONE)
                 views.setViewVisibility(R.id.widget_empty, if (hasContent) View.GONE else View.VISIBLE)
                 views.setTextViewText(R.id.widget_verse_arabic, verseArabic)
                 views.setTextViewText(R.id.widget_verse_translation, verseTranslation)
+                views.setViewVisibility(R.id.widget_verse_translation, if (verseTranslation.isBlank()) View.GONE else View.VISIBLE)
                 views.setTextViewText(R.id.widget_dua, duaText)
                 views.setInt(R.id.widget_content, "setLayoutDirection", if (languageCode == "ar") View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR)
                 views.setViewVisibility(R.id.widget_pro_mark, if (proVisuals) View.VISIBLE else View.GONE)
