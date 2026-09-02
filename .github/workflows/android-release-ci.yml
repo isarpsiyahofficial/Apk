@@ -114,7 +114,7 @@ jobs:
           APK="build/app/outputs/flutter-apk/app-release.apk"
           BUILD_TOOLS="$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
           AAPT2="$ANDROID_HOME/build-tools/$BUILD_TOOLS/aapt2"
-          MANIFEST="$($AAPT2 dump xmltree "$APK" AndroidManifest.xml)"
+          MANIFEST="$($AAPT2 dump xmltree --file AndroidManifest.xml "$APK")"
           printf '%s\n' "$MANIFEST" | grep -F 'IslamiHayatWidgetProvider'
           printf '%s\n' "$MANIFEST" | grep -F 'islami_hayat_widget_info'
           echo "T0297 release widget packaging audit PASS"
