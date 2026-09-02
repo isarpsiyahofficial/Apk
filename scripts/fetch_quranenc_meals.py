@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import socket
 import time
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -27,15 +28,27 @@ SOURCES = {
 
 # Network retries are intentionally limited to transient transport/server
 # failures. Content, schema, locator, source version and hash validation remains
-# fail-closed and is never retried into acceptance.
-_GET_ATTEMPTS = 3
-_GET_TIMEOUT_SECONDS = 30
+# fail-closed and is never retried into acceptance. A fresh Request is created
+# per attempt so a timed-out keep-alive socket cannot poison later attempts.
+_GET_ATTEMPTS = 5
+_GET_TIMEOUT_SECONDS = 20
 _RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
 
 
+def _retry_delay(attempt: int) -> int:
+    return min(2 ** (attempt - 1), 8)
+
+
 def _get(url: str) -> bytes:
-    req = Request(url, headers={"User-Agent": "IslamicLifeSourceVerifier/1.0"})
     for attempt in range(1, _GET_ATTEMPTS + 1):
+        req = Request(
+            url,
+            headers={
+                "User-Agent": "IslamicLifeSourceVerifier/1.0",
+                "Accept": "application/json",
+                "Connection": "close",
+            },
+        )
         try:
             with urlopen(req, timeout=_GET_TIMEOUT_SECONDS) as response:
                 if response.status != 200:
@@ -44,17 +57,17 @@ def _get(url: str) -> bytes:
         except HTTPError as exc:
             if exc.code not in _RETRYABLE_HTTP or attempt == _GET_ATTEMPTS:
                 raise
-            delay = 2 ** (attempt - 1)
+            delay = _retry_delay(attempt)
             print(
                 f"Transient HTTP {exc.code} for {url}; "
                 f"retry {attempt + 1}/{_GET_ATTEMPTS} in {delay}s",
                 flush=True,
             )
             time.sleep(delay)
-        except (TimeoutError, URLError) as exc:
+        except (TimeoutError, socket.timeout, ConnectionResetError, URLError, OSError) as exc:
             if attempt == _GET_ATTEMPTS:
                 raise
-            delay = 2 ** (attempt - 1)
+            delay = _retry_delay(attempt)
             print(
                 f"Transient network error for {url}: {type(exc).__name__}; "
                 f"retry {attempt + 1}/{_GET_ATTEMPTS} in {delay}s",
