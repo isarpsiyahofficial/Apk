@@ -1,5 +1,7 @@
 import 'package:islami_hayat/features/dua/data/dua_content.dart';
+import 'package:islami_hayat/features/dua/data/dua_dataset_review.dart';
 import 'package:islami_hayat/features/dua/data/dua_library_repository.dart';
+import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
 import 'package:islami_hayat/features/widgets/data/android_home_widget_bridge_t0297.dart';
 import 'package:islami_hayat/features/widgets/domain/home_widget_content_t0297.dart';
 
@@ -28,6 +30,43 @@ final class DuaLibraryHomeWidgetSourceT0297
     final dayNumber = day.difference(epoch).inDays;
     final index = dayNumber % records.length;
     return records[index];
+  }
+}
+
+/// Single production composition gate for T0297 religious widget content.
+///
+/// Raw dua records are never connected directly to the widget runtime. The
+/// exact content version must first pass [DuaDatasetReviewGate], including the
+/// separate religious review and native TR/EN/AR editorial approvals. This
+/// prevents a merely `published` record without T0129 evidence from reaching
+/// the Android home screen.
+final class HomeWidgetProductionCompositionT0297 {
+  const HomeWidgetProductionCompositionT0297._();
+
+  static HomeWidgetRuntimeSyncT0297 compose({
+    required Iterable<DuaContent> duaRecords,
+    required Iterable<DuaDatasetReviewEvidence> duaReviewEvidence,
+    required HomeWidgetSnapshotSinkT0297 sink,
+    DailyVerseDataSource? dailyVerseSource,
+  }) {
+    final approved = const DuaDatasetReviewGate().approve(
+      records: duaRecords,
+      evidence: duaReviewEvidence,
+    );
+    if (approved.isEmpty) {
+      throw StateError(
+        'Home widget production composition requires reviewed dua content.',
+      );
+    }
+
+    final repository = DuaLibraryRepository(approved);
+    return HomeWidgetRuntimeSyncT0297(
+      coordinator: HomeWidgetContentCoordinatorT0297(
+        dailyVerseSource: dailyVerseSource ?? DailyVerseRepository(),
+        dailyDuaSource: DuaLibraryHomeWidgetSourceT0297(repository),
+      ),
+      sink: sink,
+    );
   }
 }
 
