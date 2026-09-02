@@ -5,6 +5,29 @@ const int dhikrReminderNotificationIdT0293 = 2903;
 const int dhikrReminderDefaultHourT0293 = 20;
 const String dhikrReminderDeepLinkHostT0293 = 'dhikr';
 
+/// Accepts only the exact app-local dhikr notification route.
+///
+/// Query parameters, fragments, user-info, ports, and path segments are
+/// intentionally rejected so a notification payload cannot smuggle state into
+/// the dhikr surface. Navigation still goes through AppShell's FREE reachability
+/// gate after this parser succeeds.
+bool isCanonicalDhikrReminderDeepLinkT0293(String payload) {
+  final Uri uri;
+  try {
+    uri = Uri.parse(payload);
+  } on FormatException {
+    return false;
+  }
+
+  return uri.scheme == notificationDeepLinkSchemeT0291 &&
+      uri.host == dhikrReminderDeepLinkHostT0293 &&
+      uri.userInfo.isEmpty &&
+      !uri.hasPort &&
+      uri.pathSegments.isEmpty &&
+      uri.query.isEmpty &&
+      uri.fragment.isEmpty;
+}
+
 /// Local-only reminder for the user's optional dhikr practice.
 ///
 /// The OS notification intentionally carries no prescribed count, claimed
