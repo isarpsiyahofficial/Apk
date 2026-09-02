@@ -6,6 +6,11 @@ translated. Each official API response is hashed byte-for-byte before parsing.
 The generated canonical JSON only rearranges source fields into deterministic
 sura/ayah order while preserving ``translation`` and ``footnotes`` values
 exactly as returned by QuranEnc.
+
+Exit status 75 is reserved for an exhausted *transport-only* outage. Callers may
+use an already pinned, independently hash-validated bundled dataset in that one
+case. Content/schema/version/locator/hash validation failures remain ordinary
+hard failures and must never fall back silently.
 """
 from __future__ import annotations
 
@@ -26,6 +31,10 @@ SOURCES = {
     "en": {"key": "english_rwwad", "language": "en", "publisher": "Rowwad Translation Center"},
 }
 
+# sysexits.h EX_TEMPFAIL. Deliberately used only for exhausted transient
+# network failures; religious-content validation errors keep a hard non-75 exit.
+EX_TEMPFAIL = 75
+
 # Network retries are intentionally limited to transient transport/server
 # failures. Content, schema, locator, source version and hash validation remains
 # fail-closed and is never retried into acceptance. A fresh Request is created
@@ -33,6 +42,10 @@ SOURCES = {
 _GET_ATTEMPTS = 5
 _GET_TIMEOUT_SECONDS = 20
 _RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
+
+
+class TransientNetworkExhaustedError(RuntimeError):
+    """All bounded retries failed for a transport/server-only condition."""
 
 
 def _retry_delay(attempt: int) -> int:
@@ -55,8 +68,12 @@ def _get(url: str) -> bytes:
                     raise ValueError(f"HTTP {response.status} for {url}")
                 return response.read()
         except HTTPError as exc:
-            if exc.code not in _RETRYABLE_HTTP or attempt == _GET_ATTEMPTS:
+            if exc.code not in _RETRYABLE_HTTP:
                 raise
+            if attempt == _GET_ATTEMPTS:
+                raise TransientNetworkExhaustedError(
+                    f"Transient HTTP {exc.code} exhausted for {url}"
+                ) from exc
             delay = _retry_delay(attempt)
             print(
                 f"Transient HTTP {exc.code} for {url}; "
@@ -66,7 +83,10 @@ def _get(url: str) -> bytes:
             time.sleep(delay)
         except (TimeoutError, socket.timeout, ConnectionResetError, URLError, OSError) as exc:
             if attempt == _GET_ATTEMPTS:
-                raise
+                raise TransientNetworkExhaustedError(
+                    f"Transient network retries exhausted for {url}: "
+                    f"{type(exc).__name__}"
+                ) from exc
             delay = _retry_delay(attempt)
             print(
                 f"Transient network error for {url}: {type(exc).__name__}; "
@@ -204,8 +224,12 @@ def main() -> int:
     parser.add_argument("--locale", choices=("tr", "en", "all"), default="all")
     args = parser.parse_args()
     locales = ("tr", "en") if args.locale == "all" else (args.locale,)
-    for locale in locales:
-        write_locale(locale, Path(args.output_dir))
+    try:
+        for locale in locales:
+            write_locale(locale, Path(args.output_dir))
+    except TransientNetworkExhaustedError as exc:
+        print(f"TEMPORARY_NETWORK_FAILURE: {exc}", flush=True)
+        return EX_TEMPFAIL
     return 0
 
 
