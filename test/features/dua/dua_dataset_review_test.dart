@@ -32,6 +32,7 @@ DuaDatasetReviewEvidence _review({
   DuaReviewDecision tr = DuaReviewDecision.approved,
   DuaReviewDecision en = DuaReviewDecision.approved,
   DuaReviewDecision ar = DuaReviewDecision.approved,
+  DateTime? reviewedAt,
 }) => DuaDatasetReviewEvidence(
   duaId: 'dua-1',
   contentVersion: version,
@@ -39,7 +40,7 @@ DuaDatasetReviewEvidence _review({
   turkishNativeReview: tr,
   englishNativeReview: en,
   arabicNativeReview: ar,
-  reviewedAt: DateTime.utc(2026, 8, 28),
+  reviewedAt: reviewedAt ?? DateTime.utc(2026, 8, 28),
   religiousReviewerId: 'religious-reviewer',
   turkishReviewerId: 'tr-native-reviewer',
   englishReviewerId: 'en-native-reviewer',
@@ -79,6 +80,16 @@ void main() {
   test('editing content version invalidates prior review evidence', () {
     expect(
       () => gate.approve(records: [_dua(version: 2)], evidence: [_review()]),
+      throwsStateError,
+    );
+  });
+
+  test('review evidence older than the content review marker fails closed', () {
+    expect(
+      () => gate.approve(
+        records: [_dua()],
+        evidence: [_review(reviewedAt: DateTime.utc(2026, 8, 27, 23, 59))],
+      ),
       throwsStateError,
     );
   });
