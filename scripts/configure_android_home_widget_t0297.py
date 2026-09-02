@@ -70,13 +70,15 @@ class MainActivity : FlutterActivity() {{
                     return@setMethodCallHandler
                 }}
 
+                val civilDateKey = call.argument<String>("civilDateKey")?.trim().orEmpty()
                 val languageCode = call.argument<String>("languageCode")?.trim().orEmpty()
                 val verseArabic = call.argument<String>("verseArabic")?.trim().orEmpty()
                 val verseTranslation = call.argument<String>("verseTranslation")?.trim().orEmpty()
                 val duaText = call.argument<String>("duaText")?.trim().orEmpty()
                 val proVisualsEnabled = call.argument<Boolean>("proVisualsEnabled") ?: false
 
-                if (languageCode !in setOf("tr", "en", "ar") ||
+                if (!Regex("\\\\d{{4}}-\\\\d{{2}}-\\\\d{{2}}").matches(civilDateKey) ||
+                    languageCode !in setOf("tr", "en", "ar") ||
                     verseArabic.isEmpty() || duaText.isEmpty() ||
                     (languageCode != "ar" && verseTranslation.isEmpty())) {{
                     result.error("INVALID_WIDGET_SNAPSHOT", "Widget snapshot is incomplete or unsupported.", null)
@@ -85,6 +87,7 @@ class MainActivity : FlutterActivity() {{
 
                 getSharedPreferences("{PREFS}", Context.MODE_PRIVATE)
                     .edit()
+                    .putString("civilDateKey", civilDateKey)
                     .putString("languageCode", languageCode)
                     .putString("verseArabic", verseArabic)
                     .putString("verseTranslation", verseTranslation)
@@ -113,6 +116,8 @@ import android.content.Context
 import android.content.Intent
 import android.view.View
 import android.widget.RemoteViews
+import java.util.Calendar
+import java.util.Locale
 
 class IslamiHayatWidgetProvider : AppWidgetProvider() {{
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {{
@@ -122,24 +127,27 @@ class IslamiHayatWidgetProvider : AppWidgetProvider() {{
     companion object {{
         fun updateAll(context: Context, manager: AppWidgetManager, ids: IntArray) {{
             val prefs = context.getSharedPreferences("{PREFS}", Context.MODE_PRIVATE)
+            val civilDateKey = prefs.getString("civilDateKey", "").orEmpty()
             val verseArabic = prefs.getString("verseArabic", "").orEmpty()
             val verseTranslation = prefs.getString("verseTranslation", "").orEmpty()
             val duaText = prefs.getString("duaText", "").orEmpty()
             val languageCode = prefs.getString("languageCode", "tr").orEmpty()
             val proVisuals = prefs.getBoolean("proVisualsEnabled", false)
+            val isCurrentCivilDate = civilDateKey == currentCivilDateKey()
 
             for (id in ids) {{
                 val views = RemoteViews(context.packageName, R.layout.islami_hayat_widget)
-                val hasContent = verseArabic.isNotBlank() && duaText.isNotBlank() &&
+                val hasContent = isCurrentCivilDate &&
+                    verseArabic.isNotBlank() && duaText.isNotBlank() &&
                     (languageCode == "ar" || verseTranslation.isNotBlank())
                 views.setViewVisibility(R.id.widget_content, if (hasContent) View.VISIBLE else View.GONE)
                 views.setViewVisibility(R.id.widget_empty, if (hasContent) View.GONE else View.VISIBLE)
-                views.setTextViewText(R.id.widget_verse_arabic, verseArabic)
-                views.setTextViewText(R.id.widget_verse_translation, verseTranslation)
-                views.setViewVisibility(R.id.widget_verse_translation, if (verseTranslation.isBlank()) View.GONE else View.VISIBLE)
-                views.setTextViewText(R.id.widget_dua, duaText)
+                views.setTextViewText(R.id.widget_verse_arabic, if (hasContent) verseArabic else "")
+                views.setTextViewText(R.id.widget_verse_translation, if (hasContent) verseTranslation else "")
+                views.setViewVisibility(R.id.widget_verse_translation, if (hasContent && verseTranslation.isNotBlank()) View.VISIBLE else View.GONE)
+                views.setTextViewText(R.id.widget_dua, if (hasContent) duaText else "")
                 views.setInt(R.id.widget_content, "setLayoutDirection", if (languageCode == "ar") View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR)
-                views.setViewVisibility(R.id.widget_pro_mark, if (proVisuals) View.VISIBLE else View.GONE)
+                views.setViewVisibility(R.id.widget_pro_mark, if (hasContent && proVisuals) View.VISIBLE else View.GONE)
 
                 val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
                 if (launchIntent != null) {{
@@ -154,6 +162,17 @@ class IslamiHayatWidgetProvider : AppWidgetProvider() {{
                 }}
                 manager.updateAppWidget(id, views)
             }}
+        }}
+
+        private fun currentCivilDateKey(): String {{
+            val calendar = Calendar.getInstance()
+            return String.format(
+                Locale.US,
+                "%04d-%02d-%02d",
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH) + 1,
+                calendar.get(Calendar.DAY_OF_MONTH),
+            )
         }}
     }}
 }}
