@@ -61,7 +61,7 @@ class ProfilePage extends StatelessWidget {
                   );
               final injectedRequester = notificationPermissionRequester;
               final scheduler = injectedRequester == null
-                  ? AndroidLocalNotificationSchedulerT0291()
+                  ? NotificationRuntimeT0291.instance.scheduler
                   : null;
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
