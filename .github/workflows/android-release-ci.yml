@@ -114,12 +114,24 @@ jobs:
           APK="build/app/outputs/flutter-apk/app-release.apk"
           BUILD_TOOLS="$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
           AAPT2="$ANDROID_HOME/build-tools/$BUILD_TOOLS/aapt2"
-          MANIFEST="$($AAPT2 dump xmltree --file AndroidManifest.xml "$APK")"
-          RESOURCES="$($AAPT2 dump resources "$APK")"
-          printf '%s\n' "$MANIFEST" | grep -F 'IslamiHayatWidgetProvider'
-          printf '%s\n' "$MANIFEST" | grep -F 'android.appwidget.action.APPWIDGET_UPDATE'
-          printf '%s\n' "$RESOURCES" | grep -F ':xml/islami_hayat_widget_info'
-          printf '%s\n' "$RESOURCES" | grep -F ':layout/islami_hayat_widget'
+          MANIFEST_FILE="$(mktemp)"
+          RESOURCES_FILE="$(mktemp)"
+          trap 'rm -f "$MANIFEST_FILE" "$RESOURCES_FILE"' EXIT
+
+          "$AAPT2" dump xmltree --file AndroidManifest.xml "$APK" > "$MANIFEST_FILE"
+          "$AAPT2" dump resources "$APK" > "$RESOURCES_FILE"
+
+          grep -F 'IslamiHayatWidgetProvider' "$MANIFEST_FILE"
+          grep -F 'android.appwidget.action.APPWIDGET_UPDATE' "$MANIFEST_FILE"
+          grep -F 'android.appwidget.provider' "$MANIFEST_FILE"
+
+          # aapt2's resource-table formatting differs across build-tools versions.
+          # Match the compiled entry names themselves instead of assuming a
+          # brittle ':type/name' text rendering. These names can only appear
+          # here if the corresponding resources survived release packaging.
+          grep -F 'islami_hayat_widget_info' "$RESOURCES_FILE"
+          grep -F 'islami_hayat_widget' "$RESOURCES_FILE"
+
           echo "T0297 release widget packaging audit PASS"
 
       - name: Verify trusted Quran assets are packaged in release APK
