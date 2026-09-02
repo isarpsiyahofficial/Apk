@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:islami_hayat/core/network/internet_reachability.dart';
 import 'package:islami_hayat/core/theme/app_theme.dart';
+import 'package:islami_hayat/features/notifications/domain/daily_verse_notification_t0291.dart';
 import 'package:islami_hayat/features/premium/domain/content_transition_access_guard.dart';
 import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.dart';
 import 'package:islami_hayat/features/premium/presentation/startup_access_gate.dart';
@@ -14,6 +15,7 @@ class IslamiHayatApp extends StatelessWidget {
     this.locale,
     this.startupAccessVerifier,
     this.initialEntitlement = const EntitlementState.free(),
+    this.notificationTapController,
   });
 
   /// Optional explicit locale used by the in-app language setting and by
@@ -26,6 +28,7 @@ class IslamiHayatApp extends StatelessWidget {
   /// independently.
   final InternetReachabilityVerifier? startupAccessVerifier;
   final EntitlementState initialEntitlement;
+  final NotificationTapControllerT0291? notificationTapController;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +41,7 @@ class IslamiHayatApp extends StatelessWidget {
           );
     final shell = AppShell(
       canEnterNewContent: transitionGuard?.canEnterNewContent,
+      notificationTapController: notificationTapController,
     );
     final home = verifier == null
         ? shell
