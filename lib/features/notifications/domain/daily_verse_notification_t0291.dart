@@ -1,7 +1,11 @@
 import 'package:islami_hayat/features/notifications/domain/notification_preferences.dart';
+import 'package:islami_hayat/features/quran/data/canonical_quran_source.dart';
+import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
 import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
 
 const int dailyVerseNotificationIdT0291 = 2901;
+const String notificationDeepLinkSchemeT0291 = 'islami-hayat';
+const String notificationQuranDeepLinkHostT0291 = 'quran';
 
 final class LocalNotificationRequestT0291 {
   const LocalNotificationRequestT0291({
@@ -23,6 +27,62 @@ abstract interface class LocalNotificationSchedulerT0291 {
   Future<void> schedule(LocalNotificationRequestT0291 request);
 
   Future<void> cancel(int id);
+}
+
+/// Small lifecycle bridge for notification taps.
+///
+/// It intentionally stores only the most recent app-local deep-link payload;
+/// no religious text, note, history, user identifier, or analytics data is
+/// retained. Listeners are notified for repeated identical payloads as well.
+final class NotificationTapControllerT0291 {
+  final Set<void Function()> _listeners = <void Function()>{};
+  String? _pendingPayload;
+
+  void emit(String payload) {
+    final normalized = payload.trim();
+    if (normalized.isEmpty) return;
+    _pendingPayload = normalized;
+    for (final listener in List<void Function()>.of(_listeners)) {
+      listener();
+    }
+  }
+
+  String? takePendingPayload() {
+    final payload = _pendingPayload;
+    _pendingPayload = null;
+    return payload;
+  }
+
+  void addListener(void Function() listener) => _listeners.add(listener);
+
+  void removeListener(void Function() listener) => _listeners.remove(listener);
+}
+
+/// Parses only the canonical Quran notification route produced by this app.
+/// Everything else is rejected instead of being forwarded into navigation.
+QuranAddress? parseNotificationQuranDeepLinkT0291(String payload) {
+  final Uri uri;
+  try {
+    uri = Uri.parse(payload);
+  } on FormatException {
+    return null;
+  }
+
+  if (uri.scheme != notificationDeepLinkSchemeT0291 ||
+      uri.host != notificationQuranDeepLinkHostT0291 ||
+      uri.query.isNotEmpty ||
+      uri.fragment.isNotEmpty ||
+      uri.pathSegments.length != 2) {
+    return null;
+  }
+
+  final surah = int.tryParse(uri.pathSegments[0]);
+  final ayah = int.tryParse(uri.pathSegments[1]);
+  if (surah == null || ayah == null) return null;
+  if (surah < 1 || surah > canonicalQuranSuraCount) return null;
+  if (ayah < 1 || ayah > canonicalQuranAyahCountForSura(surah)) return null;
+
+  return QuranAddress(surah: surah, ayah: ayah);
 }
 
 final class DailyVerseNotificationCoordinatorT0291 {
@@ -64,7 +124,9 @@ final class DailyVerseNotificationCoordinatorT0291 {
         scheduledAt: scheduledAt,
         title: copy.title,
         body: copy.body,
-        payload: 'islami-hayat://quran/${verse.address.surah}/${verse.address.ayah}',
+        payload: '$notificationDeepLinkSchemeT0291://'
+            '$notificationQuranDeepLinkHostT0291/'
+            '${verse.address.surah}/${verse.address.ayah}',
       ),
     );
   }
