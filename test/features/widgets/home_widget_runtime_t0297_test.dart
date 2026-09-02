@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/dua/data/dua_content.dart';
+import 'package:islami_hayat/features/dua/data/dua_dataset_review.dart';
 import 'package:islami_hayat/features/dua/data/dua_library_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
 import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
@@ -46,6 +47,95 @@ void main() {
             reviewStatus: ContentReviewStatus.draft,
           ),
         ]),
+        throwsStateError,
+      );
+    });
+
+    test('production composition accepts exact fully reviewed content', () async {
+      final sink = _RecordingSink(result: true);
+      final runtime = HomeWidgetProductionCompositionT0297.compose(
+        duaRecords: <DuaContent>[
+          _publishedDua(id: 'reviewed-dua', tr: 'İncelenmiş dua'),
+        ],
+        duaReviewEvidence: <DuaDatasetReviewEvidence>[
+          _approvedReview('reviewed-dua'),
+        ],
+        sink: sink,
+        dailyVerseSource: _FakeVerseSource(),
+      );
+
+      final result = await runtime.sync(
+        civilDate: DateTime(2030, 1, 2),
+        languageCode: 'tr',
+        hasLifetimePro: false,
+      );
+
+      expect(result, isTrue);
+      expect(sink.lastSnapshot?.duaId, 'reviewed-dua');
+      expect(sink.lastSnapshot?.duaText, 'İncelenmiş dua');
+    });
+
+    test('production composition rejects missing T0129 review evidence', () {
+      expect(
+        () => HomeWidgetProductionCompositionT0297.compose(
+          duaRecords: <DuaContent>[
+            _publishedDua(id: 'unreviewed-dua', tr: 'Yayınlanmış ama onaysız'),
+          ],
+          duaReviewEvidence: const <DuaDatasetReviewEvidence>[],
+          sink: _RecordingSink(result: true),
+          dailyVerseSource: _FakeVerseSource(),
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('production composition rejects stale review for older content version', () {
+      expect(
+        () => HomeWidgetProductionCompositionT0297.compose(
+          duaRecords: <DuaContent>[
+            _publishedDua(
+              id: 'versioned-dua',
+              tr: 'Yeni sürüm dua',
+              version: 2,
+            ),
+          ],
+          duaReviewEvidence: <DuaDatasetReviewEvidence>[
+            _approvedReview('versioned-dua', version: 1),
+          ],
+          sink: _RecordingSink(result: true),
+          dailyVerseSource: _FakeVerseSource(),
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('production composition rejects pending native-language review', () {
+      expect(
+        () => HomeWidgetProductionCompositionT0297.compose(
+          duaRecords: <DuaContent>[
+            _publishedDua(id: 'pending-ar', tr: 'İnceleme bekleyen dua'),
+          ],
+          duaReviewEvidence: <DuaDatasetReviewEvidence>[
+            _approvedReview(
+              'pending-ar',
+              arabicReview: DuaReviewDecision.pending,
+            ),
+          ],
+          sink: _RecordingSink(result: true),
+          dailyVerseSource: _FakeVerseSource(),
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('production composition rejects an empty reviewed dataset', () {
+      expect(
+        () => HomeWidgetProductionCompositionT0297.compose(
+          duaRecords: const <DuaContent>[],
+          duaReviewEvidence: const <DuaDatasetReviewEvidence>[],
+          sink: _RecordingSink(result: true),
+          dailyVerseSource: _FakeVerseSource(),
+        ),
         throwsStateError,
       );
     });
@@ -126,10 +216,30 @@ final class _RecordingSink implements HomeWidgetSnapshotSinkT0297 {
   }
 }
 
+DuaDatasetReviewEvidence _approvedReview(
+  String duaId, {
+  int version = 1,
+  DuaReviewDecision arabicReview = DuaReviewDecision.approved,
+}) =>
+    DuaDatasetReviewEvidence(
+      duaId: duaId,
+      contentVersion: version,
+      religiousReview: DuaReviewDecision.approved,
+      turkishNativeReview: DuaReviewDecision.approved,
+      englishNativeReview: DuaReviewDecision.approved,
+      arabicNativeReview: arabicReview,
+      reviewedAt: DateTime.utc(2026, 8, 1),
+      religiousReviewerId: 'religious-review',
+      turkishReviewerId: 'tr-native-review',
+      englishReviewerId: 'en-native-review',
+      arabicReviewerId: 'ar-native-review',
+    );
+
 DuaContent _publishedDua({
   required String id,
   required String tr,
   ContentReviewStatus reviewStatus = ContentReviewStatus.published,
+  int version = 1,
 }) =>
     DuaContent(
       id: id,
@@ -142,7 +252,7 @@ DuaContent _publishedDua({
         ar: 'دعاء عربي مراجع',
       ),
       reviewStatus: reviewStatus,
-      version: 1,
+      version: version,
       lastReviewedAt: DateTime.utc(2026, 8, 1),
       sources: const [
         SourceReference(
