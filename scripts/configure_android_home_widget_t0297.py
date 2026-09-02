@@ -227,7 +227,6 @@ WIDGET_LAYOUT = '''<?xml version="1.0" encoding="utf-8"?>
 
 WIDGET_INFO = '''<?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:description="@string/app_name"
     android:initialLayout="@layout/islami_hayat_widget"
     android:minWidth="250dp"
     android:minHeight="110dp"
