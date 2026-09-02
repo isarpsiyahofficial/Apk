@@ -69,11 +69,13 @@ void main() {
     expect(find.text('Sayaç'), findsOneWidget);
   });
 
-  testWidgets('FREE offline gate blocks dhikr notification navigation', (
+  testWidgets('FREE offline gate blocks cold-start dhikr notification', (
     tester,
   ) async {
     var guardCalls = 0;
-    final controller = NotificationTapControllerT0291();
+    final controller = NotificationTapControllerT0291()
+      ..emit('islami-hayat://dhikr');
+
     await tester.pumpWidget(
       _app(
         controller: controller,
@@ -83,9 +85,6 @@ void main() {
         },
       ),
     );
-    await tester.pump();
-
-    controller.emit('islami-hayat://dhikr');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
