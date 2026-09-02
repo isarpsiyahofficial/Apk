@@ -1,3 +1,4 @@
+import 'package:islami_hayat/features/notifications/domain/notification_content_policy_t0296.dart';
 import 'package:islami_hayat/features/notifications/domain/notification_preferences.dart';
 import 'package:islami_hayat/features/quran/data/canonical_quran_source.dart';
 import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
@@ -15,6 +16,8 @@ final class LocalNotificationRequestT0291 {
     required this.title,
     required this.body,
     required this.payload,
+    this.contentExposure =
+        NotificationContentExposureT0296.teaserReferenceOnly,
   });
 
   final int id;
@@ -22,6 +25,7 @@ final class LocalNotificationRequestT0291 {
   final String title;
   final String body;
   final String payload;
+  final NotificationContentExposureT0296 contentExposure;
 }
 
 abstract interface class LocalNotificationSchedulerT0291 {
