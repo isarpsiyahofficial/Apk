@@ -52,7 +52,10 @@ final class DuaDatasetReviewEvidence {
 ///
 /// A record is returned only if the normal production/source gates pass and a
 /// matching review entry approves the exact same content id + version. A review
-/// for an older version can never authorize edited religious text.
+/// for an older version can never authorize edited religious text. The review
+/// evidence must also be at least as recent as the record's own review marker;
+/// this closes the failure path where content is re-reviewed/edited without a
+/// corresponding version bump and stale TR/EN/AR + religious evidence remains.
 final class DuaDatasetReviewGate {
   const DuaDatasetReviewGate();
 
@@ -81,9 +84,10 @@ final class DuaDatasetReviewGate {
       final review = byId[record.id];
       if (review == null ||
           !review.isFullyApproved ||
-          review.contentVersion != record.version) {
+          review.contentVersion != record.version ||
+          review.reviewedAt.isBefore(record.lastReviewedAt)) {
         throw StateError(
-          'Dua is missing complete TR/EN/AR + religious review: ${record.id}',
+          'Dua is missing current complete TR/EN/AR + religious review: ${record.id}',
         );
       }
       approved.add(record);
