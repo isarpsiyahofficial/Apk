@@ -121,6 +121,8 @@ class IslamiHayatWidgetProvider : AppWidgetProvider() {{
     }}
 
     companion object {{
+        private const val OPEN_FROM_WIDGET_ACTION = "{package_name}.action.OPEN_HOME_WIDGET_T0297"
+
         fun updateAll(context: Context, manager: AppWidgetManager, ids: IntArray) {{
             val prefs = context.getSharedPreferences("{PREFS}", Context.MODE_PRIVATE)
             val civilDateKey = prefs.getString("civilDateKey", "").orEmpty()
@@ -151,17 +153,22 @@ class IslamiHayatWidgetProvider : AppWidgetProvider() {{
                 views.setInt(R.id.widget_content, "setLayoutDirection", if (languageCode == "ar") View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR)
                 views.setViewVisibility(R.id.widget_pro_mark, if (hasContent && proVisuals) View.VISIBLE else View.GONE)
 
-                val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-                if (launchIntent != null) {{
-                    launchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    val pending = PendingIntent.getActivity(
-                        context,
-                        297,
-                        launchIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-                    )
-                    views.setOnClickPendingIntent(R.id.widget_root, pending)
+                // Use an explicit in-package Activity intent rather than relying
+                // on PackageManager launcher resolution. This keeps widget taps
+                // deterministic across OEM launchers, emulator hosts and future
+                // manifest intent-filter changes.
+                val launchIntent = Intent(context, MainActivity::class.java).apply {{
+                    action = OPEN_FROM_WIDGET_ACTION
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    putExtra("fromHomeWidgetT0297", true)
                 }}
+                val pending = PendingIntent.getActivity(
+                    context,
+                    297,
+                    launchIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                )
+                views.setOnClickPendingIntent(R.id.widget_root, pending)
                 manager.updateAppWidget(id, views)
             }}
         }}
