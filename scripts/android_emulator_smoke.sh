@@ -54,13 +54,14 @@ printf '%s\n' "$INSTALLED_MANIFEST" | grep -F "$SCHEDULE_RECEIVER"
 echo 'Notification reboot-restore installed-APK manifest audit PASS'
 
 # T0297 must survive clean-runner generation and manifest merge. Validate the
-# actual installed APK, not only source files.
+# actual installed APK, not only source files. Compiled Android manifests may
+# resolve android:resource values to numeric IDs, so resource filenames are
+# verified against the exact installed APK archive instead of manifest text.
 printf '%s\n' "$INSTALLED_MANIFEST" | grep -F "$WIDGET_PROVIDER"
-printf '%s\n' "$INSTALLED_MANIFEST" | grep -F 'islami_hayat_widget_info'
-if ! unzip -l /tmp/islami-hayat-installed.apk | grep -F 'res/layout/islami_hayat_widget.xml' >/dev/null; then
-  echo 'T0297 widget layout is missing from installed APK' >&2
-  exit 1
-fi
+printf '%s\n' "$INSTALLED_MANIFEST" | grep -F 'android.appwidget.action.APPWIDGET_UPDATE'
+INSTALLED_ZIP_ENTRIES="$(unzip -Z1 /tmp/islami-hayat-installed.apk)"
+printf '%s\n' "$INSTALLED_ZIP_ENTRIES" | grep -Fx 'res/xml/islami_hayat_widget_info.xml'
+printf '%s\n' "$INSTALLED_ZIP_ENTRIES" | grep -Fx 'res/layout/islami_hayat_widget.xml'
 echo 'T0297 installed-APK widget manifest/resource audit PASS'
 
 adb shell am force-stop "$PACKAGE"
