@@ -5,6 +5,7 @@ import 'package:islami_hayat/core/monetization/free_home_banner_surface.dart';
 import 'package:islami_hayat/core/responsive/app_breakpoints.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_hub_page.dart';
+import 'package:islami_hayat/features/notifications/domain/daily_verse_notification_t0291.dart';
 import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.dart';
 import 'package:islami_hayat/features/premium/presentation/startup_access_gate.dart';
 import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
@@ -26,6 +27,7 @@ class AppShell extends StatefulWidget {
     this.canEnterNewContent,
     this.entitlement = const EntitlementState.free(),
     this.freeHomeBanner,
+    this.notificationTapController,
   });
 
   final QuranReadingProgressRepository? quranProgressRepository;
@@ -44,6 +46,10 @@ class AppShell extends StatefulWidget {
   /// or not loaded and must collapse without affecting religious content.
   final Widget? freeHomeBanner;
 
+  /// App-lifecycle notification taps are consumed here so the same guarded
+  /// navigation path as an in-app Quran transition is used.
+  final NotificationTapControllerT0291? notificationTapController;
+
   @override
   State<AppShell> createState() => _AppShellState();
 }
@@ -57,6 +63,38 @@ class _AppShellState extends State<AppShell> {
     super.initState();
     _quranProgressRepository = widget.quranProgressRepository ??
         QuranReadingProgressRepository(SecurePrivateUserStore());
+    widget.notificationTapController?.addListener(_onNotificationTap);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _drainNotificationTap());
+  }
+
+  @override
+  void didUpdateWidget(covariant AppShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.notificationTapController != widget.notificationTapController) {
+      oldWidget.notificationTapController?.removeListener(_onNotificationTap);
+      widget.notificationTapController?.addListener(_onNotificationTap);
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _drainNotificationTap());
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.notificationTapController?.removeListener(_onNotificationTap);
+    super.dispose();
+  }
+
+  void _onNotificationTap() {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _drainNotificationTap());
+  }
+
+  void _drainNotificationTap() {
+    if (!mounted) return;
+    final payload = widget.notificationTapController?.takePendingPayload();
+    if (payload == null) return;
+    final address = parseNotificationQuranDeepLinkT0291(payload);
+    if (address == null) return;
+    unawaited(_openQuranAt(address));
   }
 
   Future<bool> _guardNewContent() async {
