@@ -8,6 +8,7 @@ on:
       - 'scripts/fetch_quranenc_meals.py'
       - 'scripts/prepare_quranenc_meal_assets.py'
       - 'scripts/validate_quran_dataset.py'
+      - 'assets/quran/meals/**'
       - 'lib/features/quran/data/bundled_meal_dataset.dart'
       - 'lib/features/quran/data/verified_meal_sources.dart'
       - 'test/features/quran/bundled_meal_dataset_test.dart'
@@ -20,6 +21,7 @@ on:
       - 'scripts/fetch_quranenc_meals.py'
       - 'scripts/prepare_quranenc_meal_assets.py'
       - 'scripts/validate_quran_dataset.py'
+      - 'assets/quran/meals/**'
       - 'lib/features/quran/data/bundled_meal_dataset.dart'
       - 'lib/features/quran/data/verified_meal_sources.dart'
       - 'test/features/quran/bundled_meal_dataset_test.dart'
@@ -43,10 +45,32 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Fetch and validate official TR and EN Rowad translations
+        id: live_fetch
         working-directory: scripts
-        run: python3 fetch_quranenc_meals.py --output-dir ../build/quranenc-meals --locale all
+        shell: bash
+        run: |
+          set +e
+          python3 fetch_quranenc_meals.py --output-dir ../build/quranenc-meals --locale all
+          code=$?
+          set -e
 
-      - name: Verify manifests and 6236 coverage
+          if [ "$code" -eq 0 ]; then
+            echo "live_available=true" >> "$GITHUB_OUTPUT"
+            echo "Live QuranEnc verification completed."
+            exit 0
+          fi
+
+          if [ "$code" -eq 75 ]; then
+            echo "live_available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::QuranEnc is temporarily unreachable. Falling back only to the checked-in datasets whose exact version, 114/6236 coverage and SHA-256 are independently pinned."
+            exit 0
+          fi
+
+          echo "QuranEnc returned a non-transport validation failure; fallback is forbidden." >&2
+          exit "$code"
+
+      - name: Verify live manifests and 6236 coverage
+        if: steps.live_fetch.outputs.live_available == 'true'
         run: |
           python3 - <<'PY'
           import json
@@ -65,10 +89,18 @@ jobs:
           assert found == expected, (found, expected)
           PY
 
-      - name: Prepare byte-identical Flutter meal assets
+      - name: Prepare byte-identical Flutter meal assets from live verification
+        if: steps.live_fetch.outputs.live_available == 'true'
         run: >-
           python3 scripts/prepare_quranenc_meal_assets.py
           --input-dir build/quranenc-meals
+          --output-dir build/flutter-meal-assets
+
+      - name: Validate pinned bundled fallback during transport outage
+        if: steps.live_fetch.outputs.live_available != 'true'
+        run: >-
+          python3 scripts/prepare_quranenc_meal_assets.py
+          --input-dir assets/quran/meals
           --output-dir build/flutter-meal-assets
 
       - name: Verify packaged asset hashes
@@ -87,7 +119,8 @@ jobs:
               print(f'{name} packaged_sha256={actual}')
           PY
 
-      - name: Upload verified meal datasets and manifests
+      - name: Upload live verified meal datasets and manifests
+        if: steps.live_fetch.outputs.live_available == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: verified-quranenc-rowad-meals
