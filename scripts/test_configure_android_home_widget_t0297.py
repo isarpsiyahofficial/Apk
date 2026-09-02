@@ -35,6 +35,7 @@ class ConfigureAndroidHomeWidgetT0297Test(unittest.TestCase):
             self.assertIn('PendingIntent.FLAG_IMMUTABLE', provider)
             self.assertIn('@+id/widget_verse_arabic', layout)
             self.assertIn('android:resizeMode="horizontal|vertical"', info)
+            self.assertNotIn('@string/app_name', info)
 
     def test_rejects_missing_generated_main_activity(self):
         with tempfile.TemporaryDirectory() as tmp:
