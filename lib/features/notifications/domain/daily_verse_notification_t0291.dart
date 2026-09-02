@@ -6,6 +6,7 @@ import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
 const int dailyVerseNotificationIdT0291 = 2901;
 const String notificationDeepLinkSchemeT0291 = 'islami-hayat';
 const String notificationQuranDeepLinkHostT0291 = 'quran';
+const int dailyVerseDefaultHourT0291 = 9;
 
 final class LocalNotificationRequestT0291 {
   const LocalNotificationRequestT0291({
@@ -102,8 +103,9 @@ final class DailyVerseNotificationCoordinatorT0291 {
     required DateTime civilDate,
     required DateTime scheduledAt,
     required String languageCode,
+    NotificationPreferences? preferencesOverride,
   }) async {
-    final preferences = await _preferencesStore.load();
+    final preferences = preferencesOverride ?? await _preferencesStore.load();
     if (!preferences.dailyVerse) {
       await _scheduler.cancel(dailyVerseNotificationIdT0291);
       return;
@@ -173,6 +175,62 @@ final class DailyVerseNotificationCoordinatorT0291 {
             body: 'Bugünün ayetini doğrulanmış Kur’an kaynağından aç: $sourceLabel',
           ),
       };
+}
+
+/// Production scheduling policy for the daily-verse reminder.
+///
+/// The reminder uses a stable local 09:00 default. Enabling it before 09:00
+/// schedules the current civil day's verified verse; enabling it at/after
+/// 09:00 schedules the next civil day's verse so no stale/past notification is
+/// submitted to Android. A preference override is used during an explicit UI
+/// toggle so scheduling reflects the user's new choice before persistence
+/// finishes; if persistence rolls back, the UI emits the previous preference
+/// again and this policy cancels/reschedules accordingly.
+final class DailyVerseNotificationOrchestratorT0291 {
+  const DailyVerseNotificationOrchestratorT0291({
+    required DailyVerseNotificationCoordinatorT0291 coordinator,
+    DateTime Function()? now,
+    this.deliveryHour = dailyVerseDefaultHourT0291,
+  })  : _coordinator = coordinator,
+        _now = now ?? DateTime.now;
+
+  final DailyVerseNotificationCoordinatorT0291 _coordinator;
+  final DateTime Function() _now;
+  final int deliveryHour;
+
+  Future<void> sync({
+    required String languageCode,
+    required NotificationPreferences preferences,
+  }) async {
+    if (deliveryHour < 0 || deliveryHour > 23) {
+      throw StateError('Daily verse delivery hour must be between 0 and 23.');
+    }
+
+    final now = _now();
+    var civilDate = DateTime(now.year, now.month, now.day);
+    var scheduledAt = DateTime(
+      civilDate.year,
+      civilDate.month,
+      civilDate.day,
+      deliveryHour,
+    );
+    if (!scheduledAt.isAfter(now)) {
+      civilDate = civilDate.add(const Duration(days: 1));
+      scheduledAt = DateTime(
+        civilDate.year,
+        civilDate.month,
+        civilDate.day,
+        deliveryHour,
+      );
+    }
+
+    await _coordinator.syncForDate(
+      civilDate: civilDate,
+      scheduledAt: scheduledAt,
+      languageCode: languageCode,
+      preferencesOverride: preferences,
+    );
+  }
 }
 
 final class _DailyVerseNotificationCopy {
