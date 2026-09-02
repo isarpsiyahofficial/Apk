@@ -6,6 +6,7 @@ ACTIVITY="$PACKAGE/.MainActivity"
 APK='build/app/outputs/flutter-apk/app-debug.apk'
 BOOT_RECEIVER='com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver'
 SCHEDULE_RECEIVER='com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver'
+WIDGET_PROVIDER="$PACKAGE.IslamiHayatWidgetProvider"
 
 if [ -n "${MAX_MEMTOTAL_KB:-}" ]; then
   MEMTOTAL_KB="$(adb shell cat /proc/meminfo | awk '/MemTotal:/ {print $2}' | tr -d '\r')"
@@ -22,9 +23,6 @@ fi
 
 adb install -r "$APK"
 
-# T0295 reboot-restore packaging gate. Verify the exact APK that Android installed,
-# not the source manifest and not dumpsys' resolver summary (which does not list
-# receivers without intent filters consistently across Android API levels).
 INSTALLED_APK_PATH="$(adb shell pm path "$PACKAGE" | sed -n 's/^package://p' | head -n 1 | tr -d '\r')"
 if [ -z "$INSTALLED_APK_PATH" ]; then
   echo 'Could not resolve installed base APK path' >&2
@@ -54,6 +52,16 @@ printf '%s\n' "$INSTALLED_MANIFEST" | grep -F 'android.permission.RECEIVE_BOOT_C
 printf '%s\n' "$INSTALLED_MANIFEST" | grep -F "$BOOT_RECEIVER"
 printf '%s\n' "$INSTALLED_MANIFEST" | grep -F "$SCHEDULE_RECEIVER"
 echo 'Notification reboot-restore installed-APK manifest audit PASS'
+
+# T0297 must survive clean-runner generation and manifest merge. Validate the
+# actual installed APK, not only source files.
+printf '%s\n' "$INSTALLED_MANIFEST" | grep -F "$WIDGET_PROVIDER"
+printf '%s\n' "$INSTALLED_MANIFEST" | grep -F 'islami_hayat_widget_info'
+if ! unzip -l /tmp/islami-hayat-installed.apk | grep -F 'res/layout/islami_hayat_widget.xml' >/dev/null; then
+  echo 'T0297 widget layout is missing from installed APK' >&2
+  exit 1
+fi
+echo 'T0297 installed-APK widget manifest/resource audit PASS'
 
 adb shell am force-stop "$PACKAGE"
 adb logcat -c

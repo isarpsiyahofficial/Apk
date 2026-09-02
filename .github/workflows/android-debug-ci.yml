@@ -42,6 +42,9 @@ jobs:
           cp android_hardening/backup_rules.xml android/app/src/main/res/xml/backup_rules.xml
           cp android_hardening/data_extraction_rules.xml android/app/src/main/res/xml/data_extraction_rules.xml
 
+      - name: Materialize Android home widget bridge
+        run: python3 scripts/configure_android_home_widget_t0297.py
+
       - name: Audit Android source security policy
         run: python3 scripts/audit_android_security.py
 
@@ -69,3 +72,15 @@ jobs:
             exit 1
           fi
           echo "Final APK permission audit PASS"
+
+      - name: Verify home widget is packaged
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-debug.apk"
+          BUILD_TOOLS="$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
+          AAPT2="$ANDROID_HOME/build-tools/$BUILD_TOOLS/aapt2"
+          MANIFEST="$($AAPT2 dump xmltree "$APK" AndroidManifest.xml)"
+          printf '%s\n' "$MANIFEST" | grep -F 'IslamiHayatWidgetProvider'
+          printf '%s\n' "$MANIFEST" | grep -F 'islami_hayat_widget_info'
+          echo "T0297 packaged widget audit PASS"
