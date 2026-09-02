@@ -115,11 +115,11 @@ jobs:
           BUILD_TOOLS="$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
           AAPT2="$ANDROID_HOME/build-tools/$BUILD_TOOLS/aapt2"
           MANIFEST="$($AAPT2 dump xmltree --file AndroidManifest.xml "$APK")"
-          ZIP_ENTRIES="$(unzip -Z1 "$APK")"
+          RESOURCES="$($AAPT2 dump resources "$APK")"
           printf '%s\n' "$MANIFEST" | grep -F 'IslamiHayatWidgetProvider'
           printf '%s\n' "$MANIFEST" | grep -F 'android.appwidget.action.APPWIDGET_UPDATE'
-          printf '%s\n' "$ZIP_ENTRIES" | grep -Fx 'res/xml/islami_hayat_widget_info.xml'
-          printf '%s\n' "$ZIP_ENTRIES" | grep -Fx 'res/layout/islami_hayat_widget.xml'
+          printf '%s\n' "$RESOURCES" | grep -F ':xml/islami_hayat_widget_info'
+          printf '%s\n' "$RESOURCES" | grep -F ':layout/islami_hayat_widget'
           echo "T0297 release widget packaging audit PASS"
 
       - name: Verify trusted Quran assets are packaged in release APK
