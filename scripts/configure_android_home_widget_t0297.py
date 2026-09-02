@@ -241,11 +241,16 @@ class WidgetPinSmokeActivity : Activity() {{
         }}
 
         val callbackIntent = Intent(this, WidgetPinSmokeResultReceiver::class.java)
+        // requestPinAppWidget()'s success sender fills EXTRA_APPWIDGET_ID into
+        // this debug-only explicit callback. Keep it one-shot and mutable only
+        // for that documented fill-in; the production widget tap stays immutable.
         val callback = PendingIntent.getBroadcast(
             this,
             29701,
             callbackIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            PendingIntent.FLAG_UPDATE_CURRENT or
+                PendingIntent.FLAG_ONE_SHOT or
+                PendingIntent.FLAG_MUTABLE,
         )
         prefs.edit().putString("status", "requested").commit()
         val accepted = manager.requestPinAppWidget(
