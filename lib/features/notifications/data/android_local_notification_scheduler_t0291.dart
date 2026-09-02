@@ -9,6 +9,28 @@ const String dailyContentChannelNameT0291 = 'Daily religious content';
 const String dailyContentChannelDescriptionT0291 =
     'Optional local reminders explicitly enabled by the user.';
 
+final class NotificationRuntimeT0291 {
+  NotificationRuntimeT0291._()
+      : tapController = NotificationTapControllerT0291() {
+    scheduler = AndroidLocalNotificationSchedulerT0291(
+      onPayload: tapController.emit,
+    );
+  }
+
+  static final NotificationRuntimeT0291 instance = NotificationRuntimeT0291._();
+
+  final NotificationTapControllerT0291 tapController;
+  late final AndroidLocalNotificationSchedulerT0291 scheduler;
+
+  Future<void> initialize() async {
+    await scheduler.initialize();
+    final initialPayload = await scheduler.initialLaunchPayload();
+    if (initialPayload != null) {
+      tapController.emit(initialPayload);
+    }
+  }
+}
+
 final class AndroidLocalNotificationSchedulerT0291
     implements LocalNotificationSchedulerT0291 {
   AndroidLocalNotificationSchedulerT0291({
@@ -24,6 +46,7 @@ final class AndroidLocalNotificationSchedulerT0291
   final void Function(String payload)? _onPayload;
 
   bool _initialized = false;
+  bool _timeZoneInitialized = false;
 
   Future<void> initialize() async {
     if (_initialized) return;
@@ -44,6 +67,19 @@ final class AndroidLocalNotificationSchedulerT0291
       throw StateError('Local notification plugin initialization failed.');
     }
 
+    _initialized = true;
+  }
+
+  Future<String?> initialLaunchPayload() async {
+    await initialize();
+    final details = await _plugin.getNotificationAppLaunchDetails();
+    if (details?.didNotificationLaunchApp != true) return null;
+    final payload = details?.notificationResponse?.payload?.trim();
+    return payload == null || payload.isEmpty ? null : payload;
+  }
+
+  Future<void> _ensureTimeZoneInitialized() async {
+    if (_timeZoneInitialized) return;
     tz_data.initializeTimeZones();
     final timeZoneId = await _timeZoneIdLoader();
     try {
@@ -51,8 +87,7 @@ final class AndroidLocalNotificationSchedulerT0291
     } on ArgumentError {
       throw StateError('Unsupported device timezone: $timeZoneId');
     }
-
-    _initialized = true;
+    _timeZoneInitialized = true;
   }
 
   Future<bool> requestUserPermission() async {
@@ -77,6 +112,7 @@ final class AndroidLocalNotificationSchedulerT0291
         'Notification permission is not granted; scheduling is blocked.',
       );
     }
+    await _ensureTimeZoneInitialized();
 
     final when = tz.TZDateTime.from(request.scheduledAt, tz.local);
     if (!when.isAfter(tz.TZDateTime.now(tz.local))) {
