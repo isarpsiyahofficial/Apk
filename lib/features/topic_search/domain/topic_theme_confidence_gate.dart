@@ -1,3 +1,4 @@
+import '../data/quran_theme_taxonomy.dart';
 import 'topic_theme_scorer.dart';
 
 enum TopicThemeDecisionKind { matchedThemes, clarifyTheme }
@@ -13,6 +14,7 @@ class TopicThemeDecision {
     if (themeIds.isEmpty) {
       throw ArgumentError('Matched theme decision requires at least one theme.');
     }
+    _requireCanonicalUniqueIds(themeIds, 'themeIds');
     return TopicThemeDecision._(
       kind: TopicThemeDecisionKind.matchedThemes,
       themeIds: List<String>.unmodifiable(themeIds),
@@ -23,6 +25,7 @@ class TopicThemeDecision {
   factory TopicThemeDecision.clarifyTheme({
     List<String> candidateThemeIds = const <String>[],
   }) {
+    _requireCanonicalUniqueIds(candidateThemeIds, 'candidateThemeIds');
     return TopicThemeDecision._(
       kind: TopicThemeDecisionKind.clarifyTheme,
       themeIds: const <String>[],
@@ -43,6 +46,18 @@ class TopicThemeDecision {
   final List<String> clarificationCandidateIds;
 
   bool get mayResolveVerses => kind == TopicThemeDecisionKind.matchedThemes;
+
+  static void _requireCanonicalUniqueIds(List<String> ids, String name) {
+    final seen = <String>{};
+    for (final id in ids) {
+      if (QuranThemeTaxonomy.byId(id) == null) {
+        throw ArgumentError.value(id, name, 'must contain canonical theme IDs');
+      }
+      if (!seen.add(id)) {
+        throw ArgumentError.value(id, name, 'must not contain duplicate IDs');
+      }
+    }
+  }
 }
 
 /// Fail-closed confidence policy for topic matching.
@@ -58,18 +73,22 @@ abstract final class TopicThemeConfidenceGate {
     double includedThemeRatio = 0.65,
     int maxClarificationCandidates = 3,
   }) {
-    if (minimumConfidence < 0 || minimumConfidence > 1) {
+    if (!minimumConfidence.isFinite ||
+        minimumConfidence < 0 ||
+        minimumConfidence > 1) {
       throw ArgumentError.value(
         minimumConfidence,
         'minimumConfidence',
-        'must be between 0 and 1',
+        'must be a finite value between 0 and 1',
       );
     }
-    if (includedThemeRatio <= 0 || includedThemeRatio > 1) {
+    if (!includedThemeRatio.isFinite ||
+        includedThemeRatio <= 0 ||
+        includedThemeRatio > 1) {
       throw ArgumentError.value(
         includedThemeRatio,
         'includedThemeRatio',
-        'must be greater than 0 and at most 1',
+        'must be a finite value greater than 0 and at most 1',
       );
     }
     if (maxClarificationCandidates <= 0) {
@@ -81,6 +100,14 @@ abstract final class TopicThemeConfidenceGate {
     }
 
     if (scoring.matches.isEmpty) {
+      return TopicThemeDecision.clarifyTheme();
+    }
+
+    // TopicThemeScorer produces canonical, bounded and deterministically sorted
+    // results. Treat any hand-built/corrupted result that violates that contract
+    // as untrusted. T0158 is a safety boundary: malformed lexical evidence must
+    // never be repaired optimistically into a verse-bearing theme decision.
+    if (!_isTrustedScoringResult(scoring.matches)) {
       return TopicThemeDecision.clarifyTheme();
     }
 
@@ -113,5 +140,38 @@ abstract final class TopicThemeConfidenceGate {
     }
 
     return TopicThemeDecision.matchedThemes(confidentThemes);
+  }
+
+  static bool _isTrustedScoringResult(List<TopicThemeScore> matches) {
+    final ids = <String>{};
+    TopicThemeScore? previous;
+
+    for (final match in matches) {
+      if (QuranThemeTaxonomy.byId(match.themeId) == null ||
+          !ids.add(match.themeId) ||
+          !match.score.isFinite ||
+          match.score <= 0 ||
+          match.score > 1 ||
+          match.exactTokenMatches < 0 ||
+          match.fuzzyTokenMatches < 0 ||
+          match.phraseMatches < 0 ||
+          match.exactTokenMatches +
+                  match.fuzzyTokenMatches +
+                  match.phraseMatches <=
+              0) {
+        return false;
+      }
+
+      if (previous != null) {
+        if (match.score > previous.score) return false;
+        if (match.score == previous.score &&
+            match.themeId.compareTo(previous.themeId) < 0) {
+          return false;
+        }
+      }
+      previous = match;
+    }
+
+    return true;
   }
 }
