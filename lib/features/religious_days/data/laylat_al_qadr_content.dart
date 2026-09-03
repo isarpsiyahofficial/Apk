@@ -22,7 +22,7 @@ final ReligiousDayContent laylatAlQadrResearchContent = ReligiousDayContent(
       _tirmidhi3513,
       _tdvLaylatAlQadr,
     ],
-    lastReviewedAt: DateTime.utc(2026, 8, 29),
+    lastReviewedAt: DateTime.utc(2026, 9, 4),
   ),
   title: _title,
   whatIsIt: const LocalizedReligiousText(
@@ -108,6 +108,7 @@ final ReligiousDayContent laylatAlQadrResearchContent = ReligiousDayContent(
     ),
   ],
   specificWorshipStatus: SpecificWorshipStatus.establishedByStrongSource,
+  reviewedEvidenceKinds: ReligiousDayContent.requiredReviewedEvidenceKinds,
 );
 
 const _title = LocalizedReligiousText(
