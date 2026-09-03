@@ -9,8 +9,12 @@ abstract final class ArabicTopicQueryNormalizer {
     r'[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]',
   );
 
-  static final RegExp _bidiControls = RegExp(
-    r'[\u200E\u200F\u202A-\u202E\u2066-\u2069]',
+  // Android keyboards, browsers and copied RTL text may inject invisible
+  // shaping/direction metadata. None of these code points carries topic-query
+  // meaning, so they are removed rather than allowed to create visually
+  // identical but byte-different search keys.
+  static final RegExp _formatControls = RegExp(
+    r'[\u061C\u200B-\u200F\u202A-\u202E\u2060\u2066-\u2069\uFEFF]',
   );
 
   static final RegExp _punctuation = RegExp(
@@ -36,10 +40,13 @@ abstract final class ArabicTopicQueryNormalizer {
         .replaceAll('آ', 'ا')
         .replaceAll('ٱ', 'ا');
 
-    // Directional formatting marks are presentation metadata, not query
-    // meaning. Removing them avoids invisible RTL/LTR controls creating
-    // different search keys while preserving the user's logical word order.
-    value = value.replaceAll(_bidiControls, '');
+    // Direction, zero-width shaping and BOM controls are presentation metadata,
+    // not query meaning. Deleting them preserves logical token order while
+    // preventing hidden RTL/LTR controls from producing distinct search keys.
+    value = value.replaceAll(_formatControls, '');
+
+    // Punctuation becomes a boundary rather than being deleted so separate
+    // Arabic words can never be accidentally concatenated during matching.
     value = value.replaceAll(_punctuation, ' ');
     value = value.replaceAll(RegExp(r'\s+'), ' ').trim();
 
