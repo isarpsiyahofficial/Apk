@@ -14,12 +14,28 @@ void main() {
       expect(content.record.reviewStatus, ContentReviewStatus.research);
       expect(content.canEnterProductionDataset, isFalse);
 
+      expect(content.hasCompleteRequiredReviewCoverage, isTrue);
+      expect(
+        content.reviewedEvidenceKinds,
+        ReligiousDayContent.requiredReviewedEvidenceKinds,
+      );
       expect(content.sectionsOf(ReligiousDayEvidenceKind.quranBasis), isNotEmpty);
       expect(content.sectionsOf(ReligiousDayEvidenceKind.hadithBasis), isNotEmpty);
       expect(content.sectionsOf(ReligiousDayEvidenceKind.strongReport), hasLength(2));
+      expect(content.sectionsOf(ReligiousDayEvidenceKind.disputedReport), isEmpty);
       expect(content.sectionsOf(ReligiousDayEvidenceKind.tradition), isNotEmpty);
       expect(content.sectionsOf(ReligiousDayEvidenceKind.specificWorship), isNotEmpty);
       expect(content.sectionsOf(ReligiousDayEvidenceKind.generalWorship), isNotEmpty);
+    });
+
+    test('reviewed-but-empty disputed area is not confused with unresearched', () {
+      final content = ramadanResearchContent;
+
+      expect(
+        content.hasReviewedEvidenceKind(ReligiousDayEvidenceKind.disputedReport),
+        isTrue,
+      );
+      expect(content.sectionsOf(ReligiousDayEvidenceKind.disputedReport), isEmpty);
     });
 
     test('Quran basis is pinned to 2:183-185 and Quran source class only', () {
