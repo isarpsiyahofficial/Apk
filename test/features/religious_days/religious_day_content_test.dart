@@ -10,14 +10,15 @@ const _completeText = LocalizedReligiousText(
 
 SourceReference _source(
   String id,
-  ReligiousSourceClass sourceClass,
-) {
+  ReligiousSourceClass sourceClass, {
+  String? locator,
+}) {
   return SourceReference(
     id: id,
     title: 'Source $id',
     sourceClass: sourceClass,
     licenseId: 'license-$id',
-    locator: 'locator-$id',
+    locator: locator ?? 'locator-$id',
   );
 }
 
@@ -25,12 +26,19 @@ ReligiousDayEvidenceSection _section(
   ReligiousDayEvidenceKind kind,
   ReligiousSourceClass sourceClass, {
   CertaintyLevel certainty = CertaintyLevel.explicitSource,
+  String? locator,
 }) {
   return ReligiousDayEvidenceSection(
     kind: kind,
     text: _completeText,
     certainty: certainty,
-    sources: [_source('${kind.name}-source', sourceClass)],
+    sources: [
+      _source(
+        '${kind.name}-source',
+        sourceClass,
+        locator: locator,
+      ),
+    ],
   );
 }
 
@@ -56,6 +64,7 @@ ReligiousContentRecord _record({
 ReligiousDayContent _content({
   ReligiousContentRecord? record,
   List<ReligiousDayEvidenceSection>? evidence,
+  Set<ReligiousDayEvidenceKind>? reviewedEvidenceKinds,
   SpecificWorshipStatus status =
       SpecificWorshipStatus.noSpecificPracticeEstablished,
 }) {
@@ -94,6 +103,8 @@ ReligiousDayContent _content({
             ReligiousSourceClass.quran,
           ),
         ],
+    reviewedEvidenceKinds: reviewedEvidenceKinds ??
+        ReligiousDayContent.requiredReviewedEvidenceKinds,
     specificWorshipStatus: status,
   );
 }
@@ -104,10 +115,81 @@ void main() {
       final content = _content();
 
       expect(content.canEnterProductionDataset, isTrue);
+      expect(content.hasCompleteRequiredReviewCoverage, isTrue);
       expect(
         content.sectionsOf(ReligiousDayEvidenceKind.disputedReport).single.certainty,
         CertaintyLevel.disputed,
       );
+    });
+
+    test('missing required evidence-area review coverage fails closed', () {
+      final reviewed = {
+        ...ReligiousDayContent.requiredReviewedEvidenceKinds,
+      }..remove(ReligiousDayEvidenceKind.hadithBasis);
+      final content = _content(reviewedEvidenceKinds: reviewed);
+
+      expect(content.hasCompleteRequiredReviewCoverage, isFalse);
+      expect(content.canEnterProductionDataset, isFalse);
+    });
+
+    test('reviewed absence is distinct from not researched', () {
+      final content = _content(
+        evidence: [
+          _section(
+            ReligiousDayEvidenceKind.generalWorship,
+            ReligiousSourceClass.quran,
+          ),
+        ],
+      );
+
+      expect(
+        content.hasReviewedEvidenceKind(ReligiousDayEvidenceKind.quranBasis),
+        isTrue,
+      );
+      expect(
+        content.sectionsOf(ReligiousDayEvidenceKind.quranBasis),
+        isEmpty,
+      );
+      expect(content.canEnterProductionDataset, isTrue);
+    });
+
+    test('evidence section without stable source locator is rejected', () {
+      final content = _content(
+        evidence: [
+          ReligiousDayEvidenceSection(
+            kind: ReligiousDayEvidenceKind.generalWorship,
+            text: _completeText,
+            certainty: CertaintyLevel.explicitSource,
+            sources: [
+              SourceReference(
+                id: 'missing-locator',
+                title: 'Source without locator',
+                sourceClass: ReligiousSourceClass.quran,
+                licenseId: 'license-test',
+              ),
+            ],
+          ),
+        ],
+      );
+
+      expect(content.canEnterProductionDataset, isFalse);
+    });
+
+    test('evidence cannot claim a kind that was not reviewed', () {
+      final reviewed = {
+        ...ReligiousDayContent.requiredReviewedEvidenceKinds,
+      }..remove(ReligiousDayEvidenceKind.quranBasis);
+      final content = _content(
+        reviewedEvidenceKinds: reviewed,
+        evidence: [
+          _section(
+            ReligiousDayEvidenceKind.quranBasis,
+            ReligiousSourceClass.quran,
+          ),
+        ],
+      );
+
+      expect(content.canEnterProductionDataset, isFalse);
     });
 
     test('non religious-day governed record is rejected', () {
