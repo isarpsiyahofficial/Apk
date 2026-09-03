@@ -10,6 +10,32 @@ WIDGET_PROVIDER="$PACKAGE.IslamiHayatWidgetProvider"
 WIDGET_PIN_ACTIVITY="$PACKAGE/.WidgetPinSmokeActivity"
 WIDGET_EMPTY_TR="Bugünün widget’ını hazırlamak için İslami Hayat’ı açın."
 
+find_main_activity_record() {
+  # ActivityManager output is not byte-stable across Android/OEM images. Some
+  # hosts print package/.MainActivity while others expand the class name. Keep
+  # the assertion semantic: MainActivity must be present and resumed/visible,
+  # without accepting a mere background process as success.
+  activities="$(adb shell dumpsys activity activities 2>/dev/null | tr -d '\r' || true)"
+  record="$(printf '%s\n' "$activities" | grep -E -m 1 "$PACKAGE/(\.MainActivity|$PACKAGE\.MainActivity)" || true)"
+  if [ -n "$record" ]; then
+    resumed="$(printf '%s\n' "$activities" | grep -E -m 1 "(mResumedActivity|topResumedActivity|ResumedActivity).*${PACKAGE}/(\.MainActivity|${PACKAGE}\.MainActivity)" || true)"
+    if [ -n "$resumed" ]; then
+      printf '%s\n' "$resumed"
+      return 0
+    fi
+  fi
+
+  # WindowManager is an independent foreground signal and also varies in how
+  # it abbreviates component names. Require current focus/focused-app evidence.
+  windows="$(adb shell dumpsys window windows 2>/dev/null | tr -d '\r' || true)"
+  focused="$(printf '%s\n' "$windows" | grep -E -m 1 "(mCurrentFocus|mFocusedApp).*${PACKAGE}/(\.MainActivity|${PACKAGE}\.MainActivity)" || true)"
+  if [ -n "$focused" ]; then
+    printf '%s\n' "$focused"
+    return 0
+  fi
+  return 1
+}
+
 if [ -n "${MAX_MEMTOTAL_KB:-}" ]; then
   MEMTOTAL_KB="$(adb shell cat /proc/meminfo | awk '/MemTotal:/ {print $2}' | tr -d '\r')"
   if [ -z "$MEMTOTAL_KB" ]; then
@@ -292,7 +318,7 @@ if [ "${VERIFY_WIDGET_LAUNCHER_PIN:-0}" = "1" ]; then
   TAP_ACTIVITY=''
   attempt=0
   while [ "$attempt" -lt 20 ]; do
-    TAP_ACTIVITY="$(adb shell dumpsys activity activities | grep -m 1 "$ACTIVITY" || true)"
+    TAP_ACTIVITY="$(find_main_activity_record || true)"
     if [ -n "$TAP_ACTIVITY" ]; then
       break
     fi
@@ -300,8 +326,9 @@ if [ "${VERIFY_WIDGET_LAUNCHER_PIN:-0}" = "1" ]; then
     sleep 1
   done
   if [ -z "$TAP_ACTIVITY" ]; then
-    echo 'T0297 launcher widget tap did not open MainActivity' >&2
+    echo 'T0297 launcher widget tap did not open/resume MainActivity' >&2
     adb shell dumpsys activity activities >&2 || true
+    adb shell dumpsys window windows >&2 || true
     adb logcat -d -t 800 >&2 || true
     exit 1
   fi
@@ -335,7 +362,7 @@ echo "App process running with PID $PID"
 ACTIVITY_FOUND=''
 attempt=0
 while [ "$attempt" -lt 30 ]; do
-  ACTIVITY_FOUND="$(adb shell dumpsys activity activities | grep -m 1 "$ACTIVITY" || true)"
+  ACTIVITY_FOUND="$(find_main_activity_record || true)"
   if [ -n "$ACTIVITY_FOUND" ]; then
     break
   fi
@@ -344,8 +371,9 @@ while [ "$attempt" -lt 30 ]; do
 done
 
 if [ -z "$ACTIVITY_FOUND" ]; then
-  echo 'MainActivity did not become active within 30 seconds' >&2
+  echo 'MainActivity did not become resumed/focused within 30 seconds' >&2
   adb shell dumpsys activity activities >&2 || true
+  adb shell dumpsys window windows >&2 || true
   adb logcat -d -t 800 >&2 || true
   exit 1
 fi
