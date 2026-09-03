@@ -5,6 +5,21 @@ import 'package:islami_hayat/features/topic_search/domain/topic_theme_confidence
 import 'package:islami_hayat/features/topic_search/domain/topic_verse_result_resolver.dart';
 
 void main() {
+  List<QuranThemeReviewEvidence> approvedThemeEvidence(String themeId) {
+    return QuranThemeReviewKind.values
+        .map(
+          (kind) => QuranThemeReviewEvidence(
+            themeId: themeId,
+            taxonomyRevision: QuranThemeTaxonomy.revision,
+            kind: kind,
+            decision: QuranThemeReviewDecision.approved,
+            reviewerId: 'test-${kind.name}',
+            reviewedAtUtc: '2026-09-03T05:30:00Z',
+          ),
+        )
+        .toList(growable: false);
+  }
+
   QuranThemeDefinition approvedTheme(
     String id,
     String tr,
@@ -17,6 +32,7 @@ void main() {
       labelEn: en,
       labelAr: ar,
       reviewStatus: QuranThemeReviewStatus.approved,
+      reviewEvidence: approvedThemeEvidence(id),
     );
   }
 
