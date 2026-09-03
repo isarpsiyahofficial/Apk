@@ -134,9 +134,126 @@ void main() {
       );
     });
 
-    test('matched-theme decision cannot be constructed empty', () {
+    test('non-canonical scoring result fails closed without clarification IDs', () {
+      const scoring = TopicThemeScoringResult(<TopicThemeScore>[
+        TopicThemeScore(
+          themeId: 'invented-theme',
+          score: 0.90,
+          exactTokenMatches: 1,
+          fuzzyTokenMatches: 0,
+          phraseMatches: 0,
+        ),
+      ]);
+
+      final decision = TopicThemeConfidenceGate.decide(scoring);
+
+      expect(decision.kind, TopicThemeDecisionKind.clarifyTheme);
+      expect(decision.mayResolveVerses, isFalse);
+      expect(decision.themeIds, isEmpty);
+      expect(decision.clarificationCandidateIds, isEmpty);
+    });
+
+    test('NaN or infinite scores fail closed instead of becoming confident', () {
+      for (final invalidScore in <double>[double.nan, double.infinity]) {
+        final scoring = TopicThemeScoringResult(<TopicThemeScore>[
+          TopicThemeScore(
+            themeId: 'anxiety',
+            score: invalidScore,
+            exactTokenMatches: 1,
+            fuzzyTokenMatches: 0,
+            phraseMatches: 0,
+          ),
+        ]);
+
+        final decision = TopicThemeConfidenceGate.decide(scoring);
+
+        expect(decision.kind, TopicThemeDecisionKind.clarifyTheme);
+        expect(decision.mayResolveVerses, isFalse);
+        expect(decision.clarificationCandidateIds, isEmpty);
+      }
+    });
+
+    test('positive score without lexical evidence fails closed', () {
+      const scoring = TopicThemeScoringResult(<TopicThemeScore>[
+        TopicThemeScore(
+          themeId: 'anxiety',
+          score: 0.90,
+          exactTokenMatches: 0,
+          fuzzyTokenMatches: 0,
+          phraseMatches: 0,
+        ),
+      ]);
+
+      final decision = TopicThemeConfidenceGate.decide(scoring);
+
+      expect(decision.kind, TopicThemeDecisionKind.clarifyTheme);
+      expect(decision.mayResolveVerses, isFalse);
+      expect(decision.clarificationCandidateIds, isEmpty);
+    });
+
+    test('duplicate or unsorted scoring results fail closed', () {
+      const duplicate = TopicThemeScoringResult(<TopicThemeScore>[
+        TopicThemeScore(
+          themeId: 'anxiety',
+          score: 0.70,
+          exactTokenMatches: 1,
+          fuzzyTokenMatches: 0,
+          phraseMatches: 0,
+        ),
+        TopicThemeScore(
+          themeId: 'anxiety',
+          score: 0.60,
+          exactTokenMatches: 1,
+          fuzzyTokenMatches: 0,
+          phraseMatches: 0,
+        ),
+      ]);
+      const unsorted = TopicThemeScoringResult(<TopicThemeScore>[
+        TopicThemeScore(
+          themeId: 'fear',
+          score: 0.40,
+          exactTokenMatches: 1,
+          fuzzyTokenMatches: 0,
+          phraseMatches: 0,
+        ),
+        TopicThemeScore(
+          themeId: 'anxiety',
+          score: 0.70,
+          exactTokenMatches: 1,
+          fuzzyTokenMatches: 0,
+          phraseMatches: 0,
+        ),
+      ]);
+
+      for (final scoring in <TopicThemeScoringResult>[duplicate, unsorted]) {
+        final decision = TopicThemeConfidenceGate.decide(scoring);
+        expect(decision.kind, TopicThemeDecisionKind.clarifyTheme);
+        expect(decision.mayResolveVerses, isFalse);
+        expect(decision.clarificationCandidateIds, isEmpty);
+      }
+    });
+
+    test('matched and clarification decisions enforce canonical unique IDs', () {
       expect(
         () => TopicThemeDecision.matchedThemes(const <String>[]),
+        throwsArgumentError,
+      );
+      expect(
+        () => TopicThemeDecision.matchedThemes(
+          const <String>['invented-theme'],
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => TopicThemeDecision.matchedThemes(
+          const <String>['anxiety', 'anxiety'],
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => TopicThemeDecision.clarifyTheme(
+          candidateThemeIds: const <String>['invented-theme'],
+        ),
         throwsArgumentError,
       );
     });
@@ -154,7 +271,21 @@ void main() {
       expect(
         () => TopicThemeConfidenceGate.decide(
           scoring,
+          minimumConfidence: double.nan,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => TopicThemeConfidenceGate.decide(
+          scoring,
           includedThemeRatio: 0,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => TopicThemeConfidenceGate.decide(
+          scoring,
+          includedThemeRatio: double.infinity,
         ),
         throwsArgumentError,
       );
