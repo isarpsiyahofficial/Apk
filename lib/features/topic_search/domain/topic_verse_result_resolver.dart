@@ -150,14 +150,18 @@ final class TopicVerseResultResolver {
       TopicResultLocale.en => labels.join(' and '),
       TopicResultLocale.ar => labels.join(' و '),
     };
+    final isSingleTheme = labels.length == 1;
 
     return switch (locale) {
-      TopicResultLocale.tr =>
-        'Bu neden gösterildi? Sorunda $joined temaları tespit edildi.',
-      TopicResultLocale.en =>
-        'Why was this shown? Your query matched the $joined themes.',
-      TopicResultLocale.ar =>
-        'لماذا ظهر هذا؟ تم رصد موضوعات $joined في سؤالك.',
+      TopicResultLocale.tr => isSingleTheme
+          ? 'Bu neden gösterildi? Sorunda $joined teması tespit edildi.'
+          : 'Bu neden gösterildi? Sorunda $joined temaları tespit edildi.',
+      TopicResultLocale.en => isSingleTheme
+          ? 'Why was this shown? Your query matched the $joined theme.'
+          : 'Why was this shown? Your query matched the $joined themes.',
+      TopicResultLocale.ar => isSingleTheme
+          ? 'لماذا ظهر هذا؟ تم رصد موضوع $joined في سؤالك.'
+          : 'لماذا ظهر هذا؟ تم رصد موضوعات $joined في سؤالك.',
     };
   }
 }
