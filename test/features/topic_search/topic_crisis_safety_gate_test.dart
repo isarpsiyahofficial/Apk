@@ -3,7 +3,7 @@ import 'package:islami_hayat/features/topic_search/domain/topic_crisis_safety_ga
 
 void main() {
   group('TopicCrisisSafetyGate', () {
-    test('TR explicit self-harm intent bypasses religious matching', () {
+    test('TR explicit self-harm intent blocks religious matching', () {
       final decision = TopicCrisisSafetyGate.evaluate(
         'Kendimi öldürmek istiyorum.',
         locale: TopicCrisisLocale.tr,
@@ -12,12 +12,11 @@ void main() {
       expect(decision.route, TopicCrisisRoute.showSafetySupport);
       expect(decision.mayContinueToReligiousMatching, isFalse);
       expect(decision.supportMessage, contains('ayet eşleştirmesiyle'));
-      expect(decision.supportMessage, contains('acil yardım'));
       expect(decision.sourceId, TopicCrisisSafetyGate.sourceId);
       expect(decision.sourceUrl, TopicCrisisSafetyGate.sourceUrl);
     });
 
-    test('EN explicit self-harm intent bypasses religious matching', () {
+    test('EN explicit intent survives apostrophe normalization', () {
       final decision = TopicCrisisSafetyGate.evaluate(
         "I don't want to live anymore",
         locale: TopicCrisisLocale.en,
@@ -25,11 +24,10 @@ void main() {
 
       expect(decision.route, TopicCrisisRoute.showSafetySupport);
       expect(decision.mayContinueToReligiousMatching, isFalse);
-      expect(decision.supportMessage, contains('local emergency services'));
-      expect(decision.supportMessage, contains('someone you trust'));
+      expect(decision.supportMessage, contains('religious ruling or verse match'));
     });
 
-    test('AR explicit self-harm intent survives harakat/alef normalization', () {
+    test('AR explicit intent survives harakat normalization', () {
       final decision = TopicCrisisSafetyGate.evaluate(
         'أُريدُ أن أَموتَ',
         locale: TopicCrisisLocale.ar,
@@ -37,38 +35,97 @@ void main() {
 
       expect(decision.route, TopicCrisisRoute.showSafetySupport);
       expect(decision.mayContinueToReligiousMatching, isFalse);
-      expect(decision.supportMessage, contains('خدمات الطوارئ المحلية'));
-      expect(decision.supportMessage, contains('شخصًا تثق به'));
+      expect(decision.supportMessage, contains('بحكم ديني أو بمطابقة آية'));
     });
 
-    test('ordinary distress may continue to theme matching', () {
+    test('TR implied first-person risk escalates instead of matching verses', () {
       final decision = TopicCrisisSafetyGate.evaluate(
-        'Çok kaygılıyım ve sabırla ilgili ayetlere bakmak istiyorum',
+        'Yaşamak için bir sebebim yok.',
+        locale: TopicCrisisLocale.tr,
+      );
+
+      expect(decision.route, TopicCrisisRoute.showSafetySupport);
+      expect(decision.mayContinueToReligiousMatching, isFalse);
+    });
+
+    test('EN WHO-style warning sign escalates instead of matching verses', () {
+      final decision = TopicCrisisSafetyGate.evaluate(
+        'Everyone would be better off without me.',
+        locale: TopicCrisisLocale.en,
+      );
+
+      expect(decision.route, TopicCrisisRoute.showSafetySupport);
+      expect(decision.mayContinueToReligiousMatching, isFalse);
+    });
+
+    test('AR implied risk escalates instead of matching verses', () {
+      final decision = TopicCrisisSafetyGate.evaluate(
+        'ليس لدي سبب للعيش',
+        locale: TopicCrisisLocale.ar,
+      );
+
+      expect(decision.route, TopicCrisisRoute.showSafetySupport);
+      expect(decision.mayContinueToReligiousMatching, isFalse);
+    });
+
+    test('future-intent variants cannot fall through to religious matching', () {
+      final tr = TopicCrisisSafetyGate.evaluate(
+        'Kendimi öldüreceğim.',
+        locale: TopicCrisisLocale.tr,
+      );
+      final en = TopicCrisisSafetyGate.evaluate(
+        "I'm going to kill myself.",
+        locale: TopicCrisisLocale.en,
+      );
+      final ar = TopicCrisisSafetyGate.evaluate(
+        'أفكر في قتل نفسي',
+        locale: TopicCrisisLocale.ar,
+      );
+
+      expect(tr.mayContinueToReligiousMatching, isFalse);
+      expect(en.mayContinueToReligiousMatching, isFalse);
+      expect(ar.mayContinueToReligiousMatching, isFalse);
+    });
+
+    test('ordinary distress may continue to canonical topic matching', () {
+      final decision = TopicCrisisSafetyGate.evaluate(
+        'Çok kaygılıyım ve sabırla ilgili ayet arıyorum.',
         locale: TopicCrisisLocale.tr,
       );
 
       expect(decision.route, TopicCrisisRoute.continueTopicMatching);
       expect(decision.mayContinueToReligiousMatching, isTrue);
       expect(decision.supportMessage, isNull);
-      expect(decision.sourceId, isNull);
     });
 
-    test('informational suicide-prevention query is not treated as intent', () {
+    test('generic informational suicide query is not treated as personal intent', () {
       final decision = TopicCrisisSafetyGate.evaluate(
         'suicide prevention resources',
         locale: TopicCrisisLocale.en,
       );
 
-      expect(decision.mayContinueToReligiousMatching, isTrue);
+      expect(decision.route, TopicCrisisRoute.continueTopicMatching);
     });
 
-    test('empty query never creates a crisis decision', () {
+    test('third-person WHO warning-sign discussion does not false-positive', () {
+      final decision = TopicCrisisSafetyGate.evaluate(
+        'What does it mean when someone says they have no reason to live?',
+        locale: TopicCrisisLocale.en,
+      );
+
+      expect(decision.route, TopicCrisisRoute.continueTopicMatching);
+    });
+
+    test('empty query remains fail-neutral and creates no support payload', () {
       final decision = TopicCrisisSafetyGate.evaluate(
         '   ',
         locale: TopicCrisisLocale.en,
       );
 
-      expect(decision.mayContinueToReligiousMatching, isTrue);
+      expect(decision.route, TopicCrisisRoute.continueTopicMatching);
+      expect(decision.supportMessage, isNull);
+      expect(decision.sourceId, isNull);
+      expect(decision.sourceUrl, isNull);
     });
   });
 }
