@@ -33,7 +33,8 @@ class ReligiousDayEvidenceSection {
   bool get hasCompleteSourceMetadata => sources.isNotEmpty && sources.every((source) {
         return source.id.trim().isNotEmpty &&
             source.title.trim().isNotEmpty &&
-            source.licenseId.trim().isNotEmpty;
+            source.licenseId.trim().isNotEmpty &&
+            (source.locator?.trim().isNotEmpty ?? false);
       });
 }
 
@@ -45,7 +46,18 @@ class ReligiousDayContent {
     required this.history,
     required this.evidence,
     required this.specificWorshipStatus,
+    this.reviewedEvidenceKinds = const {},
   });
+
+  static const Set<ReligiousDayEvidenceKind> requiredReviewedEvidenceKinds = {
+    ReligiousDayEvidenceKind.quranBasis,
+    ReligiousDayEvidenceKind.hadithBasis,
+    ReligiousDayEvidenceKind.strongReport,
+    ReligiousDayEvidenceKind.disputedReport,
+    ReligiousDayEvidenceKind.tradition,
+    ReligiousDayEvidenceKind.specificWorship,
+    ReligiousDayEvidenceKind.generalWorship,
+  };
 
   final ReligiousContentRecord record;
   final LocalizedReligiousText title;
@@ -54,9 +66,23 @@ class ReligiousDayContent {
   final List<ReligiousDayEvidenceSection> evidence;
   final SpecificWorshipStatus specificWorshipStatus;
 
+  /// Records which required SPEC 306 evidence areas were deliberately reviewed.
+  ///
+  /// A reviewed area may legitimately have no evidence section (for example,
+  /// no Quran-specific basis or no established day-specific worship). Keeping
+  /// review coverage separate from evidence prevents "not researched" from
+  /// being silently treated as "none exists".
+  final Set<ReligiousDayEvidenceKind> reviewedEvidenceKinds;
+
   Iterable<ReligiousDayEvidenceSection> sectionsOf(
     ReligiousDayEvidenceKind kind,
   ) => evidence.where((section) => section.kind == kind);
+
+  bool hasReviewedEvidenceKind(ReligiousDayEvidenceKind kind) =>
+      reviewedEvidenceKinds.contains(kind);
+
+  bool get hasCompleteRequiredReviewCoverage =>
+      reviewedEvidenceKinds.containsAll(requiredReviewedEvidenceKinds);
 
   bool get canEnterProductionDataset {
     if (record.type != ContentType.religiousDay ||
@@ -65,12 +91,17 @@ class ReligiousDayContent {
         !title.isComplete ||
         !whatIsIt.isComplete ||
         !history.isComplete ||
-        evidence.isEmpty) {
+        evidence.isEmpty ||
+        !hasCompleteRequiredReviewCoverage) {
       return false;
     }
 
     if (evidence.any((section) =>
         !section.text.isComplete || !section.hasCompleteSourceMetadata)) {
+      return false;
+    }
+
+    if (evidence.any((section) => !hasReviewedEvidenceKind(section.kind))) {
       return false;
     }
 
