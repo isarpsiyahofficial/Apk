@@ -38,6 +38,7 @@ final class DhikrIntentionSuggestion {
     required this.rationale,
     required this.reviewStatus,
     required this.version,
+    this.sourceReferences = const <SourceReference>[],
   }) {
     if (id.trim().isEmpty ||
         divineNameId.trim().isEmpty ||
@@ -54,6 +55,29 @@ final class DhikrIntentionSuggestion {
   final LocalizedReligiousText rationale;
   final ContentReviewStatus reviewStatus;
   final int version;
+  final List<SourceReference> sourceReferences;
+
+  bool get hasValidBasisEvidence {
+    if (basis == DhikrIntentionBasis.divineNameMeaning) {
+      // The linked DivineNameEntry carries its own governed source chain.
+      // Explicit extra references are allowed, but are not required here.
+      return sourceReferences.every(_isCompleteReference);
+    }
+
+    if (sourceReferences.isEmpty ||
+        !sourceReferences.every(_isCompleteReference)) {
+      return false;
+    }
+
+    final requiredClass = switch (basis) {
+      DhikrIntentionBasis.quran => ReligiousSourceClass.quran,
+      DhikrIntentionBasis.sahihHasanHadith =>
+        ReligiousSourceClass.sahihHasanHadith,
+      DhikrIntentionBasis.meaningBasedDua => ReligiousSourceClass.meaningBasedDua,
+      DhikrIntentionBasis.divineNameMeaning => throw StateError('unreachable'),
+    };
+    return sourceReferences.any((source) => source.sourceClass == requiredClass);
+  }
 
   bool get canEnterProductionDataset =>
       reviewStatus == ContentReviewStatus.published &&
@@ -61,7 +85,14 @@ final class DhikrIntentionSuggestion {
       divineNameId.trim().isNotEmpty &&
       rationale.isComplete &&
       version > 0 &&
+      hasValidBasisEvidence &&
       DhikrOutcomeClaimPolicy.allows(rationale);
+
+  static bool _isCompleteReference(SourceReference source) =>
+      source.id.trim().isNotEmpty &&
+      source.title.trim().isNotEmpty &&
+      source.licenseId.trim().isNotEmpty &&
+      source.sourceClass != ReligiousSourceClass.unknown;
 }
 
 const dhikrIntentionCategories = <DhikrIntentionCategory>[
