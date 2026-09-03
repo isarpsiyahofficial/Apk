@@ -181,7 +181,20 @@ class IslamiHayatWidgetProvider : AppWidgetProvider() {{
                     launchIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                 )
+
+                // RemoteViews hosts do not all dispatch a child tap through a
+                // PendingIntent attached only to an ancestor layout in exactly
+                // the same way. Bind the same immutable, explicit app-open
+                // PendingIntent to every visible user-facing surface. This keeps
+                // the whole widget tappable on Launcher3, OEM launchers and
+                // emulator/BlueStacks-like hosts without changing the target.
                 views.setOnClickPendingIntent(R.id.widget_root, pending)
+                views.setOnClickPendingIntent(R.id.widget_empty, pending)
+                views.setOnClickPendingIntent(R.id.widget_content, pending)
+                views.setOnClickPendingIntent(R.id.widget_verse_arabic, pending)
+                views.setOnClickPendingIntent(R.id.widget_verse_translation, pending)
+                views.setOnClickPendingIntent(R.id.widget_dua, pending)
+                views.setOnClickPendingIntent(R.id.widget_pro_mark, pending)
                 manager.updateAppWidget(id, views)
             }}
         }}
