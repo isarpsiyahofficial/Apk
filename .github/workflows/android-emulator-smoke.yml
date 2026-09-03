@@ -58,7 +58,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Install, pin widget, render, tap and launch on current Android emulator
+      - name: Install, verify platform behavior, then pin/render/tap widget on Android 35
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -66,7 +66,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: VERIFY_WIDGET_LAUNCHER_PIN=1 sh scripts/android_emulator_smoke.sh
+          script: sh scripts/android_emulator_smoke.sh && sh scripts/android_widget_launcher_smoke_t0297.sh
 
   low-memory-emulator-smoke:
     runs-on: ubuntu-latest
