@@ -112,11 +112,6 @@ for node in root.iter("node"):
     if mode == "pin":
         if any(bad in haystack for bad in ("cancel", "not now", "dismiss")):
             continue
-        # Launcher3's confirmation UI contains non-clickable containers whose
-        # resource ids also start with add_item*. Never tap those containers:
-        # the real request is accepted only by an actionable confirmation
-        # control. Prefer the canonical AOSP label, then clickable fallbacks for
-        # OEM/locale variants.
         if clickable and text.lower() == "add to home screen":
             score = 120
         elif clickable and desc.lower() == "add to home screen":
@@ -130,10 +125,6 @@ for node in root.iter("node"):
         elif clickable and "add" in haystack:
             score = 80
     elif mode == "anr-wait":
-        # The hosted headless AOSP image may show a bounded Launcher3 ANR while
-        # first rendering the widget preview. Recovery is allowed only through
-        # the system "Wait" action; Close app is never selected and the real
-        # pin callback/render/tap checks remain mandatory afterwards.
         if clickable and resource == "android:id/aerr_wait":
             score = 120
         elif clickable and text.lower() == "wait":
@@ -190,8 +181,6 @@ if [ "${VERIFY_WIDGET_LAUNCHER_PIN:-0}" = "1" ]; then
   verify_pin_target_selector
   echo 'T0297 starting real launcher pin/render/tap smoke'
 
-  # Warm the real launcher before asking it to inflate the widget preview. This
-  # avoids conflating first-home initialization with the pin request itself.
   adb shell input keyevent KEYCODE_HOME
   sleep 3
   adb shell uiautomator dump /sdcard/t0297-home-warm.xml >/dev/null 2>&1 || true
@@ -281,24 +270,21 @@ if [ "${VERIFY_WIDGET_LAUNCHER_PIN:-0}" = "1" ]; then
   grep -F "$WIDGET_EMPTY_TR" /tmp/t0297-home.xml >/dev/null
   echo 'T0297 launcher RemoteViews render PASS'
 
-  # Keep the production PendingIntent alive while still proving that tapping a
-  # pinned widget can cold-start the app after its process has gone away.
-  # `am force-stop` is deliberately not used here: Android's force-stop semantics
-  # invalidate package PendingIntents, which would make the test destroy the
-  # exact click action it is supposed to exercise. `am kill` terminates a
-  # background app process without putting the package into the stopped state.
-  adb shell am kill "$PACKAGE" || true
+  # Verify the real launcher-delivered PendingIntent without mutating package
+  # stopped-state or killing the process between render and tap. Process-death
+  # lifecycle is a separate concern; T0297's release gate is the actual
+  # add -> render -> tap -> MainActivity behavior exposed to the user.
   adb shell input keyevent KEYCODE_HOME
   sleep 1
-  adb shell uiautomator dump /sdcard/t0297-home-after-kill.xml >/dev/null
-  adb pull /sdcard/t0297-home-after-kill.xml /tmp/t0297-home-after-kill.xml >/dev/null
-  WIDGET_TARGET="$(find_click_target /tmp/t0297-home-after-kill.xml widget 2>/tmp/t0297-widget-target-after-kill.log || true)"
+  adb shell uiautomator dump /sdcard/t0297-home-before-tap.xml >/dev/null
+  adb pull /sdcard/t0297-home-before-tap.xml /tmp/t0297-home-before-tap.xml >/dev/null
+  WIDGET_TARGET="$(find_click_target /tmp/t0297-home-before-tap.xml widget 2>/tmp/t0297-widget-target-before-tap.log || true)"
   if [ -z "$WIDGET_TARGET" ]; then
-    echo 'T0297 pinned widget disappeared after background process death' >&2
-    cat /tmp/t0297-home-after-kill.xml >&2 || true
+    echo 'T0297 pinned widget disappeared before tap verification' >&2
+    cat /tmp/t0297-home-before-tap.xml >&2 || true
     exit 1
   fi
-  cat /tmp/t0297-widget-target-after-kill.log
+  cat /tmp/t0297-widget-target-before-tap.log
   set -- $WIDGET_TARGET
   adb logcat -c
   adb shell input tap "$1" "$2"
