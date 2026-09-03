@@ -17,10 +17,29 @@ void main() {
       );
     });
 
+    test('precomposed and decomposed dotted-I spellings converge', () {
+      const decomposed = 'I\u0307çim daralıyor';
+      expect(
+        TurkishTopicQueryNormalizer.normalize(decomposed),
+        TurkishTopicQueryNormalizer.normalize('İçim daralıyor'),
+      );
+      expect(
+        TurkishTopicQueryNormalizer.normalize(decomposed),
+        'icim daraliyor',
+      );
+    });
+
     test('expands common spoken Turkish forms required by the spec', () {
       expect(
-        TurkishTopicQueryNormalizer.normalize('napcam napiyim nolur'),
-        'ne yapacagim ne yapayim ne olur',
+        TurkishTopicQueryNormalizer.normalize('napcam napicam napiyim nolur'),
+        'ne yapacagim ne yapacagim ne yapayim ne olur',
+      );
+    });
+
+    test('normalizes conservative colloquial one-word forms', () {
+      expect(
+        TurkishTopicQueryNormalizer.normalize('bişey hiçbişey hiçbişeyim'),
+        'bir sey hicbir sey hicbir seyim',
       );
     });
 
@@ -28,6 +47,13 @@ void main() {
       expect(
         TurkishTopicQueryNormalizer.normalize('borç...   aile / kaygı'),
         'borc aile kaygi',
+      );
+    });
+
+    test('apostrophes remain word boundaries instead of joining tokens', () {
+      expect(
+        TurkishTopicQueryNormalizer.normalize("Kur'an'da sabır"),
+        'kur an da sabir',
       );
     });
 
