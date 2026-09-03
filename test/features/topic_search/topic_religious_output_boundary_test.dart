@@ -50,5 +50,39 @@ void main() {
         throwsArgumentError,
       );
     });
+
+    test('algorithm payload itself rejects generated advice disguised as an ID', () {
+      expect(
+        () => TopicAlgorithmThemeSelection.matched(
+          const ['patience', 'quit-your-job-because-this-verse-says-so'],
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('algorithm payload itself rejects duplicate canonical IDs', () {
+      expect(
+        () => TopicAlgorithmThemeSelection.matched(
+          const ['patience', 'patience'],
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('algorithm payload cannot create an empty resolving selection', () {
+      expect(
+        () => TopicAlgorithmThemeSelection.matched(const <String>[]),
+        throwsArgumentError,
+      );
+    });
+
+    test('direct clarification payload rejects non-canonical decision text', () {
+      expect(
+        () => TopicAlgorithmThemeSelection.clarify(
+          candidateThemeIds: const ['hope', 'this-is-a-fatwa'],
+        ),
+        throwsArgumentError,
+      );
+    });
   });
 }
