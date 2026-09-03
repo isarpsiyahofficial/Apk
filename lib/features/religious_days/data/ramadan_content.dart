@@ -22,7 +22,7 @@ final ReligiousDayContent ramadanResearchContent = ReligiousDayContent(
       _bukhari1957,
       _tdvRamazan,
     ],
-    lastReviewedAt: DateTime.utc(2026, 8, 29),
+    lastReviewedAt: DateTime.utc(2026, 9, 4),
   ),
   title: _title,
   whatIsIt: const LocalizedReligiousText(
@@ -107,6 +107,7 @@ final ReligiousDayContent ramadanResearchContent = ReligiousDayContent(
       sources: [_quranRamadan, _bukhari38],
     ),
   ],
+  reviewedEvidenceKinds: ReligiousDayContent.requiredReviewedEvidenceKinds,
   specificWorshipStatus: SpecificWorshipStatus.establishedByStrongSource,
 );
 
