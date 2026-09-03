@@ -56,13 +56,34 @@ void main() {
   });
 
   group('TopicVerseResultResolver health integration', () {
-    QuranThemeDefinition approvedTheme(String id) {
+    List<QuranThemeReviewEvidence> approvedThemeEvidence(String themeId) {
+      return QuranThemeReviewKind.values
+          .map(
+            (kind) => QuranThemeReviewEvidence(
+              themeId: themeId,
+              taxonomyRevision: QuranThemeTaxonomy.revision,
+              kind: kind,
+              decision: QuranThemeReviewDecision.approved,
+              reviewerId: 'health-test-${kind.name}',
+              reviewedAtUtc: '2026-09-03T05:30:00Z',
+            ),
+          )
+          .toList(growable: false);
+    }
+
+    QuranThemeDefinition approvedTheme(
+      String id, {
+      String tr = 'Hastalıkta manevi destek',
+      String en = 'Spiritual support during illness',
+      String ar = 'الدعم الروحي عند المرض',
+    }) {
       return QuranThemeDefinition(
         id: id,
-        labelTr: 'Hastalıkta manevi destek',
-        labelEn: 'Spiritual support during illness',
-        labelAr: 'الدعم الروحي عند المرض',
+        labelTr: tr,
+        labelEn: en,
+        labelAr: ar,
         reviewStatus: QuranThemeReviewStatus.approved,
+        reviewEvidence: approvedThemeEvidence(id),
       );
     }
 
@@ -106,12 +127,11 @@ void main() {
       final resolver = TopicVerseResultResolver(
         themes: [
           approvedTheme(illness),
-          const QuranThemeDefinition(
-            id: patience,
-            labelTr: 'Sabır',
-            labelEn: 'Patience',
-            labelAr: 'الصبر',
-            reviewStatus: QuranThemeReviewStatus.approved,
+          approvedTheme(
+            patience,
+            tr: 'Sabır',
+            en: 'Patience',
+            ar: 'الصبر',
           ),
         ],
         mappings: [
