@@ -1,17 +1,21 @@
 import 'dart:collection';
 
+import 'package:islami_hayat/features/dhikr/data/divine_name_dataset_review.dart';
 import 'package:islami_hayat/features/dhikr/data/divine_name_entry.dart';
 
 /// Fail-closed production boundary for Esmâü'l-Hüsnâ guide records.
 ///
 /// A partially reviewed collection must never degrade into a partially visible
-/// production guide. Every record must independently satisfy the source,
-/// localization and religious-review contract in [DivineNameEntry].
+/// production guide. Every record must pass source/content governance and the
+/// exact-version religious + native TR/EN/AR review gate before it is exposed.
 final class DivineNameRepository {
-  DivineNameRepository({required Iterable<DivineNameEntry> entries})
-      : _entries = List<DivineNameEntry>.unmodifiable(entries) {
-    _validateProductionDataset();
-  }
+  DivineNameRepository({
+    required Iterable<DivineNameEntry> entries,
+    required Iterable<DivineNameDatasetReviewEvidence> reviewEvidence,
+  }) : _entries = const DivineNameDatasetReviewGate().approve(
+          records: entries,
+          evidence: reviewEvidence,
+        );
 
   final List<DivineNameEntry> _entries;
 
@@ -25,24 +29,5 @@ final class DivineNameRepository {
       if (entry.id == normalized) return entry;
     }
     return null;
-  }
-
-  void _validateProductionDataset() {
-    if (_entries.isEmpty) {
-      throw StateError('Production Esma dataset cannot be empty.');
-    }
-
-    final seenIds = <String>{};
-    for (final entry in _entries) {
-      if (!entry.canEnterProductionDataset) {
-        throw StateError(
-          'Unreviewed or weakly sourced Esma entry in production dataset: '
-          '${entry.id}',
-        );
-      }
-      if (!seenIds.add(entry.id)) {
-        throw StateError('Duplicate Esma entry id in production dataset: ${entry.id}');
-      }
-    }
   }
 }
