@@ -15,6 +15,10 @@ final class TopicAlgorithmThemeSelection {
   });
 
   factory TopicAlgorithmThemeSelection.matched(List<String> themeIds) {
+    if (themeIds.isEmpty) {
+      throw ArgumentError('Matched selection requires at least one theme ID.');
+    }
+    _requireCanonicalUniqueIds(themeIds, 'themeIds');
     return TopicAlgorithmThemeSelection._(
       kind: TopicThemeDecisionKind.matchedThemes,
       themeIds: List<String>.unmodifiable(themeIds),
@@ -25,6 +29,7 @@ final class TopicAlgorithmThemeSelection {
   factory TopicAlgorithmThemeSelection.clarify({
     List<String> candidateThemeIds = const <String>[],
   }) {
+    _requireCanonicalUniqueIds(candidateThemeIds, 'candidateThemeIds');
     return TopicAlgorithmThemeSelection._(
       kind: TopicThemeDecisionKind.clarifyTheme,
       themeIds: const <String>[],
@@ -39,6 +44,18 @@ final class TopicAlgorithmThemeSelection {
 
   bool get mayResolveReviewedVerses =>
       kind == TopicThemeDecisionKind.matchedThemes && themeIds.isNotEmpty;
+
+  static void _requireCanonicalUniqueIds(List<String> ids, String name) {
+    final seen = <String>{};
+    for (final id in ids) {
+      if (QuranThemeTaxonomy.byId(id) == null) {
+        throw ArgumentError.value(id, name, 'must contain canonical theme IDs');
+      }
+      if (!seen.add(id)) {
+        throw ArgumentError.value(id, name, 'must not contain duplicate IDs');
+      }
+    }
+  }
 }
 
 /// Fail-closed product boundary for SPEC 216–218 and 225.
