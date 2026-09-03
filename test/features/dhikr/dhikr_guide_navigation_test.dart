@@ -108,7 +108,7 @@ Widget _app({required Locale locale, required List<DhikrGuideEntry> entries, dou
 }
 
 void main() {
-  testWidgets('strong-source count is labelled and loaded into counter', (tester) async {
+  testWidgets('strong-source count is labelled and loaded into working counter', (tester) async {
     await tester.pumpWidget(_app(locale: const Locale('tr'), entries: [_entry()]));
     await tester.pumpAndSettle();
     expect(find.textContaining('Sahih-Hasen Sünnet kaynaklı sayı: 33'), findsOneWidget);
@@ -116,6 +116,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('guided-dhikr-source-target')), findsOneWidget);
     expect(find.byKey(const ValueKey('dhikr-counter-tap-area')), findsOneWidget);
+
+    final counterValue = find.byKey(const ValueKey('dhikr-counter-value'));
+    expect(tester.widget<Text>(counterValue).data, '0');
+    await tester.tap(find.byKey(const ValueKey('dhikr-counter-tap-area')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(counterValue).data, '1');
   });
 
   testWidgets('traditional count is labelled and never becomes automatic target', (tester) async {
