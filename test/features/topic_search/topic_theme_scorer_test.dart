@@ -73,6 +73,30 @@ void main() {
       expect(result.strongest, isNull);
     });
 
+    test('zero score floor still rejects themes with no lexical evidence', () {
+      final result = TopicThemeScorer.score(
+        queryTokens: const ['otomobil', 'motor'],
+        themes: themes,
+        minimumScore: 0,
+      );
+
+      expect(result.isEmpty, isTrue);
+      expect(result.strongest, isNull);
+    });
+
+    test('zero score floor still retains themes with real lexical evidence', () {
+      final result = TopicThemeScorer.score(
+        queryTokens: const ['tevekkul'],
+        themes: themes,
+        minimumScore: 0,
+      );
+
+      expect(result.matches, hasLength(1));
+      expect(result.strongest?.themeId, 'trust_in_god');
+      expect(result.strongest?.exactTokenMatches, 1);
+      expect(result.strongest?.score, greaterThan(0));
+    });
+
     test('maxThemes bounds multi-theme output deterministically', () {
       final result = TopicThemeScorer.score(
         queryTokens: const ['kaygi', 'sabir', 'tevekkul'],
