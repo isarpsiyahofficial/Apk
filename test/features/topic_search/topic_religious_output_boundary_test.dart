@@ -14,25 +14,20 @@ void main() {
       expect(selection.clarificationCandidateIds, isEmpty);
     });
 
-    test('fails closed when a matcher nominates an unknown theme ID', () {
-      final selection = TopicReligiousOutputBoundary.enforce(
-        TopicThemeDecision.matchedThemes(
+    test('unknown matched theme is rejected before it can reach output boundary', () {
+      expect(
+        () => TopicThemeDecision.matchedThemes(
           const ['patience', 'generated-religious-advice'],
         ),
+        throwsArgumentError,
       );
-
-      expect(selection.mayResolveReviewedVerses, isFalse);
-      expect(selection.themeIds, isEmpty);
-      expect(selection.clarificationCandidateIds, isEmpty);
     });
 
-    test('fails closed on duplicate theme IDs instead of resolving', () {
-      final selection = TopicReligiousOutputBoundary.enforce(
-        TopicThemeDecision.matchedThemes(const ['patience', 'patience']),
+    test('duplicate matched theme is rejected before verse resolution', () {
+      expect(
+        () => TopicThemeDecision.matchedThemes(const ['patience', 'patience']),
+        throwsArgumentError,
       );
-
-      expect(selection.mayResolveReviewedVerses, isFalse);
-      expect(selection.themeIds, isEmpty);
     });
 
     test('clarification candidates are IDs only and never resolve verses', () {
@@ -47,16 +42,13 @@ void main() {
       expect(selection.clarificationCandidateIds, const ['hope', 'repentance']);
     });
 
-    test('unknown clarification candidate is removed by failing closed', () {
-      final selection = TopicReligiousOutputBoundary.enforce(
-        TopicThemeDecision.clarifyTheme(
+    test('unknown clarification candidate is rejected before output boundary', () {
+      expect(
+        () => TopicThemeDecision.clarifyTheme(
           candidateThemeIds: const ['hope', 'leave-your-job'],
         ),
+        throwsArgumentError,
       );
-
-      expect(selection.mayResolveReviewedVerses, isFalse);
-      expect(selection.themeIds, isEmpty);
-      expect(selection.clarificationCandidateIds, isEmpty);
     });
   });
 }
