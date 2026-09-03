@@ -37,11 +37,13 @@ void main() {
           'I am in anxety and I’m not without hope.',
           TopicQueryLanguage.en,
         ),
-        <String>['anxiety', 'im', 'not', 'without', 'hope'],
+        <String>['anxiety', 'not', 'without', 'hope'],
       );
       expect(TopicStopWords.english, isNot(contains('not')));
       expect(TopicStopWords.english, isNot(contains('no')));
+      expect(TopicStopWords.english, isNot(contains('cant')));
       expect(TopicStopWords.english, isNot(contains('anxiety')));
+      expect(TopicStopWords.english, contains('im'));
     });
 
     test('English stop-word entries are canonical normalizer outputs', () {
