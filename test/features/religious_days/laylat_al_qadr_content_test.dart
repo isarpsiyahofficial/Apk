@@ -22,6 +22,21 @@ void main() {
       expect(content.sectionsOf(ReligiousDayEvidenceKind.generalWorship), isNotEmpty);
     });
 
+    test('all SPEC 306 evidence areas are explicitly reviewed', () {
+      final content = laylatAlQadrResearchContent;
+
+      expect(content.hasCompleteRequiredReviewCoverage, isTrue);
+      expect(
+        content.reviewedEvidenceKinds,
+        containsAll(ReligiousDayContent.requiredReviewedEvidenceKinds),
+      );
+      expect(
+        content.sectionsOf(ReligiousDayEvidenceKind.disputedReport),
+        isEmpty,
+        reason: 'Reviewed with no standalone disputed-report claim in the research record.',
+      );
+    });
+
     test('Quran basis is pinned to Surah 97 and only Quran source class', () {
       final section = laylatAlQadrResearchContent
           .sectionsOf(ReligiousDayEvidenceKind.quranBasis)
