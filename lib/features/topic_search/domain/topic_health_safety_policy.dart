@@ -20,11 +20,11 @@ abstract final class TopicHealthSafetyPolicy {
 
     return switch (locale) {
       TopicSafetyLocale.tr =>
-        'Bu içerik yalnız manevi destek amaçlıdır; tıbbi tanı veya tedavi önerisi değildir ve doktor ya da sağlık profesyoneli desteğinin yerini tutmaz.',
+        'Bu içerik yalnız manevi destek amaçlıdır; tıbbi tanı veya tedavi önerisi değildir, herhangi bir tıbbi sonuç ya da iyileşme garantisi vermez ve doktor ya da sağlık profesyoneli desteğinin yerini tutmaz.',
       TopicSafetyLocale.en =>
-        'This content is for spiritual support only. It is not medical diagnosis or treatment advice and does not replace care from a doctor or qualified health professional.',
+        'This content is for spiritual support only. It is not medical diagnosis or treatment advice, does not guarantee any medical outcome or recovery, and does not replace care from a doctor or qualified health professional.',
       TopicSafetyLocale.ar =>
-        'هذا المحتوى للدعم الروحي فقط، وليس تشخيصًا طبيًا أو نصيحة علاجية، ولا يغني عن مراجعة الطبيب أو المختص الصحي المؤهل.',
+        'هذا المحتوى للدعم الروحي فقط، وليس تشخيصًا طبيًا أو نصيحة علاجية، ولا يضمن أي نتيجة طبية أو شفاء، ولا يغني عن مراجعة الطبيب أو المختص الصحي المؤهل.',
     };
   }
 }
