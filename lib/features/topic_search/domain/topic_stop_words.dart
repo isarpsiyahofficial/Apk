@@ -1,4 +1,8 @@
-/// Language-specific stop-word filtering for normalized topic-search queries.
+import 'arabic_topic_query_normalizer.dart';
+import 'english_topic_query_normalizer.dart';
+import 'turkish_topic_query_normalizer.dart';
+
+/// Language-specific stop-word filtering for topic-search queries.
 ///
 /// This is a query-only utility. It must never be used to rewrite Quran, meal,
 /// dua, hadith, or other governed religious source text. Lists are deliberately
@@ -7,6 +11,9 @@
 enum TopicQueryLanguage { tr, en, ar }
 
 abstract final class TopicStopWords {
+  /// Every entry is stored in the exact comparison form produced by
+  /// [TurkishTopicQueryNormalizer]. Do not add dotted/dotless or accented
+  /// variants that the normalizer itself can never emit.
   static const Set<String> turkish = <String>{
     'acaba',
     'ama',
@@ -21,14 +28,14 @@ abstract final class TopicStopWords {
     'icin',
     'ile',
     'mi',
-    'mı',
     'mu',
-    'mü',
     've',
     'veya',
     'ya',
   };
 
+  /// Every entry is stored in the exact comparison form produced by
+  /// [EnglishTopicQueryNormalizer].
   static const Set<String> english = <String>{
     'a',
     'am',
@@ -82,8 +89,29 @@ abstract final class TopicStopWords {
     };
   }
 
+  /// Normalizes a raw user query with the language-specific preprocessing
+  /// contract and then removes only the conservative stop-word set.
+  ///
+  /// This is the preferred product entry point. It prevents raw spelling,
+  /// Turkish character folding, English mobile apostrophes, Arabic harakat,
+  /// tatweel or bidi controls from bypassing stop-word filtering.
+  static List<String> contentTokensFromRawQuery(
+    String rawQuery,
+    TopicQueryLanguage language,
+  ) {
+    final normalizedQuery = switch (language) {
+      TopicQueryLanguage.tr => TurkishTopicQueryNormalizer.normalize(rawQuery),
+      TopicQueryLanguage.en => EnglishTopicQueryNormalizer.normalize(rawQuery),
+      TopicQueryLanguage.ar => ArabicTopicQueryNormalizer.normalize(rawQuery),
+    };
+    return contentTokens(normalizedQuery, language);
+  }
+
   /// Filters a query that has already passed through its language normalizer.
   /// Empty tokens are ignored and the remaining logical token order is kept.
+  ///
+  /// Prefer [contentTokensFromRawQuery] for user input so callers cannot skip
+  /// the locale normalizer accidentally.
   static List<String> contentTokens(
     String normalizedQuery,
     TopicQueryLanguage language,
