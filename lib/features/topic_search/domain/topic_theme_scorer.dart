@@ -115,7 +115,11 @@ abstract final class TopicThemeScorer {
     final scored = <TopicThemeScore>[];
     for (final theme in themes) {
       final match = _scoreTheme(disposableQuery, theme);
-      if (match.score >= minimumScore) scored.add(match);
+      // A configured floor of zero must never turn a theme with no lexical
+      // evidence into a candidate. Zero evidence means no match, not a weak
+      // match; otherwise an unrelated canonical theme could leak into the
+      // multi-theme result and later be mistaken for religious relevance.
+      if (match.score > 0 && match.score >= minimumScore) scored.add(match);
     }
 
     scored.sort((left, right) {
