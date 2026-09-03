@@ -56,6 +56,21 @@ class ConfigureAndroidHomeWidgetT0297Test(unittest.TestCase):
             self.assertIn('putExtra("fromHomeWidgetT0297", true)', provider)
             self.assertNotIn('getLaunchIntentForPackage', provider)
 
+            # A RemoteViews host can target the visible child rather than bubble
+            # the click through the root layout. Keep the same immutable explicit
+            # PendingIntent attached to every user-facing surface so empty and
+            # populated widgets are both tappable across launcher hosts.
+            for view_id in (
+                'widget_root',
+                'widget_empty',
+                'widget_content',
+                'widget_verse_arabic',
+                'widget_verse_translation',
+                'widget_dua',
+                'widget_pro_mark',
+            ):
+                self.assertIn(f'views.setOnClickPendingIntent(R.id.{view_id}, pending)', provider)
+
             # Empty-state language must follow the language stored in the app
             # snapshot rather than Android's independently configured locale.
             self.assertIn('val emptyTextRes = when (languageCode)', provider)
