@@ -21,18 +21,43 @@ void main() {
       );
     });
 
+    test('covers common topic-search typo variants without fuzzy guessing', () {
+      expect(
+        EnglishTopicQueryNormalizer.normalize(
+          'anxety famly lonliness patince peacful resiliance strugle worryed',
+        ),
+        'anxiety family loneliness patience peaceful resilience struggle worried',
+      );
+      expect(
+        EnglishTopicQueryNormalizer.normalize('forgivenesss lonelyness'),
+        'forgiveness loneliness',
+      );
+    });
+
     test('does not rewrite substrings inside otherwise valid words', () {
       expect(
         EnglishTopicQueryNormalizer.normalize('loneliness prayerful decision'),
         'loneliness prayerful decision',
       );
+      expect(
+        EnglishTopicQueryNormalizer.normalize('familylike struggling patiently'),
+        'familylike struggling patiently',
+      );
     });
 
-    test('apostrophe variants converge without joining separate words', () {
-      expect(
-        EnglishTopicQueryNormalizer.normalize("I can't cope"),
-        EnglishTopicQueryNormalizer.normalize('i cant cope'),
-      );
+    test('mobile-keyboard apostrophe variants converge without joining words', () {
+      final variants = <String>[
+        "I can't cope",
+        'I can’t cope',
+        'I can‘t cope',
+        'I canʼt cope',
+        'i cant cope',
+      ];
+      final normalized = variants
+          .map(EnglishTopicQueryNormalizer.normalize)
+          .toSet();
+      expect(normalized, <String>{'i cant cope'});
+
       expect(
         EnglishTopicQueryNormalizer.normalize('God’s mercy'),
         EnglishTopicQueryNormalizer.normalize("god's mercy"),
