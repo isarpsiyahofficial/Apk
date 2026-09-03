@@ -118,6 +118,15 @@ abstract final class TopicFuzzyMatcher {
   ) {
     if (queryTokens.isEmpty && candidateTokens.isEmpty) return 1;
     if (queryTokens.length != 1 || candidateTokens.length != 1) return 0;
-    return similarity(queryTokens.single, candidateTokens.single);
+
+    final queryToken = queryTokens.single;
+    final candidateToken = candidateTokens.single;
+
+    // Reuse the conservative token gate here instead of calling raw
+    // Levenshtein similarity directly. Otherwise a single-token phrase could
+    // bypass the exact-only protection for short negations such as Arabic `لا`
+    // or English `no`, creating lexical evidence that the token path rejects.
+    if (!tokenMatches(queryToken, candidateToken)) return 0;
+    return similarity(queryToken, candidateToken);
   }
 }
