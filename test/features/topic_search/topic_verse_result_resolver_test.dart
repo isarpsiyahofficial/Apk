@@ -76,8 +76,37 @@ void main() {
       '8:46',
       '16:126',
     ]);
-    expect(result.whyShown, contains('Bu neden gösterildi?'));
-    expect(result.whyShown, contains('Sabır'));
+    expect(
+      result.whyShown,
+      'Bu neden gösterildi? Sorunda Sabır teması tespit edildi.',
+    );
+  });
+
+  test('single-theme why explanation stays grammatically singular in TR EN AR', () {
+    final resolver = TopicVerseResultResolver(
+      themes: [approvedTheme('patience', 'Sabır', 'Patience', 'الصبر')],
+      mappings: [
+        approvedMapping('patience', const [
+          QuranVerseReference(2, 153),
+          QuranVerseReference(2, 155),
+          QuranVerseReference(3, 200),
+        ]),
+      ],
+    );
+    final decision = TopicThemeDecision.matchedThemes(const ['patience']);
+
+    expect(
+      resolver.resolve(decision, locale: TopicResultLocale.tr)!.whyShown,
+      'Bu neden gösterildi? Sorunda Sabır teması tespit edildi.',
+    );
+    expect(
+      resolver.resolve(decision, locale: TopicResultLocale.en)!.whyShown,
+      'Why was this shown? Your query matched the Patience theme.',
+    );
+    expect(
+      resolver.resolve(decision, locale: TopicResultLocale.ar)!.whyShown,
+      'لماذا ظهر هذا؟ تم رصد موضوع الصبر في سؤالك.',
+    );
   });
 
   test('multi-theme result round-robins reviewed verse sets and explains both', () {
@@ -113,7 +142,10 @@ void main() {
       '2:155',
       '2:286',
     ]);
-    expect(result.whyShown, contains('Patience and Anxiety'));
+    expect(
+      result.whyShown,
+      'Why was this shown? Your query matched the Patience and Anxiety themes.',
+    );
   });
 
   test('fails closed for clarification decisions', () {
@@ -216,6 +248,7 @@ void main() {
     expect(result.verses.length, inInclusiveRange(3, 5));
     expect(result.whyShown, contains('الرجاء'));
     expect(result.whyShown, contains('التوبة'));
+    expect(result.whyShown, startsWith('لماذا ظهر هذا؟'));
   });
 
   test('rejects result windows outside the SPEC 3-5 range', () {
