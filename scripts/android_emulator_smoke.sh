@@ -281,8 +281,24 @@ if [ "${VERIFY_WIDGET_LAUNCHER_PIN:-0}" = "1" ]; then
   grep -F "$WIDGET_EMPTY_TR" /tmp/t0297-home.xml >/dev/null
   echo 'T0297 launcher RemoteViews render PASS'
 
-  adb shell am force-stop "$PACKAGE"
+  # Keep the production PendingIntent alive while still proving that tapping a
+  # pinned widget can cold-start the app after its process has gone away.
+  # `am force-stop` is deliberately not used here: Android's force-stop semantics
+  # invalidate package PendingIntents, which would make the test destroy the
+  # exact click action it is supposed to exercise. `am kill` terminates a
+  # background app process without putting the package into the stopped state.
+  adb shell am kill "$PACKAGE" || true
   adb shell input keyevent KEYCODE_HOME
+  sleep 1
+  adb shell uiautomator dump /sdcard/t0297-home-after-kill.xml >/dev/null
+  adb pull /sdcard/t0297-home-after-kill.xml /tmp/t0297-home-after-kill.xml >/dev/null
+  WIDGET_TARGET="$(find_click_target /tmp/t0297-home-after-kill.xml widget 2>/tmp/t0297-widget-target-after-kill.log || true)"
+  if [ -z "$WIDGET_TARGET" ]; then
+    echo 'T0297 pinned widget disappeared after background process death' >&2
+    cat /tmp/t0297-home-after-kill.xml >&2 || true
+    exit 1
+  fi
+  cat /tmp/t0297-widget-target-after-kill.log
   set -- $WIDGET_TARGET
   adb logcat -c
   adb shell input tap "$1" "$2"
