@@ -35,7 +35,9 @@ abstract final class TopicStopWords {
   };
 
   /// Every entry is stored in the exact comparison form produced by
-  /// [EnglishTopicQueryNormalizer].
+  /// [EnglishTopicQueryNormalizer]. Mobile contractions are included only when
+  /// their normalized form is meaning-neutral (`I'm` -> `im`). Negations such
+  /// as `can't` -> `cant` are deliberately not stop words.
   static const Set<String> english = <String>{
     'a',
     'am',
@@ -47,6 +49,7 @@ abstract final class TopicStopWords {
     'does',
     'for',
     'i',
+    'im',
     'in',
     'is',
     'me',
