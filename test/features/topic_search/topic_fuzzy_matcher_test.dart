@@ -73,6 +73,40 @@ void main() {
       );
     });
 
+    test('single-token phrase fallback preserves short-token exact-only gate', () {
+      expect(
+        TopicFuzzyMatcher.phraseSimilarity(
+          <String>['لا'],
+          <String>['ما'],
+        ),
+        0,
+      );
+      expect(
+        TopicFuzzyMatcher.phraseSimilarity(
+          <String>['no'],
+          <String>['go'],
+        ),
+        0,
+      );
+      expect(
+        TopicFuzzyMatcher.phraseSimilarity(
+          <String>['لا'],
+          <String>['لا'],
+        ),
+        1,
+      );
+    });
+
+    test('single-token phrase fallback keeps conservative long-token fuzzy match', () {
+      final similarity = TopicFuzzyMatcher.phraseSimilarity(
+        <String>['anxiety'],
+        <String>['anxity'],
+      );
+
+      expect(similarity, greaterThanOrEqualTo(0.8));
+      expect(similarity, lessThan(1));
+    });
+
     test('invalid n-gram size fails closed', () {
       expect(
         () => TopicFuzzyMatcher.tokenNgrams(<String>['hope'], size: 0),
