@@ -11,6 +11,13 @@ void main() {
     licenseId: 'CC-BY-3.0',
     locator: 'Quran test locator',
   );
+  const modernHistorySource = SourceReference(
+    id: 'modern-location-source',
+    title: 'Modern historical or archaeological location source',
+    sourceClass: ReligiousSourceClass.modernHistoryArchaeology,
+    licenseId: 'reference-only',
+    locator: 'location evidence',
+  );
 
   group('T0199 prophet map marker precision', () {
     test('exact geography stays exact and requires coordinates', () {
@@ -22,7 +29,7 @@ void main() {
         ),
         precision: ProphetLocationPrecision.exact,
         certainty: CertaintyLevel.explicitSource,
-        sources: [quranSource],
+        sources: [modernHistorySource],
         latitude: 21.4225,
         longitude: 39.8262,
       );
@@ -34,6 +41,24 @@ void main() {
       expect(marker.latitude, 21.4225);
       expect(marker.longitude, 39.8262);
       expect(marker.isValid, isTrue);
+    });
+
+    test('Quran evidence cannot become an exact modern map marker', () {
+      const geography = ProphetGeography(
+        name: LocalizedReligiousText(
+          tr: 'Kaynakta geçen yer',
+          en: 'Place mentioned in source',
+          ar: 'موضع مذكور في المصدر',
+        ),
+        precision: ProphetLocationPrecision.exact,
+        certainty: CertaintyLevel.explicitSource,
+        sources: [quranSource],
+        latitude: 21.4225,
+        longitude: 39.8262,
+      );
+
+      expect(geography.isValid, isFalse);
+      expect(mapMarkerFromGeography(geography), isNull);
     });
 
     test('approximate geography can never be promoted to exact marker', () {
