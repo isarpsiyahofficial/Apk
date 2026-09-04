@@ -39,6 +39,7 @@ void main() {
   ReligiousContentRecord record({
     ContentReviewStatus status = ContentReviewStatus.published,
     ContentType type = ContentType.prophetBiography,
+    List<SourceReference> sources = const [quranSource],
   }) => ReligiousContentRecord(
         id: 'prophet-ibrahim',
         type: type,
@@ -47,7 +48,7 @@ void main() {
         reviewStatus: status,
         certainty: CertaintyLevel.explicitSource,
         text: text('İbrahim'),
-        sources: const [quranSource],
+        sources: sources,
         lastReviewedAt: DateTime.utc(2026, 8, 29),
         reviewer: 'religious-reviewer',
       );
@@ -243,6 +244,40 @@ void main() {
       );
       expect(
         validContent(claims: [unsafeClaim]).canEnterProductionDataset,
+        isFalse,
+      );
+    });
+
+    test('rejects non-biography source classes from prophet evidence', () {
+      const ebcedSource = SourceReference(
+        id: 'ebced-example',
+        title: 'Ebced tradition',
+        sourceClass: ReligiousSourceClass.ebcedHavasTradition,
+        licenseId: 'reference-only',
+      );
+      const meaningDuaSource = SourceReference(
+        id: 'dua-editorial',
+        title: 'Meaning-based dua',
+        sourceClass: ReligiousSourceClass.meaningBasedDua,
+        licenseId: 'reference-only',
+      );
+
+      final ebcedClaim = ProphetClaim(
+        text: text('Biyografi iddiası'),
+        certainty: CertaintyLevel.traditional,
+        sources: const [ebcedSource],
+      );
+      final duaClaim = ProphetClaim(
+        text: text('Biyografi iddiası'),
+        certainty: CertaintyLevel.traditional,
+        sources: const [meaningDuaSource],
+      );
+
+      expect(validContent(claims: [ebcedClaim]).canEnterProductionDataset, isFalse);
+      expect(validContent(claims: [duaClaim]).canEnterProductionDataset, isFalse);
+      expect(
+        validContent(governedRecord: record(sources: const [ebcedSource]))
+            .canEnterProductionDataset,
         isFalse,
       );
     });
