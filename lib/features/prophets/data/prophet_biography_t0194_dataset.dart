@@ -76,6 +76,18 @@ CanonicalProphetBiographyDraft _applySupplement(
   );
 }
 
+bool _hasTraceableSourceBackedFields(CanonicalProphetBiographyDraft draft) {
+  for (final field in draft.sections.values) {
+    if (field.status != ProphetBiographyFieldStatus.sourceBacked) continue;
+    if (field.sources.isEmpty) return false;
+    for (final source in field.sources) {
+      final locator = source.locator?.trim();
+      if (locator == null || locator.isEmpty) return false;
+    }
+  }
+  return true;
+}
+
 /// T0194 working dataset. It preserves the 25 canonical identities while
 /// layering source-reviewed biography fields onto the fail-closed base drafts.
 ///
@@ -89,5 +101,8 @@ final canonicalProphetBiographyT0194Dataset = <CanonicalProphetBiographyDraft>[
 bool get canonicalProphetBiographyT0194DatasetIsStructurallyValid =>
     canonicalProphetBiographyT0194Dataset.length == 25 &&
     canonicalProphetBiographyT0194Dataset.every(
-      (draft) => draft.isStructurallyComplete && draft.hasPendingResearch,
+      (draft) =>
+          draft.isStructurallyComplete &&
+          draft.hasPendingResearch &&
+          _hasTraceableSourceBackedFields(draft),
     );
