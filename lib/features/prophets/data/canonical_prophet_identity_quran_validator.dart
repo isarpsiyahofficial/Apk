@@ -85,8 +85,12 @@ final class CanonicalProphetIdentityQuranValidator {
   }
 
   static String _normalizeArabic(String value) {
+    // Uthmani orthography can encode a pronounced alif as dagger alif U+0670
+    // without a normal U+0627 (for example Salih in Quran 11:61). Preserve
+    // that letter identity for comparison before stripping Quranic marks.
     return value
-        .replaceAll(RegExp(r'[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]'), '')
+        .replaceAll('\u0670', 'ا')
+        .replaceAll(RegExp(r'[\u0610-\u061A\u064B-\u065F\u06D6-\u06ED]'), '')
         .replaceAll('\u0640', '')
         .replaceAll(RegExp('[أإآٱ]'), 'ا')
         .replaceAll('ء', '')
