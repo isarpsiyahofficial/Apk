@@ -29,7 +29,8 @@ class ReligiousDateSourceMetadata {
         jurisdiction.trim().isEmpty ||
         countryCode.trim().length != 2 ||
         !url.hasScheme ||
-        url.scheme != 'https') {
+        url.scheme != 'https' ||
+        url.host.trim().isEmpty) {
       throw ArgumentError('Incomplete religious-date source metadata.');
     }
   }
@@ -53,6 +54,8 @@ class ReligiousDateObservation {
     required this.source,
     required this.status,
     required this.verifiedAt,
+    this.sourcePublicationLocator,
+    this.sourcePublicationUrl,
   }) {
     if (contentId.trim().isEmpty ||
         hijriYear < 1 ||
@@ -61,6 +64,13 @@ class ReligiousDateObservation {
         hijriDay < 1 ||
         hijriDay > 30) {
       throw ArgumentError('Invalid religious-date observation.');
+    }
+    if (sourcePublicationUrl != null &&
+        (sourcePublicationUrl!.scheme != 'https' ||
+            sourcePublicationUrl!.host.trim().isEmpty)) {
+      throw ArgumentError(
+        'Religious-date publication URL must be a stable HTTPS source.',
+      );
     }
   }
 
@@ -73,9 +83,24 @@ class ReligiousDateObservation {
   final ReligiousDateVerificationStatus status;
   final DateTime verifiedAt;
 
+  /// Stable locator inside the authority publication (for example an official
+  /// calendar row/date key or a crescent-announcement identifier). A generic
+  /// authority homepage is not enough evidence for an exact local civil date.
+  final String? sourcePublicationLocator;
+
+  /// Direct HTTPS page/document used to verify this exact observation.
+  final Uri? sourcePublicationUrl;
+
+  bool get hasPinnedPublicationEvidence =>
+      (sourcePublicationLocator?.trim().isNotEmpty ?? false) &&
+      sourcePublicationUrl != null &&
+      sourcePublicationUrl!.scheme == 'https' &&
+      sourcePublicationUrl!.host.trim().isNotEmpty;
+
   bool get canPresentAsExactLocalGregorianDate =>
       status == ReligiousDateVerificationStatus.confirmed &&
-      !verifiedAt.isBefore(source.retrievedAt);
+      !verifiedAt.isBefore(source.retrievedAt) &&
+      hasPinnedPublicationEvidence;
 }
 
 /// SPEC 317–319: Hijri observance dates may differ between countries because
@@ -125,7 +150,7 @@ final religiousDateAuthorities = <ReligiousDateSourceMetadata>[
     countryCode: 'TR',
     kind: ReligiousDateSourceKind.nationalReligiousAuthority,
     url: Uri.parse('https://namazvakitleri.diyanet.gov.tr/'),
-    retrievedAt: DateTime.utc(2026, 8, 29),
+    retrievedAt: DateTime.utc(2026, 9, 4),
   ),
   ReligiousDateSourceMetadata(
     id: 'sa-supreme-court-crescent',
@@ -134,6 +159,6 @@ final religiousDateAuthorities = <ReligiousDateSourceMetadata>[
     countryCode: 'SA',
     kind: ReligiousDateSourceKind.officialMoonSightingAuthority,
     url: Uri.parse('https://www.spa.gov.sa/'),
-    retrievedAt: DateTime.utc(2026, 8, 29),
+    retrievedAt: DateTime.utc(2026, 9, 4),
   ),
 ];
