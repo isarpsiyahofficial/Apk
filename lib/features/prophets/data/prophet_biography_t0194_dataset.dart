@@ -76,9 +76,31 @@ CanonicalProphetBiographyDraft _applySupplement(
   );
 }
 
+bool _isAuditableQuranLocator(String locator) {
+  if (!locator.startsWith('Quran ')) return false;
+  final citations = locator.substring('Quran '.length).split(';');
+  if (citations.isEmpty) return false;
+
+  for (final rawCitation in citations) {
+    final citation = rawCitation.trim();
+    final match = RegExp(r'^(\d{1,3}):(\d+)(?:-(\d+))?$').firstMatch(citation);
+    if (match == null) return false;
+
+    final surah = int.parse(match.group(1)!);
+    final startAyah = int.parse(match.group(2)!);
+    final endAyah = int.tryParse(match.group(3) ?? '') ?? startAyah;
+    if (surah < 1 || surah > 114 || startAyah < 1 || endAyah < startAyah) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /// T0194 fail-closed provenance gate for biography claims. A field labelled as
 /// source-backed must point to a human-auditable verse/report locator; source
-/// identity and licence metadata alone are not enough evidence.
+/// identity and licence metadata alone are not enough evidence. Quran locators
+/// must additionally use a parseable `Quran surah:ayah[-ayah]` form so a typo
+/// or placeholder string cannot masquerade as traceable scripture evidence.
 bool prophetBiographyT0194DraftHasTraceableProvenance(
   CanonicalProphetBiographyDraft draft,
 ) {
@@ -88,6 +110,10 @@ bool prophetBiographyT0194DraftHasTraceableProvenance(
     for (final source in field.sources) {
       final locator = source.locator?.trim();
       if (locator == null || locator.isEmpty) return false;
+      if (source.sourceClass == ReligiousSourceClass.quran &&
+          !_isAuditableQuranLocator(locator)) {
+        return false;
+      }
     }
   }
   return true;
