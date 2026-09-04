@@ -22,7 +22,7 @@ final ReligiousDayContent eidAlFitrResearchContent = ReligiousDayContent(
       _bukhari964,
       _tdvDiyanetEid,
     ],
-    lastReviewedAt: DateTime.utc(2026, 8, 29),
+    lastReviewedAt: DateTime.utc(2026, 9, 4),
   ),
   title: _title,
   whatIsIt: const LocalizedReligiousText(
@@ -107,6 +107,7 @@ final ReligiousDayContent eidAlFitrResearchContent = ReligiousDayContent(
       sources: [_bukhari964],
     ),
   ],
+  reviewedEvidenceKinds: ReligiousDayContent.requiredReviewedEvidenceKinds,
   specificWorshipStatus: SpecificWorshipStatus.establishedByStrongSource,
 );
 

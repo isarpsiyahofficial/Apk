@@ -22,6 +22,20 @@ void main() {
       expect(content.sectionsOf(ReligiousDayEvidenceKind.generalWorship), isNotEmpty);
     });
 
+    test('records review coverage for every required evidence kind', () {
+      final content = eidAlFitrResearchContent;
+
+      expect(
+        content.reviewedEvidenceKinds,
+        ReligiousDayContent.requiredReviewedEvidenceKinds,
+      );
+      expect(
+        content.sectionsOf(ReligiousDayEvidenceKind.disputedReport),
+        isEmpty,
+        reason: 'No separate reliable disputed-report claim was found; the kind is reviewed but intentionally empty.',
+      );
+    });
+
     test('Quran basis does not falsely claim that 2:185 names Eid al-Fitr', () {
       final section = eidAlFitrResearchContent
           .sectionsOf(ReligiousDayEvidenceKind.quranBasis)
