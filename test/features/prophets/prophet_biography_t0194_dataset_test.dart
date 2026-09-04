@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophet_biographies.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_biography_t0194_dataset.dart';
 
@@ -92,5 +93,33 @@ void main() {
         reason: id,
       );
     }
+  });
+
+  test('source-backed biography field without locator fails closed', () {
+    final original = canonicalProphetBiographyT0194Dataset.first;
+    final originalMainMessage =
+        original.sections[ProphetBiographySectionKey.mainMessage]!;
+    final tampered = CanonicalProphetBiographyDraft(
+      identity: original.identity,
+      quranReferences: original.quranReferences,
+      sections: <ProphetBiographySectionKey, ProphetBiographyField>{
+        ...original.sections,
+        ProphetBiographySectionKey.mainMessage: ProphetBiographyField(
+          text: originalMainMessage.text,
+          status: ProphetBiographyFieldStatus.sourceBacked,
+          sources: const <SourceReference>[
+            SourceReference(
+              id: 'tampered-source-without-locator',
+              title: 'Tampered source',
+              sourceClass: ReligiousSourceClass.quran,
+              licenseId: 'CC-BY-3.0',
+            ),
+          ],
+        ),
+      },
+    );
+
+    expect(tampered.isStructurallyComplete, isTrue);
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(tampered), isFalse);
   });
 }
