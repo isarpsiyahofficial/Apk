@@ -1,3 +1,4 @@
+import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
 import 'prophet_biography_t0194_supplements.dart';
 import 'prophet_biography_t0194_supplements_2.dart';
