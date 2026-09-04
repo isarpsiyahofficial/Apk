@@ -12,7 +12,7 @@ final ReligiousDayContent regaibResearchContent = ReligiousDayContent(
     certainty: CertaintyLevel.traditional,
     text: _title,
     sources: const [_bukhari4662, _tdvRegaib, _tdvRegaibDisputed],
-    lastReviewedAt: DateTime.utc(2026, 8, 29),
+    lastReviewedAt: DateTime.utc(2026, 9, 4),
   ),
   title: _title,
   whatIsIt: const LocalizedReligiousText(
@@ -58,6 +58,7 @@ final ReligiousDayContent regaibResearchContent = ReligiousDayContent(
     ),
   ],
   specificWorshipStatus: SpecificWorshipStatus.noSpecificPracticeEstablished,
+  reviewedEvidenceKinds: ReligiousDayContent.requiredReviewedEvidenceKinds,
 );
 
 const _title = LocalizedReligiousText(
