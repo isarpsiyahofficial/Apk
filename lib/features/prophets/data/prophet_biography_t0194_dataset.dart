@@ -102,16 +102,36 @@ bool _isAuditableQuranLocator(String locator) {
   return true;
 }
 
+bool _draftQuranReferencesExistInPinnedStructure(
+  CanonicalProphetBiographyDraft draft,
+) {
+  for (final reference in draft.quranReferences) {
+    if (reference.surah < 1 || reference.surah > canonicalQuranSuraCount) {
+      return false;
+    }
+    if (reference.ayah < 1 ||
+        reference.ayah > canonicalQuranAyahCountForSura(reference.surah)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /// T0194 fail-closed provenance gate for biography claims. A field labelled as
 /// source-backed must point to a human-auditable verse/report locator; source
 /// identity and licence metadata alone are not enough evidence. Quran locators
 /// must additionally use parseable `Quran surah:ayah[-ayah]` citations whose
-/// ayah bounds exist in the pinned 114-sura Quran structure. Multiple citations
-/// may be separated by `;` or `,`; a typo, placeholder or impossible ayah must
-/// never masquerade as traceable scripture evidence.
+/// ayah bounds exist in the pinned 114-sura Quran structure. The draft's own
+/// Quran-reference index is checked against the same pinned structure so an
+/// impossible verse cannot survive merely because `ProphetVerseReference`
+/// passes its basic shape validation. Multiple citations may be separated by
+/// `;` or `,`; a typo, placeholder or impossible ayah must never masquerade as
+/// traceable scripture evidence.
 bool prophetBiographyT0194DraftHasTraceableProvenance(
   CanonicalProphetBiographyDraft draft,
 ) {
+  if (!_draftQuranReferencesExistInPinnedStructure(draft)) return false;
+
   for (final field in draft.sections.values) {
     if (field.status != ProphetBiographyFieldStatus.sourceBacked) continue;
     if (field.sources.isEmpty) return false;
