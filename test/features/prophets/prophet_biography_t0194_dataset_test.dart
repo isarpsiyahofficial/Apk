@@ -122,4 +122,77 @@ void main() {
     expect(tampered.isStructurallyComplete, isTrue);
     expect(prophetBiographyT0194DraftHasTraceableProvenance(tampered), isFalse);
   });
+
+  test('malformed or impossible Quran locators fail closed', () {
+    final original = canonicalProphetBiographyT0194Dataset.first;
+    final originalMainMessage =
+        original.sections[ProphetBiographySectionKey.mainMessage]!;
+
+    CanonicalProphetBiographyDraft withLocator(String locator) =>
+        CanonicalProphetBiographyDraft(
+          identity: original.identity,
+          quranReferences: original.quranReferences,
+          sections: <ProphetBiographySectionKey, ProphetBiographyField>{
+            ...original.sections,
+            ProphetBiographySectionKey.mainMessage: ProphetBiographyField(
+              text: originalMainMessage.text,
+              status: ProphetBiographyFieldStatus.sourceBacked,
+              sources: <SourceReference>[
+                SourceReference(
+                  id: 'tampered-quran-locator',
+                  title: 'Tanzil Project — Uthmani Quran Text v1.1',
+                  sourceClass: ReligiousSourceClass.quran,
+                  licenseId: 'CC-BY-3.0',
+                  locator: locator,
+                ),
+              ],
+            ),
+          },
+        );
+
+    for (final locator in const <String>[
+      'Quran unknown',
+      'Quran 0:1',
+      'Quran 115:1',
+      'Quran 2:0',
+      'Quran 2:10-9',
+      'not-a-quran-reference',
+    ]) {
+      final tampered = withLocator(locator);
+      expect(tampered.isStructurallyComplete, isTrue, reason: locator);
+      expect(
+        prophetBiographyT0194DraftHasTraceableProvenance(tampered),
+        isFalse,
+        reason: locator,
+      );
+    }
+  });
+
+  test('multi-citation Quran locators remain auditable', () {
+    final original = canonicalProphetBiographyT0194Dataset.first;
+    final originalMainMessage =
+        original.sections[ProphetBiographySectionKey.mainMessage]!;
+    final valid = CanonicalProphetBiographyDraft(
+      identity: original.identity,
+      quranReferences: original.quranReferences,
+      sections: <ProphetBiographySectionKey, ProphetBiographyField>{
+        ...original.sections,
+        ProphetBiographySectionKey.mainMessage: ProphetBiographyField(
+          text: originalMainMessage.text,
+          status: ProphetBiographyFieldStatus.sourceBacked,
+          sources: const <SourceReference>[
+            SourceReference(
+              id: 'valid-multi-quran-locator',
+              title: 'Tanzil Project — Uthmani Quran Text v1.1',
+              sourceClass: ReligiousSourceClass.quran,
+              licenseId: 'CC-BY-3.0',
+              locator: 'Quran 3:38; 21:89-90',
+            ),
+          ],
+        ),
+      },
+    );
+
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(valid), isTrue);
+  });
 }
