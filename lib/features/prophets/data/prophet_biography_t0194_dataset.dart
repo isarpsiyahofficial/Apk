@@ -102,6 +102,12 @@ bool _isAuditableQuranLocator(String locator) {
   return true;
 }
 
+bool _isPinnedTanzilQuranSource(SourceReference source) =>
+    source.sourceClass == ReligiousSourceClass.quran &&
+    source.id.startsWith('tanzil-uthmani-v1.1-') &&
+    source.title == 'Tanzil Project — Uthmani Quran Text v1.1' &&
+    source.licenseId == 'CC-BY-3.0';
+
 bool _draftQuranReferencesExistInPinnedStructure(
   CanonicalProphetBiographyDraft draft,
 ) {
@@ -119,14 +125,15 @@ bool _draftQuranReferencesExistInPinnedStructure(
 
 /// T0194 fail-closed provenance gate for biography claims. A field labelled as
 /// source-backed must point to a human-auditable verse/report locator; source
-/// identity and licence metadata alone are not enough evidence. Quran locators
-/// must additionally use parseable `Quran surah:ayah[-ayah]` citations whose
-/// ayah bounds exist in the pinned 114-sura Quran structure. The draft's own
-/// Quran-reference index is checked against the same pinned structure so an
-/// impossible verse cannot survive merely because `ProphetVerseReference`
-/// passes its basic shape validation. Multiple citations may be separated by
-/// `;` or `,`; a typo, placeholder or impossible ayah must never masquerade as
-/// traceable scripture evidence.
+/// identity and licence metadata alone are not enough evidence. Quran claims
+/// must use the pinned Tanzil Uthmani v1.1 source identity and parseable
+/// `Quran surah:ayah[-ayah]` citations whose ayah bounds exist in the pinned
+/// 114-sura Quran structure. The draft's own Quran-reference index is checked
+/// against the same pinned structure so an impossible verse cannot survive
+/// merely because `ProphetVerseReference` passes its basic shape validation.
+/// Multiple citations may be separated by `;` or `,`; a typo, placeholder,
+/// impossible ayah, or spoofed Quran source must never masquerade as traceable
+/// scripture evidence.
 bool prophetBiographyT0194DraftHasTraceableProvenance(
   CanonicalProphetBiographyDraft draft,
 ) {
@@ -139,7 +146,8 @@ bool prophetBiographyT0194DraftHasTraceableProvenance(
       final locator = source.locator?.trim();
       if (locator == null || locator.isEmpty) return false;
       if (source.sourceClass == ReligiousSourceClass.quran &&
-          !_isAuditableQuranLocator(locator)) {
+          (!_isPinnedTanzilQuranSource(source) ||
+              !_isAuditableQuranLocator(locator))) {
         return false;
       }
     }
