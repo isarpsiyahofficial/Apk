@@ -23,6 +23,13 @@ void main() {
     sourceClass: ReligiousSourceClass.laterTradition,
     licenseId: 'reference-only',
   );
+  const classicalTraditionSource = SourceReference(
+    id: 'classical-tradition-example',
+    title: 'Classical traditional chronology',
+    sourceClass: ReligiousSourceClass.classicalTraditional,
+    licenseId: 'reference-only',
+    locator: 'traditional chronology claim',
+  );
   const disputedSource = SourceReference(
     id: 'disputed-example',
     title: 'Disputed report',
@@ -157,7 +164,7 @@ void main() {
       );
     });
 
-    test('does not allow traditional evidence to become an exact date', () {
+    test('does not allow later-tradition evidence to become an exact date', () {
       final exactFromTradition = ProphetDateEvidence(
         label: text('Kesin yıl'),
         status: ProphetDateStatus.exact,
@@ -168,6 +175,23 @@ void main() {
       );
       expect(
         validContent(dates: [exactFromTradition]).canEnterProductionDataset,
+        isFalse,
+      );
+    });
+
+    test('does not allow classical tradition to become an exact date', () {
+      final exactFromClassicalTradition = ProphetDateEvidence(
+        label: text('Geleneksel kaynakta geçen yıl'),
+        status: ProphetDateStatus.exact,
+        certainty: CertaintyLevel.explicitSource,
+        sources: const [classicalTraditionSource],
+        startYear: -2000,
+        endYear: -2000,
+      );
+      expect(exactFromClassicalTradition.isValid, isFalse);
+      expect(
+        validContent(dates: [exactFromClassicalTradition])
+            .canEnterProductionDataset,
         isFalse,
       );
     });
@@ -293,7 +317,7 @@ void main() {
         label: text('Geleneksel dönem'),
         status: ProphetDateStatus.traditional,
         certainty: CertaintyLevel.traditional,
-        sources: const [traditionSource],
+        sources: const [classicalTraditionSource],
       );
       expect(disputedDate.isValid, isTrue);
       expect(traditionalDate.isValid, isTrue);
