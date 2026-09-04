@@ -45,7 +45,11 @@ void main() {
         gregorianDate: DateTime.utc(2026, 6, 26),
         source: source,
         status: ReligiousDateVerificationStatus.confirmed,
-        verifiedAt: DateTime.utc(2026, 8, 28),
+        verifiedAt: DateTime.utc(2026, 9, 3),
+        sourcePublicationLocator: 'official-calendar:1448-01-10',
+        sourcePublicationUrl: Uri.parse(
+          'https://namazvakitleri.diyanet.gov.tr/',
+        ),
       );
       final verified = ReligiousDateObservation(
         contentId: stale.contentId,
@@ -55,11 +59,46 @@ void main() {
         gregorianDate: stale.gregorianDate,
         source: source,
         status: ReligiousDateVerificationStatus.confirmed,
-        verifiedAt: DateTime.utc(2026, 8, 29, 1),
+        verifiedAt: DateTime.utc(2026, 9, 4, 1),
+        sourcePublicationLocator: 'official-calendar:1448-01-10',
+        sourcePublicationUrl: Uri.parse(
+          'https://namazvakitleri.diyanet.gov.tr/',
+        ),
       );
 
       expect(ReligiousDateDisplayPolicy.canShowExactDate(stale), isFalse);
       expect(ReligiousDateDisplayPolicy.canShowExactDate(verified), isTrue);
+    });
+
+    test('confirmed status without pinned publication evidence stays blocked', () {
+      final source = religiousDateAuthorities.first;
+      final missingEvidence = ReligiousDateObservation(
+        contentId: 'religious-day:eid-al-fitr',
+        hijriYear: 1448,
+        hijriMonth: 10,
+        hijriDay: 1,
+        gregorianDate: DateTime.utc(2027, 3, 10),
+        source: source,
+        status: ReligiousDateVerificationStatus.confirmed,
+        verifiedAt: DateTime.utc(2027, 3, 9),
+      );
+      final missingLocator = ReligiousDateObservation(
+        contentId: missingEvidence.contentId,
+        hijriYear: missingEvidence.hijriYear,
+        hijriMonth: missingEvidence.hijriMonth,
+        hijriDay: missingEvidence.hijriDay,
+        gregorianDate: missingEvidence.gregorianDate,
+        source: source,
+        status: ReligiousDateVerificationStatus.confirmed,
+        verifiedAt: DateTime.utc(2027, 3, 9),
+        sourcePublicationUrl: Uri.parse(
+          'https://namazvakitleri.diyanet.gov.tr/',
+        ),
+      );
+
+      expect(missingEvidence.hasPinnedPublicationEvidence, isFalse);
+      expect(ReligiousDateDisplayPolicy.canShowExactDate(missingEvidence), isFalse);
+      expect(ReligiousDateDisplayPolicy.canShowExactDate(missingLocator), isFalse);
     });
 
     test('same Hijri observance may legitimately differ by country', () {
@@ -78,6 +117,10 @@ void main() {
         source: trSource,
         status: ReligiousDateVerificationStatus.confirmed,
         verifiedAt: DateTime.utc(2027, 3, 9),
+        sourcePublicationLocator: 'tr-official:1448-10-01',
+        sourcePublicationUrl: Uri.parse(
+          'https://namazvakitleri.diyanet.gov.tr/',
+        ),
       );
       final sa = ReligiousDateObservation(
         contentId: tr.contentId,
@@ -88,12 +131,33 @@ void main() {
         source: saSource,
         status: ReligiousDateVerificationStatus.confirmed,
         verifiedAt: DateTime.utc(2027, 3, 9),
+        sourcePublicationLocator: 'sa-announcement:1448-10-01',
+        sourcePublicationUrl: Uri.parse('https://www.spa.gov.sa/'),
       );
 
       expect(ReligiousDateDisplayPolicy.sameHijriObservance(tr, sa), isTrue);
       expect(
         ReligiousDateDisplayPolicy.hasCountryDateDifference(tr, sa),
         isTrue,
+      );
+    });
+
+    test('publication evidence rejects a non-HTTPS exact-date URL', () {
+      final source = religiousDateAuthorities.first;
+      expect(
+        () => ReligiousDateObservation(
+          contentId: 'religious-day:ashura',
+          hijriYear: 1448,
+          hijriMonth: 1,
+          hijriDay: 10,
+          gregorianDate: DateTime.utc(2026, 6, 26),
+          source: source,
+          status: ReligiousDateVerificationStatus.confirmed,
+          verifiedAt: DateTime.utc(2026, 9, 4),
+          sourcePublicationLocator: 'official-calendar:1448-01-10',
+          sourcePublicationUrl: Uri.parse('http://example.org/date'),
+        ),
+        throwsArgumentError,
       );
     });
 
@@ -106,7 +170,7 @@ void main() {
           countryCode: 'XX',
           kind: ReligiousDateSourceKind.nationalReligiousAuthority,
           url: Uri.parse('http://example.com'),
-          retrievedAt: DateTime.utc(2026, 8, 29),
+          retrievedAt: DateTime.utc(2026, 9, 4),
         ),
         throwsArgumentError,
       );
