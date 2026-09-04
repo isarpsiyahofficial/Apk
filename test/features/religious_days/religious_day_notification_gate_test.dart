@@ -6,6 +6,7 @@ void main() {
   ReligiousDateObservation observation({
     ReligiousDateVerificationStatus status =
         ReligiousDateVerificationStatus.confirmed,
+    bool includePublicationEvidence = true,
   }) {
     final source = religiousDateAuthorities.first;
     return ReligiousDateObservation(
@@ -17,6 +18,11 @@ void main() {
       source: source,
       status: status,
       verifiedAt: DateTime.utc(2027, 3, 1),
+      sourcePublicationLocator:
+          includePublicationEvidence ? 'official-calendar:1448-09-27' : null,
+      sourcePublicationUrl: includePublicationEvidence
+          ? Uri.parse('https://namazvakitleri.diyanet.gov.tr/')
+          : null,
     );
   }
 
@@ -50,6 +56,19 @@ void main() {
         observation: observation(
           status: ReligiousDateVerificationStatus.provisional,
         ),
+      );
+
+      expect(result.allowed, isFalse);
+      expect(
+        result.reason,
+        ReligiousDayNotificationGateReason.unconfirmedLocalDate,
+      );
+    });
+
+    test('confirmed date without pinned publication evidence is blocked', () {
+      final result = ReligiousDayNotificationGate.evaluate(
+        userOptedIn: true,
+        observation: observation(includePublicationEvidence: false),
       );
 
       expect(result.allowed, isFalse);
