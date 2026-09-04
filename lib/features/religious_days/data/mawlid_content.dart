@@ -12,7 +12,7 @@ final ReligiousDayContent mawlidResearchContent = ReligiousDayContent(
     certainty: CertaintyLevel.stronglyAttested,
     text: _title,
     sources: const [_muslim1162e, _tdvMawlid, _tdvRabiAlAwwal],
-    lastReviewedAt: DateTime.utc(2026, 8, 29),
+    lastReviewedAt: DateTime.utc(2026, 9, 4),
   ),
   title: _title,
   whatIsIt: const LocalizedReligiousText(
@@ -48,6 +48,7 @@ final ReligiousDayContent mawlidResearchContent = ReligiousDayContent(
     ),
   ],
   specificWorshipStatus: SpecificWorshipStatus.noSpecificPracticeEstablished,
+  reviewedEvidenceKinds: ReligiousDayContent.requiredReviewedEvidenceKinds,
 );
 
 const _title = LocalizedReligiousText(
