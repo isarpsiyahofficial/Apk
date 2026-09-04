@@ -101,6 +101,28 @@ void main() {
       expect(ReligiousDateDisplayPolicy.canShowExactDate(missingLocator), isFalse);
     });
 
+    test('publication evidence must belong to the declared authority host', () {
+      final source = religiousDateAuthorities.first;
+      final mismatchedAuthority = ReligiousDateObservation(
+        contentId: 'religious-day:eid-al-fitr',
+        hijriYear: 1448,
+        hijriMonth: 10,
+        hijriDay: 1,
+        gregorianDate: DateTime.utc(2027, 3, 10),
+        source: source,
+        status: ReligiousDateVerificationStatus.confirmed,
+        verifiedAt: DateTime.utc(2027, 3, 9),
+        sourcePublicationLocator: 'official-calendar:1448-10-01',
+        sourcePublicationUrl: Uri.parse('https://example.org/calendar/1448'),
+      );
+
+      expect(mismatchedAuthority.hasPinnedPublicationEvidence, isFalse);
+      expect(
+        ReligiousDateDisplayPolicy.canShowExactDate(mismatchedAuthority),
+        isFalse,
+      );
+    });
+
     test('same Hijri observance may legitimately differ by country', () {
       final trSource = religiousDateAuthorities.singleWhere(
         (source) => source.countryCode == 'TR',
