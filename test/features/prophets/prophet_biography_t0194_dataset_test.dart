@@ -156,6 +156,9 @@ void main() {
       'Quran 115:1',
       'Quran 2:0',
       'Quran 2:10-9',
+      'Quran 1:8',
+      'Quran 2:287',
+      'Quran 112:4-5',
       'not-a-quran-reference',
     ]) {
       final tampered = withLocator(locator);
