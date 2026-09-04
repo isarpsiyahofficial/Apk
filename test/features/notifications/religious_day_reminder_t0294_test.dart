@@ -138,6 +138,35 @@ void main() {
       );
     });
 
+    test('unrelated HTTPS evidence never schedules a reminder', () async {
+      final scheduler = _Scheduler();
+      final coordinator = ReligiousDayReminderCoordinatorT0294(
+        preferencesStore: _Store(
+          const NotificationPreferences(religiousDay: true),
+        ),
+        scheduler: scheduler,
+        observationSource: _ObservationSource(
+          _observation(
+            status: ReligiousDateVerificationStatus.confirmed,
+            countryCode: 'TR',
+            publicationUrl: Uri.parse('https://unrelated.example/date'),
+          ),
+        ),
+      );
+
+      await coordinator.sync(
+        now: DateTime(2026, 9, 2, 8),
+        languageCode: 'tr',
+        countryCode: 'TR',
+      );
+
+      expect(scheduler.requests, isEmpty);
+      expect(
+        scheduler.cancelled,
+        contains(religiousDayNotificationIdT0294),
+      );
+    });
+
     test('missing observation and stale date both cancel', () async {
       for (final observation in <ReligiousDateObservation?>[
         null,
@@ -200,6 +229,7 @@ ReligiousDateObservation _observation({
   required ReligiousDateVerificationStatus status,
   required String countryCode,
   DateTime? gregorianDate,
+  Uri? publicationUrl,
 }) {
   final source = ReligiousDateSourceMetadata(
     id: '${countryCode.toLowerCase()}-fixture',
@@ -220,9 +250,8 @@ ReligiousDateObservation _observation({
     status: status,
     verifiedAt: DateTime.utc(2026, 9, 1, 1),
     sourcePublicationLocator: 'official-calendar:1448-01-10',
-    sourcePublicationUrl: Uri.parse(
-      'https://example.org/official-calendar/1448-01-10',
-    ),
+    sourcePublicationUrl: publicationUrl ??
+        Uri.parse('https://example.org/official-calendar/1448-01-10'),
   );
 }
 
