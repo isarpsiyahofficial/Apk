@@ -51,7 +51,7 @@ class ProphetDateEvidence {
   final int? endYear;
 
   bool get isValid {
-    if (!label.isComplete || !_hasSourceMetadata(sources)) return false;
+    if (!label.isComplete || !_hasProphetSourceMetadata(sources)) return false;
     if (startYear != null && endYear != null && startYear! > endYear!) return false;
 
     switch (status) {
@@ -71,7 +71,6 @@ class ProphetDateEvidence {
       case ProphetDateStatus.traditional:
         return certainty == CertaintyLevel.traditional &&
             sources.every((source) =>
-                source.sourceClass == ReligiousSourceClass.classicalTraditional ||
                 source.sourceClass == ReligiousSourceClass.laterTradition ||
                 source.sourceClass == ReligiousSourceClass.israiliyat);
       case ProphetDateStatus.disputed:
@@ -102,7 +101,7 @@ class ProphetGeography {
   final double? longitude;
 
   bool get isValid {
-    if (!name.isComplete || !_hasSourceMetadata(sources)) return false;
+    if (!name.isComplete || !_hasProphetSourceMetadata(sources)) return false;
     if ((latitude == null) != (longitude == null)) return false;
     if (latitude != null && (latitude! < -90 || latitude! > 90)) return false;
     if (longitude != null && (longitude! < -180 || longitude! > 180)) return false;
@@ -144,7 +143,7 @@ class ProphetFamilyRelation {
   bool get isValid =>
       relatedPersonId.trim().isNotEmpty &&
       certainty != CertaintyLevel.unknown &&
-      _hasSourceMetadata(sources) &&
+      _hasProphetSourceMetadata(sources) &&
       sources.every((source) => source.sourceClass != ReligiousSourceClass.unknown);
 }
 
@@ -183,7 +182,7 @@ class ProphetTimelineRelation {
 
   bool get isValid =>
       relatedProphetId.trim().isNotEmpty &&
-      _hasSourceMetadata(sources) &&
+      _hasProphetSourceMetadata(sources) &&
       (type == ProphetTimelineRelationType.unknown
           ? certainty == CertaintyLevel.unknown
           : certainty != CertaintyLevel.unknown);
@@ -203,7 +202,7 @@ class ProphetClaim {
   bool get isValid =>
       text.isComplete &&
       certainty != CertaintyLevel.unknown &&
-      _hasSourceMetadata(sources) &&
+      _hasProphetSourceMetadata(sources) &&
       sources.every((source) => source.sourceClass != ReligiousSourceClass.unknown);
 }
 
@@ -238,6 +237,7 @@ class ProphetContent {
     if (record.type != ContentType.prophetBiography ||
         !record.canEnterProductionDataset ||
         (record.reviewer?.trim().isEmpty ?? true) ||
+        !_hasProphetSourceMetadata(record.sources) ||
         canonicalId.trim().isEmpty ||
         !name.isComplete ||
         arabicName.trim().isEmpty ||
@@ -268,9 +268,21 @@ class ProphetContent {
   }
 }
 
-bool _hasSourceMetadata(List<SourceReference> sources) =>
+const Set<ReligiousSourceClass> _prophetSourceClasses = {
+  ReligiousSourceClass.quran,
+  ReligiousSourceClass.sahihHasanHadith,
+  ReligiousSourceClass.earlyIslamicHistoryTafsir,
+  ReligiousSourceClass.israiliyat,
+  ReligiousSourceClass.laterTradition,
+  ReligiousSourceClass.modernHistoryArchaeology,
+  ReligiousSourceClass.disputed,
+  ReligiousSourceClass.unknown,
+};
+
+bool _hasProphetSourceMetadata(List<SourceReference> sources) =>
     sources.isNotEmpty &&
     sources.every((source) =>
+        _prophetSourceClasses.contains(source.sourceClass) &&
         source.id.trim().isNotEmpty &&
         source.title.trim().isNotEmpty &&
         source.licenseId.trim().isNotEmpty);
