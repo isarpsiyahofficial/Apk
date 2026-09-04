@@ -114,11 +114,7 @@ class ProphetGeography {
             longitude != null &&
             certainty == CertaintyLevel.explicitSource &&
             sources.every((source) =>
-                source.sourceClass != ReligiousSourceClass.classicalTraditional &&
-                source.sourceClass != ReligiousSourceClass.israiliyat &&
-                source.sourceClass != ReligiousSourceClass.laterTradition &&
-                source.sourceClass != ReligiousSourceClass.disputed &&
-                source.sourceClass != ReligiousSourceClass.unknown);
+                source.sourceClass == ReligiousSourceClass.modernHistoryArchaeology);
       case ProphetLocationPrecision.approximateRegion:
         return certainty == CertaintyLevel.approximate;
       case ProphetLocationPrecision.disputed:
