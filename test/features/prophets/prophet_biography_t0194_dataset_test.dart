@@ -124,6 +124,58 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(tampered), isFalse);
   });
 
+  test('spoofed Quran source identity fails closed even with valid locator', () {
+    final original = canonicalProphetBiographyT0194Dataset.first;
+    final originalMainMessage =
+        original.sections[ProphetBiographySectionKey.mainMessage]!;
+
+    CanonicalProphetBiographyDraft withSource(SourceReference source) =>
+        CanonicalProphetBiographyDraft(
+          identity: original.identity,
+          quranReferences: original.quranReferences,
+          sections: <ProphetBiographySectionKey, ProphetBiographyField>{
+            ...original.sections,
+            ProphetBiographySectionKey.mainMessage: ProphetBiographyField(
+              text: originalMainMessage.text,
+              status: ProphetBiographyFieldStatus.sourceBacked,
+              sources: <SourceReference>[source],
+            ),
+          },
+        );
+
+    for (final source in const <SourceReference>[
+      SourceReference(
+        id: 'untrusted-quran-copy-q21-25',
+        title: 'Tanzil Project — Uthmani Quran Text v1.1',
+        sourceClass: ReligiousSourceClass.quran,
+        licenseId: 'CC-BY-3.0',
+        locator: 'Quran 21:25',
+      ),
+      SourceReference(
+        id: 'tanzil-uthmani-v1.1-q21-25',
+        title: 'Different Quran source',
+        sourceClass: ReligiousSourceClass.quran,
+        licenseId: 'CC-BY-3.0',
+        locator: 'Quran 21:25',
+      ),
+      SourceReference(
+        id: 'tanzil-uthmani-v1.1-q21-25',
+        title: 'Tanzil Project — Uthmani Quran Text v1.1',
+        sourceClass: ReligiousSourceClass.quran,
+        licenseId: 'UNKNOWN',
+        locator: 'Quran 21:25',
+      ),
+    ]) {
+      final tampered = withSource(source);
+      expect(tampered.isStructurallyComplete, isTrue, reason: source.id);
+      expect(
+        prophetBiographyT0194DraftHasTraceableProvenance(tampered),
+        isFalse,
+        reason: source.id,
+      );
+    }
+  });
+
   test('impossible draft Quran reference fails T0194 provenance gate', () {
     final original = canonicalProphetBiographyT0194Dataset.first;
     final tampered = CanonicalProphetBiographyDraft(
@@ -156,7 +208,7 @@ void main() {
               status: ProphetBiographyFieldStatus.sourceBacked,
               sources: <SourceReference>[
                 SourceReference(
-                  id: 'tampered-quran-locator',
+                  id: 'tanzil-uthmani-v1.1-tampered-quran-locator',
                   title: 'Tanzil Project — Uthmani Quran Text v1.1',
                   sourceClass: ReligiousSourceClass.quran,
                   licenseId: 'CC-BY-3.0',
@@ -202,7 +254,7 @@ void main() {
           status: ProphetBiographyFieldStatus.sourceBacked,
           sources: const <SourceReference>[
             SourceReference(
-              id: 'valid-multi-quran-locator',
+              id: 'tanzil-uthmani-v1.1-valid-multi-quran-locator',
               title: 'Tanzil Project — Uthmani Quran Text v1.1',
               sourceClass: ReligiousSourceClass.quran,
               licenseId: 'CC-BY-3.0',
