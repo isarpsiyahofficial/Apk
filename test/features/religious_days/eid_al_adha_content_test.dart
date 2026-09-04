@@ -20,6 +20,27 @@ void main() {
       }
     });
 
+    test('all SPEC 306 evidence areas were deliberately reviewed', () {
+      final content = eidAlAdhaResearchContent;
+
+      expect(
+        content.reviewedEvidenceKinds,
+        ReligiousDayContent.requiredReviewedEvidenceKinds,
+      );
+      expect(content.hasCompleteRequiredReviewCoverage, isTrue);
+      expect(
+        content.hasReviewedEvidenceKind(
+          ReligiousDayEvidenceKind.disputedReport,
+        ),
+        isTrue,
+      );
+      expect(
+        content.sectionsOf(ReligiousDayEvidenceKind.disputedReport),
+        isEmpty,
+        reason: 'Reviewed but no separate reliable disputed-report claim found.',
+      );
+    });
+
     test('Quran basis is pinned to 22:36-37 and remains Quran-only', () {
       final section = eidAlAdhaResearchContent
           .sectionsOf(ReligiousDayEvidenceKind.quranBasis)
