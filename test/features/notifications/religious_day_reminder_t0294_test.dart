@@ -51,6 +51,10 @@ void main() {
         source: sourceMetadata,
         status: ReligiousDateVerificationStatus.confirmed,
         verifiedAt: DateTime.utc(2026, 9, 1, 1),
+        sourcePublicationLocator: 'official-calendar:1448-01-10',
+        sourcePublicationUrl: Uri.parse(
+          'https://example.org/official-calendar/1448-01-10',
+        ),
       );
       final scheduler = _Scheduler();
       final coordinator = ReligiousDayReminderCoordinatorT0294(
@@ -215,6 +219,10 @@ ReligiousDateObservation _observation({
     source: source,
     status: status,
     verifiedAt: DateTime.utc(2026, 9, 1, 1),
+    sourcePublicationLocator: 'official-calendar:1448-01-10',
+    sourcePublicationUrl: Uri.parse(
+      'https://example.org/official-calendar/1448-01-10',
+    ),
   );
 }
 
