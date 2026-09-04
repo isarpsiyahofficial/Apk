@@ -37,6 +37,28 @@ void main() {
       }
     });
 
+    test('all four deliberately review every SPEC 306 evidence area', () {
+      for (final content in records) {
+        expect(
+          content.hasCompleteRequiredReviewCoverage,
+          isTrue,
+          reason: content.record.id,
+        );
+        for (final kind in ReligiousDayContent.requiredReviewedEvidenceKinds) {
+          expect(
+            content.hasReviewedEvidenceKind(kind),
+            isTrue,
+            reason: '${content.record.id}: $kind',
+          );
+        }
+        expect(
+          content.sectionsOf(ReligiousDayEvidenceKind.specificWorship),
+          isEmpty,
+          reason: '${content.record.id} must not invent a special ritual',
+        );
+      }
+    });
+
     test('Miraj keeps Quran 17:1, sound hadith and 27 Rajab tradition separate', () {
       final quran = mirajResearchContent
           .sectionsOf(ReligiousDayEvidenceKind.quranBasis)
@@ -51,6 +73,7 @@ void main() {
       expect(quran.sources.single.locator, '17:1');
       expect(quran.sources.single.sourceClass, ReligiousSourceClass.quran);
       expect(hadith.sources.single.id, 'muslim-162a-isra-miraj');
+      expect(hadith.sources.single.locator, 'Book 1, Hadith 316');
       expect(
         hadith.sources.single.sourceClass,
         ReligiousSourceClass.sahihHasanHadith,
