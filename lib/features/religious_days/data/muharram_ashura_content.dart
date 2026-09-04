@@ -23,7 +23,7 @@ final ReligiousDayContent muharramAshuraResearchContent = ReligiousDayContent(
       _tdvAshura,
       _tdvKarbala,
     ],
-    lastReviewedAt: DateTime.utc(2026, 8, 29),
+    lastReviewedAt: DateTime.utc(2026, 9, 4),
   ),
   title: _title,
   whatIsIt: const LocalizedReligiousText(
@@ -36,6 +36,7 @@ final ReligiousDayContent muharramAshuraResearchContent = ReligiousDayContent(
     en: 'Ashura appears in early Islamic sources in connection with fasting. The killing of Husayn ibn Ali and his companions at Karbala on 10 Muharram 61 AH (10 October 680) later added a profound historical memory of mourning and remembrance of the Prophet’s family. The app does not minimize that tragedy, but it also does not classify later mourning customs as though they were the same type of evidence as worship established by sound hadith.',
     ar: 'وردت عاشوراء في المصادر الإسلامية المبكرة في سياق الصيام. ثم أضاف استشهاد الحسين بن علي ومن معه في كربلاء يوم 10 محرّم سنة 61هـ (10 أكتوبر 680م) بعداً تاريخياً عميقاً من الحزن وذكر أهل البيت. ولا يقلل التطبيق من هذه المأساة، كما لا يساوي بين تقاليد الحداد اللاحقة وبين العبادات الثابتة بحديث صحيح من جهة نوع الدليل.',
   ),
+  reviewedEvidenceKinds: ReligiousDayContent.requiredReviewedEvidenceKinds,
   evidence: const [
     ReligiousDayEvidenceSection(
       kind: ReligiousDayEvidenceKind.quranBasis,
