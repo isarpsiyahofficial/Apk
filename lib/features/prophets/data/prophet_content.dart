@@ -71,6 +71,7 @@ class ProphetDateEvidence {
       case ProphetDateStatus.traditional:
         return certainty == CertaintyLevel.traditional &&
             sources.every((source) =>
+                source.sourceClass == ReligiousSourceClass.classicalTraditional ||
                 source.sourceClass == ReligiousSourceClass.laterTradition ||
                 source.sourceClass == ReligiousSourceClass.israiliyat);
       case ProphetDateStatus.disputed:
@@ -272,6 +273,7 @@ const Set<ReligiousSourceClass> _prophetSourceClasses = {
   ReligiousSourceClass.quran,
   ReligiousSourceClass.sahihHasanHadith,
   ReligiousSourceClass.earlyIslamicHistoryTafsir,
+  ReligiousSourceClass.classicalTraditional,
   ReligiousSourceClass.israiliyat,
   ReligiousSourceClass.laterTradition,
   ReligiousSourceClass.modernHistoryArchaeology,
