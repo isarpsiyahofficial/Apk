@@ -91,11 +91,20 @@ class ReligiousDateObservation {
   /// Direct HTTPS page/document used to verify this exact observation.
   final Uri? sourcePublicationUrl;
 
-  bool get hasPinnedPublicationEvidence =>
-      (sourcePublicationLocator?.trim().isNotEmpty ?? false) &&
-      sourcePublicationUrl != null &&
-      sourcePublicationUrl!.scheme == 'https' &&
-      sourcePublicationUrl!.host.trim().isNotEmpty;
+  /// Exact-date evidence must be pinned to the same authority host declared by
+  /// [source]. This prevents a record labelled as an official Diyanet/SPA date
+  /// from becoming trusted merely because it points at an unrelated HTTPS site.
+  bool get hasPinnedPublicationEvidence {
+    final publicationUrl = sourcePublicationUrl;
+    if (!(sourcePublicationLocator?.trim().isNotEmpty ?? false) ||
+        publicationUrl == null ||
+        publicationUrl.scheme != 'https' ||
+        publicationUrl.host.trim().isEmpty) {
+      return false;
+    }
+
+    return publicationUrl.host.toLowerCase() == source.url.host.toLowerCase();
+  }
 
   bool get canPresentAsExactLocalGregorianDate =>
       status == ReligiousDateVerificationStatus.confirmed &&
