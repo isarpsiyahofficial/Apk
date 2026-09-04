@@ -61,6 +61,7 @@ class ProphetDateEvidence {
             startYear == endYear &&
             certainty == CertaintyLevel.explicitSource &&
             sources.every((source) =>
+                source.sourceClass != ReligiousSourceClass.classicalTraditional &&
                 source.sourceClass != ReligiousSourceClass.israiliyat &&
                 source.sourceClass != ReligiousSourceClass.laterTradition &&
                 source.sourceClass != ReligiousSourceClass.disputed &&
