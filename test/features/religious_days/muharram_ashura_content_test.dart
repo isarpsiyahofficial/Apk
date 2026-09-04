@@ -14,10 +14,32 @@ void main() {
       expect(content.record.reviewStatus, ContentReviewStatus.research);
       expect(content.canEnterProductionDataset, isFalse);
 
+      expect(content.hasCompleteRequiredReviewCoverage, isTrue);
+      expect(
+        content.reviewedEvidenceKinds,
+        ReligiousDayContent.requiredReviewedEvidenceKinds,
+      );
+
       for (final kind in ReligiousDayEvidenceKind.values) {
+        expect(content.hasReviewedEvidenceKind(kind), isTrue, reason: kind.name);
         if (kind == ReligiousDayEvidenceKind.disputedReport) continue;
         expect(content.sectionsOf(kind), isNotEmpty, reason: kind.name);
       }
+    });
+
+    test('disputed-report area was reviewed without inventing a claim', () {
+      expect(
+        muharramAshuraResearchContent.hasReviewedEvidenceKind(
+          ReligiousDayEvidenceKind.disputedReport,
+        ),
+        isTrue,
+      );
+      expect(
+        muharramAshuraResearchContent.sectionsOf(
+          ReligiousDayEvidenceKind.disputedReport,
+        ),
+        isEmpty,
+      );
     });
 
     test('Quran basis stays general and does not claim 9:36 names Ashura', () {
