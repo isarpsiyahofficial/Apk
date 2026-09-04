@@ -12,7 +12,7 @@ final ReligiousDayContent mirajResearchContent = ReligiousDayContent(
     certainty: CertaintyLevel.explicitSource,
     text: _title,
     sources: const [_quran171, _muslim162a, _tdvMiraj],
-    lastReviewedAt: DateTime.utc(2026, 8, 29),
+    lastReviewedAt: DateTime.utc(2026, 9, 4),
   ),
   title: _title,
   whatIsIt: const LocalizedReligiousText(
@@ -58,6 +58,7 @@ final ReligiousDayContent mirajResearchContent = ReligiousDayContent(
     ),
   ],
   specificWorshipStatus: SpecificWorshipStatus.noSpecificPracticeEstablished,
+  reviewedEvidenceKinds: ReligiousDayContent.requiredReviewedEvidenceKinds,
 );
 
 const _title = LocalizedReligiousText(
