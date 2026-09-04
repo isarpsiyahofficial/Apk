@@ -22,7 +22,7 @@ final ReligiousDayContent arafahResearchContent = ReligiousDayContent(
       _tdvArefe,
       _tdvArafat,
     ],
-    lastReviewedAt: DateTime.utc(2026, 8, 29),
+    lastReviewedAt: DateTime.utc(2026, 9, 4),
   ),
   title: _title,
   whatIsIt: const LocalizedReligiousText(
@@ -97,6 +97,7 @@ final ReligiousDayContent arafahResearchContent = ReligiousDayContent(
       sources: [_quranArafat, _muslim1162a],
     ),
   ],
+  reviewedEvidenceKinds: ReligiousDayContent.requiredReviewedEvidenceKinds,
   specificWorshipStatus: SpecificWorshipStatus.establishedByStrongSource,
 );
 
