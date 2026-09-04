@@ -7,6 +7,7 @@ void main() {
     ReligiousDateVerificationStatus status =
         ReligiousDateVerificationStatus.confirmed,
     bool includePublicationEvidence = true,
+    Uri? publicationUrl,
   }) {
     final source = religiousDateAuthorities.first;
     return ReligiousDateObservation(
@@ -21,7 +22,8 @@ void main() {
       sourcePublicationLocator:
           includePublicationEvidence ? 'official-calendar:1448-09-27' : null,
       sourcePublicationUrl: includePublicationEvidence
-          ? Uri.parse('https://namazvakitleri.diyanet.gov.tr/')
+          ? publicationUrl ??
+              Uri.parse('https://namazvakitleri.diyanet.gov.tr/')
           : null,
     );
   }
@@ -69,6 +71,21 @@ void main() {
       final result = ReligiousDayNotificationGate.evaluate(
         userOptedIn: true,
         observation: observation(includePublicationEvidence: false),
+      );
+
+      expect(result.allowed, isFalse);
+      expect(
+        result.reason,
+        ReligiousDayNotificationGateReason.unconfirmedLocalDate,
+      );
+    });
+
+    test('unrelated HTTPS publication cannot authorize a notification', () {
+      final result = ReligiousDayNotificationGate.evaluate(
+        userOptedIn: true,
+        observation: observation(
+          publicationUrl: Uri.parse('https://example.org/official-calendar'),
+        ),
       );
 
       expect(result.allowed, isFalse);
