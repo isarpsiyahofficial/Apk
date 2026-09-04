@@ -101,5 +101,76 @@ void main() {
       );
       expect(unsafe.isValid, isFalse);
     });
+
+    test('Quran-named identity rejects a locator for a different verse', () {
+      final unsafe = NonCanonicalProphetCandidate(
+        canonicalId: 'luqman-mismatch',
+        name: const LocalizedReligiousText(tr: 'Lokman', en: 'Luqman', ar: 'لقمان'),
+        arabicName: 'لقمان',
+        identityBasis: ProphetCandidateIdentityBasis.quranNamed,
+        status: ProphetCandidateStatus.prophethoodDisputed,
+        quranReference: const ProphetVerseReference(surah: 31, ayah: 12),
+        summary: const LocalizedReligiousText(tr: 'Test', en: 'Test', ar: 'اختبار'),
+        sources: const [
+          SourceReference(
+            id: 'wrong-quran-locator',
+            title: 'Canonical Quran',
+            sourceClass: ReligiousSourceClass.quran,
+            licenseId: 'CC-BY-3.0',
+            locator: '31:13',
+          ),
+        ],
+      );
+      expect(unsafe.isValid, isFalse);
+    });
+
+    test('Quran-backed identity rejects missing Quran locator', () {
+      final unsafe = NonCanonicalProphetCandidate(
+        canonicalId: 'uzayr-missing-locator',
+        name: const LocalizedReligiousText(tr: 'Üzeyir', en: 'Uzayr', ar: 'عزير'),
+        arabicName: 'عزير',
+        identityBasis: ProphetCandidateIdentityBasis.quranNamed,
+        status: ProphetCandidateStatus.prophethoodDisputed,
+        quranReference: const ProphetVerseReference(surah: 9, ayah: 30),
+        summary: const LocalizedReligiousText(tr: 'Test', en: 'Test', ar: 'اختبار'),
+        sources: const [
+          SourceReference(
+            id: 'quran-without-locator',
+            title: 'Canonical Quran',
+            sourceClass: ReligiousSourceClass.quran,
+            licenseId: 'CC-BY-3.0',
+          ),
+        ],
+      );
+      expect(unsafe.isValid, isFalse);
+    });
+
+    test('Quran-backed identity rejects malformed or reversed Quran range', () {
+      final malformed = NonCanonicalProphetCandidate(
+        canonicalId: 'khidr-malformed-range',
+        name: const LocalizedReligiousText(tr: 'Hızır', en: 'Khidr', ar: 'الخضر'),
+        arabicName: 'الخضر',
+        identityBasis: ProphetCandidateIdentityBasis.quranUnnamedTraditionalIdentification,
+        status: ProphetCandidateStatus.prophethoodDisputed,
+        quranReference: const ProphetVerseReference(surah: 18, ayah: 65),
+        summary: const LocalizedReligiousText(tr: 'Test', en: 'Test', ar: 'اختبار'),
+        sources: const [
+          SourceReference(
+            id: 'quran-bad-range',
+            title: 'Canonical Quran',
+            sourceClass: ReligiousSourceClass.quran,
+            licenseId: 'CC-BY-3.0',
+            locator: '18:82-65',
+          ),
+          SourceReference(
+            id: 'traditional-identification',
+            title: 'Traditional identification',
+            sourceClass: ReligiousSourceClass.disputed,
+            licenseId: 'reference-only',
+          ),
+        ],
+      );
+      expect(malformed.isValid, isFalse);
+    });
   });
 }
