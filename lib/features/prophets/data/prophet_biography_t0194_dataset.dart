@@ -79,7 +79,7 @@ CanonicalProphetBiographyDraft _applySupplement(
 
 bool _isAuditableQuranLocator(String locator) {
   if (!locator.startsWith('Quran ')) return false;
-  final citations = locator.substring('Quran '.length).split(';');
+  final citations = locator.substring('Quran '.length).split(RegExp(r'[;,]'));
   if (citations.isEmpty) return false;
 
   for (final rawCitation in citations) {
@@ -100,7 +100,8 @@ bool _isAuditableQuranLocator(String locator) {
 /// T0194 fail-closed provenance gate for biography claims. A field labelled as
 /// source-backed must point to a human-auditable verse/report locator; source
 /// identity and licence metadata alone are not enough evidence. Quran locators
-/// must additionally use a parseable `Quran surah:ayah[-ayah]` form so a typo
+/// must additionally use parseable `Quran surah:ayah[-ayah]` citations,
+/// separated by `;` or `,` when more than one reference is needed, so a typo
 /// or placeholder string cannot masquerade as traceable scripture evidence.
 bool prophetBiographyT0194DraftHasTraceableProvenance(
   CanonicalProphetBiographyDraft draft,
