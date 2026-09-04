@@ -76,7 +76,12 @@ CanonicalProphetBiographyDraft _applySupplement(
   );
 }
 
-bool _hasTraceableSourceBackedFields(CanonicalProphetBiographyDraft draft) {
+/// T0194 fail-closed provenance gate for biography claims. A field labelled as
+/// source-backed must point to a human-auditable verse/report locator; source
+/// identity and licence metadata alone are not enough evidence.
+bool prophetBiographyT0194DraftHasTraceableProvenance(
+  CanonicalProphetBiographyDraft draft,
+) {
   for (final field in draft.sections.values) {
     if (field.status != ProphetBiographyFieldStatus.sourceBacked) continue;
     if (field.sources.isEmpty) return false;
@@ -104,5 +109,5 @@ bool get canonicalProphetBiographyT0194DatasetIsStructurallyValid =>
       (draft) =>
           draft.isStructurallyComplete &&
           draft.hasPendingResearch &&
-          _hasTraceableSourceBackedFields(draft),
+          prophetBiographyT0194DraftHasTraceableProvenance(draft),
     );
