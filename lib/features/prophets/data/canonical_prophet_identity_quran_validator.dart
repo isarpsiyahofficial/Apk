@@ -85,15 +85,17 @@ final class CanonicalProphetIdentityQuranValidator {
   }
 
   static String _normalizeArabic(String value) {
-    // Tanzil's Uthmani text can encode phonemic letters with Quranic small-letter
-    // code points rather than the ordinary Arabic letter used by the canonical
-    // display spelling. Preserve those identities before stripping recitation
-    // marks. Examples include dagger alif in Salih (11:61) and small high yeh
-    // in Ibrahim (2:124). The Quran source bytes themselves are never changed.
+    // Tanzil's Uthmani text can omit an ordinary display-spelling letter in
+    // favour of a Quranic orthographic mark. Preserve only forms that actually
+    // replace that letter before stripping recitation marks: dagger alif and
+    // small high yeh (for example Salih 11:61 and Ibrahim 2:124).
+    //
+    // Do not promote every small Quranic sign into a full letter. For example
+    // Dawud 2:251 already contains the ordinary waw plus a small-waw recitation
+    // sign; converting that sign too would fabricate a duplicate letter.
+    // Quran source bytes themselves are never changed.
     return value
         .replaceAll('\u0670', 'ا')
-        .replaceAll('\u06E5', 'و')
-        .replaceAll('\u06E6', 'ي')
         .replaceAll('\u06E7', 'ي')
         .replaceAll(RegExp(r'[\u0610-\u061A\u064B-\u065F\u06D6-\u06ED]'), '')
         .replaceAll('\u0640', '')
