@@ -23,7 +23,7 @@ final ReligiousDayContent eidAlAdhaResearchContent = ReligiousDayContent(
       _tdvKurban,
       _tdvBayram,
     ],
-    lastReviewedAt: DateTime.utc(2026, 8, 29),
+    lastReviewedAt: DateTime.utc(2026, 9, 4),
   ),
   title: _title,
   whatIsIt: const LocalizedReligiousText(
@@ -98,6 +98,7 @@ final ReligiousDayContent eidAlAdhaResearchContent = ReligiousDayContent(
       sources: [_quranSacrifice, _quranPiety],
     ),
   ],
+  reviewedEvidenceKinds: ReligiousDayContent.requiredReviewedEvidenceKinds,
   specificWorshipStatus: SpecificWorshipStatus.establishedByStrongSource,
 );
 
