@@ -51,14 +51,15 @@ class NonCanonicalProphetCandidate {
         canonicalQuranNamedProphets.map((entry) => entry.canonicalId).toSet();
     if (canonicalIds.contains(canonicalId)) return false;
 
+    final reference = quranReference;
     switch (identityBasis) {
       case ProphetCandidateIdentityBasis.quranNamed:
-        return quranReference?.isValid == true &&
-            sources.any((source) => source.sourceClass == ReligiousSourceClass.quran) &&
+        return reference?.isValid == true &&
+            _hasPinnedQuranEvidence(reference!, sources) &&
             status == ProphetCandidateStatus.prophethoodDisputed;
       case ProphetCandidateIdentityBasis.quranUnnamedTraditionalIdentification:
-        return quranReference?.isValid == true &&
-            sources.any((source) => source.sourceClass == ReligiousSourceClass.quran) &&
+        return reference?.isValid == true &&
+            _hasPinnedQuranEvidence(reference!, sources) &&
             sources.any((source) =>
                 source.sourceClass == ReligiousSourceClass.disputed ||
                 source.sourceClass == ReligiousSourceClass.classicalTraditional ||
@@ -73,6 +74,103 @@ class NonCanonicalProphetCandidate {
                 source.sourceClass == ReligiousSourceClass.classicalTraditional) &&
             status == ProphetCandidateStatus.traditionalProphetClaim;
     }
+  }
+}
+
+bool _hasPinnedQuranEvidence(
+  ProphetVerseReference reference,
+  List<SourceReference> sources,
+) {
+  final quranSources = sources
+      .where((source) => source.sourceClass == ReligiousSourceClass.quran)
+      .toList(growable: false);
+  if (quranSources.isEmpty) return false;
+
+  return quranSources.every(_hasValidQuranLocator) &&
+      quranSources.any((source) => _quranSourceCoversReference(source, reference));
+}
+
+bool _hasValidQuranLocator(SourceReference source) {
+  final range = _parseQuranLocator(source.locator);
+  return range != null && range.isValid;
+}
+
+bool _quranSourceCoversReference(
+  SourceReference source,
+  ProphetVerseReference reference,
+) {
+  final range = _parseQuranLocator(source.locator);
+  if (range == null || !range.isValid) return false;
+  return range.contains(reference);
+}
+
+_QuranLocatorRange? _parseQuranLocator(String? rawLocator) {
+  final locator = rawLocator?.trim();
+  if (locator == null || locator.isEmpty) return null;
+
+  final match = RegExp(r'^(\d{1,3}):(\d+)(?:-(?:(\d{1,3}):)?(\d+))?$')
+      .firstMatch(locator);
+  if (match == null) return null;
+
+  final startSurah = int.tryParse(match.group(1)!);
+  final startAyah = int.tryParse(match.group(2)!);
+  final explicitEndSurah = match.group(3) == null
+      ? null
+      : int.tryParse(match.group(3)!);
+  final explicitEndAyah =
+      match.group(4) == null ? null : int.tryParse(match.group(4)!);
+  if (startSurah == null || startAyah == null) return null;
+
+  return _QuranLocatorRange(
+    startSurah: startSurah,
+    startAyah: startAyah,
+    endSurah: explicitEndSurah ?? startSurah,
+    endAyah: explicitEndAyah ?? startAyah,
+  );
+}
+
+class _QuranLocatorRange {
+  const _QuranLocatorRange({
+    required this.startSurah,
+    required this.startAyah,
+    required this.endSurah,
+    required this.endAyah,
+  });
+
+  final int startSurah;
+  final int startAyah;
+  final int endSurah;
+  final int endAyah;
+
+  bool get isValid {
+    if (startSurah < 1 || startSurah > 114 || endSurah < 1 || endSurah > 114) {
+      return false;
+    }
+    if (startAyah < 1 || endAyah < 1) return false;
+    return _compare(startSurah, startAyah, endSurah, endAyah) <= 0;
+  }
+
+  bool contains(ProphetVerseReference reference) {
+    if (!reference.isValid || !isValid) return false;
+    return _compare(
+              startSurah,
+              startAyah,
+              reference.surah,
+              reference.ayah,
+            ) <=
+            0 &&
+        _compare(
+              reference.surah,
+              reference.ayah,
+              endSurah,
+              endAyah,
+            ) <=
+            0;
+  }
+
+  static int _compare(int leftSurah, int leftAyah, int rightSurah, int rightAyah) {
+    final surahComparison = leftSurah.compareTo(rightSurah);
+    return surahComparison != 0 ? surahComparison : leftAyah.compareTo(rightAyah);
   }
 }
 
