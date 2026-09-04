@@ -17,12 +17,14 @@ class ReligiousNightTerminology {
     required this.title,
     required this.turkishKandilLabel,
     required this.culturalNote,
+    required this.sources,
   });
 
   final ReligiousNightTerminologyId id;
   final LocalizedReligiousText title;
   final String turkishKandilLabel;
   final LocalizedReligiousText culturalNote;
+  final List<SourceReference> sources;
 
   String titleFor(String languageCode) => switch (languageCode) {
         'tr' => title.tr,
@@ -37,7 +39,46 @@ class ReligiousNightTerminology {
         'ar' => culturalNote.ar,
         _ => culturalNote.en,
       };
+
+  /// Fail-closed guard for SPEC 314–315.
+  ///
+  /// Turkish may expose the historical-cultural `... Kandili` alias, while the
+  /// canonical EN/AR titles must use the religious names actually used in those
+  /// languages. A future content edit that introduces a literal "lamp night",
+  /// `Kandil`, or Arabic `قنديل` title is rejected by this gate rather than
+  /// silently becoming UI copy.
+  bool get isLocaleSafe {
+    if (!title.isComplete ||
+        !culturalNote.isComplete ||
+        !turkishKandilLabel.trim().endsWith('Kandili') ||
+        sources.isEmpty ||
+        sources.any((source) =>
+            source.id.trim().isEmpty ||
+            source.title.trim().isEmpty ||
+            source.licenseId.trim().isEmpty ||
+            (source.locator?.trim().isEmpty ?? true))) {
+      return false;
+    }
+
+    final englishTitle = title.en.toLowerCase();
+    final arabicTitle = title.ar;
+    if (englishTitle.contains('kandil') ||
+        englishTitle.contains('lamp night') ||
+        arabicTitle.contains('قنديل')) {
+      return false;
+    }
+
+    return true;
+  }
 }
+
+const _tdvKandilTerminology = SourceReference(
+  id: 'tdv-islam-ansiklopedisi-kandil-gece',
+  title: 'TDV İslâm Ansiklopedisi — Kandil',
+  sourceClass: ReligiousSourceClass.laterTradition,
+  licenseId: 'reference-only-no-verbatim-text-copied',
+  locator: 'Kandil (gece) maddesi — II. Selim dönemi adlandırması ve beş gece listesi',
+);
 
 const religiousNightTerminology = <ReligiousNightTerminology>[
   ReligiousNightTerminology(
@@ -53,6 +94,7 @@ const religiousNightTerminology = <ReligiousNightTerminology>[
       en: '“Kandil” is a Turkish-Ottoman cultural label for commemorated religious nights; it is not translated as “lamp night”.',
       ar: '«قنديل» تسمية ثقافية تركية عثمانية لليالٍ دينية يُحتفى بها، ولا تُترجم في الواجهة العربية إلى «ليلة القنديل».',
     ),
+    sources: [_tdvKandilTerminology],
   ),
   ReligiousNightTerminology(
     id: ReligiousNightTerminologyId.israMiraj,
@@ -67,6 +109,7 @@ const religiousNightTerminology = <ReligiousNightTerminology>[
       en: 'Turkish usage commonly says “Miraç Kandili”; English keeps the established religious terms Isra and Mi‘raj instead of translating kandil literally.',
       ar: 'يشيع في التركية اسم «Miraç Kandili»، بينما تحافظ العربية على الاسم الديني «ليلة الإسراء والمعراج» دون ترجمة لفظ قنديل ترجمة حرفية.',
     ),
+    sources: [_tdvKandilTerminology],
   ),
   ReligiousNightTerminology(
     id: ReligiousNightTerminologyId.midShabanBerat,
@@ -81,6 +124,7 @@ const religiousNightTerminology = <ReligiousNightTerminology>[
       en: '“Berat Kandili” is Turkish traditional usage; English identifies the night by mid-Sha‘ban and retains “Berat” only as a helpful Turkish-context label.',
       ar: '«Berat Kandili» استعمال تركي تقليدي؛ وتُقدَّم في العربية التسمية المألوفة «ليلة النصف من شعبان» مع إمكان ذكر «ليلة البراءة» توضيحاً.',
     ),
+    sources: [_tdvKandilTerminology],
   ),
   ReligiousNightTerminology(
     id: ReligiousNightTerminologyId.regaib,
@@ -95,6 +139,7 @@ const religiousNightTerminology = <ReligiousNightTerminology>[
       en: '“Regaib Kandili” is a Turkish-Islamic cultural label. The title does not by itself imply that a special ritual for the night is established by sound evidence.',
       ar: '«Regaib Kandili» تسمية ثقافية تركية إسلامية؛ ولا يعني الاسم بذاته ثبوت عبادة مخصوصة لهذه الليلة بدليل صحيح.',
     ),
+    sources: [_tdvKandilTerminology],
   ),
   ReligiousNightTerminology(
     id: ReligiousNightTerminologyId.mawlid,
@@ -109,6 +154,7 @@ const religiousNightTerminology = <ReligiousNightTerminology>[
       en: '“Mevlid Kandili” is common Turkish traditional usage; English uses Mawlid rather than a literal translation of the word kandil.',
       ar: '«Mevlid Kandili» استعمال تركي شائع، أما الواجهة العربية فتستخدم المصطلح المستقر «المولد النبوي» بدلاً من ترجمة كلمة قنديل حرفياً.',
     ),
+    sources: [_tdvKandilTerminology],
   ),
 ];
 
