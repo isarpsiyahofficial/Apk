@@ -1,4 +1,5 @@
 import '../../../core/content/content_governance.dart';
+import '../../quran/data/canonical_quran_source.dart';
 import 'canonical_prophet_biographies.dart';
 import 'prophet_biography_t0194_supplements.dart';
 import 'prophet_biography_t0194_supplements_2.dart';
@@ -90,7 +91,11 @@ bool _isAuditableQuranLocator(String locator) {
     final surah = int.parse(match.group(1)!);
     final startAyah = int.parse(match.group(2)!);
     final endAyah = int.tryParse(match.group(3) ?? '') ?? startAyah;
-    if (surah < 1 || surah > 114 || startAyah < 1 || endAyah < startAyah) {
+    if (surah < 1 || surah > canonicalQuranSuraCount || startAyah < 1) {
+      return false;
+    }
+    final maxAyah = canonicalQuranAyahCountForSura(surah);
+    if (startAyah > maxAyah || endAyah < startAyah || endAyah > maxAyah) {
       return false;
     }
   }
@@ -100,9 +105,10 @@ bool _isAuditableQuranLocator(String locator) {
 /// T0194 fail-closed provenance gate for biography claims. A field labelled as
 /// source-backed must point to a human-auditable verse/report locator; source
 /// identity and licence metadata alone are not enough evidence. Quran locators
-/// must additionally use parseable `Quran surah:ayah[-ayah]` citations,
-/// separated by `;` or `,` when more than one reference is needed, so a typo
-/// or placeholder string cannot masquerade as traceable scripture evidence.
+/// must additionally use parseable `Quran surah:ayah[-ayah]` citations whose
+/// ayah bounds exist in the pinned 114-sura Quran structure. Multiple citations
+/// may be separated by `;` or `,`; a typo, placeholder or impossible ayah must
+/// never masquerade as traceable scripture evidence.
 bool prophetBiographyT0194DraftHasTraceableProvenance(
   CanonicalProphetBiographyDraft draft,
 ) {
