@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophet_biographies.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_biography_t0194_dataset.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_content.dart';
 
 void main() {
   test('T0194 working dataset keeps all 25 canonical biographies valid', () {
@@ -119,6 +120,22 @@ void main() {
       },
     );
 
+    expect(tampered.isStructurallyComplete, isTrue);
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(tampered), isFalse);
+  });
+
+  test('impossible draft Quran reference fails T0194 provenance gate', () {
+    final original = canonicalProphetBiographyT0194Dataset.first;
+    final tampered = CanonicalProphetBiographyDraft(
+      identity: original.identity,
+      quranReferences: const <ProphetVerseReference>[
+        ProphetVerseReference(surah: 1, ayah: 8),
+      ],
+      sections: original.sections,
+    );
+
+    // The generic reference model intentionally performs only shape validation;
+    // T0194 must additionally verify the verse against the pinned Quran shape.
     expect(tampered.isStructurallyComplete, isTrue);
     expect(prophetBiographyT0194DraftHasTraceableProvenance(tampered), isFalse);
   });
