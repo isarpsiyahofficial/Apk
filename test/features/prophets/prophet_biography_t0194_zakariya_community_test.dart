@@ -45,24 +45,32 @@ void main() {
     expect(field.text.ar, contains('ذرية طيبة'));
   });
 
-  test('T0194 Zakariya key events stay inside Quran 3:39-41 evidence', () {
+  test('T0194 Zakariya key events include Quran 3:37 care of Mary safely', () {
     final field = zakariya.sections[ProphetBiographySectionKey.keyEvents]!;
 
     expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
     expect(field.sources, hasLength(1));
     expect(
       field.sources.single.id,
-      'tanzil-uthmani-v1.1-zakariya-q3-39-41-key-events',
+      'tanzil-uthmani-v1.1-zakariya-q3-37-41-key-events',
     );
-    expect(field.sources.single.locator, 'Quran 3:39-41');
+    expect(field.sources.single.locator, 'Quran 3:37; 3:39-41');
     expect(field.sources.single.licenseId, 'CC-BY-3.0');
 
+    expect(field.text.tr, contains('Meryem’in bakımının Zekeriyyâ’ya verildiğini'));
     expect(field.text.tr, contains('Yahyâ’yı müjdelediğini'));
     expect(field.text.tr, contains('üç gün yalnız işaretle'));
+    expect(field.text.tr, contains('kesin bir akrabalık derecesi belirtmez'));
+
+    expect(field.text.en, contains('Mary was placed in Zechariah’s care'));
     expect(field.text.en, contains('good news of Yahya'));
     expect(field.text.en, contains('three days'));
+    expect(field.text.en, contains('do not additionally specify an exact degree of kinship'));
+
+    expect(field.text.ar, contains('مريم جُعلت في كفالة زكريا'));
     expect(field.text.ar, contains('فبشرته بيحيى'));
     expect(field.text.ar, contains('ثلاثة أيام إلا رمزًا'));
+    expect(field.text.ar, contains('ولا تحدد هذه الآيات درجة قرابة بعينها'));
   });
 
   test('T0194 Zakariya signs stay inside Quran 19:8-10 evidence', () {
@@ -91,6 +99,7 @@ void main() {
 
   test('T0194 Zakariya Quran evidence references remain deduplicated', () {
     for (final expected in <({int surah, int ayah})>[
+      (surah: 3, ayah: 37),
       (surah: 3, ayah: 38),
       (surah: 3, ayah: 39),
       (surah: 3, ayah: 40),
