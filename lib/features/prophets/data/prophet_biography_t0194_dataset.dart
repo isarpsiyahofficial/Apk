@@ -10,6 +10,7 @@ import 'prophet_biography_t0194_supplements_6.dart';
 import 'prophet_biography_t0194_supplements_7.dart';
 import 'prophet_biography_t0194_supplements_8.dart';
 import 'prophet_biography_t0194_supplements_9.dart';
+import 'prophet_biography_t0194_supplements_10.dart';
 import 'prophet_content.dart';
 
 CanonicalProphetBiographyDraft _applySupplement(
@@ -33,6 +34,8 @@ CanonicalProphetBiographyDraft _applySupplement(
       t0194ProphetBiographySupplements8[draft.identity.canonicalId];
   final ninthSupplement =
       t0194ProphetBiographySupplements9[draft.identity.canonicalId];
+  final tenthSupplement =
+      t0194ProphetBiographySupplements10[draft.identity.canonicalId];
   final firstReferences =
       t0194ProphetSupplementReferences[draft.identity.canonicalId] ??
           const <ProphetVerseReference>[];
@@ -57,6 +60,9 @@ CanonicalProphetBiographyDraft _applySupplement(
   final ninthReferences =
       t0194ProphetSupplementReferences9[draft.identity.canonicalId] ??
           const <ProphetVerseReference>[];
+  final tenthReferences =
+      t0194ProphetSupplementReferences10[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
 
   if (firstSupplement == null &&
       secondSupplement == null &&
@@ -67,6 +73,7 @@ CanonicalProphetBiographyDraft _applySupplement(
       seventhSupplement == null &&
       eighthSupplement == null &&
       ninthSupplement == null &&
+      tenthSupplement == null &&
       firstReferences.isEmpty &&
       secondReferences.isEmpty &&
       thirdReferences.isEmpty &&
@@ -74,7 +81,8 @@ CanonicalProphetBiographyDraft _applySupplement(
       fifthReferences.isEmpty &&
       seventhReferences.isEmpty &&
       eighthReferences.isEmpty &&
-      ninthReferences.isEmpty) {
+      ninthReferences.isEmpty &&
+      tenthReferences.isEmpty) {
     return draft;
   }
 
@@ -88,6 +96,7 @@ CanonicalProphetBiographyDraft _applySupplement(
     for (final reference in seventhReferences) reference.stableId: reference,
     for (final reference in eighthReferences) reference.stableId: reference,
     for (final reference in ninthReferences) reference.stableId: reference,
+    for (final reference in tenthReferences) reference.stableId: reference,
   };
 
   return CanonicalProphetBiographyDraft(
@@ -104,6 +113,7 @@ CanonicalProphetBiographyDraft _applySupplement(
       if (seventhSupplement != null) ...seventhSupplement,
       if (eighthSupplement != null) ...eighthSupplement,
       if (ninthSupplement != null) ...ninthSupplement,
+      if (tenthSupplement != null) ...tenthSupplement,
     },
   );
 }
