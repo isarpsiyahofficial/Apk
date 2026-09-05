@@ -54,6 +54,26 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(yahya), isTrue);
   });
 
+  test('T0194 Yahya period stays relative and avoids invented chronology', () {
+    final field = yahya.sections[ProphetBiographySectionKey.period]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(
+      field.sources.single.id,
+      'tanzil-uthmani-v1.1-yahya-q3-39-q19-7-period',
+    );
+    expect(field.sources.single.locator, 'Quran 3:39; 19:7');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+    expect(field.text.tr, contains('Zekeriyyâ’nın hayatıyla ilişkili'));
+    expect(field.text.en, contains('relation to Zechariah’s lifetime'));
+    expect(field.text.ar, contains('في صلة بحياة زكريا'));
+    expect(field.text.tr, contains('takvim yılı, yüzyıl veya hükümdar'));
+    expect(field.text.en, contains('no calendar year, century, or ruler'));
+    expect(field.text.ar, contains('سنة تقويمية أو قرن أو اسم حاكم'));
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(yahya), isTrue);
+  });
+
   test('T0194 Yahya key events stay inside Quran 3:39 and 19:12-14', () {
     final field = yahya.sections[ProphetBiographySectionKey.keyEvents]!;
 
@@ -116,7 +136,6 @@ void main() {
   test('T0194 Yahya unsupported chronology and geography remain pending', () {
     for (final key in <ProphetBiographySectionKey>[
       ProphetBiographySectionKey.geography,
-      ProphetBiographySectionKey.period,
       ProphetBiographySectionKey.communityResponse,
       ProphetBiographySectionKey.miracles,
       ProphetBiographySectionKey.dua,
