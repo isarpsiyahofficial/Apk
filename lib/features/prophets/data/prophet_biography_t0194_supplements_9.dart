@@ -33,11 +33,15 @@ ProphetBiographyField _quranField({
 /// Quran 3:37 explicitly places Mary under Zechariah's care and records him
 /// entering her sanctuary. Quran 3:39-41 states that the angels gave him good
 /// news of Yahya while he was standing in prayer in the sanctuary and records
-/// the three-day sign in which he would address people only by gesture. The
-/// key-events field stays at those Quranic facts and does not infer a specific
-/// kinship degree between Zechariah and Mary.
+/// the three-day sign in which he would address people only by gesture. Quran
+/// 21:90 separately records Allah answering Zechariah and granting him Yahya.
+/// The key-events field stays at those Quranic facts and does not infer a
+/// specific kinship degree between Zechariah and Mary.
 ///
-/// Quran 3:38 records Zechariah asking his Lord for good offspring.
+/// Quran 3:38 records Zechariah asking his Lord for good offspring. Quran 21:89
+/// records his plea not to be left alone and calls Allah the best of inheritors.
+/// These are preserved as two Quranic formulations without adding a motive or
+/// historical circumstance beyond the verses.
 ///
 /// Quran 19:8-10 additionally preserves the explicit extraordinary-sign
 /// boundary: Zechariah names his old age and his wife's barrenness, Allah states
@@ -56,18 +60,18 @@ final t0194ProphetBiographySupplements9 =
       locator: 'Quran 19:11',
     ),
     ProphetBiographySectionKey.dua: _quranField(
-      tr: 'Kur’an, Zekeriyyâ’nın Rabbinden kendi katından temiz ve iyi bir nesil bağışlamasını istediği duayı kaydeder.',
-      en: 'The Quran records Zechariah asking his Lord to grant him good offspring from Himself.',
-      ar: 'يسجل القرآن دعاء زكريا ربه أن يهبه من لدنه ذرية طيبة.',
-      stableId: 'zakariya-q3-38-dua',
-      locator: 'Quran 3:38',
+      tr: 'Kur’an, Zekeriyyâ’nın Rabbinden kendi katından temiz ve iyi bir nesil bağışlamasını istediğini; başka bir ayette de “beni tek başıma bırakma” diye dua ederek Allah’ı varislerin en hayırlısı olarak andığını kaydeder.',
+      en: 'The Quran records Zechariah asking his Lord to grant him good offspring from Himself; in another verse he prays not to be left alone and calls Allah the best of inheritors.',
+      ar: 'يسجل القرآن دعاء زكريا ربه أن يهبه من لدنه ذرية طيبة؛ وفي آية أخرى دعاه ألا يذره فردًا وذكر أنه خير الوارثين.',
+      stableId: 'zakariya-q3-38-q21-89-dua',
+      locator: 'Quran 3:38; 21:89',
     ),
     ProphetBiographySectionKey.keyEvents: _quranField(
-      tr: 'Kur’an, Meryem’in bakımının Zekeriyyâ’ya verildiğini ve onun Meryem’in yanına ibadet yerine girdiğini; daha sonra Zekeriyyâ mihrapta namaz kılarken meleklerin ona Yahyâ’yı müjdelediğini ve kendisine insanlarla üç gün yalnız işaretle konuşacağı bir alamet verildiğini bildirir. Ayetler Zekeriyyâ ile Meryem arasında ayrıca kesin bir akrabalık derecesi belirtmez.',
-      en: 'The Quran states that Mary was placed in Zechariah’s care and that he entered the sanctuary where she was; later, while Zechariah was standing in prayer in the sanctuary, the angels gave him good news of Yahya, and he was given a sign that for three days he would speak to people only by gesture. The verses do not additionally specify an exact degree of kinship between Zechariah and Mary.',
-      ar: 'يذكر القرآن أن مريم جُعلت في كفالة زكريا وأنه كان يدخل عليها المحراب؛ ثم نادته الملائكة وهو قائم يصلي في المحراب فبشرته بيحيى، وجُعلت له آية ألا يكلم الناس ثلاثة أيام إلا رمزًا. ولا تحدد هذه الآيات درجة قرابة بعينها بين زكريا ومريم.',
-      stableId: 'zakariya-q3-37-41-key-events',
-      locator: 'Quran 3:37; 3:39-41',
+      tr: 'Kur’an, Meryem’in bakımının Zekeriyyâ’ya verildiğini ve onun Meryem’in yanına ibadet yerine girdiğini; daha sonra Zekeriyyâ mihrapta namaz kılarken meleklerin ona Yahyâ’yı müjdelediğini ve kendisine insanlarla üç gün yalnız işaretle konuşacağı bir alamet verildiğini bildirir. Kur’an ayrıca Allah’ın onun duasına karşılık verdiğini ve Yahyâ’yı kendisine bağışladığını açıkça kaydeder. Ayetler Zekeriyyâ ile Meryem arasında ayrıca kesin bir akrabalık derecesi belirtmez.',
+      en: 'The Quran states that Mary was placed in Zechariah’s care and that he entered the sanctuary where she was; later, while Zechariah was standing in prayer in the sanctuary, the angels gave him good news of Yahya, and he was given a sign that for three days he would speak to people only by gesture. The Quran also explicitly records that Allah answered his prayer and granted him Yahya. The verses do not additionally specify an exact degree of kinship between Zechariah and Mary.',
+      ar: 'يذكر القرآن أن مريم جُعلت في كفالة زكريا وأنه كان يدخل عليها المحراب؛ ثم نادته الملائكة وهو قائم يصلي في المحراب فبشرته بيحيى، وجُعلت له آية ألا يكلم الناس ثلاثة أيام إلا رمزًا. كما يذكر القرآن صراحة أن الله استجاب له ووهب له يحيى. ولا تحدد هذه الآيات درجة قرابة بعينها بين زكريا ومريم.',
+      stableId: 'zakariya-q3-37-41-q21-90-key-events',
+      locator: 'Quran 3:37; 3:39-41; 21:90',
     ),
     ProphetBiographySectionKey.miracles: _quranField(
       tr: 'Kur’an, Zekeriyyâ’nın ileri yaşını ve eşinin kısır olduğunu dile getirmesine rağmen Yahyâ’nın kendisine verileceğinin bildirildiğini; ayrıca sağlam olduğu hâlde insanlarla üç gece konuşamamasının kendisine bir işaret kılındığını bildirir. Bunun ötesinde bir mekanizma veya tarihsel ayrıntı eklenmez.',
@@ -90,5 +94,7 @@ final t0194ProphetSupplementReferences9 = <String, List<ProphetVerseReference>>{
     ProphetVerseReference(surah: 19, ayah: 9),
     ProphetVerseReference(surah: 19, ayah: 10),
     ProphetVerseReference(surah: 19, ayah: 11),
+    ProphetVerseReference(surah: 21, ayah: 89),
+    ProphetVerseReference(surah: 21, ayah: 90),
   ],
 };
