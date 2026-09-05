@@ -108,6 +108,27 @@ bool _isPinnedTanzilQuranSource(SourceReference source) =>
     source.title == 'Tanzil Project — Uthmani Quran Text v1.1' &&
     source.licenseId == 'CC-BY-3.0';
 
+bool _isAuditableHadithSource(SourceReference source) {
+  if (source.sourceClass != ReligiousSourceClass.sahihHasanHadith ||
+      source.licenseId != 'REFERENCE-ONLY') {
+    return false;
+  }
+
+  final locator = source.locator?.trim();
+  if (locator == null || locator.isEmpty) return false;
+
+  switch (source.title) {
+    case 'Sahih Muslim':
+      return source.id.startsWith('sahih-muslim-') &&
+          RegExp(r'^Sahih Muslim \d+[a-z]?$').hasMatch(locator);
+    case 'Sahih al-Bukhari':
+      return source.id.startsWith('sahih-bukhari-') &&
+          RegExp(r'^Sahih al-Bukhari \d+[a-z]?$').hasMatch(locator);
+    default:
+      return false;
+  }
+}
+
 bool _draftQuranReferencesExistInPinnedStructure(
   CanonicalProphetBiographyDraft draft,
 ) {
@@ -128,12 +149,15 @@ bool _draftQuranReferencesExistInPinnedStructure(
 /// identity and licence metadata alone are not enough evidence. Quran claims
 /// must use the pinned Tanzil Uthmani v1.1 source identity and parseable
 /// `Quran surah:ayah[-ayah]` citations whose ayah bounds exist in the pinned
-/// 114-sura Quran structure. The draft's own Quran-reference index is checked
-/// against the same pinned structure so an impossible verse cannot survive
-/// merely because `ProphetVerseReference` passes its basic shape validation.
-/// Multiple citations may be separated by `;` or `,`; a typo, placeholder,
-/// impossible ayah, or spoofed Quran source must never masquerade as traceable
-/// scripture evidence.
+/// 114-sura Quran structure. Sahih/hasan hadith claims currently fail closed to
+/// the explicitly admitted Sahih Muslim and Sahih al-Bukhari reference-only
+/// collections, with stable collection-specific source IDs and numeric report
+/// locators. The draft's own Quran-reference index is checked against the same
+/// pinned structure so an impossible verse cannot survive merely because
+/// `ProphetVerseReference` passes its basic shape validation. Multiple Quran
+/// citations may be separated by `;` or `,`; a typo, placeholder, impossible
+/// ayah, spoofed Quran source, or spoofed hadith collection must never
+/// masquerade as traceable evidence.
 bool prophetBiographyT0194DraftHasTraceableProvenance(
   CanonicalProphetBiographyDraft draft,
 ) {
@@ -148,6 +172,10 @@ bool prophetBiographyT0194DraftHasTraceableProvenance(
       if (source.sourceClass == ReligiousSourceClass.quran &&
           (!_isPinnedTanzilQuranSource(source) ||
               !_isAuditableQuranLocator(locator))) {
+        return false;
+      }
+      if (source.sourceClass == ReligiousSourceClass.sahihHasanHadith &&
+          !_isAuditableHadithSource(source)) {
         return false;
       }
     }
