@@ -29,6 +29,12 @@ ProphetBiographyField _quranField({
 /// 3:39 describes Yahya as a prophet among the righteous. These verses support
 /// only a relative narrative period tied to Zechariah; they do not supply a
 /// calendar year, century, ruler, or independent historical chronology.
+///
+/// Quran 19:8-9 records Zechariah's old age and his wife's barrenness and the
+/// divine answer that the promised son is easy for Allah; Quran 21:90 states
+/// that the prayer was answered and Yahya was granted to him. The miracles
+/// field therefore records only these Quranic extraordinary birth
+/// circumstances and does not add medical mechanisms or later tradition.
 final t0194ProphetBiographySupplements12 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'yahya': <ProphetBiographySectionKey, ProphetBiographyField>{
@@ -39,6 +45,13 @@ final t0194ProphetBiographySupplements12 =
       stableId: 'yahya-q3-39-q19-7-period',
       locator: 'Quran 3:39; 19:7',
     ),
+    ProphetBiographySectionKey.miracles: _quranField(
+      tr: 'Kur’an’da Zekeriyyâ, ileri yaşına ulaştığını ve eşinin kısır olduğunu söyler; buna rağmen kendisine Yahyâ müjdelenir. Allah bu duaya karşılık verdiğini ve Yahyâ’yı ona bağışladığını bildirir. Burada yalnız Kur’an’ın anlattığı olağanüstü doğum şartları aktarılır; tıbbi mekanizma veya sonraki rivayet ayrıntısı eklenmez.',
+      en: 'In the Quran, Zechariah says that he has reached old age and that his wife is barren, yet he is given the good news of John. Allah states that the prayer was answered and that John was granted to him. This records only the extraordinary birth circumstances stated by the Quran, without adding a medical mechanism or later traditional detail.',
+      ar: 'يذكر القرآن أن زكريا بلغ من الكبر وأن امرأته كانت عاقرًا، ومع ذلك بُشِّر بيحيى. ويخبر الله أنه استجاب دعاءه ووهب له يحيى. ويقتصر هذا الوصف على ظروف الميلاد الخارقة للعادة التي نص عليها القرآن، من غير إضافة تفسير طبي أو تفاصيل من روايات متأخرة.',
+      stableId: 'yahya-q19-8-9-q21-90-extraordinary-birth',
+      locator: 'Quran 19:8-9; 21:90',
+    ),
   },
 };
 
@@ -46,5 +59,8 @@ final t0194ProphetSupplementReferences12 = <String, List<ProphetVerseReference>>
   'yahya': const <ProphetVerseReference>[
     ProphetVerseReference(surah: 3, ayah: 39),
     ProphetVerseReference(surah: 19, ayah: 7),
+    ProphetVerseReference(surah: 19, ayah: 8),
+    ProphetVerseReference(surah: 19, ayah: 9),
+    ProphetVerseReference(surah: 21, ayah: 90),
   ],
 };
