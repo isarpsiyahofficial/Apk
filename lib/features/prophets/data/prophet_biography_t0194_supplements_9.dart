@@ -33,9 +33,14 @@ ProphetBiographyField _quranField({
 /// Quran 3:38 records Zechariah asking his Lord for good offspring. Quran
 /// 3:39-41 states that the angels gave him good news of Yahya while he was
 /// standing in prayer in the sanctuary and records the three-day sign in which
-/// he would address people only by gesture. These fields intentionally stop at
-/// the Quranic wording: no date, location beyond the sanctuary, or later
-/// historical detail is inferred.
+/// he would address people only by gesture.
+///
+/// Quran 19:8-10 additionally preserves the explicit extraordinary-sign
+/// boundary: Zechariah names his old age and his wife's barrenness, Allah states
+/// that granting the child is easy for Him, and a three-night inability to
+/// speak to people while sound is given as a sign. The miracles field therefore
+/// records only those Quranic facts; it does not infer a date, place, diagnosis,
+/// mechanism, or later historical embellishment.
 final t0194ProphetBiographySupplements9 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'zakariya': <ProphetBiographySectionKey, ProphetBiographyField>{
@@ -60,6 +65,13 @@ final t0194ProphetBiographySupplements9 =
       stableId: 'zakariya-q3-39-41-key-events',
       locator: 'Quran 3:39-41',
     ),
+    ProphetBiographySectionKey.miracles: _quranField(
+      tr: 'Kur’an, Zekeriyyâ’nın ileri yaşını ve eşinin kısır olduğunu dile getirmesine rağmen Yahyâ’nın kendisine verileceğinin bildirildiğini; ayrıca sağlam olduğu hâlde insanlarla üç gece konuşamamasının kendisine bir işaret kılındığını bildirir. Bunun ötesinde bir mekanizma veya tarihsel ayrıntı eklenmez.',
+      en: 'The Quran states that Zechariah was told Yahya would be granted to him despite his old age and his wife being barren, and that being unable to speak to people for three nights while sound was made a sign for him. No mechanism or later historical detail is added beyond this.',
+      ar: 'يذكر القرآن أن زكريا بُشّر بيحيى مع بلوغه الكبر وكون امرأته عاقرًا، وأن من آياته ألا يكلم الناس ثلاث ليال وهو سويّ. ولا يضاف إلى ذلك تفسير للكيفية أو تفصيل تاريخي لاحق.',
+      stableId: 'zakariya-q19-8-10-sign',
+      locator: 'Quran 19:8-10',
+    ),
   },
 };
 
@@ -69,6 +81,9 @@ final t0194ProphetSupplementReferences9 = <String, List<ProphetVerseReference>>{
     ProphetVerseReference(surah: 3, ayah: 39),
     ProphetVerseReference(surah: 3, ayah: 40),
     ProphetVerseReference(surah: 3, ayah: 41),
+    ProphetVerseReference(surah: 19, ayah: 8),
+    ProphetVerseReference(surah: 19, ayah: 9),
+    ProphetVerseReference(surah: 19, ayah: 10),
     ProphetVerseReference(surah: 19, ayah: 11),
   ],
 };
