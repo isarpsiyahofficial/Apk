@@ -32,9 +32,9 @@ final t0194ProphetBiographySupplements7 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'muhammad': <ProphetBiographySectionKey, ProphetBiographyField>{
     ProphetBiographySectionKey.geography: _quranField(
-      tr: 'Kur’an, Mekke adını anarak Allah’ın Mekke’nin içinde karşı tarafın ellerini müminlerden, müminlerin ellerini de onlardan çektiğini bildirir; bu ayetten modern bir koordinat veya daha ayrıntılı güzergâh türetilmez.',
-      en: 'The Quran names Mecca while stating that Allah withheld their hands from the believers and the believers’ hands from them within Mecca; no modern coordinate or more detailed route is inferred from this verse.',
-      ar: 'يذكر القرآن مكة بالاسم، ويبين أن الله كف أيديهم عن المؤمنين وأيدي المؤمنين عنهم ببطن مكة؛ ولا يُستنبط من الآية إحداثي حديث أو مسار جغرافي أدق.',
+      tr: 'Kur’an, Mekke adını açıkça anarak Mekke’nin içinde iki tarafın ellerinin birbirinden çekildiğini bildirir; bu ayetten modern bir koordinat veya daha ayrıntılı güzergâh türetilmez.',
+      en: 'The Quran explicitly names Mecca while stating that the hands of the two sides were withheld from one another within Mecca; no modern coordinate or more detailed route is inferred from this verse.',
+      ar: 'يذكر القرآن مكة بالاسم صراحة، ويبين كف أيدي الطرفين بعضهم عن بعض ببطن مكة؛ ولا يُستنبط من الآية إحداثي حديث أو مسار جغرافي أدق.',
       stableId: 'muhammad-q48-24-geography',
       locator: 'Quran 48:24',
     ),
