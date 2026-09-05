@@ -72,6 +72,55 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(indexed), isTrue);
   });
 
+  test('canonical universal Quran 21:25 message does not pollute prophet index', () {
+    final adam = canonicalProphetBiographyT0194Dataset.firstWhere(
+      (draft) => draft.identity.canonicalId == 'adam',
+    );
+
+    expect(
+      adam.quranReferences.any(
+        (reference) => reference.surah == 21 && reference.ayah == 25,
+      ),
+      isFalse,
+    );
+    expect(
+      adam.sections[ProphetBiographySectionKey.mainMessage]!.sources,
+      contains(prophetUniversalMessageSource),
+    );
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(adam), isTrue);
+  });
+
+  test('spoofed universal-message identity cannot bypass Quran index gate', () {
+    final original = canonicalProphetBiographyT0194Dataset.firstWhere(
+      (draft) => draft.identity.canonicalId == 'adam',
+    );
+    final originalMainMessage =
+        original.sections[ProphetBiographySectionKey.mainMessage]!;
+
+    final spoofed = CanonicalProphetBiographyDraft(
+      identity: original.identity,
+      quranReferences: original.quranReferences,
+      sections: <ProphetBiographySectionKey, ProphetBiographyField>{
+        ...original.sections,
+        ProphetBiographySectionKey.mainMessage: ProphetBiographyField(
+          text: originalMainMessage.text,
+          status: ProphetBiographyFieldStatus.sourceBacked,
+          sources: const <SourceReference>[
+            SourceReference(
+              id: 'tanzil-uthmani-v1.1-q21-25-spoof',
+              title: 'Tanzil Project — Uthmani Quran Text v1.1',
+              sourceClass: ReligiousSourceClass.quran,
+              licenseId: 'CC-BY-3.0',
+              locator: 'Quran 21:25',
+            ),
+          ],
+        ),
+      },
+    );
+
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(spoofed), isFalse);
+  });
+
   test('current 25-prophet T0194 dataset keeps locator-index consistency', () {
     for (final draft in canonicalProphetBiographyT0194Dataset) {
       expect(
