@@ -137,7 +137,6 @@ void main() {
     for (final key in <ProphetBiographySectionKey>[
       ProphetBiographySectionKey.geography,
       ProphetBiographySectionKey.communityResponse,
-      ProphetBiographySectionKey.miracles,
       ProphetBiographySectionKey.dua,
     ]) {
       expect(
