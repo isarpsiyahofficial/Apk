@@ -54,6 +54,26 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(yahya), isTrue);
   });
 
+  test('T0194 Yahya key events stay inside Quran 3:39 and 19:12-14', () {
+    final field = yahya.sections[ProphetBiographySectionKey.keyEvents]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(
+      field.sources.single.id,
+      'tanzil-uthmani-v1.1-yahya-q3-39-q19-12-14-key-events',
+    );
+    expect(field.sources.single.locator, 'Quran 3:39; 19:12-14');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+    expect(field.text.tr, contains('salihlerden bir peygamber'));
+    expect(field.text.en, contains('a prophet among the righteous'));
+    expect(field.text.ar, contains('نبي من الصالحين'));
+    expect(field.text.tr, contains('kesin bir görev başlangıç tarihi'));
+    expect(field.text.en, contains('exact mission-start date'));
+    expect(field.text.ar, contains('تاريخًا دقيقًا لبدء رسالته'));
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(yahya), isTrue);
+  });
+
   test('T0194 Yahya death field stays inside Quran 19:15 evidence', () {
     final field = yahya.sections[ProphetBiographySectionKey.death]!;
 
@@ -71,22 +91,43 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(yahya), isTrue);
   });
 
-  test('T0194 Yahya reference index contains Quran 19:7, 19:12 and 19:15 once', () {
-    for (final ayah in <int>[7, 12, 15]) {
+  test('T0194 Yahya Quran reference index deduplicates admitted verses', () {
+    for (final reference in <(int, int)>[
+      (3, 39),
+      (19, 7),
+      (19, 12),
+      (19, 13),
+      (19, 14),
+      (19, 15),
+    ]) {
       final matches = yahya.quranReferences
-          .where((reference) => reference.surah == 19 && reference.ayah == ayah)
+          .where(
+            (item) => item.surah == reference.$1 && item.ayah == reference.$2,
+          )
           .toList(growable: false);
-      expect(matches, hasLength(1), reason: 'Quran 19:$ayah must be deduplicated');
+      expect(
+        matches,
+        hasLength(1),
+        reason: 'Quran ${reference.$1}:${reference.$2} must be deduplicated',
+      );
     }
   });
 
-  test('T0194 Yahya unresolved fields remain pending research', () {
-    expect(
-      yahya.sections.values.any(
-        (field) =>
-            field.status == ProphetBiographyFieldStatus.unknownPendingResearch,
-      ),
-      isTrue,
-    );
+  test('T0194 Yahya unsupported chronology and geography remain pending', () {
+    for (final key in <ProphetBiographySectionKey>[
+      ProphetBiographySectionKey.geography,
+      ProphetBiographySectionKey.period,
+      ProphetBiographySectionKey.missionStart,
+      ProphetBiographySectionKey.communityResponse,
+      ProphetBiographySectionKey.miracles,
+      ProphetBiographySectionKey.dua,
+      ProphetBiographySectionKey.laterImpact,
+    ]) {
+      expect(
+        yahya.sections[key]!.status,
+        ProphetBiographyFieldStatus.unknownPendingResearch,
+        reason: '$key must not be inferred beyond reviewed evidence',
+      );
+    }
   });
 }
