@@ -38,7 +38,7 @@ final t0194ProphetBiographySupplements11 =
     ProphetBiographySectionKey.keyEvents: _quranField(
       tr: 'Kur’an, Yahyâ’yı salihlerden bir peygamber olarak anar. Ona “Kitab”a kuvvetle sarılması emredilmiş, çocuk yaşta hüküm/hikmet verilmiş; kendisine katından şefkat ve arınmışlık verildiği, takvâ sahibi ve anne-babasına iyi davranan biri olduğu bildirilmiştir. Ayetler bu bilgilerin ötesinde kesin bir görev başlangıç tarihi veya ayrıntılı hayat kronolojisi vermez.',
       en: 'The Quran describes John as a prophet among the righteous. He is commanded to hold firmly to “the Book”, is granted judgement/wisdom while still a child, and is described as receiving compassion and purity, being God-conscious, and dutiful to his parents. The verses do not provide an exact mission-start date or a detailed life chronology beyond these statements.',
-      ar: 'يصف القرآن يحيى بأنه نبي من الصالحين، ويأمره أن يأخذ «الكتاب» بقوة، ويذكر أنه أوتي الحكم صبيًا، وأن الله آتاه حنانًا وزكاة، وكان تقيًا وبارًا بوالديه. ولا تعطي هذه الآيات تاريخًا دقيقًا لبدء رسالته ولا تسلسلًا زمنيًا مفصلًا لحياته beyond هذه الأخبار.',
+      ar: 'يصف القرآن يحيى بأنه نبي من الصالحين، ويأمره أن يأخذ «الكتاب» بقوة، ويذكر أنه أوتي الحكم صبيًا، وأن الله آتاه حنانًا وزكاة، وكان تقيًا وبارًا بوالديه. ولا تعطي هذه الآيات تاريخًا دقيقًا لبدء رسالته ولا تسلسلًا زمنيًا مفصلًا لحياته يتجاوز هذه الأخبار.',
       stableId: 'yahya-q3-39-q19-12-14-key-events',
       locator: 'Quran 3:39; 19:12-14',
     ),
