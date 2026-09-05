@@ -26,25 +26,82 @@ void main() {
     expect(field.text.tr, contains('etnik, kabilevî veya şehir adı vermez'));
     expect(field.text.en, contains('does not additionally assign'));
     expect(field.text.ar, contains('اسمًا عرقيًا أو قبليًا'));
+  });
 
+  test('T0194 Zakariya dua stays inside Quran 3:38 evidence', () {
+    final field = zakariya.sections[ProphetBiographySectionKey.dua]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(
+      field.sources.single.id,
+      'tanzil-uthmani-v1.1-zakariya-q3-38-dua',
+    );
+    expect(field.sources.single.locator, 'Quran 3:38');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+
+    expect(field.text.tr, contains('temiz ve iyi bir nesil'));
+    expect(field.text.en, contains('good offspring'));
+    expect(field.text.ar, contains('ذرية طيبة'));
+  });
+
+  test('T0194 Zakariya key events stay inside Quran 3:39-41 evidence', () {
+    final field = zakariya.sections[ProphetBiographySectionKey.keyEvents]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(
+      field.sources.single.id,
+      'tanzil-uthmani-v1.1-zakariya-q3-39-41-key-events',
+    );
+    expect(field.sources.single.locator, 'Quran 3:39-41');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+
+    expect(field.text.tr, contains('Yahyâ’yı müjdelediğini'));
+    expect(field.text.tr, contains('üç gün yalnız işaretle'));
+    expect(field.text.en, contains('good news of Yahya'));
+    expect(field.text.en, contains('three days'));
+    expect(field.text.ar, contains('فبشرته بيحيى'));
+    expect(field.text.ar, contains('ثلاثة أيام إلا رمزًا'));
+  });
+
+  test('T0194 Zakariya Quran evidence references remain deduplicated', () {
+    for (final expected in <({int surah, int ayah})>[
+      (surah: 3, ayah: 38),
+      (surah: 3, ayah: 39),
+      (surah: 3, ayah: 40),
+      (surah: 3, ayah: 41),
+      (surah: 19, ayah: 11),
+    ]) {
+      final matches = zakariya.quranReferences
+          .where(
+            (reference) =>
+                reference.surah == expected.surah &&
+                reference.ayah == expected.ayah,
+          )
+          .toList(growable: false);
+      expect(matches, hasLength(1));
+    }
+  });
+
+  test('T0194 Zakariya provenance remains traceable', () {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(zakariya), isTrue);
   });
 
-  test('T0194 Zakariya Quran 19:11 reference remains deduplicated', () {
-    final matches = zakariya.quranReferences
-        .where((reference) => reference.surah == 19 && reference.ayah == 11)
-        .toList(growable: false);
-
-    expect(matches, hasLength(1));
-  });
-
-  test('T0194 Zakariya unresolved fields remain pending research', () {
-    expect(
-      zakariya.sections.values.any(
-        (field) =>
-            field.status == ProphetBiographyFieldStatus.unknownPendingResearch,
-      ),
-      isTrue,
-    );
+  test('T0194 Zakariya unsupported historical details stay pending research', () {
+    for (final key in <ProphetBiographySectionKey>[
+      ProphetBiographySectionKey.geography,
+      ProphetBiographySectionKey.period,
+      ProphetBiographySectionKey.birth,
+      ProphetBiographySectionKey.childhoodYouth,
+      ProphetBiographySectionKey.death,
+      ProphetBiographySectionKey.laterImpact,
+    ]) {
+      expect(
+        zakariya.sections[key]!.status,
+        ProphetBiographyFieldStatus.unknownPendingResearch,
+        reason: '$key must not be promoted without verified evidence',
+      );
+    }
   });
 }
