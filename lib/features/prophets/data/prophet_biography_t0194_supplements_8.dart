@@ -25,13 +25,21 @@ ProphetBiographyField _quranField({
 
 /// Eighth T0194 source-reviewed batch.
 ///
-/// Quran 19:12 directly addresses Yahya and commands him to take the Book with
-/// strength. This field intentionally preserves the Quran's own generic
-/// `al-kitab` wording and does not promote a later identification of that Book
-/// into the Quran-backed claim.
+/// Quran 19:12 directly addresses Yahya, commands him to take the Book with
+/// strength, and states that he was granted judgement/wisdom while still a
+/// child. These fields intentionally preserve the Quran's own wording: they do
+/// not promote a later identification of `al-kitab` or invent a wider childhood
+/// chronology beyond what the verse states.
 final t0194ProphetBiographySupplements8 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'yahya': <ProphetBiographySectionKey, ProphetBiographyField>{
+    ProphetBiographySectionKey.childhoodYouth: _quranField(
+      tr: 'Kur’an, Yahyâ’ya çocuk yaşta hüküm ve hikmet verildiğini açıkça bildirir; bu alan ayetin ötesine geçerek çocukluk yıllarına ilişkin ayrıntılı bir kronoloji kurmaz.',
+      en: 'The Quran explicitly states that John was granted judgement and wisdom while still a child; this field does not go beyond the verse by constructing a detailed childhood chronology.',
+      ar: 'يصرح القرآن بأن يحيى أوتي الحكم وهو صبي؛ ولا يتجاوز هذا الحقل نص الآية بإنشاء تسلسل زمني مفصل لطفولته.',
+      stableId: 'yahya-q19-12-childhood',
+      locator: 'Quran 19:12',
+    ),
     ProphetBiographySectionKey.scriptureScrolls: _quranField(
       tr: 'Kur’an, Yahyâ’ya “Kitab”a kuvvetle sarılmasını emreder ve ona çocuk yaşta hikmet verildiğini bildirir; bu alan ayetin kendi ifadesini aşarak Kitabın adını kesinleştirmez.',
       en: 'The Quran commands John to hold firmly to “the Book” and states that he was granted wisdom while still young; this field does not go beyond the verse by assigning a definite title to that Book.',
