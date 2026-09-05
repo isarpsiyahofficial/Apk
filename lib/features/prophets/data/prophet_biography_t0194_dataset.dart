@@ -7,6 +7,7 @@ import 'prophet_biography_t0194_supplements_11.dart';
 import 'prophet_biography_t0194_supplements_12.dart';
 import 'prophet_biography_t0194_supplements_13.dart';
 import 'prophet_biography_t0194_supplements_14.dart';
+import 'prophet_biography_t0194_supplements_15.dart';
 import 'prophet_biography_t0194_supplements_2.dart';
 import 'prophet_biography_t0194_supplements_3.dart';
 import 'prophet_biography_t0194_supplements_4.dart';
@@ -48,6 +49,8 @@ CanonicalProphetBiographyDraft _applySupplement(
       t0194ProphetBiographySupplements13[draft.identity.canonicalId];
   final fourteenthSupplement =
       t0194ProphetBiographySupplements14[draft.identity.canonicalId];
+  final fifteenthSupplement =
+      t0194ProphetBiographySupplements15[draft.identity.canonicalId];
   final firstReferences =
       t0194ProphetSupplementReferences[draft.identity.canonicalId] ??
           const <ProphetVerseReference>[];
@@ -87,6 +90,9 @@ CanonicalProphetBiographyDraft _applySupplement(
   final fourteenthReferences =
       t0194ProphetSupplementReferences14[draft.identity.canonicalId] ??
           const <ProphetVerseReference>[];
+  final fifteenthReferences =
+      t0194ProphetSupplementReferences15[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
 
   if (firstSupplement == null &&
       secondSupplement == null &&
@@ -102,6 +108,7 @@ CanonicalProphetBiographyDraft _applySupplement(
       twelfthSupplement == null &&
       thirteenthSupplement == null &&
       fourteenthSupplement == null &&
+      fifteenthSupplement == null &&
       firstReferences.isEmpty &&
       secondReferences.isEmpty &&
       thirdReferences.isEmpty &&
@@ -114,7 +121,8 @@ CanonicalProphetBiographyDraft _applySupplement(
       eleventhReferences.isEmpty &&
       twelfthReferences.isEmpty &&
       thirteenthReferences.isEmpty &&
-      fourteenthReferences.isEmpty) {
+      fourteenthReferences.isEmpty &&
+      fifteenthReferences.isEmpty) {
     return draft;
   }
 
@@ -133,6 +141,7 @@ CanonicalProphetBiographyDraft _applySupplement(
     for (final reference in twelfthReferences) reference.stableId: reference,
     for (final reference in thirteenthReferences) reference.stableId: reference,
     for (final reference in fourteenthReferences) reference.stableId: reference,
+    for (final reference in fifteenthReferences) reference.stableId: reference,
   };
 
   return CanonicalProphetBiographyDraft(
@@ -154,6 +163,7 @@ CanonicalProphetBiographyDraft _applySupplement(
       if (twelfthSupplement != null) ...twelfthSupplement,
       if (thirteenthSupplement != null) ...thirteenthSupplement,
       if (fourteenthSupplement != null) ...fourteenthSupplement,
+      if (fifteenthSupplement != null) ...fifteenthSupplement,
     },
   );
 }
