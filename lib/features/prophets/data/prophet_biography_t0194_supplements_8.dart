@@ -25,12 +25,15 @@ ProphetBiographyField _quranField({
 
 /// Eighth T0194 source-reviewed batch.
 ///
-/// Quran 19:7 records the glad tidings to Zakariyya of a boy named Yahya, while
+/// Quran 19:7 records the glad tidings to Zakariyya of a boy named Yahya;
 /// Quran 19:12 directly addresses Yahya, commands him to take the Book with
 /// strength, and states that he was granted judgement/wisdom while still a
-/// child. These fields intentionally preserve the Quran's own wording: they do
-/// not invent a birth date/place, promote a later identification of `al-kitab`,
-/// or construct a wider childhood chronology beyond what the verses state.
+/// child; Quran 19:15 invokes peace upon him on the day he was born, the day he
+/// dies, and the day he is raised alive. These fields intentionally preserve the
+/// Quran's own wording: they do not invent a birth date/place, promote a later
+/// identification of `al-kitab`, construct a wider childhood chronology, or
+/// supply a death date/place/cause or later death narrative that the verses do
+/// not state.
 final t0194ProphetBiographySupplements8 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'yahya': <ProphetBiographySectionKey, ProphetBiographyField>{
@@ -55,6 +58,13 @@ final t0194ProphetBiographySupplements8 =
       stableId: 'yahya-q19-12-scripture',
       locator: 'Quran 19:12',
     ),
+    ProphetBiographySectionKey.death: _quranField(
+      tr: 'Kur’an, Yahyâ’ya doğduğu gün, öleceği gün ve yeniden diri olarak kaldırılacağı gün selâm olduğunu bildirir; ayet ölüm tarihi, yeri, sebebi veya ölüm biçimi hakkında ayrıntı vermez.',
+      en: 'The Quran states that peace is upon John on the day he was born, the day he dies, and the day he is raised alive; the verse gives no date, place, cause, or manner of his death.',
+      ar: 'يذكر القرآن أن السلام على يحيى يوم وُلد ويوم يموت ويوم يُبعث حيًا؛ ولا تذكر الآية تاريخ موته ولا مكانه ولا سببه ولا كيفيته.',
+      stableId: 'yahya-q19-15-death',
+      locator: 'Quran 19:15',
+    ),
   },
 };
 
@@ -62,5 +72,6 @@ final t0194ProphetSupplementReferences8 = <String, List<ProphetVerseReference>>{
   'yahya': const <ProphetVerseReference>[
     ProphetVerseReference(surah: 19, ayah: 7),
     ProphetVerseReference(surah: 19, ayah: 12),
+    ProphetVerseReference(surah: 19, ayah: 15),
   ],
 };
