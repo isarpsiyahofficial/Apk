@@ -2,6 +2,7 @@ import '../../../core/content/content_governance.dart';
 import '../../quran/data/canonical_quran_source.dart';
 import 'canonical_prophet_biographies.dart';
 import 'prophet_biography_t0194_supplements.dart';
+import 'prophet_biography_t0194_supplements_10.dart';
 import 'prophet_biography_t0194_supplements_2.dart';
 import 'prophet_biography_t0194_supplements_3.dart';
 import 'prophet_biography_t0194_supplements_4.dart';
@@ -10,7 +11,6 @@ import 'prophet_biography_t0194_supplements_6.dart';
 import 'prophet_biography_t0194_supplements_7.dart';
 import 'prophet_biography_t0194_supplements_8.dart';
 import 'prophet_biography_t0194_supplements_9.dart';
-import 'prophet_biography_t0194_supplements_10.dart';
 import 'prophet_content.dart';
 
 CanonicalProphetBiographyDraft _applySupplement(
