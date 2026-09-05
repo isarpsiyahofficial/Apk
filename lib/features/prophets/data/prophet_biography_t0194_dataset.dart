@@ -108,6 +108,17 @@ bool _isPinnedTanzilQuranSource(SourceReference source) =>
     source.title == 'Tanzil Project — Uthmani Quran Text v1.1' &&
     source.licenseId == 'CC-BY-3.0';
 
+const _admittedHadithSources = <String, ({String title, String locator})>{
+  'sahih-muslim-1162e-muhammad-birth': (
+    title: 'Sahih Muslim',
+    locator: 'Sahih Muslim 1162e',
+  ),
+  'sahih-bukhari-4449-muhammad-death': (
+    title: 'Sahih al-Bukhari',
+    locator: 'Sahih al-Bukhari 4449',
+  ),
+};
+
 bool _isAuditableHadithSource(SourceReference source) {
   if (source.sourceClass != ReligiousSourceClass.sahihHasanHadith ||
       source.licenseId != 'REFERENCE-ONLY') {
@@ -116,17 +127,10 @@ bool _isAuditableHadithSource(SourceReference source) {
 
   final locator = source.locator?.trim();
   if (locator == null || locator.isEmpty) return false;
-
-  switch (source.title) {
-    case 'Sahih Muslim':
-      return source.id.startsWith('sahih-muslim-') &&
-          RegExp(r'^Sahih Muslim \d+[a-z]?$').hasMatch(locator);
-    case 'Sahih al-Bukhari':
-      return source.id.startsWith('sahih-bukhari-') &&
-          RegExp(r'^Sahih al-Bukhari \d+[a-z]?$').hasMatch(locator);
-    default:
-      return false;
-  }
+  final admitted = _admittedHadithSources[source.id];
+  return admitted != null &&
+      source.title == admitted.title &&
+      locator == admitted.locator;
 }
 
 bool _draftQuranReferencesExistInPinnedStructure(
@@ -150,14 +154,14 @@ bool _draftQuranReferencesExistInPinnedStructure(
 /// must use the pinned Tanzil Uthmani v1.1 source identity and parseable
 /// `Quran surah:ayah[-ayah]` citations whose ayah bounds exist in the pinned
 /// 114-sura Quran structure. Sahih/hasan hadith claims currently fail closed to
-/// the explicitly admitted Sahih Muslim and Sahih al-Bukhari reference-only
-/// collections, with stable collection-specific source IDs and numeric report
-/// locators. The draft's own Quran-reference index is checked against the same
-/// pinned structure so an impossible verse cannot survive merely because
-/// `ProphetVerseReference` passes its basic shape validation. Multiple Quran
-/// citations may be separated by `;` or `,`; a typo, placeholder, impossible
-/// ayah, spoofed Quran source, or spoofed hadith collection must never
-/// masquerade as traceable evidence.
+/// the exact, source-reviewed Sahih Muslim and Sahih al-Bukhari references
+/// admitted by the T0194 dataset; merely matching a collection name and numeric
+/// locator shape is not sufficient. The draft's own Quran-reference index is
+/// checked against the same pinned structure so an impossible verse cannot
+/// survive merely because `ProphetVerseReference` passes its basic shape
+/// validation. Multiple Quran citations may be separated by `;` or `,`; a typo,
+/// placeholder, impossible ayah, spoofed Quran source, or unreviewed/spoofed
+/// hadith reference must never masquerade as traceable evidence.
 bool prophetBiographyT0194DraftHasTraceableProvenance(
   CanonicalProphetBiographyDraft draft,
 ) {
