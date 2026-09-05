@@ -96,6 +96,33 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
   });
 
+  test('T0194 Isa community response preserves Quran 3:52-53 split', () {
+    final field = isa.sections[ProphetBiographySectionKey.communityResponse]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(
+      field.sources.single.id,
+      'tanzil-uthmani-v1.1-isa-q3-52-53-community-response',
+    );
+    expect(
+      field.sources.single.title,
+      'Tanzil Project — Uthmani Quran Text v1.1',
+    );
+    expect(field.sources.single.locator, 'Quran 3:52-53');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+    expect(field.text.tr, contains('havârilerin'));
+    expect(field.text.en, contains('the disciples'));
+    expect(field.text.ar, contains('الحواريون'));
+    expect(field.text.tr, contains('inkârı bütün topluluğa genellemez'));
+    expect(field.text.en, contains('does not generalise the disbelief'));
+    expect(field.text.ar, contains('ولا يعمم هذا الحقل الكفر على الجماعة كلها'));
+    expect(field.text.tr, isNot(contains('bütün topluluk inkâr etti')));
+    expect(field.text.en, isNot(contains('entire community disbelieved')));
+    expect(field.text.ar, isNot(contains('كفرت الجماعة كلها')));
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
+  });
+
   test('T0194 Isa reference index deduplicates admitted reviewed verses', () {
     for (final reference in <(int, int)>[
       (3, 45),
@@ -104,6 +131,8 @@ void main() {
       (3, 49),
       (3, 50),
       (3, 51),
+      (3, 52),
+      (3, 53),
       (5, 110),
       (19, 29),
       (19, 30),
