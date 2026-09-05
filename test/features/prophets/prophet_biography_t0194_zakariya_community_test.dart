@@ -65,12 +65,39 @@ void main() {
     expect(field.text.ar, contains('ثلاثة أيام إلا رمزًا'));
   });
 
+  test('T0194 Zakariya signs stay inside Quran 19:8-10 evidence', () {
+    final field = zakariya.sections[ProphetBiographySectionKey.miracles]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(
+      field.sources.single.id,
+      'tanzil-uthmani-v1.1-zakariya-q19-8-10-sign',
+    );
+    expect(field.sources.single.locator, 'Quran 19:8-10');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+
+    expect(field.text.tr, contains('ileri yaşını'));
+    expect(field.text.tr, contains('üç gece'));
+    expect(field.text.en, contains('old age'));
+    expect(field.text.en, contains('three nights'));
+    expect(field.text.ar, contains('بلغوغه الكبر'));
+    expect(field.text.ar, contains('ثلاث ليال'));
+
+    expect(field.text.tr, contains('mekanizma veya tarihsel ayrıntı eklenmez'));
+    expect(field.text.en, contains('No mechanism or later historical detail'));
+    expect(field.text.ar, contains('ولا يضاف إلى ذلك'));
+  });
+
   test('T0194 Zakariya Quran evidence references remain deduplicated', () {
     for (final expected in <({int surah, int ayah})>[
       (surah: 3, ayah: 38),
       (surah: 3, ayah: 39),
       (surah: 3, ayah: 40),
       (surah: 3, ayah: 41),
+      (surah: 19, ayah: 8),
+      (surah: 19, ayah: 9),
+      (surah: 19, ayah: 10),
       (surah: 19, ayah: 11),
     ]) {
       final matches = zakariya.quranReferences
