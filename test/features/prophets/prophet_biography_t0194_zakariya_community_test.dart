@@ -28,6 +28,29 @@ void main() {
     expect(field.text.ar, contains('اسمًا عرقيًا أو قبليًا'));
   });
 
+  test('T0194 Zakariya period is relative and avoids invented calendar dates', () {
+    final field = zakariya.sections[ProphetBiographySectionKey.period]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(
+      field.sources.single.id,
+      'tanzil-uthmani-v1.1-zakariya-q3-37-41-q19-7-period',
+    );
+    expect(field.sources.single.locator, 'Quran 3:37-41; 19:7');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+
+    expect(field.text.tr, contains('Meryem’in bakımını üstlendiği'));
+    expect(field.text.tr, contains('Yahyâ’nın doğumundan önce'));
+    expect(field.text.tr, contains('kesin takvim tarihi vermez'));
+    expect(field.text.en, contains('entrusted with Mary’s care'));
+    expect(field.text.en, contains('before Yahya’s birth'));
+    expect(field.text.en, contains('no Gregorian, Hijri'));
+    expect(field.text.ar, contains('كفل فيها مريم'));
+    expect(field.text.ar, contains('وقبل ولادة يحيى'));
+    expect(field.text.ar, contains('ولا تعطي هذه الآيات سنة ميلادية أو هجرية'));
+  });
+
   test('T0194 Zakariya dua preserves Quran 3:38 and 21:89 evidence', () {
     final field = zakariya.sections[ProphetBiographySectionKey.dua]!;
 
@@ -110,6 +133,7 @@ void main() {
       (surah: 3, ayah: 39),
       (surah: 3, ayah: 40),
       (surah: 3, ayah: 41),
+      (surah: 19, ayah: 7),
       (surah: 19, ayah: 8),
       (surah: 19, ayah: 9),
       (surah: 19, ayah: 10),
@@ -135,7 +159,6 @@ void main() {
   test('T0194 Zakariya unsupported historical details stay pending research', () {
     for (final key in <ProphetBiographySectionKey>[
       ProphetBiographySectionKey.geography,
-      ProphetBiographySectionKey.period,
       ProphetBiographySectionKey.birth,
       ProphetBiographySectionKey.childhoodYouth,
       ProphetBiographySectionKey.death,
