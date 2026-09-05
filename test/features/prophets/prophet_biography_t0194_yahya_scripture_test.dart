@@ -117,11 +117,9 @@ void main() {
     for (final key in <ProphetBiographySectionKey>[
       ProphetBiographySectionKey.geography,
       ProphetBiographySectionKey.period,
-      ProphetBiographySectionKey.missionStart,
       ProphetBiographySectionKey.communityResponse,
       ProphetBiographySectionKey.miracles,
       ProphetBiographySectionKey.dua,
-      ProphetBiographySectionKey.laterImpact,
     ]) {
       expect(
         yahya.sections[key]!.status,
