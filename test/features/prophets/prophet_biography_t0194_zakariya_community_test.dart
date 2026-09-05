@@ -81,7 +81,7 @@ void main() {
     expect(field.text.tr, contains('üç gece'));
     expect(field.text.en, contains('old age'));
     expect(field.text.en, contains('three nights'));
-    expect(field.text.ar, contains('بلغوغه الكبر'));
+    expect(field.text.ar, contains('مع بلوغه الكبر'));
     expect(field.text.ar, contains('ثلاث ليال'));
 
     expect(field.text.tr, contains('mekanizma veya tarihsel ayrıntı eklenmez'));
