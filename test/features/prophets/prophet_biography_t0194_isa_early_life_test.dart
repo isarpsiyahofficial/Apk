@@ -44,11 +44,67 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
   });
 
-  test('T0194 Isa reference index deduplicates admitted early-life verses', () {
+  test('T0194 Isa community is limited to Quran 3:49 naming', () {
+    final field = isa.sections[ProphetBiographySectionKey.community]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(field.sources.single.id, 'tanzil-uthmani-v1.1-isa-q3-49-community');
+    expect(field.sources.single.locator, 'Quran 3:49');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+    expect(field.text.tr, contains('İsrailoğullarına'));
+    expect(field.text.en, contains('Children of Israel'));
+    expect(field.text.ar, contains('بني إسرائيل'));
+    expect(field.text.tr, contains('şehir, devlet'));
+    expect(field.text.en, contains('no city, state'));
+    expect(field.text.ar, contains('من غير إضافة مدينة أو دولة'));
+  });
+
+  test('T0194 Isa mission stays inside Quran 3:49-51 evidence', () {
+    final field = isa.sections[ProphetBiographySectionKey.missionStart]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(field.sources.single.id, 'tanzil-uthmani-v1.1-isa-q3-49-51-mission');
+    expect(field.sources.single.locator, 'Quran 3:49-51');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+    expect(field.text.tr, contains('Tevrat’ı doğruladığını'));
+    expect(field.text.en, contains('confirming the Torah'));
+    expect(field.text.ar, contains('مصدقًا لما بين يديه من التوراة'));
+    expect(field.text.tr, contains('kesin bir başlangıç tarihi vermez'));
+    expect(field.text.en, contains('no exact calendar date'));
+    expect(field.text.ar, contains('تاريخًا تقويميًا دقيقًا'));
+  });
+
+  test('T0194 Isa miracles preserve Allah permission boundary', () {
+    final field = isa.sections[ProphetBiographySectionKey.miracles]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(
+      field.sources.single.id,
+      'tanzil-uthmani-v1.1-isa-q3-49-q5-110-miracles',
+    );
+    expect(field.sources.single.locator, 'Quran 3:49; 5:110');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+    expect(field.text.tr, contains('Allah’ın izniyle'));
+    expect(field.text.en, contains('by Allah’s permission'));
+    expect(field.text.ar, contains('بإذن الله'));
+    expect(field.text.tr, contains('tıbbi ya da doğal bir mekanizma eklemez'));
+    expect(field.text.en, contains('adds no medical or natural mechanism'));
+    expect(field.text.ar, contains('ولا يضيف تفسيرًا طبيًا أو طبيعيًا'));
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
+  });
+
+  test('T0194 Isa reference index deduplicates admitted reviewed verses', () {
     for (final reference in <(int, int)>[
       (3, 45),
       (3, 46),
       (3, 47),
+      (3, 49),
+      (3, 50),
+      (3, 51),
+      (5, 110),
       (19, 29),
       (19, 30),
     ]) {
@@ -73,7 +129,7 @@ void main() {
       expect(
         isa.sections[key]!.status,
         ProphetBiographyFieldStatus.unknownPendingResearch,
-        reason: '$key must not be inferred from the reviewed early-life verses',
+        reason: '$key must not be inferred from the reviewed Quran verses',
       );
     }
   });
