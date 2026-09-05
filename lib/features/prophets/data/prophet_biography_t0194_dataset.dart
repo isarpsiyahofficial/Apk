@@ -112,6 +112,13 @@ bool _isPinnedTanzilQuranSource(SourceReference source) =>
     source.title == 'Tanzil Project — Uthmani Quran Text v1.1' &&
     source.licenseId == 'CC-BY-3.0';
 
+bool _isCanonicalUniversalPropheticMessageSource(SourceReference source) =>
+    source.id == prophetUniversalMessageSource.id &&
+    source.title == prophetUniversalMessageSource.title &&
+    source.sourceClass == prophetUniversalMessageSource.sourceClass &&
+    source.licenseId == prophetUniversalMessageSource.licenseId &&
+    source.locator == prophetUniversalMessageSource.locator;
+
 bool _draftQuranReferencesExistInPinnedStructure(
   CanonicalProphetBiographyDraft draft,
 ) {
@@ -148,11 +155,14 @@ bool _quranLocatorIsRepresentedInDraftIndex(
 /// identity and licence metadata alone are not enough evidence. Quran claims
 /// must use the pinned Tanzil Uthmani v1.1 source identity and parseable
 /// `Quran surah:ayah[-ayah]` citations whose ayah bounds exist in the pinned
-/// 114-sura Quran structure. Each Quran citation span must also be represented
-/// by at least one verse in the biography draft's Quran-reference index, so a
-/// valid but unrelated verse cannot be attached to a prophet claim without
-/// entering the auditable index. The draft's own Quran-reference index is
-/// checked against the same pinned structure so an impossible verse cannot
+/// 114-sura Quran structure. Prophet-specific Quran citation spans must also be
+/// represented by at least one verse in the biography draft's Quran-reference
+/// index, so a valid but unrelated verse cannot be attached to a prophet claim
+/// without entering the auditable index. The one canonical universal prophetic
+/// message (Quran 21:25) is intentionally shared by every biography and is
+/// validated by its exact pinned source identity instead of being copied into
+/// each prophet-specific reference index. The draft's own Quran-reference index
+/// is checked against the same pinned structure so an impossible verse cannot
 /// survive merely because `ProphetVerseReference` passes its basic shape
 /// validation. Multiple citations may be separated by `;` or `,`; a typo,
 /// placeholder, impossible ayah, unrelated citation, or spoofed Quran source
@@ -170,8 +180,10 @@ bool prophetBiographyT0194DraftHasTraceableProvenance(
       if (locator == null || locator.isEmpty) return false;
       if (source.sourceClass == ReligiousSourceClass.quran) {
         final citations = _parseQuranLocator(locator);
-        if (!_isPinnedTanzilQuranSource(source) ||
-            citations == null ||
+        if (!_isPinnedTanzilQuranSource(source) || citations == null) {
+          return false;
+        }
+        if (!_isCanonicalUniversalPropheticMessageSource(source) &&
             !_quranLocatorIsRepresentedInDraftIndex(draft, citations)) {
           return false;
         }
