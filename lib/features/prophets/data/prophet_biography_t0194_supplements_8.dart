@@ -25,14 +25,22 @@ ProphetBiographyField _quranField({
 
 /// Eighth T0194 source-reviewed batch.
 ///
+/// Quran 19:7 records the glad tidings to Zakariyya of a boy named Yahya, while
 /// Quran 19:12 directly addresses Yahya, commands him to take the Book with
 /// strength, and states that he was granted judgement/wisdom while still a
 /// child. These fields intentionally preserve the Quran's own wording: they do
-/// not promote a later identification of `al-kitab` or invent a wider childhood
-/// chronology beyond what the verse states.
+/// not invent a birth date/place, promote a later identification of `al-kitab`,
+/// or construct a wider childhood chronology beyond what the verses state.
 final t0194ProphetBiographySupplements8 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'yahya': <ProphetBiographySectionKey, ProphetBiographyField>{
+    ProphetBiographySectionKey.birth: _quranField(
+      tr: 'Kur’an, Zekeriyyâ’ya Yahyâ adında bir oğul müjdelendiğini bildirir; ayet doğum tarihi, yeri veya doğum anına ilişkin ek ayrıntı vermez.',
+      en: 'The Quran records that Zechariah was given good news of a boy named John; the verse gives no date, place, or further details of the birth itself.',
+      ar: 'يذكر القرآن بشارة زكريا بغلام اسمه يحيى؛ ولا تذكر الآية تاريخ الميلاد ولا مكانه ولا تفاصيل أخرى عن واقعة الولادة نفسها.',
+      stableId: 'yahya-q19-7-birth',
+      locator: 'Quran 19:7',
+    ),
     ProphetBiographySectionKey.childhoodYouth: _quranField(
       tr: 'Kur’an, Yahyâ’ya çocuk yaşta hüküm ve hikmet verildiğini açıkça bildirir; bu alan ayetin ötesine geçerek çocukluk yıllarına ilişkin ayrıntılı bir kronoloji kurmaz.',
       en: 'The Quran explicitly states that John was granted judgement and wisdom while still a child; this field does not go beyond the verse by constructing a detailed childhood chronology.',
@@ -52,6 +60,7 @@ final t0194ProphetBiographySupplements8 =
 
 final t0194ProphetSupplementReferences8 = <String, List<ProphetVerseReference>>{
   'yahya': const <ProphetVerseReference>[
+    ProphetVerseReference(surah: 19, ayah: 7),
     ProphetVerseReference(surah: 19, ayah: 12),
   ],
 };
