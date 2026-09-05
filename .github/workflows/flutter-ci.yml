@@ -1,0 +1,73 @@
+name: Flutter CI
+
+on:
+  push:
+    branches:
+      - main
+      - agent/**
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flutter-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Analyze
+        run: flutter analyze --fatal-infos --fatal-warnings
+
+      - name: Test Quran dataset validator
+        working-directory: scripts
+        run: python3 -m unittest -v test_validate_quran_dataset.py
+
+      - name: Test history text-rights audit failure paths
+        working-directory: scripts
+        run: python3 -m unittest -v test_audit_history_text_rights.py
+
+      - name: Test Android home widget materializer
+        working-directory: scripts
+        run: python3 -m unittest -v test_configure_android_home_widget_t0297.py
+
+      - name: Audit history user-facing text rights
+        run: python3 scripts/audit_history_text_rights.py
+
+      - name: Test
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter test --reporter expanded 2>&1 | tee flutter-test-expanded.log
+
+      - name: Upload Flutter test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-test-expanded-${{ github.run_id }}
+          path: flutter-test-expanded.log
+          if-no-files-found: ignore
+          retention-days: 7

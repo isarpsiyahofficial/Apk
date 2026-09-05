@@ -1,0 +1,125 @@
+name: Android Emulator Smoke
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-emulator-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  emulator-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate clean Android runner
+        run: flutter create --platforms=android --project-name islami_hayat .
+
+      - name: Configure generated runner for notification desugaring
+        run: python3 scripts/configure_android_desugaring.py
+
+      - name: Apply hardened Android policy
+        run: |
+          mkdir -p android/app/src/main/res/xml
+          cp android_hardening/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+          cp android_hardening/backup_rules.xml android/app/src/main/res/xml/backup_rules.xml
+          cp android_hardening/data_extraction_rules.xml android/app/src/main/res/xml/data_extraction_rules.xml
+          python3 scripts/audit_android_security.py
+
+      - name: Materialize Android home widget bridge
+        run: python3 scripts/configure_android_home_widget_t0297.py
+
+      - name: Install dependencies and localizations
+        run: |
+          flutter pub get
+          flutter gen-l10n
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Enable KVM group permissions
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install, verify platform behavior, then pin/render/tap widget on Android 35
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: sh scripts/android_emulator_smoke.sh && sh scripts/android_widget_launcher_smoke_t0297.sh
+
+  low-memory-emulator-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate clean Android runner
+        run: flutter create --platforms=android --project-name islami_hayat .
+
+      - name: Configure generated runner for notification desugaring
+        run: python3 scripts/configure_android_desugaring.py
+
+      - name: Apply hardened Android policy
+        run: |
+          mkdir -p android/app/src/main/res/xml
+          cp android_hardening/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+          cp android_hardening/backup_rules.xml android/app/src/main/res/xml/backup_rules.xml
+          cp android_hardening/data_extraction_rules.xml android/app/src/main/res/xml/data_extraction_rules.xml
+          python3 scripts/audit_android_security.py
+
+      - name: Materialize Android home widget bridge
+        run: python3 scripts/configure_android_home_widget_t0297.py
+
+      - name: Install dependencies and localizations
+        run: |
+          flutter pub get
+          flutter gen-l10n
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Enable KVM group permissions
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install and launch on low-memory Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          arch: x86_64
+          profile: pixel_2
+          ram-size: 1536
+          heap-size: 256M
+          disable-animations: true
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: MAX_MEMTOTAL_KB=2100000 sh scripts/android_emulator_smoke.sh
