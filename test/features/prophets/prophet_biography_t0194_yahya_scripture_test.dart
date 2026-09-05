@@ -54,8 +54,25 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(yahya), isTrue);
   });
 
-  test('T0194 Yahya reference index contains Quran 19:7 and 19:12 once', () {
-    for (final ayah in <int>[7, 12]) {
+  test('T0194 Yahya death field stays inside Quran 19:15 evidence', () {
+    final field = yahya.sections[ProphetBiographySectionKey.death]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(field.sources.single.id, 'tanzil-uthmani-v1.1-yahya-q19-15-death');
+    expect(field.sources.single.locator, 'Quran 19:15');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+    expect(field.text.tr, contains('öleceği gün'));
+    expect(field.text.en, contains('the day he dies'));
+    expect(field.text.ar, contains('يوم يموت'));
+    expect(field.text.tr, contains('ölüm tarihi, yeri, sebebi'));
+    expect(field.text.en, contains('no date, place, cause, or manner'));
+    expect(field.text.ar, contains('تاريخ موته ولا مكانه ولا سببه'));
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(yahya), isTrue);
+  });
+
+  test('T0194 Yahya reference index contains Quran 19:7, 19:12 and 19:15 once', () {
+    for (final ayah in <int>[7, 12, 15]) {
       final matches = yahya.quranReferences
           .where((reference) => reference.surah == 19 && reference.ayah == ayah)
           .toList(growable: false);
