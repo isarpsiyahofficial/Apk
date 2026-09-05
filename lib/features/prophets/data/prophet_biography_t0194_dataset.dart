@@ -78,28 +78,32 @@ CanonicalProphetBiographyDraft _applySupplement(
   );
 }
 
-bool _isAuditableQuranLocator(String locator) {
-  if (!locator.startsWith('Quran ')) return false;
+List<({int surah, int startAyah, int endAyah})>? _parseQuranLocator(
+  String locator,
+) {
+  if (!locator.startsWith('Quran ')) return null;
   final citations = locator.substring('Quran '.length).split(RegExp(r'[;,]'));
-  if (citations.isEmpty) return false;
+  if (citations.isEmpty) return null;
 
+  final parsed = <({int surah, int startAyah, int endAyah})>[];
   for (final rawCitation in citations) {
     final citation = rawCitation.trim();
     final match = RegExp(r'^(\d{1,3}):(\d+)(?:-(\d+))?$').firstMatch(citation);
-    if (match == null) return false;
+    if (match == null) return null;
 
     final surah = int.parse(match.group(1)!);
     final startAyah = int.parse(match.group(2)!);
     final endAyah = int.tryParse(match.group(3) ?? '') ?? startAyah;
     if (surah < 1 || surah > canonicalQuranSuraCount || startAyah < 1) {
-      return false;
+      return null;
     }
     final maxAyah = canonicalQuranAyahCountForSura(surah);
     if (startAyah > maxAyah || endAyah < startAyah || endAyah > maxAyah) {
-      return false;
+      return null;
     }
+    parsed.add((surah: surah, startAyah: startAyah, endAyah: endAyah));
   }
-  return true;
+  return parsed;
 }
 
 bool _isPinnedTanzilQuranSource(SourceReference source) =>
@@ -123,17 +127,36 @@ bool _draftQuranReferencesExistInPinnedStructure(
   return true;
 }
 
+bool _quranLocatorIsRepresentedInDraftIndex(
+  CanonicalProphetBiographyDraft draft,
+  List<({int surah, int startAyah, int endAyah})> citations,
+) {
+  for (final citation in citations) {
+    final represented = draft.quranReferences.any(
+      (reference) =>
+          reference.surah == citation.surah &&
+          reference.ayah >= citation.startAyah &&
+          reference.ayah <= citation.endAyah,
+    );
+    if (!represented) return false;
+  }
+  return true;
+}
+
 /// T0194 fail-closed provenance gate for biography claims. A field labelled as
 /// source-backed must point to a human-auditable verse/report locator; source
 /// identity and licence metadata alone are not enough evidence. Quran claims
 /// must use the pinned Tanzil Uthmani v1.1 source identity and parseable
 /// `Quran surah:ayah[-ayah]` citations whose ayah bounds exist in the pinned
-/// 114-sura Quran structure. The draft's own Quran-reference index is checked
-/// against the same pinned structure so an impossible verse cannot survive
-/// merely because `ProphetVerseReference` passes its basic shape validation.
-/// Multiple citations may be separated by `;` or `,`; a typo, placeholder,
-/// impossible ayah, or spoofed Quran source must never masquerade as traceable
-/// scripture evidence.
+/// 114-sura Quran structure. Each Quran citation span must also be represented
+/// by at least one verse in the biography draft's Quran-reference index, so a
+/// valid but unrelated verse cannot be attached to a prophet claim without
+/// entering the auditable index. The draft's own Quran-reference index is
+/// checked against the same pinned structure so an impossible verse cannot
+/// survive merely because `ProphetVerseReference` passes its basic shape
+/// validation. Multiple citations may be separated by `;` or `,`; a typo,
+/// placeholder, impossible ayah, unrelated citation, or spoofed Quran source
+/// must never masquerade as traceable scripture evidence.
 bool prophetBiographyT0194DraftHasTraceableProvenance(
   CanonicalProphetBiographyDraft draft,
 ) {
@@ -145,10 +168,13 @@ bool prophetBiographyT0194DraftHasTraceableProvenance(
     for (final source in field.sources) {
       final locator = source.locator?.trim();
       if (locator == null || locator.isEmpty) return false;
-      if (source.sourceClass == ReligiousSourceClass.quran &&
-          (!_isPinnedTanzilQuranSource(source) ||
-              !_isAuditableQuranLocator(locator))) {
-        return false;
+      if (source.sourceClass == ReligiousSourceClass.quran) {
+        final citations = _parseQuranLocator(locator);
+        if (!_isPinnedTanzilQuranSource(source) ||
+            citations == null ||
+            !_quranLocatorIsRepresentedInDraftIndex(draft, citations)) {
+          return false;
+        }
       }
     }
   }
