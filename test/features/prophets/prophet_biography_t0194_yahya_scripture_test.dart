@@ -7,6 +7,23 @@ void main() {
     (draft) => draft.identity.canonicalId == 'yahya',
   );
 
+  test('T0194 Yahya birth field stays inside Quran 19:7 evidence', () {
+    final field = yahya.sections[ProphetBiographySectionKey.birth]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(field.sources.single.id, 'tanzil-uthmani-v1.1-yahya-q19-7-birth');
+    expect(field.sources.single.locator, 'Quran 19:7');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+    expect(field.text.tr, contains('Yahyâ adında bir oğul'));
+    expect(field.text.en, contains('a boy named John'));
+    expect(field.text.ar, contains('غلام اسمه يحيى'));
+    expect(field.text.tr, contains('doğum tarihi'));
+    expect(field.text.en, contains('no date, place'));
+    expect(field.text.ar, contains('تاريخ الميلاد'));
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(yahya), isTrue);
+  });
+
   test('T0194 Yahya childhood field stays inside Quran 19:12 evidence', () {
     final field = yahya.sections[ProphetBiographySectionKey.childhoodYouth]!;
 
@@ -37,12 +54,13 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(yahya), isTrue);
   });
 
-  test('T0194 Yahya reference index contains Quran 19:12 exactly once', () {
-    final matches = yahya.quranReferences
-        .where((reference) => reference.surah == 19 && reference.ayah == 12)
-        .toList(growable: false);
-
-    expect(matches, hasLength(1));
+  test('T0194 Yahya reference index contains Quran 19:7 and 19:12 once', () {
+    for (final ayah in <int>[7, 12]) {
+      final matches = yahya.quranReferences
+          .where((reference) => reference.surah == 19 && reference.ayah == ayah)
+          .toList(growable: false);
+      expect(matches, hasLength(1), reason: 'Quran 19:$ayah must be deduplicated');
+    }
   });
 
   test('T0194 Yahya unresolved fields remain pending research', () {
