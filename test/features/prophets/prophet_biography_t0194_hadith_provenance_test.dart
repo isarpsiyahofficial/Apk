@@ -34,7 +34,7 @@ void main() {
       prophetBiographyT0194DraftHasTraceableProvenance(
         withBirthSource(
           const SourceReference(
-            id: 'sahih-bukhari-4449-regression',
+            id: 'sahih-bukhari-4449-muhammad-death',
             title: 'Sahih al-Bukhari',
             sourceClass: ReligiousSourceClass.sahihHasanHadith,
             licenseId: 'REFERENCE-ONLY',
@@ -56,17 +56,51 @@ void main() {
         locator: 'Sahih Muslim 1162e',
       ),
       SourceReference(
-        id: 'sahih-muslim-1162e-spoof-title',
+        id: 'sahih-muslim-1162e-muhammad-birth',
         title: 'Popular hadith website',
         sourceClass: ReligiousSourceClass.sahihHasanHadith,
         licenseId: 'REFERENCE-ONLY',
         locator: 'Sahih Muslim 1162e',
       ),
       SourceReference(
-        id: 'sahih-muslim-1162e-spoof-license',
+        id: 'sahih-muslim-1162e-muhammad-birth',
         title: 'Sahih Muslim',
         sourceClass: ReligiousSourceClass.sahihHasanHadith,
         licenseId: 'UNKNOWN',
+        locator: 'Sahih Muslim 1162e',
+      ),
+    ]) {
+      final tampered = withBirthSource(source);
+      expect(tampered.isStructurallyComplete, isTrue, reason: source.id);
+      expect(
+        prophetBiographyT0194DraftHasTraceableProvenance(tampered),
+        isFalse,
+        reason: source.id,
+      );
+    }
+  });
+
+  test('unreviewed but well-shaped hadith references fail closed', () {
+    for (final source in const <SourceReference>[
+      SourceReference(
+        id: 'sahih-muslim-999999-unreviewed',
+        title: 'Sahih Muslim',
+        sourceClass: ReligiousSourceClass.sahihHasanHadith,
+        licenseId: 'REFERENCE-ONLY',
+        locator: 'Sahih Muslim 999999',
+      ),
+      SourceReference(
+        id: 'sahih-bukhari-999999-unreviewed',
+        title: 'Sahih al-Bukhari',
+        sourceClass: ReligiousSourceClass.sahihHasanHadith,
+        licenseId: 'REFERENCE-ONLY',
+        locator: 'Sahih al-Bukhari 999999',
+      ),
+      SourceReference(
+        id: 'sahih-muslim-1162e-muhammad-birth-copy',
+        title: 'Sahih Muslim',
+        sourceClass: ReligiousSourceClass.sahihHasanHadith,
+        licenseId: 'REFERENCE-ONLY',
         locator: 'Sahih Muslim 1162e',
       ),
     ]) {
@@ -90,7 +124,7 @@ void main() {
     ]) {
       final tampered = withBirthSource(
         SourceReference(
-          id: 'sahih-muslim-malformed-locator',
+          id: 'sahih-muslim-1162e-muhammad-birth',
           title: 'Sahih Muslim',
           sourceClass: ReligiousSourceClass.sahihHasanHadith,
           licenseId: 'REFERENCE-ONLY',
