@@ -39,7 +39,7 @@ final t0194ProphetBiographySupplements13 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'isa': <ProphetBiographySectionKey, ProphetBiographyField>{
     ProphetBiographySectionKey.birth: _quranField(
-      tr: 'Kur’an, meleğin Meryem’e Mesih Îsâ b. Meryem’i müjdelediğini ve Meryem’in kendisine bir erkek dokunmamışken nasıl çocuğu olacağını sorduğunu bildirir. Bu alan yalnız bu Kur’anî doğum haberini aktarır; kesin doğum tarihi, doğum yeri veya tıbbi mekanizma eklemez.',
+      tr: 'Kur’an, meleklerin Meryem’e Mesih Îsâ b. Meryem’i müjdelediğini ve Meryem’in kendisine bir erkek dokunmamışken nasıl çocuğu olacağını sorduğunu bildirir. Bu alan yalnız bu Kur’anî doğum haberini aktarır; kesin doğum tarihi, doğum yeri veya tıbbi mekanizma eklemez.',
       en: 'The Quran records the angelic announcement to Mary of the Messiah, Jesus son of Mary, and Mary asking how she could have a child when no man had touched her. This field records only that Quranic birth account and adds no exact birth date, birthplace, or medical mechanism.',
       ar: 'يذكر القرآن بشارة الملائكة لمريم بالمسيح عيسى ابن مريم، وسؤالها كيف يكون لها ولد ولم يمسسها بشر. ويقتصر هذا الحقل على خبر الميلاد القرآني من غير إضافة تاريخ ميلاد دقيق أو مكان ولادة أو تفسير طبي.',
       stableId: 'isa-q3-45-47-birth',
