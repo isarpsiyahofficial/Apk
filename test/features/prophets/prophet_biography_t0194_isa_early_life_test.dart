@@ -123,6 +123,30 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
   });
 
+  test('T0194 Isa scripture stays inside Quran 5:46 evidence', () {
+    final field = isa.sections[ProphetBiographySectionKey.scriptureScrolls]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(field.sources.single.id, 'tanzil-uthmani-v1.1-isa-q5-46-scripture');
+    expect(
+      field.sources.single.title,
+      'Tanzil Project — Uthmani Quran Text v1.1',
+    );
+    expect(field.sources.single.locator, 'Quran 5:46');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+    expect(field.text.tr, contains('İncil’in verildiğini'));
+    expect(field.text.en, contains('was given the Gospel'));
+    expect(field.text.ar, contains('آتاه الإنجيل'));
+    expect(field.text.tr, contains('hidayet ve nur'));
+    expect(field.text.en, contains('guidance and light'));
+    expect(field.text.ar, contains('هدى ونور'));
+    expect(field.text.tr, isNot(contains('bugünkü İncil birebir aynıdır')));
+    expect(field.text.en, isNot(contains('surviving manuscript is identical')));
+    expect(field.text.ar, isNot(contains('مخطوط معين مطابق حرفيا')));
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
+  });
+
   test('T0194 Isa dua stays inside Quran 5:114 evidence', () {
     final field = isa.sections[ProphetBiographySectionKey.dua]!;
 
@@ -189,6 +213,7 @@ void main() {
       (3, 53),
       (4, 157),
       (4, 158),
+      (5, 46),
       (5, 110),
       (5, 114),
       (19, 29),
