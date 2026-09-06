@@ -10,6 +10,7 @@ import 'package:islami_hayat/features/notifications/domain/dhikr_reminder_t0293.
 import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.dart';
 import 'package:islami_hayat/features/premium/presentation/startup_access_gate.dart';
 import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_content.dart';
 import 'package:islami_hayat/features/prophets/presentation/prophet_story_page.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
@@ -151,11 +152,20 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
+  Future<void> _openProphetQuranVerse(ProphetVerseReference verse) async {
+    await _openQuranAt(QuranAddress(surah: verse.surah, ayah: verse.ayah));
+    if (!mounted) return;
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   Future<void> _openProphetStory(String prophetId) async {
     if (!await _guardNewContent() || !mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => ProphetStoryPage(prophetId: prophetId),
+        builder: (_) => ProphetStoryPage(
+          prophetId: prophetId,
+          onOpenQuranVerse: _openProphetQuranVerse,
+        ),
       ),
     );
   }
