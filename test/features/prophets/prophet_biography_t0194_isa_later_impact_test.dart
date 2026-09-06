@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophet_biographies.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_biography_t0194_dataset.dart';
 
@@ -55,9 +56,15 @@ void main() {
     expect(matches, hasLength(1));
   });
 
-  test('T0194 Isa unsupported period remains fail-closed', () {
+  test('T0194 Isa period is separately sourced and never inferred from 61:14', () {
     final field = isa.sections[ProphetBiographySectionKey.period]!;
-    expect(field.status, ProphetBiographyFieldStatus.unknownPendingResearch);
-    expect(field.sources, isEmpty);
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(
+      field.sources.single.sourceClass,
+      ReligiousSourceClass.modernHistoryArchaeology,
+    );
+    expect(field.sources.single.locator, isNot('Quran 61:14'));
+    expect(field.text.en, contains('not a date supplied by the Quran'));
   });
 }
