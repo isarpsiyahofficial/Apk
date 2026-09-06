@@ -38,9 +38,49 @@ void main() {
     );
   }
 
-  test('canonical T0194 dataset has explicit non-unknown source classes', () {
+  test('canonical T0194 dataset has explicit T0196-compatible classes', () {
     expect(canonicalProphetSourceClassAudit.isValid, isTrue);
     expect(canonicalProphetSourceClassAudit.errors, isEmpty);
+
+    for (final draft in canonicalProphetBiographyT0194Dataset) {
+      for (final field in draft.sections.values) {
+        final classes = effectiveProphetBiographySourceClasses(field);
+        expect(classes, isNotEmpty);
+        if (field.status == ProphetBiographyFieldStatus.sourceBacked) {
+          expect(classes, isNot(contains(ReligiousSourceClass.unknown)));
+          expect(classes.every(prophetBiographySourceClassAllowlist.contains), isTrue);
+        } else {
+          expect(classes, equals({ReligiousSourceClass.unknown}));
+        }
+      }
+    }
+  });
+
+  test('T0196 allowlist is exactly the eight prophet source semantics', () {
+    expect(
+      prophetBiographySourceClassAllowlist,
+      equals({
+        ReligiousSourceClass.quran,
+        ReligiousSourceClass.sahihHasanHadith,
+        ReligiousSourceClass.earlyIslamicHistoryTafsir,
+        ReligiousSourceClass.israiliyat,
+        ReligiousSourceClass.laterTradition,
+        ReligiousSourceClass.modernHistoryArchaeology,
+        ReligiousSourceClass.disputed,
+      }),
+    );
+    // The eighth SPEC class, "unknown", is represented only by unresolved
+    // fields and deliberately cannot be attached as a fabricated source ref.
+    expect(
+      effectiveProphetBiographySourceClasses(
+        const ProphetBiographyField(
+          text: unknownText,
+          status: ProphetBiographyFieldStatus.unknownPendingResearch,
+          sources: <SourceReference>[],
+        ),
+      ),
+      equals({ReligiousSourceClass.unknown}),
+    );
   });
 
   test('source-backed field without source fails closed', () {
@@ -54,7 +94,7 @@ void main() {
       ),
     ]);
     expect(result.isValid, isFalse);
-    expect(result.errors.single, contains('has no source'));
+    expect(result.errors, contains(contains('has no source')));
   });
 
   test('unknown source class fails closed', () {
@@ -76,7 +116,40 @@ void main() {
       ),
     ]);
     expect(result.isValid, isFalse);
-    expect(result.errors.single, contains('unknown source class'));
+    expect(result.errors.join('\n'), contains('is not permitted for prophet biographies'));
+  });
+
+  test('non-prophet source classes fail closed', () {
+    for (final disallowed in <ReligiousSourceClass>[
+      ReligiousSourceClass.meaningBasedDua,
+      ReligiousSourceClass.classicalTraditional,
+      ReligiousSourceClass.ebcedHavasTradition,
+      ReligiousSourceClass.unknown,
+    ]) {
+      final result = auditProphetBiographySourceClasses([
+        draftWith(
+          ProphetBiographyField(
+            text: sourceText,
+            status: ProphetBiographyFieldStatus.sourceBacked,
+            sources: <SourceReference>[
+              SourceReference(
+                id: 'wrong-${disallowed.stableId}',
+                title: 'Wrong source family',
+                sourceClass: disallowed,
+                licenseId: 'REFERENCE-ONLY',
+                locator: 'test locator',
+              ),
+            ],
+          ),
+        ),
+      ]);
+      expect(result.isValid, isFalse, reason: disallowed.stableId);
+      expect(
+        result.errors.join('\n'),
+        contains('is not permitted for prophet biographies'),
+        reason: disallowed.stableId,
+      );
+    }
   });
 
   test('missing locator fails closed even when source class is known', () {
@@ -97,7 +170,7 @@ void main() {
       ),
     ]);
     expect(result.isValid, isFalse);
-    expect(result.errors.single, contains('incomplete source metadata'));
+    expect(result.errors.join('\n'), contains('incomplete source metadata'));
   });
 
   test('unknown field carrying a source fails closed', () {
@@ -119,6 +192,6 @@ void main() {
       ),
     ]);
     expect(result.isValid, isFalse);
-    expect(result.errors.single, contains('unknown field must not carry sources'));
+    expect(result.errors.join('\n'), contains('unknown field must not carry sources'));
   });
 }
