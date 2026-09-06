@@ -142,7 +142,10 @@ void main() {
     expect(field.text.en, contains('guidance and light'));
     expect(field.text.ar, contains('هدى ونور'));
     expect(field.text.tr, isNot(contains('bugünkü İncil birebir aynıdır')));
-    expect(field.text.en, isNot(contains('surviving manuscript is identical')));
+    expect(
+      field.text.en,
+      contains('does not claim that any specific surviving manuscript is identical'),
+    );
     expect(field.text.ar, isNot(contains('مخطوط معين مطابق حرفيا')));
     expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
   });
