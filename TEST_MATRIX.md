@@ -56,8 +56,8 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 | D07 | Zikir sayıları source-backed vs kişisel | TODO | |
 | D08 | Ebced/havas sünnet gibi gösterilmiyor | TODO | |
 | D09 | Dini gün özel ibadet/dua iddiaları | TODO | |
-| D10 | Peygamber biyografileri source/certainty | TODO | |
-| D11 | Peygamber timeline çelişki taraması | TODO | |
+| D10 | Peygamber biyografileri source/certainty | PASS | `prophet_biography_t0194_coverage_test.dart` 25 canonical kaydı, source-backed/unknown fail-closed ayrımını ve kaynak sınıflarını tarıyor; `ProphetBiographyQaAudit.auditCanonicalResearchDataset()` gerçek supplemented T0194 datasetini ve exact Quran/hadis/modern-history provenance allowlist gate'ini tarıyor; Flutter + Android Release full test SUCCESS |
+| D11 | Peygamber timeline çelişki taraması | PASS | `prophet_biography_qa_test.dart` canonical supplemented T0194 QA + verified kinship/timeline taramasını geçiriyor; duplicate timeline, reversed genealogy ve ancestry-cycle/failure-path kontrolleri fail-closed; Flutter + Android Release full test SUCCESS |
 | D12 | İslam tarihi iki kaynak/certainty | TODO | |
 | D13 | Yasak kesin para/aşk/şifa iddiası sıfır | TODO | |
 | D14 | Yazım/imla native TR/EN/AR review | TODO | |
