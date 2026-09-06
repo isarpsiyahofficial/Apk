@@ -29,15 +29,15 @@ ProphetBiographyField _quranField({
 /// elevated ground described as having a settled/resting place and flowing
 /// water. The verse does not name that place. Classical exegetical literature
 /// contains differing location identifications, so this Quran-only geography
-/// field deliberately records the described terrain without promoting any
-/// named city, country, or region to a Quranic fact.
+/// field deliberately records only the terrain description and does not repeat
+/// or promote any later named-location proposal as Quranic evidence.
 final t0194ProphetBiographySupplements21 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'isa': <ProphetBiographySectionKey, ProphetBiographyField>{
     ProphetBiographySectionKey.geography: _quranField(
-      tr: 'Kur’an, Meryem oğlu Îsâ ile annesinin yerleşmeye elverişli ve akarsu bulunan yüksekçe bir yere sığındırıldığını bildirir. Ayet bu yerin adını vermez; bu nedenle bu alan Kudüs, Şam, Filistin veya başka bir adlandırmayı Kur’an’ın kesin coğrafî tespiti gibi sunmaz.',
-      en: 'The Quran states that Jesus son of Mary and his mother were given refuge on elevated ground with a suitable resting place and flowing water. The verse does not name that place, so this field does not present Jerusalem, Damascus, Palestine, or any other identification as a definite Quranic location.',
-      ar: 'يذكر القرآن أن عيسى ابن مريم وأمه أُويا إلى ربوة ذات قرار ومعين. ولا تسمّي الآية ذلك الموضع، لذلك لا يقدّم هذا الحقل القدس أو دمشق أو فلسطين أو أي تعيين آخر على أنه تحديد جغرافي قرآني قطعي.',
+      tr: 'Kur’an, Meryem oğlu Îsâ ile annesinin yerleşmeye elverişli ve akarsu bulunan yüksekçe bir yere sığındırıldığını bildirir. Ayet bu yerin adını vermez; bu nedenle ayetin belirtmediği herhangi bir şehir, bölge veya ülke adı Kur’an’ın kesin coğrafî tespiti gibi sunulmaz.',
+      en: 'The Quran states that Jesus son of Mary and his mother were given refuge on elevated ground with a suitable resting place and flowing water. The verse does not name that place, so no city, region, or country not identified by the verse is presented as a definite Quranic location.',
+      ar: 'يذكر القرآن أن عيسى ابن مريم وأمه أُويا إلى ربوة ذات قرار ومعين. ولا تسمّي الآية ذلك الموضع، لذلك لا يقدّم هذا الحقل اسم مدينة أو إقليم أو بلد لم تعيّنه الآية على أنه تحديد جغرافي قرآني قطعي.',
       stableId: 'isa-q23-50-geography',
       locator: 'Quran 23:50',
     ),
