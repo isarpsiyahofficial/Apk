@@ -5,7 +5,7 @@ import 'prophet_content.dart';
 ///
 /// A marker is a presentation projection of already-reviewed geography. It
 /// never upgrades an approximate region to an exact point and never exposes
-/// disputed/unknown geography as a normal map pin.
+/// disputed/unknown/traditional geography as a normal map pin.
 enum ProphetMapMarkerKind {
   exactPoint,
   approximateRegion,
@@ -42,7 +42,12 @@ class ProphetMapMarker {
       ProphetMapMarkerKind.exactPoint =>
         certainty == CertaintyLevel.explicitSource &&
             latitude != null &&
-            longitude != null,
+            longitude != null &&
+            sources.every(
+              (source) =>
+                  source.sourceClass ==
+                  ReligiousSourceClass.modernHistoryArchaeology,
+            ),
       ProphetMapMarkerKind.approximateRegion =>
         certainty == CertaintyLevel.approximate,
     };
@@ -99,5 +104,11 @@ bool _hasMapSource(SourceReference source) =>
     source.title.trim().isNotEmpty &&
     source.licenseId.trim().isNotEmpty &&
     (source.locator?.trim().isNotEmpty ?? false) &&
-    source.sourceClass != ReligiousSourceClass.unknown &&
-    source.sourceClass != ReligiousSourceClass.disputed;
+    _allowedMapSourceClasses.contains(source.sourceClass);
+
+const Set<ReligiousSourceClass> _allowedMapSourceClasses = {
+  ReligiousSourceClass.quran,
+  ReligiousSourceClass.sahihHasanHadith,
+  ReligiousSourceClass.earlyIslamicHistoryTafsir,
+  ReligiousSourceClass.modernHistoryArchaeology,
+};
