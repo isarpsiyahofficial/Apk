@@ -123,6 +123,30 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
   });
 
+  test('T0194 Isa dua stays inside Quran 5:114 evidence', () {
+    final field = isa.sections[ProphetBiographySectionKey.dua]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(field.sources.single.id, 'tanzil-uthmani-v1.1-isa-q5-114-dua');
+    expect(
+      field.sources.single.title,
+      'Tanzil Project — Uthmani Quran Text v1.1',
+    );
+    expect(field.sources.single.locator, 'Quran 5:114');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+    expect(field.text.tr, contains('gökten kendilerine bir sofra'));
+    expect(field.text.en, contains('a table to be sent down from heaven'));
+    expect(field.text.ar, contains('مائدة من السماء'));
+    expect(field.text.tr, contains('maddi kazanç garantisine dönüştürmez'));
+    expect(field.text.en, contains('does not turn the verse into a general guarantee'));
+    expect(field.text.ar, contains('ولا يحول هذا الحقل الآية إلى ضمان عام'));
+    expect(field.text.tr, isNot(contains('kesin rızık getirir')));
+    expect(field.text.en, isNot(contains('guaranteed provision')));
+    expect(field.text.ar, isNot(contains('يضمن الرزق')));
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
+  });
+
   test('T0194 Isa reference index deduplicates admitted reviewed verses', () {
     for (final reference in <(int, int)>[
       (3, 45),
@@ -134,6 +158,7 @@ void main() {
       (3, 52),
       (3, 53),
       (5, 110),
+      (5, 114),
       (19, 29),
       (19, 30),
     ]) {
