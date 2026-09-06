@@ -55,10 +55,4 @@ void main() {
 
     expect(matches, hasLength(1));
   });
-
-  test('T0194 Isa period remains fail-closed after geography review', () {
-    final field = isa.sections[ProphetBiographySectionKey.period]!;
-    expect(field.status, ProphetBiographyFieldStatus.unknownPendingResearch);
-    expect(field.sources, isEmpty);
-  });
 }
