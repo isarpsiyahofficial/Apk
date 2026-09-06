@@ -265,16 +265,25 @@ void main() {
     }
   });
 
-  test('T0194 Isa unresolved chronology stays pending after geography review', () {
+  test('T0194 Isa Quran and historical chronology remain separate', () {
     expect(
       isa.sections[ProphetBiographySectionKey.geography]!.status,
       ProphetBiographyFieldStatus.sourceBacked,
-      reason: 'Quran 23:50 now provides reviewed descriptive geography evidence',
+      reason: 'Quran 23:50 provides reviewed descriptive geography evidence',
+    );
+
+    final period = isa.sections[ProphetBiographySectionKey.period]!;
+    expect(period.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(period.sources, hasLength(1));
+    expect(
+      period.sources.single.id,
+      'cambridge-impact-jesus-first-century-palestine-2019',
+      reason: 'period must come from its explicit modern-history source',
     );
     expect(
-      isa.sections[ProphetBiographySectionKey.period]!.status,
-      ProphetBiographyFieldStatus.unknownPendingResearch,
-      reason: 'period must not be inferred from the reviewed Quran verses',
+      period.text.en,
+      contains('not a date supplied by the Quran'),
+      reason: 'modern chronology must never be inferred from reviewed Quran verses',
     );
   });
 }
