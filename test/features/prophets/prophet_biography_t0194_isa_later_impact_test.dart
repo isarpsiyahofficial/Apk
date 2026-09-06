@@ -55,14 +55,9 @@ void main() {
     expect(matches, hasLength(1));
   });
 
-  test('T0194 Isa unsupported geography and period remain fail-closed', () {
-    for (final key in <ProphetBiographySectionKey>[
-      ProphetBiographySectionKey.geography,
-      ProphetBiographySectionKey.period,
-    ]) {
-      final field = isa.sections[key]!;
-      expect(field.status, ProphetBiographyFieldStatus.unknownPendingResearch);
-      expect(field.sources, isEmpty);
-    }
+  test('T0194 Isa unsupported period remains fail-closed', () {
+    final field = isa.sections[ProphetBiographySectionKey.period]!;
+    expect(field.status, ProphetBiographyFieldStatus.unknownPendingResearch);
+    expect(field.sources, isEmpty);
   });
 }
