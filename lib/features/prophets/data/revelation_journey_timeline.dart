@@ -16,6 +16,17 @@ enum RevelationJourneyPeriod {
   muhammad,
 }
 
+/// Only source families capable of supporting a broad chronology/navigation
+/// statement may drive a Revelation Journey segment. Application-wide source
+/// classes such as meaning-based dua, classical devotional practice or
+/// ebced/havas are valid elsewhere but are never chronology evidence.
+const Set<ReligiousSourceClass> revelationJourneySourceClassAllowlist = {
+  ReligiousSourceClass.quran,
+  ReligiousSourceClass.sahihHasanHadith,
+  ReligiousSourceClass.earlyIslamicHistoryTafsir,
+  ReligiousSourceClass.modernHistoryArchaeology,
+};
+
 class RevelationJourneySegment {
   const RevelationJourneySegment({
     required this.order,
@@ -46,12 +57,19 @@ class RevelationJourneySegment {
           source.title.trim().isNotEmpty &&
           source.licenseId.trim().isNotEmpty &&
           (source.locator?.trim().isNotEmpty ?? false) &&
-          source.sourceClass != ReligiousSourceClass.israiliyat &&
-          source.sourceClass != ReligiousSourceClass.laterTradition &&
-          source.sourceClass != ReligiousSourceClass.disputed &&
-          source.sourceClass != ReligiousSourceClass.unknown,
+          revelationJourneySourceClassAllowlist.contains(source.sourceClass),
     );
   }
+}
+
+class RevelationJourneyAuditResult {
+  const RevelationJourneyAuditResult({
+    required this.isValid,
+    required this.errors,
+  });
+
+  final bool isValid;
+  final List<String> errors;
 }
 
 List<RevelationJourneySegment> buildRevelationJourneyTimeline() {
@@ -76,10 +94,94 @@ List<RevelationJourneySegment> revelationJourneyForPeriod(
         .where((segment) => segment.period == period)
         .toList(growable: false);
 
+/// Whole-timeline failure-path audit for T0197.
+///
+/// This is intentionally separate from [RevelationJourneySegment.isValid]: a
+/// collection can contain individually valid segments while still duplicating
+/// a prophet, omitting a canonical prophet, reusing an order, skipping an order
+/// or placing a segment under a browse period inconsistent with the canonical
+/// broad chronology.
+RevelationJourneyAuditResult auditRevelationJourneyTimeline(
+  Iterable<RevelationJourneySegment> segments,
+) {
+  final timeline = segments.toList(growable: false);
+  final errors = <String>[];
+
+  if (timeline.isEmpty) {
+    errors.add('timeline must not be empty');
+    return RevelationJourneyAuditResult(
+      isValid: false,
+      errors: List.unmodifiable(errors),
+    );
+  }
+
+  for (final segment in timeline) {
+    if (!segment.isValid) {
+      errors.add('segment ${segment.order} is invalid');
+    }
+  }
+
+  final ordered = [...timeline]..sort((a, b) => a.order.compareTo(b.order));
+  for (var index = 0; index < ordered.length; index++) {
+    final expectedOrder = index + 1;
+    final segment = ordered[index];
+    if (segment.order != expectedOrder) {
+      errors.add(
+        'timeline order must be contiguous: expected $expectedOrder, got ${segment.order}',
+      );
+    }
+    final expectedPeriod = _periodForOrder(segment.order);
+    if (segment.period != expectedPeriod) {
+      errors.add(
+        'segment ${segment.order} has period ${segment.period.name}; '
+        'expected ${expectedPeriod.name}',
+      );
+    }
+  }
+
+  final flattened = ordered
+      .expand((segment) => segment.prophetIds)
+      .toList(growable: false);
+  final flattenedSet = flattened.toSet();
+  final canonicalIds = canonicalQuranNamedProphets
+      .map((entry) => entry.canonicalId)
+      .toSet();
+
+  if (flattenedSet.length != flattened.length) {
+    errors.add('timeline contains duplicate prophet ids');
+  }
+  final missing = canonicalIds.difference(flattenedSet);
+  if (missing.isNotEmpty) {
+    errors.add('timeline is missing canonical prophets: ${missing.join(',')}');
+  }
+  final unknown = flattenedSet.difference(canonicalIds);
+  if (unknown.isNotEmpty) {
+    errors.add('timeline contains non-canonical prophet ids: ${unknown.join(',')}');
+  }
+  if (flattened.length != canonicalIds.length) {
+    errors.add(
+      'timeline must contain exactly ${canonicalIds.length} canonical prophets',
+    );
+  }
+
+  for (final period in RevelationJourneyPeriod.values) {
+    if (!ordered.any((segment) => segment.period == period)) {
+      errors.add('timeline has no segment for period ${period.name}');
+    }
+  }
+
+  return RevelationJourneyAuditResult(
+    isValid: errors.isEmpty,
+    errors: List.unmodifiable(errors),
+  );
+}
+
 bool get revelationJourneyTimelineIsValid {
+  if (!mainApproximateProphetChronologyIsValid) return false;
+
   final timeline = buildRevelationJourneyTimeline();
-  if (!mainApproximateProphetChronologyIsValid || timeline.isEmpty) return false;
-  if (timeline.any((segment) => !segment.isValid)) return false;
+  final audit = auditRevelationJourneyTimeline(timeline);
+  if (!audit.isValid) return false;
 
   for (var index = 0; index < timeline.length; index++) {
     final segment = timeline[index];
@@ -92,23 +194,7 @@ bool get revelationJourneyTimelineIsValid {
     }
   }
 
-  final flattened = timeline
-      .expand((segment) => segment.prophetIds)
-      .toList(growable: false);
-  final canonicalIds = canonicalQuranNamedProphets
-      .map((entry) => entry.canonicalId)
-      .toSet();
-
-  if (flattened.length != 25 ||
-      flattened.toSet().length != 25 ||
-      flattened.toSet().difference(canonicalIds).isNotEmpty ||
-      canonicalIds.difference(flattened.toSet()).isNotEmpty) {
-    return false;
-  }
-
-  return RevelationJourneyPeriod.values.every(
-    (period) => timeline.any((segment) => segment.period == period),
-  );
+  return true;
 }
 
 RevelationJourneyPeriod _periodForOrder(int order) {
