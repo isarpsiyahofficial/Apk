@@ -31,19 +31,19 @@ void main() {
     expect(field.text.en, contains('The verse does not name that place'));
     expect(field.text.ar, contains('ولا تسمّي الآية ذلك الموضع'));
 
-    expect(field.text.tr, contains('Kudüs'));
-    expect(field.text.en, contains('Jerusalem'));
-    expect(field.text.ar, contains('القدس'));
-    expect(field.text.tr, contains('kesin coğrafî tespiti gibi sunmaz'));
-    expect(field.text.en, contains('does not present'));
-    expect(field.text.ar, contains('لا يقدّم'));
+    expect(field.text.tr, contains('şehir, bölge veya ülke adı'));
+    expect(field.text.en, contains('no city, region, or country'));
+    expect(field.text.ar, contains('اسم مدينة أو إقليم أو بلد'));
 
-    expect(field.text.tr, isNot(contains('Kudüs’tür')));
-    expect(field.text.en, isNot(contains('is Jerusalem')));
-    expect(field.text.ar, isNot(contains('هي القدس')));
-    expect(field.text.tr, isNot(contains('Şam’dır')));
-    expect(field.text.en, isNot(contains('is Damascus')));
-    expect(field.text.ar, isNot(contains('هي دمشق')));
+    for (final unsupportedName in <String>['Kudüs', 'Şam', 'Filistin']) {
+      expect(field.text.tr, isNot(contains(unsupportedName)));
+    }
+    for (final unsupportedName in <String>['Jerusalem', 'Damascus', 'Palestine']) {
+      expect(field.text.en, isNot(contains(unsupportedName)));
+    }
+    for (final unsupportedName in <String>['القدس', 'دمشق', 'فلسطين']) {
+      expect(field.text.ar, isNot(contains(unsupportedName)));
+    }
 
     expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
   });
