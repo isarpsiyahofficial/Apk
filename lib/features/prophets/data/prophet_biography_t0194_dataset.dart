@@ -223,6 +223,35 @@ bool _isAuditableHadithSource(SourceReference source) {
       locator == admitted.locator;
 }
 
+const _admittedModernHistorySources =
+    <String, ({String title, String locator, String licenseId, String url})>{
+  'cambridge-impact-jesus-first-century-palestine-2019': (
+    title:
+        'The Impact of Jesus in First-Century Palestine — Cambridge University Press',
+    locator: 'Book description; DOI 10.1017/9781108612364',
+    licenseId: 'COPYRIGHT-CAMBRIDGE-CITATION-ONLY',
+    url: 'https://doi.org/10.1017/9781108612364',
+  ),
+};
+
+bool _isAuditableModernHistorySource(SourceReference source) {
+  if (source.sourceClass != ReligiousSourceClass.modernHistoryArchaeology) {
+    return false;
+  }
+
+  final locator = source.locator?.trim();
+  final url = source.url?.toString();
+  if (locator == null || locator.isEmpty || url == null || url.isEmpty) {
+    return false;
+  }
+  final admitted = _admittedModernHistorySources[source.id];
+  return admitted != null &&
+      source.title == admitted.title &&
+      locator == admitted.locator &&
+      source.licenseId == admitted.licenseId &&
+      url == admitted.url;
+}
+
 bool _draftQuranReferencesExistInPinnedStructure(
   CanonicalProphetBiographyDraft draft,
 ) {
@@ -239,19 +268,15 @@ bool _draftQuranReferencesExistInPinnedStructure(
 }
 
 /// T0194 fail-closed provenance gate for biography claims. A field labelled as
-/// source-backed must point to a human-auditable verse/report locator; source
-/// identity and licence metadata alone are not enough evidence. Quran claims
-/// must use the pinned Tanzil Uthmani v1.1 source identity and parseable
+/// source-backed must point to a human-auditable locator; source identity and
+/// licence metadata alone are not enough evidence. Quran claims must use the
+/// pinned Tanzil Uthmani v1.1 source identity and parseable
 /// `Quran surah:ayah[-ayah]` citations whose ayah bounds exist in the pinned
-/// 114-sura Quran structure. Sahih/hasan hadith claims currently fail closed to
-/// the exact, source-reviewed Sahih Muslim and Sahih al-Bukhari references
-/// admitted by the T0194 dataset; merely matching a collection name and numeric
-/// locator shape is not sufficient. The draft's own Quran-reference index is
-/// checked against the same pinned structure so an impossible verse cannot
-/// survive merely because `ProphetVerseReference` passes its basic shape
-/// validation. Multiple Quran citations may be separated by `;` or `,`; a typo,
-/// placeholder, impossible ayah, spoofed Quran source, or unreviewed/spoofed
-/// hadith reference must never masquerade as traceable evidence.
+/// 114-sura Quran structure. Sahih/hasan hadith claims fail closed to the exact,
+/// source-reviewed reports admitted by this dataset. Modern historical claims
+/// likewise fail closed to exact admitted scholarly source metadata and remain
+/// explicitly classified as modern history/archaeology rather than Quran or
+/// hadith evidence. Any other source class is rejected at this T0194 gate.
 bool prophetBiographyT0194DraftHasTraceableProvenance(
   CanonicalProphetBiographyDraft draft,
 ) {
@@ -263,14 +288,22 @@ bool prophetBiographyT0194DraftHasTraceableProvenance(
     for (final source in field.sources) {
       final locator = source.locator?.trim();
       if (locator == null || locator.isEmpty) return false;
-      if (source.sourceClass == ReligiousSourceClass.quran &&
-          (!_isPinnedTanzilQuranSource(source) ||
-              !_isAuditableQuranLocator(locator))) {
-        return false;
-      }
-      if (source.sourceClass == ReligiousSourceClass.sahihHasanHadith &&
-          !_isAuditableHadithSource(source)) {
-        return false;
+
+      switch (source.sourceClass) {
+        case ReligiousSourceClass.quran:
+          if (!_isPinnedTanzilQuranSource(source) ||
+              !_isAuditableQuranLocator(locator)) {
+            return false;
+          }
+          break;
+        case ReligiousSourceClass.sahihHasanHadith:
+          if (!_isAuditableHadithSource(source)) return false;
+          break;
+        case ReligiousSourceClass.modernHistoryArchaeology:
+          if (!_isAuditableModernHistorySource(source)) return false;
+          break;
+        default:
+          return false;
       }
     }
   }
@@ -280,9 +313,10 @@ bool prophetBiographyT0194DraftHasTraceableProvenance(
 /// T0194 working dataset. It preserves the 25 canonical identities while
 /// layering source-reviewed biography fields onto the fail-closed base drafts.
 ///
-/// This remains a research dataset: unresolved fields keep
-/// `unknownPendingResearch`, so it must not be treated as a reviewed production
-/// dataset until the remaining prophets and native/religious review gates close.
+/// Unresolved fields remain `unknownPendingResearch`, but structural validity
+/// itself does not require every biography to keep a pending field. This lets a
+/// fully researched biography become complete without making the whole working
+/// dataset invalid while other prophets still remain under review.
 final canonicalProphetBiographyT0194Dataset = <CanonicalProphetBiographyDraft>[
   for (final draft in canonicalProphetBiographyDrafts) _applySupplement(draft),
 ];
@@ -292,6 +326,5 @@ bool get canonicalProphetBiographyT0194DatasetIsStructurallyValid =>
     canonicalProphetBiographyT0194Dataset.every(
       (draft) =>
           draft.isStructurallyComplete &&
-          draft.hasPendingResearch &&
           prophetBiographyT0194DraftHasTraceableProvenance(draft),
     );
