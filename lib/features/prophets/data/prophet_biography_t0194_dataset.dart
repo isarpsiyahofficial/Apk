@@ -232,6 +232,13 @@ const _admittedModernHistorySources =
     licenseId: 'COPYRIGHT-CAMBRIDGE-CITATION-ONLY',
     url: 'https://doi.org/10.1017/9781108612364',
   ),
+  'oxford-princeton-islamic-political-thought-muhammad-2015': (
+    title: 'Muhammad — Islamic Political Thought: An Introduction',
+    locator:
+        'Chapter 10, pp. 152-168; DOI 10.23943/princeton/9780691164823.003.0010',
+    licenseId: 'COPYRIGHT-PRINCETON-CITATION-ONLY',
+    url: 'https://doi.org/10.23943/princeton/9780691164823.003.0010',
+  ),
 };
 
 bool _isAuditableModernHistorySource(SourceReference source) {
