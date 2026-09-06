@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_supplements_16.dart';
 import 'prophet_content.dart';
 
 SourceReference _quranSource(String stableId, String locator) => SourceReference(
@@ -32,9 +33,14 @@ ProphetBiographyField _quranField({
 /// following the messenger. The field therefore preserves both sides of the
 /// response visible in the verses and does not generalise the disbelief to the
 /// entire community or infer a date, place, ruler, or later historical outcome.
+///
+/// The sixteenth source-reviewed supplement is composed here as the next
+/// chronological layer so the existing dataset import chain stays stable while
+/// adding Isa's Quran 5:114 supplication field and reference index entry.
 final t0194ProphetBiographySupplements15 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'isa': <ProphetBiographySectionKey, ProphetBiographyField>{
+    ...t0194ProphetBiographySupplements16['isa']!,
     ProphetBiographySectionKey.communityResponse: _quranField(
       tr: 'Kur’an, Îsâ’nın muhataplarından inkâr sezdiğinde Allah yolunda kimlerin kendisine yardımcı olacağını sorduğunu; havârilerin ise Allah’ın yardımcıları olduklarını, Allah’a iman ettiklerini ve teslim olduklarına şahit olunmasını istediklerini bildirir. Ardından indirilen vahye iman ettiklerini ve elçiye uyduklarını dua ile ifade ederler. Bu alan inkârı bütün topluluğa genellemez ve ayetlerin vermediği tarih, yer veya sonraki tarihsel sonucu eklemez.',
       en: 'The Quran records that when Jesus perceived disbelief among those he addressed, he asked who would be his helpers toward Allah; the disciples replied that they were Allah’s helpers, affirmed faith in Allah, and asked that their submission be witnessed. They then prayed that they believed in what Allah had sent down and followed the messenger. This field does not generalise the disbelief to the entire community or add a date, place, or later historical outcome not given by the verses.',
@@ -46,8 +52,9 @@ final t0194ProphetBiographySupplements15 =
 };
 
 final t0194ProphetSupplementReferences15 = <String, List<ProphetVerseReference>>{
-  'isa': const <ProphetVerseReference>[
-    ProphetVerseReference(surah: 3, ayah: 52),
-    ProphetVerseReference(surah: 3, ayah: 53),
+  'isa': <ProphetVerseReference>[
+    const ProphetVerseReference(surah: 3, ayah: 52),
+    const ProphetVerseReference(surah: 3, ayah: 53),
+    ...t0194ProphetSupplementReferences16['isa']!,
   ],
 };
