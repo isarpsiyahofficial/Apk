@@ -4,11 +4,17 @@ import '../../history/domain/biography_timeline_link_t0222.dart';
 import '../../history/domain/history_event_contract.dart';
 import '../data/canonical_prophet_biographies.dart';
 import '../data/prophet_biography_t0194_dataset.dart';
+import '../data/prophet_content.dart';
 
 class ProphetStoryPage extends StatelessWidget {
-  const ProphetStoryPage({required this.prophetId, super.key});
+  const ProphetStoryPage({
+    required this.prophetId,
+    this.onOpenQuranVerse,
+    super.key,
+  });
 
   final String prophetId;
+  final Future<void> Function(ProphetVerseReference verse)? onOpenQuranVerse;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +60,33 @@ class ProphetStoryPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(copy.researchNotice),
+                        if (onOpenQuranVerse != null &&
+                            biography.quranReferences.isNotEmpty) ...[
+                          const SizedBox(height: 24),
+                          Text(
+                            copy.quranLinksTitle,
+                            key: const ValueKey('prophet-story-quran-links-title'),
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(copy.quranLinksNotice),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (final verse in biography.quranReferences)
+                                OutlinedButton.icon(
+                                  key: ValueKey(
+                                    'prophet-story-quran-${verse.stableId}',
+                                  ),
+                                  onPressed: () => onOpenQuranVerse!(verse),
+                                  icon: const Icon(Icons.menu_book_outlined),
+                                  label: Text('${verse.surah}:${verse.ayah}'),
+                                ),
+                            ],
+                          ),
+                        ],
                         const SizedBox(height: 24),
                         for (final entry in sourceBacked) ...[
                           _SourceBackedStorySection(
@@ -233,6 +266,8 @@ class _ProphetStoryCopy {
     required this.title,
     required this.researchNotice,
     required this.sourceLabel,
+    required this.quranLinksTitle,
+    required this.quranLinksNotice,
     required this.timelineTitle,
     required this.timelineNotice,
     required this.approximateLabel,
@@ -243,6 +278,8 @@ class _ProphetStoryCopy {
   final String title;
   final String researchNotice;
   final String sourceLabel;
+  final String quranLinksTitle;
+  final String quranLinksNotice;
   final String timelineTitle;
   final String timelineNotice;
   final String approximateLabel;
@@ -255,6 +292,9 @@ class _ProphetStoryCopy {
             researchNotice:
                 'تُعرض هنا فقط الفقرات التي لها مصدر موثوق. التفاصيل التي لا تزال قيد البحث لا تُعرض كحقائق.',
             sourceLabel: 'المصدر',
+            quranLinksTitle: 'الآيات المرتبطة',
+            quranLinksNotice:
+                'تفتح الروابط فقط المواضع القرآنية المرتبطة بهذه السيرة في البيانات المراجَعة.',
             timelineTitle: 'في التسلسل التاريخي',
             timelineNotice:
                 'تظهر فقط الأحداث المرتبطة بهذه السيرة عبر معرّف شخص موثق ومطابق، من دون إنشاء روابط تخمينية.',
@@ -267,6 +307,9 @@ class _ProphetStoryCopy {
             researchNotice:
                 'Only passages backed by reviewed sources are shown here. Details still under research are not presented as facts.',
             sourceLabel: 'Source',
+            quranLinksTitle: 'Related verses',
+            quranLinksNotice:
+                'Links open only Quran locations explicitly joined to this biography by the reviewed dataset.',
             timelineTitle: 'In the history timeline',
             timelineNotice:
                 'Only events joined to this biography by an exact, verified person identifier are shown; speculative links are not created.',
@@ -279,6 +322,9 @@ class _ProphetStoryCopy {
             researchNotice:
                 'Burada yalnız güvenilir kaynağı doğrulanmış bölümler gösterilir. Araştırması süren ayrıntılar kesin bilgi gibi sunulmaz.',
             sourceLabel: 'Kaynak',
+            quranLinksTitle: 'İlgili ayetler',
+            quranLinksNotice:
+                'Bağlantılar yalnız incelenmiş veri setinde bu biyografiyle açıkça eşleştirilmiş Kur’an konumlarını açar.',
             timelineTitle: 'Tarih kronolojisinde',
             timelineNotice:
                 'Yalnız doğrulanmış ve birebir kişi kimliğiyle bu biyografiye bağlanan olaylar gösterilir; tahminî bağlantı üretilmez.',
