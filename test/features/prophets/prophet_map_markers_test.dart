@@ -103,7 +103,11 @@ void main() {
 
     test('unknown and disputed geography never become normal map pins', () {
       const unknown = ProphetGeography(
-        name: LocalizedReligiousText(tr: 'Bilinmiyor', en: 'Unknown', ar: 'غير معروف'),
+        name: LocalizedReligiousText(
+          tr: 'Bilinmiyor',
+          en: 'Unknown',
+          ar: 'غير معروف',
+        ),
         precision: ProphetLocationPrecision.unknown,
         certainty: CertaintyLevel.unknown,
         sources: [quranSource],
@@ -128,6 +132,19 @@ void main() {
         label: LocalizedReligiousText(tr: 'Yer', en: 'Place', ar: 'مكان'),
         kind: ProphetMapMarkerKind.exactPoint,
         certainty: CertaintyLevel.approximate,
+        sources: [quranSource],
+        latitude: 10,
+        longitude: 20,
+      );
+
+      expect(marker.isValid, isFalse);
+    });
+
+    test('exact marker requires modern history or archaeology source', () {
+      const marker = ProphetMapMarker(
+        label: LocalizedReligiousText(tr: 'Yer', en: 'Place', ar: 'مكان'),
+        kind: ProphetMapMarkerKind.exactPoint,
+        certainty: CertaintyLevel.explicitSource,
         sources: [quranSource],
         latitude: 10,
         longitude: 20,
@@ -185,7 +202,7 @@ void main() {
       );
     });
 
-    test('missing locator or disputed source cannot create a marker', () {
+    test('missing locator cannot create a marker', () {
       const missingLocator = ProphetMapMarker(
         label: LocalizedReligiousText(tr: 'Yer', en: 'Place', ar: 'مكان'),
         kind: ProphetMapMarkerKind.approximateRegion,
@@ -199,23 +216,47 @@ void main() {
           ),
         ],
       );
-      const disputedSource = ProphetMapMarker(
-        label: LocalizedReligiousText(tr: 'Yer', en: 'Place', ar: 'مكان'),
-        kind: ProphetMapMarkerKind.approximateRegion,
-        certainty: CertaintyLevel.approximate,
-        sources: [
-          SourceReference(
-            id: 'source',
-            title: 'Source',
-            sourceClass: ReligiousSourceClass.disputed,
-            licenseId: 'REFERENCE-ONLY',
-            locator: 'claim',
-          ),
-        ],
-      );
 
       expect(missingLocator.isValid, isFalse);
-      expect(disputedSource.isValid, isFalse);
+    });
+
+    test('non-geographic or weak source classes cannot create normal pins', () {
+      const rejectedClasses = <ReligiousSourceClass>[
+        ReligiousSourceClass.meaningBasedDua,
+        ReligiousSourceClass.classicalTraditional,
+        ReligiousSourceClass.israiliyat,
+        ReligiousSourceClass.laterTradition,
+        ReligiousSourceClass.ebcedHavasTradition,
+        ReligiousSourceClass.disputed,
+        ReligiousSourceClass.unknown,
+      ];
+
+      for (final sourceClass in rejectedClasses) {
+        final marker = ProphetMapMarker(
+          label: const LocalizedReligiousText(
+            tr: 'Yaklaşık yer',
+            en: 'Approximate place',
+            ar: 'موضع تقريبي',
+          ),
+          kind: ProphetMapMarkerKind.approximateRegion,
+          certainty: CertaintyLevel.approximate,
+          sources: [
+            SourceReference(
+              id: 'source-${sourceClass.name}',
+              title: 'Rejected map source',
+              sourceClass: sourceClass,
+              licenseId: 'REFERENCE-ONLY',
+              locator: 'location claim',
+            ),
+          ],
+        );
+
+        expect(
+          marker.isValid,
+          isFalse,
+          reason: '${sourceClass.name} must not create a normal map pin',
+        );
+      }
     });
   });
 }
