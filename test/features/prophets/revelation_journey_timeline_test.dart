@@ -9,7 +9,10 @@ void main() {
 
       final timeline = buildRevelationJourneyTimeline();
       final prophets = timeline.expand((segment) => segment.prophetIds).toList();
+      final audit = auditRevelationJourneyTimeline(timeline);
 
+      expect(audit.isValid, isTrue);
+      expect(audit.errors, isEmpty);
       expect(prophets.length, 25);
       expect(prophets.toSet().length, 25);
       expect(
@@ -82,24 +85,87 @@ void main() {
     });
 
     test('weak or disputed evidence cannot drive a journey segment', () {
-      const invalid = RevelationJourneySegment(
-        order: 1,
-        period: RevelationJourneyPeriod.firstProphets,
-        prophetIds: ['adam'],
-        isParallel: false,
-        certainty: CertaintyLevel.approximate,
-        sources: [
-          SourceReference(
-            id: 'late-story',
-            title: 'Unverified later narrative',
-            sourceClass: ReligiousSourceClass.laterTradition,
-            licenseId: 'reference-only',
-            locator: 'n/a',
-          ),
-        ],
-      );
+      for (final disallowed in <ReligiousSourceClass>[
+        ReligiousSourceClass.israiliyat,
+        ReligiousSourceClass.laterTradition,
+        ReligiousSourceClass.disputed,
+        ReligiousSourceClass.unknown,
+        ReligiousSourceClass.meaningBasedDua,
+        ReligiousSourceClass.classicalTraditional,
+        ReligiousSourceClass.ebcedHavasTradition,
+      ]) {
+        final invalid = RevelationJourneySegment(
+          order: 1,
+          period: RevelationJourneyPeriod.firstProphets,
+          prophetIds: const ['adam'],
+          isParallel: false,
+          certainty: CertaintyLevel.approximate,
+          sources: [
+            SourceReference(
+              id: 'invalid-${disallowed.stableId}',
+              title: 'Invalid chronology source',
+              sourceClass: disallowed,
+              licenseId: 'reference-only',
+              locator: 'n/a',
+            ),
+          ],
+        );
 
-      expect(invalid.isValid, isFalse);
+        expect(invalid.isValid, isFalse, reason: disallowed.stableId);
+      }
+    });
+
+    test('timeline source allowlist is chronology-specific', () {
+      expect(
+        revelationJourneySourceClassAllowlist,
+        equals({
+          ReligiousSourceClass.quran,
+          ReligiousSourceClass.sahihHasanHadith,
+          ReligiousSourceClass.earlyIslamicHistoryTafsir,
+          ReligiousSourceClass.modernHistoryArchaeology,
+        }),
+      );
+    });
+
+    test('whole-timeline audit rejects duplicate prophet ids', () {
+      final timeline = buildRevelationJourneyTimeline();
+      final tampered = <RevelationJourneySegment>[
+        ...timeline.take(timeline.length - 1),
+        RevelationJourneySegment(
+          order: timeline.last.order,
+          period: timeline.last.period,
+          prophetIds: const ['isa'],
+          isParallel: false,
+          certainty: timeline.last.certainty,
+          sources: timeline.last.sources,
+        ),
+      ];
+
+      final audit = auditRevelationJourneyTimeline(tampered);
+      expect(audit.isValid, isFalse);
+      expect(audit.errors.join('\n'), contains('duplicate prophet ids'));
+      expect(audit.errors.join('\n'), contains('missing canonical prophets'));
+    });
+
+    test('whole-timeline audit rejects order gaps and wrong browse period', () {
+      final timeline = buildRevelationJourneyTimeline();
+      final first = timeline.first;
+      final tampered = <RevelationJourneySegment>[
+        RevelationJourneySegment(
+          order: 2,
+          period: RevelationJourneyPeriod.muhammad,
+          prophetIds: first.prophetIds,
+          isParallel: first.isParallel,
+          certainty: first.certainty,
+          sources: first.sources,
+        ),
+        ...timeline.skip(1),
+      ];
+
+      final audit = auditRevelationJourneyTimeline(tampered);
+      expect(audit.isValid, isFalse);
+      expect(audit.errors.join('\n'), contains('timeline order must be contiguous'));
+      expect(audit.errors.join('\n'), contains('expected firstProphets'));
     });
   });
 }
