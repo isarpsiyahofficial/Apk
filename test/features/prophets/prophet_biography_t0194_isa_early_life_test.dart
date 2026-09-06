@@ -265,16 +265,16 @@ void main() {
     }
   });
 
-  test('T0194 Isa unsupported geography and chronology stay pending', () {
-    for (final key in <ProphetBiographySectionKey>[
-      ProphetBiographySectionKey.geography,
-      ProphetBiographySectionKey.period,
-    ]) {
-      expect(
-        isa.sections[key]!.status,
-        ProphetBiographyFieldStatus.unknownPendingResearch,
-        reason: '$key must not be inferred from the reviewed Quran verses',
-      );
-    }
+  test('T0194 Isa unresolved chronology stays pending after geography review', () {
+    expect(
+      isa.sections[ProphetBiographySectionKey.geography]!.status,
+      ProphetBiographyFieldStatus.sourceBacked,
+      reason: 'Quran 23:50 now provides reviewed descriptive geography evidence',
+    );
+    expect(
+      isa.sections[ProphetBiographySectionKey.period]!.status,
+      ProphetBiographyFieldStatus.unknownPendingResearch,
+      reason: 'period must not be inferred from the reviewed Quran verses',
+    );
   });
 }
