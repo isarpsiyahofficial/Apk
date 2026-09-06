@@ -131,7 +131,7 @@ void main() {
     expect(withBadge.errors.any((e) => e.contains('no explicit badge evidence')), isFalse);
   });
 
-  test('rejects contradictory genealogy facts', () {
+  test('rejects contradictory genealogy facts and directed ancestry cycles', () {
     final base = verifiedProphetKinshipFacts.last;
     final contradiction = VerifiedProphetKinshipFact(
       id: 'qa-yahya-zakariya-reversed',
@@ -150,6 +150,7 @@ void main() {
 
     expect(result.isValid, isFalse);
     expect(result.errors.any((e) => e.contains('contradictory genealogy facts')), isTrue);
+    expect(result.errors.any((e) => e.contains('directed ancestry cycle')), isTrue);
   });
 
   test('rejects duplicate or contradictory timeline placement', () {
