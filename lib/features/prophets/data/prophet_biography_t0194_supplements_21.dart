@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_supplements_22.dart';
 import 'prophet_content.dart';
 
 SourceReference _quranSource(String stableId, String locator) => SourceReference(
@@ -31,9 +32,15 @@ ProphetBiographyField _quranField({
 /// contains differing location identifications, so this Quran-only geography
 /// field deliberately records only the terrain description and does not repeat
 /// or promote any later named-location proposal as Quranic evidence.
+///
+/// The twenty-second supplement is composed here as a separate provenance
+/// layer. It adds only a broad first-century historical period from modern
+/// scholarship and explicitly prevents that chronology from being presented as
+/// a Quranic date or as an exact birth/death year.
 final t0194ProphetBiographySupplements21 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'isa': <ProphetBiographySectionKey, ProphetBiographyField>{
+    ...t0194ProphetBiographySupplements22['isa']!,
     ProphetBiographySectionKey.geography: _quranField(
       tr: 'Kur’an, Meryem oğlu Îsâ ile annesinin yerleşmeye elverişli ve akarsu bulunan yüksekçe bir yere sığındırıldığını bildirir. Ayet bu yerin adını vermez; bu nedenle ayetin belirtmediği herhangi bir şehir, bölge veya ülke adı Kur’an’ın kesin coğrafî tespiti gibi sunulmaz.',
       en: 'The Quran states that Jesus son of Mary and his mother were given refuge on elevated ground with a suitable resting place and flowing water. The verse does not name that place, so no city, region, or country not identified by the verse is presented as a definite Quranic location.',
@@ -45,7 +52,8 @@ final t0194ProphetBiographySupplements21 =
 };
 
 final t0194ProphetSupplementReferences21 = <String, List<ProphetVerseReference>>{
-  'isa': const <ProphetVerseReference>[
-    ProphetVerseReference(surah: 23, ayah: 50),
+  'isa': <ProphetVerseReference>[
+    const ProphetVerseReference(surah: 23, ayah: 50),
+    ...?t0194ProphetSupplementReferences22['isa'],
   ],
 };
