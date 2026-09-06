@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_supplements_23.dart';
 import 'prophet_content.dart';
 
 final _cambridgeFirstCenturySource = SourceReference(
@@ -20,8 +21,13 @@ final _cambridgeFirstCenturySource = SourceReference(
 /// intentionally labelled as such. It places the historical Jesus in the
 /// early first-century Galilee/Judea setting without turning scholarly
 /// chronology into a Quranic claim or inventing an exact birth/death year.
+///
+/// The twenty-third source-reviewed supplement is composed here as the next
+/// chronological layer so the stable dataset import chain also carries
+/// Muhammad's Sahih Muslim 1162e birth-weekday evidence.
 final t0194ProphetBiographySupplements22 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
+  ...t0194ProphetBiographySupplements23,
   'isa': <ProphetBiographySectionKey, ProphetBiographyField>{
     ProphetBiographySectionKey.period: ProphetBiographyField(
       text: const LocalizedReligiousText(
@@ -35,5 +41,6 @@ final t0194ProphetBiographySupplements22 =
   },
 };
 
-const t0194ProphetSupplementReferences22 =
-    <String, List<ProphetVerseReference>>{};
+final t0194ProphetSupplementReferences22 = <String, List<ProphetVerseReference>>{
+  ...t0194ProphetSupplementReferences23,
+};
