@@ -14,6 +14,7 @@ class ProphetComparisonReference {
     required this.title,
     required this.locator,
     required this.licenseId,
+    required this.sourceUrl,
   });
 
   final String stableId;
@@ -21,12 +22,18 @@ class ProphetComparisonReference {
   final String title;
   final String locator;
   final String licenseId;
+  final String sourceUrl;
 
-  bool get isValid =>
-      stableId.trim().isNotEmpty &&
-      title.trim().isNotEmpty &&
-      locator.trim().isNotEmpty &&
-      licenseId.trim().isNotEmpty;
+  bool get isValid {
+    final uri = Uri.tryParse(sourceUrl.trim());
+    return stableId.trim().isNotEmpty &&
+        title.trim().isNotEmpty &&
+        locator.trim().isNotEmpty &&
+        licenseId.trim().isNotEmpty &&
+        uri != null &&
+        uri.scheme == 'https' &&
+        uri.host.isNotEmpty;
+  }
 }
 
 class ProphetInterfaithComparison {
@@ -90,15 +97,53 @@ const _isaIslamicSource = ProphetComparisonReference(
   title: 'Tanzil Project — Quran Uthmani v1.1',
   locator: 'Quran 4:157-158',
   licenseId: 'CC-BY-3.0',
+  sourceUrl: 'https://tanzil.net/docs/Text_License',
 );
 
 const _isaChristianSource = ProphetComparisonReference(
-  stableId: 'new-testament-canonical-gospels-isa-crucifixion',
+  stableId: 'world-english-bible-2020-isa-crucifixion',
   tradition: ProphetComparisonTradition.christian,
-  title: 'New Testament — canonical Gospel references',
+  title: 'World English Bible — 2020 stable text edition',
   locator: 'Matthew 27:35; Mark 15:24; Luke 23:33; John 19:18',
-  licenseId: 'REFERENCE-ONLY',
+  licenseId: 'PUBLIC-DOMAIN',
+  sourceUrl: 'https://ebible.org/engwebp/',
 );
+
+bool _matchesExactReference(
+  ProphetComparisonReference actual,
+  ProphetComparisonReference expected,
+) =>
+    actual.stableId == expected.stableId &&
+    actual.tradition == expected.tradition &&
+    actual.title == expected.title &&
+    actual.locator == expected.locator &&
+    actual.licenseId == expected.licenseId &&
+    actual.sourceUrl == expected.sourceUrl;
+
+/// Fail-closed T0195 production provenance gate.
+///
+/// Structural validity alone is intentionally insufficient for religious
+/// comparison content. Production references must match the reviewed source
+/// identity, tradition, locator, license status and canonical HTTPS URL exactly.
+bool prophetInterfaithComparisonHasApprovedProvenance(
+  ProphetInterfaithComparison entry,
+) {
+  if (!entry.isValid) return false;
+
+  if (entry.canonicalProphetId == 'isa' &&
+      entry.topicId == 'crucifixion-account' &&
+      entry.comparisonTradition == ProphetComparisonTradition.christian) {
+    return entry.islamicSources.length == 1 &&
+        entry.comparisonSources.length == 1 &&
+        _matchesExactReference(entry.islamicSources.single, _isaIslamicSource) &&
+        _matchesExactReference(
+          entry.comparisonSources.single,
+          _isaChristianSource,
+        );
+  }
+
+  return false;
+}
 
 /// T0195 keeps comparison material opt-in and physically separate from the
 /// canonical Islamic biography fields. It must never be used to overwrite the
@@ -130,4 +175,6 @@ const prophetInterfaithComparisons = <ProphetInterfaithComparison>[
 
 bool get prophetInterfaithComparisonsAreValid =>
     prophetInterfaithComparisons.isNotEmpty &&
-    prophetInterfaithComparisons.every((entry) => entry.isValid);
+    prophetInterfaithComparisons.every(
+      prophetInterfaithComparisonHasApprovedProvenance,
+    );
