@@ -48,9 +48,14 @@ void main() {
     expect(matches, hasLength(1));
   });
 
-  test('T0194 Muhammad unresolved period remains fail-closed', () {
+  test('T0194 Muhammad later period supplement does not weaken Isra provenance', () {
     final period = muhammad.sections[ProphetBiographySectionKey.period]!;
-    expect(period.status, ProphetBiographyFieldStatus.unknownPendingResearch);
-    expect(period.sources, isEmpty);
+    final isra = muhammad.sections[ProphetBiographySectionKey.miracles]!;
+
+    expect(period.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(period.sources, isNotEmpty);
+    expect(isra.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(isra.sources.single.sourceClass, ReligiousSourceClass.quran);
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(muhammad), isTrue);
   });
 }
