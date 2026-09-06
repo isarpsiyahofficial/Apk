@@ -147,6 +147,36 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
   });
 
+  test('T0194 Isa death boundary stays inside Quran 4:157-158', () {
+    final field = isa.sections[ProphetBiographySectionKey.death]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(
+      field.sources.single.id,
+      'tanzil-uthmani-v1.1-isa-q4-157-158-death',
+    );
+    expect(
+      field.sources.single.title,
+      'Tanzil Project — Uthmani Quran Text v1.1',
+    );
+    expect(field.sources.single.locator, 'Quran 4:157-158');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+    expect(field.text.tr, contains('öldürdükleri ve çarmıha gerdikleri iddiasını reddeder'));
+    expect(field.text.en, contains('was killed or crucified'));
+    expect(field.text.ar, contains('قتل عيسى ابن مريم أو صلبه'));
+    expect(field.text.tr, contains('Allah’ın onu kendisine yükselttiğini'));
+    expect(field.text.en, contains('Allah raised him to Himself'));
+    expect(field.text.ar, contains('أن الله رفعه إليه'));
+    expect(field.text.tr, contains('kesin bir vefat tarihi vermez'));
+    expect(field.text.en, contains('no exact death date'));
+    expect(field.text.ar, contains('تاريخ وفاة دقيقًا'));
+    expect(field.text.tr, isNot(contains('yerine çarmıha gerildi')));
+    expect(field.text.en, isNot(contains('crucified in his place')));
+    expect(field.text.ar, isNot(contains('صلب بدلًا منه')));
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
+  });
+
   test('T0194 Isa reference index deduplicates admitted reviewed verses', () {
     for (final reference in <(int, int)>[
       (3, 45),
@@ -157,6 +187,8 @@ void main() {
       (3, 51),
       (3, 52),
       (3, 53),
+      (4, 157),
+      (4, 158),
       (5, 110),
       (5, 114),
       (19, 29),
