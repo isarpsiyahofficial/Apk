@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_content.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_deep_links.dart';
+import 'package:islami_hayat/features/prophets/domain/prophet_deep_link_authorization_t0202.dart';
 import 'package:islami_hayat/features/prophets/domain/prophet_deep_link_execution.dart';
 
 void main() {
@@ -116,6 +117,52 @@ void main() {
         map.failure,
         ProphetDeepLinkExecutionFailure.unavailableDestination,
       );
+    });
+
+    test('authorization rejects cross-prophet target before handler runs', () async {
+      var calls = 0;
+      final authorization = ProphetDeepLinkAuthorization(const [
+        ProphetDeepLinkBundle(
+          prophetId: 'ibrahim',
+          quranReferences: <ProphetVerseReference>[
+            ProphetVerseReference(surah: 14, ayah: 35),
+          ],
+          duaReferences: <ProphetDuaReference>[
+            ProphetDuaReference(duaId: 'dua-ibrahim-14-35'),
+          ],
+          historyEventIds: <String>['history-ibrahim-kaaba'],
+          mapLocationIds: <String>['map-ibrahim-mecca-approx'],
+        ),
+        ProphetDeepLinkBundle(
+          prophetId: 'musa',
+          quranReferences: <ProphetVerseReference>[
+            ProphetVerseReference(surah: 20, ayah: 25),
+          ],
+          duaReferences: <ProphetDuaReference>[],
+        ),
+      ]);
+      final executor = ProphetDeepLinkExecutor(
+        ProphetDeepLinkExecutionHandlers(
+          openIslamicHistory: ({required prophetId, required targetId}) async {
+            calls++;
+          },
+        ),
+        authorization: authorization,
+      );
+
+      final result = await executor.execute(
+        ProphetDeepLink.islamicHistory(
+          prophetId: 'musa',
+          historyEventId: 'history-ibrahim-kaaba',
+        ),
+      );
+
+      expect(result.executed, isFalse);
+      expect(
+        result.failure,
+        ProphetDeepLinkExecutionFailure.unauthorizedTarget,
+      );
+      expect(calls, 0);
     });
 
     test('rejects malformed or foreign URI before any handler runs', () async {
