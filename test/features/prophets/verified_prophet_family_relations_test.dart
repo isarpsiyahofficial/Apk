@@ -98,15 +98,15 @@ void main() {
         ],
       );
       const missingLocator = VerifiedProphetKinshipFact(
-        id: 'missing-locator',
+        id: 'musa-harun-siblings-q20-30',
         firstProphetId: 'musa',
         secondProphetId: 'harun',
         kind: VerifiedProphetKinshipKind.siblings,
         certainty: CertaintyLevel.explicitSource,
         sources: [
           SourceReference(
-            id: 'quran-link',
-            title: 'Quran reference',
+            id: 'tanzil-uthmani-v1.1-q20-30',
+            title: 'Tanzil Project — Uthmani Quran Text v1.1',
             sourceClass: ReligiousSourceClass.quran,
             licenseId: 'CC-BY-3.0',
           ),
@@ -153,6 +153,99 @@ void main() {
 
       expect(selfRelation.isValid, isFalse);
       expect(noncanonical.isValid, isFalse);
+    });
+
+    test('Quran class label alone cannot forge a reviewed family source', () {
+      const forgedSource = VerifiedProphetKinshipFact(
+        id: 'musa-harun-siblings-q20-30',
+        firstProphetId: 'musa',
+        secondProphetId: 'harun',
+        kind: VerifiedProphetKinshipKind.siblings,
+        certainty: CertaintyLevel.explicitSource,
+        sources: [
+          SourceReference(
+            id: 'forged-quran-source',
+            title: 'Unreviewed Quran metadata',
+            sourceClass: ReligiousSourceClass.quran,
+            licenseId: 'CC-BY-3.0',
+            locator: 'Quran 20:30',
+          ),
+        ],
+      );
+
+      expect(forgedSource.isValid, isFalse);
+      expect(() => forgedSource.asRelations(), throwsStateError);
+    });
+
+    test('reviewed source cannot be rebound to a different genealogy claim', () {
+      const rebound = VerifiedProphetKinshipFact(
+        id: 'musa-harun-siblings-q20-30',
+        firstProphetId: 'ibrahim',
+        secondProphetId: 'ishaq',
+        kind: VerifiedProphetKinshipKind.parentChild,
+        certainty: CertaintyLevel.explicitSource,
+        sources: [
+          SourceReference(
+            id: 'tanzil-uthmani-v1.1-q20-30',
+            title: 'Tanzil Project — Uthmani Quran Text v1.1',
+            sourceClass: ReligiousSourceClass.quran,
+            licenseId: 'CC-BY-3.0',
+            locator: 'Quran 20:30',
+          ),
+        ],
+      );
+
+      expect(rebound.isValid, isFalse);
+    });
+
+    test('locator and licence tampering fail closed', () {
+      const wrongLocator = VerifiedProphetKinshipFact(
+        id: 'zakariya-yahya-parent-child-q19-7',
+        firstProphetId: 'zakariya',
+        secondProphetId: 'yahya',
+        kind: VerifiedProphetKinshipKind.parentChild,
+        certainty: CertaintyLevel.explicitSource,
+        sources: [
+          SourceReference(
+            id: 'tanzil-uthmani-v1.1-q19-7',
+            title: 'Tanzil Project — Uthmani Quran Text v1.1',
+            sourceClass: ReligiousSourceClass.quran,
+            licenseId: 'CC-BY-3.0',
+            locator: 'Quran 19:8',
+          ),
+        ],
+      );
+      const wrongLicense = VerifiedProphetKinshipFact(
+        id: 'musa-harun-siblings-q20-30',
+        firstProphetId: 'musa',
+        secondProphetId: 'harun',
+        kind: VerifiedProphetKinshipKind.siblings,
+        certainty: CertaintyLevel.explicitSource,
+        sources: [
+          SourceReference(
+            id: 'tanzil-uthmani-v1.1-q20-30',
+            title: 'Tanzil Project — Uthmani Quran Text v1.1',
+            sourceClass: ReligiousSourceClass.quran,
+            licenseId: 'REFERENCE-ONLY',
+            locator: 'Quran 20:30',
+          ),
+        ],
+      );
+
+      expect(wrongLocator.isValid, isFalse);
+      expect(wrongLicense.isValid, isFalse);
+    });
+
+    test('whole-graph audit rejects duplicate reviewed relationship claims', () {
+      final musaHarun = verifiedProphetKinshipFacts.firstWhere(
+        (fact) => fact.id == 'musa-harun-siblings-q20-30',
+      );
+
+      expect(
+        verifiedProphetFamilyGraphIsValidFor([musaHarun, musaHarun]),
+        isFalse,
+      );
+      expect(verifiedProphetFamilyGraphIsValidFor(const []), isFalse);
     });
   });
 }
