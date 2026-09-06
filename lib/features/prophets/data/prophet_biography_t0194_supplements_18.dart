@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_supplements_19.dart';
 import 'prophet_content.dart';
 
 SourceReference _quranSource(String stableId, String locator) => SourceReference(
@@ -31,9 +32,13 @@ ProphetBiographyField _quranField({
 /// It does not claim that a specific surviving manuscript is identical to the
 /// revealed Gospel, invent a delivery date or place, or add a textual history
 /// not stated by the verse.
+///
+/// The nineteenth source-reviewed supplement is composed here as the next
+/// chronological layer, adding only the Quran 5:112-115 table event.
 final t0194ProphetBiographySupplements18 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'isa': <ProphetBiographySectionKey, ProphetBiographyField>{
+    ...t0194ProphetBiographySupplements19['isa']!,
     ProphetBiographySectionKey.scriptureScrolls: _quranField(
       tr: 'Kur’an, Meryem oğlu Îsâ’nın kendisinden önceki Tevrat’ı doğruladığını ve ona içinde hidayet ve nur bulunan İncil’in verildiğini bildirir. Bu alan günümüze ulaşmış belirli bir nüshanın vahyedilen İncil ile birebir aynı olduğunu iddia etmez; veriliş tarihi veya yeri uydurmaz ve ayetin söylemediği bir metin tarihi eklemez.',
       en: 'The Quran states that Jesus son of Mary confirmed the Torah before him and was given the Gospel containing guidance and light. This field does not claim that any specific surviving manuscript is identical to the revealed Gospel, does not invent a date or place of delivery, and adds no textual history not stated by the verse.',
@@ -45,7 +50,8 @@ final t0194ProphetBiographySupplements18 =
 };
 
 final t0194ProphetSupplementReferences18 = <String, List<ProphetVerseReference>>{
-  'isa': const <ProphetVerseReference>[
-    ProphetVerseReference(surah: 5, ayah: 46),
+  'isa': <ProphetVerseReference>[
+    const ProphetVerseReference(surah: 5, ayah: 46),
+    ...t0194ProphetSupplementReferences19['isa']!,
   ],
 };
