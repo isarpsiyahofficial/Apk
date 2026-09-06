@@ -26,12 +26,19 @@ void main() {
         reason: '${draft.identity.canonicalId} needs prophet-specific evidence',
       );
 
+      // T0194 may use the source classes explicitly allowed by the biography
+      // specification. Modern history/archaeology is accepted only when it is
+      // preserved as that provenance class; it must never masquerade as Quran
+      // or hadith evidence. Weak/traditional/disputed/unknown classes remain
+      // excluded from reviewed source-backed fields at this gate.
       expect(
         sourceBacked.every(
           (entry) => entry.value.sources.every(
             (source) =>
                 source.sourceClass == ReligiousSourceClass.quran ||
-                source.sourceClass == ReligiousSourceClass.sahihHasanHadith,
+                source.sourceClass == ReligiousSourceClass.sahihHasanHadith ||
+                source.sourceClass ==
+                    ReligiousSourceClass.modernHistoryArchaeology,
           ),
         ),
         isTrue,
