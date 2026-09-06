@@ -4,7 +4,23 @@ import 'package:islami_hayat/features/prophets/data/prophet_caution_policy.dart'
 
 void main() {
   group('T0200 SPEC 878-882 fail-closed matrix', () {
-    test('Nuh: later tradition cannot be promoted to revelation certainty', () {
+    test('Nuh: revelation and later tradition keep different certainty levels', () {
+      final quranExplicit = ProphetCautionAssertion(
+        cautionCase: ProphetCautionCase.noahNarrative,
+        canonicalProphetId: 'nuh',
+        topic: 'Quran-explicit narrative point',
+        sourceClass: ReligiousSourceClass.quran,
+        certainty: CertaintyLevel.explicitSource,
+        layer: ProphetKnowledgeLayer.islamicRevelation,
+      );
+      final quranDowngradedIntoDisputed = ProphetCautionAssertion(
+        cautionCase: ProphetCautionCase.noahNarrative,
+        canonicalProphetId: 'nuh',
+        topic: 'Quran-explicit point mislabeled as disputed',
+        sourceClass: ReligiousSourceClass.quran,
+        certainty: CertaintyLevel.disputed,
+        layer: ProphetKnowledgeLayer.islamicRevelation,
+      );
       final laterTradition = ProphetCautionAssertion(
         cautionCase: ProphetCautionCase.noahNarrative,
         canonicalProphetId: 'nuh',
@@ -30,6 +46,8 @@ void main() {
         layer: ProphetKnowledgeLayer.islamicRevelation,
       );
 
+      expect(ProphetCautionPolicy.allows(quranExplicit), isTrue);
+      expect(ProphetCautionPolicy.allows(quranDowngradedIntoDisputed), isFalse);
       expect(ProphetCautionPolicy.allows(laterTradition), isTrue);
       expect(ProphetCautionPolicy.allows(promoted), isFalse);
       expect(ProphetCautionPolicy.allows(layerSwap), isFalse);
