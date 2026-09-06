@@ -33,7 +33,7 @@ void main() {
       'Book description; DOI 10.1017/9781108612364',
     );
     expect(
-      source.url.toString(),
+      source.url?.toString(),
       'https://doi.org/10.1017/9781108612364',
     );
 
@@ -67,5 +67,69 @@ void main() {
     // sourced.
     final verseIds = isa.quranReferences.map((item) => item.stableId).toSet();
     expect(verseIds, hasLength(isa.quranReferences.length));
+  });
+
+  test('T0194 Isa period source tampering fails provenance closed', () {
+    final period = isa.sections[ProphetBiographySectionKey.period]!;
+    final originalSource = period.sources.single;
+
+    CanonicalProphetBiographyDraft withSource(SourceReference source) =>
+        CanonicalProphetBiographyDraft(
+          identity: isa.identity,
+          quranReferences: isa.quranReferences,
+          sections: <ProphetBiographySectionKey, ProphetBiographyField>{
+            ...isa.sections,
+            ProphetBiographySectionKey.period: ProphetBiographyField(
+              text: period.text,
+              status: ProphetBiographyFieldStatus.sourceBacked,
+              sources: <SourceReference>[source],
+            ),
+          },
+        );
+
+    final tamperedSources = <SourceReference>[
+      SourceReference(
+        id: originalSource.id,
+        title: originalSource.title,
+        sourceClass: ReligiousSourceClass.modernHistoryArchaeology,
+        licenseId: 'UNKNOWN',
+        locator: originalSource.locator,
+        url: originalSource.url,
+      ),
+      SourceReference(
+        id: originalSource.id,
+        title: originalSource.title,
+        sourceClass: ReligiousSourceClass.modernHistoryArchaeology,
+        licenseId: originalSource.licenseId,
+        locator: 'Unreviewed locator',
+        url: originalSource.url,
+      ),
+      SourceReference(
+        id: originalSource.id,
+        title: originalSource.title,
+        sourceClass: ReligiousSourceClass.modernHistoryArchaeology,
+        licenseId: originalSource.licenseId,
+        locator: originalSource.locator,
+        url: Uri.parse('https://example.invalid/spoofed-source'),
+      ),
+      SourceReference(
+        id: 'unreviewed-modern-history-source',
+        title: originalSource.title,
+        sourceClass: ReligiousSourceClass.modernHistoryArchaeology,
+        licenseId: originalSource.licenseId,
+        locator: originalSource.locator,
+        url: originalSource.url,
+      ),
+    ];
+
+    for (final source in tamperedSources) {
+      final tampered = withSource(source);
+      expect(tampered.isStructurallyComplete, isTrue);
+      expect(
+        prophetBiographyT0194DraftHasTraceableProvenance(tampered),
+        isFalse,
+        reason: source.id,
+      );
+    }
   });
 }
