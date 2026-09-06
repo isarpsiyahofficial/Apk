@@ -204,6 +204,33 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
   });
 
+  test('T0194 Isa key event stays inside Quran 5:112-115 evidence', () {
+    final field = isa.sections[ProphetBiographySectionKey.keyEvents]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(
+      field.sources.single.id,
+      'tanzil-uthmani-v1.1-isa-q5-112-115-key-events',
+    );
+    expect(
+      field.sources.single.title,
+      'Tanzil Project — Uthmani Quran Text v1.1',
+    );
+    expect(field.sources.single.locator, 'Quran 5:112-115');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+    expect(field.text.tr, contains('havârilerin'));
+    expect(field.text.en, contains('the disciples'));
+    expect(field.text.ar, contains('الحواريين'));
+    expect(field.text.tr, contains('sofradaki yiyecekleri'));
+    expect(field.text.en, contains('does not invent the food on the table'));
+    expect(field.text.ar, contains('ولا يختلق هذا الحقل نوع الطعام'));
+    expect(field.text.tr, isNot(contains('balık')));
+    expect(field.text.en, isNot(contains('fish')));
+    expect(field.text.ar, isNot(contains('سمك')));
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(isa), isTrue);
+  });
+
   test('T0194 Isa reference index deduplicates admitted reviewed verses', () {
     for (final reference in <(int, int)>[
       (3, 45),
@@ -218,7 +245,10 @@ void main() {
       (4, 158),
       (5, 46),
       (5, 110),
+      (5, 112),
+      (5, 113),
       (5, 114),
+      (5, 115),
       (19, 29),
       (19, 30),
     ]) {
