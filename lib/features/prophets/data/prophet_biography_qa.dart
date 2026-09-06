@@ -127,7 +127,10 @@ final class ProphetBiographyQaAudit {
     for (final fact in facts) {
       if (!fact.isValid) {
         errors.add('${fact.id}: invalid verified kinship fact');
-        continue;
+        // Do not stop here. A malformed/unreviewed fact can still reveal a
+        // contradictory pair or directed ancestry cycle. The QA layer reports
+        // both failures so source validation cannot accidentally mask a graph
+        // contradiction.
       }
       if (!seenIds.add(fact.id)) {
         errors.add('${fact.id}: duplicate kinship fact id');
