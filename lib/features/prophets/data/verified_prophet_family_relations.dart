@@ -52,7 +52,7 @@ class VerifiedProphetKinshipFact {
       return false;
     }
 
-    return sources.every(_isAllowedFamilySource);
+    return _isReviewedFamilyClaim(this);
   }
 
   List<ProphetFamilyRelation> asRelations() {
@@ -122,11 +122,6 @@ const _zakariyaYahyaParentSource = SourceReference(
   licenseId: 'CC-BY-3.0',
   locator: 'Quran 19:7',
 );
-
-const _reviewedFamilySources = <SourceReference>[
-  _musaHarunSiblingSource,
-  _zakariyaYahyaParentSource,
-];
 
 /// Intentionally conservative seed facts.
 ///
@@ -239,22 +234,28 @@ bool _containsDirectedAncestryCycle(Map<String, Set<String>> edges) {
   return false;
 }
 
-bool _isAllowedFamilySource(SourceReference source) {
-  if (source.id.trim().isEmpty ||
-      source.title.trim().isEmpty ||
-      source.licenseId.trim().isEmpty ||
-      !(source.locator?.trim().isNotEmpty ?? false)) {
-    return false;
-  }
+bool _isReviewedFamilyClaim(VerifiedProphetKinshipFact fact) {
+  if (fact.sources.length != 1) return false;
 
-  // Source class alone is not proof. Family facts are accepted only when the
-  // exact reviewed source identity + locator + licence tuple is allowlisted.
-  return _reviewedFamilySources.any(
-    (reviewed) =>
-        source.id == reviewed.id &&
-        source.title == reviewed.title &&
-        source.sourceClass == reviewed.sourceClass &&
-        source.licenseId == reviewed.licenseId &&
-        source.locator == reviewed.locator,
-  );
+  return switch (fact.id) {
+    'musa-harun-siblings-q20-30' =>
+      fact.firstProphetId == 'musa' &&
+          fact.secondProphetId == 'harun' &&
+          fact.kind == VerifiedProphetKinshipKind.siblings &&
+          _sameSource(fact.sources.single, _musaHarunSiblingSource),
+    'zakariya-yahya-parent-child-q19-7' =>
+      fact.firstProphetId == 'zakariya' &&
+          fact.secondProphetId == 'yahya' &&
+          fact.kind == VerifiedProphetKinshipKind.parentChild &&
+          _sameSource(fact.sources.single, _zakariyaYahyaParentSource),
+    _ => false,
+  };
+}
+
+bool _sameSource(SourceReference actual, SourceReference reviewed) {
+  return actual.id == reviewed.id &&
+      actual.title == reviewed.title &&
+      actual.sourceClass == reviewed.sourceClass &&
+      actual.licenseId == reviewed.licenseId &&
+      actual.locator == reviewed.locator;
 }
