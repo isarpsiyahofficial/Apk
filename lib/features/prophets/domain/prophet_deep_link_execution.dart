@@ -1,4 +1,5 @@
 import '../data/prophet_deep_links.dart';
+import 'prophet_deep_link_authorization_t0202.dart';
 
 /// Runtime executor for T0202 prophet cross-module navigation.
 ///
@@ -32,6 +33,7 @@ final class ProphetDeepLinkExecutionHandlers {
 
 enum ProphetDeepLinkExecutionFailure {
   invalidLink,
+  unauthorizedTarget,
   unavailableDestination,
 }
 
@@ -53,14 +55,24 @@ final class ProphetDeepLinkExecutionResult {
 }
 
 final class ProphetDeepLinkExecutor {
-  const ProphetDeepLinkExecutor(this.handlers);
+  const ProphetDeepLinkExecutor(
+    this.handlers, {
+    this.authorization,
+  });
 
   final ProphetDeepLinkExecutionHandlers handlers;
+  final ProphetDeepLinkAuthorization? authorization;
 
   Future<ProphetDeepLinkExecutionResult> execute(ProphetDeepLink link) async {
     if (!link.isValid) {
       return const ProphetDeepLinkExecutionResult.failed(
         ProphetDeepLinkExecutionFailure.invalidLink,
+      );
+    }
+    final gate = authorization;
+    if (gate != null && !gate.authorizes(link)) {
+      return const ProphetDeepLinkExecutionResult.failed(
+        ProphetDeepLinkExecutionFailure.unauthorizedTarget,
       );
     }
 
