@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophet_biographies.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_biography_qa.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_biography_t0194_dataset.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_content.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_timeline.dart';
 import 'package:islami_hayat/features/prophets/data/verified_prophet_family_relations.dart';
@@ -9,7 +10,25 @@ import 'package:islami_hayat/features/prophets/data/verified_prophet_family_rela
 void main() {
   const audit = ProphetBiographyQaAudit();
 
-  test('canonical T0194 research dataset passes T0207 structural QA', () {
+  test('canonical T0194 supplemented dataset passes T0207 structural QA', () {
+    final muhammad = canonicalProphetBiographyT0194Dataset.singleWhere(
+      (draft) => draft.identity.canonicalId == 'muhammad',
+    );
+    final period = muhammad.sections[ProphetBiographySectionKey.period]!;
+
+    // This field is introduced by a late T0194 supplement. Keeping this
+    // assertion here prevents the canonical QA from silently regressing to
+    // the unsupplemented base drafts again.
+    expect(period.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(
+      period.sources.any(
+        (source) =>
+            source.sourceClass == ReligiousSourceClass.modernHistoryArchaeology,
+      ),
+      isTrue,
+    );
+    expect(prophetBiographyT0194DraftHasTraceableProvenance(muhammad), isTrue);
+
     final result = audit.auditCanonicalResearchDataset();
 
     expect(result.errors, isEmpty);
