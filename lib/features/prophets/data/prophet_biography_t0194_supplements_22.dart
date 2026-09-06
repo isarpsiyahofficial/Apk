@@ -24,7 +24,7 @@ final _cambridgeFirstCenturySource = SourceReference(
 ///
 /// The twenty-third source-reviewed supplement is composed here as the next
 /// chronological layer so the stable dataset import chain also carries
-/// Muhammad's Sahih Muslim 1162e birth-weekday evidence.
+/// Muhammad's Quran 17:1 Night Journey evidence.
 final t0194ProphetBiographySupplements22 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   ...t0194ProphetBiographySupplements23,
