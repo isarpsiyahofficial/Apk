@@ -1,0 +1,173 @@
+name: Android Release CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate clean Android runner
+        run: flutter create --platforms=android --project-name islami_hayat .
+
+      - name: Configure generated runner for notification desugaring
+        run: python3 scripts/configure_android_desugaring.py
+
+      - name: Remove template-only generated test
+        shell: bash
+        run: |
+          if git ls-files --error-unmatch test/widget_test.dart >/dev/null 2>&1; then
+            git checkout -- test/widget_test.dart
+          else
+            rm -f test/widget_test.dart
+          fi
+
+      - name: Apply hardened Android manifest and backup policy
+        run: |
+          mkdir -p android/app/src/main/res/xml
+          cp android_hardening/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+          cp android_hardening/backup_rules.xml android/app/src/main/res/xml/backup_rules.xml
+          cp android_hardening/data_extraction_rules.xml android/app/src/main/res/xml/data_extraction_rules.xml
+
+      - name: Materialize Android home widget bridge
+        run: python3 scripts/configure_android_home_widget_t0297.py
+
+      - name: Audit Android source security policy
+        run: python3 scripts/audit_android_security.py
+
+      - name: Prepare pinned canonical Quran asset
+        run: python3 scripts/prepare_quran_asset.py
+
+      - name: Re-validate packaged Quran source
+        run: >-
+          python3 scripts/validate_quran_dataset.py
+          assets/quran/source/quran-uthmani.txt
+
+      - name: Validate pinned bundled QuranEnc meal datasets
+        run: >-
+          python3 scripts/prepare_quranenc_meal_assets.py
+          --input-dir assets/quran/meals
+          --output-dir build/release-meal-assets
+
+      - name: Re-materialize verified QuranEnc meal assets
+        run: >-
+          python3 scripts/prepare_quranenc_meal_assets.py
+          --input-dir build/release-meal-assets
+          --output-dir assets/quran/meals
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Analyze
+        run: flutter analyze --fatal-infos --fatal-warnings
+
+      - name: Test
+        run: flutter test
+
+      - name: Build release AAB
+        run: flutter build appbundle --release
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Audit final release APK permissions
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-release.apk"
+          BUILD_TOOLS="$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
+          AAPT2="$ANDROID_HOME/build-tools/$BUILD_TOOLS/aapt2"
+          PERMS="$($AAPT2 dump permissions "$APK")"
+          printf '%s\n' "$PERMS"
+          FORBIDDEN='ACCESS_FINE_LOCATION|ACCESS_COARSE_LOCATION|RECORD_AUDIO|CAMERA|READ_CONTACTS|WRITE_CONTACTS|GET_ACCOUNTS'
+          if printf '%s\n' "$PERMS" | grep -E "$FORBIDDEN"; then
+            echo "Forbidden sensitive permission found in release APK" >&2
+            exit 1
+          fi
+          echo "Release APK permission audit PASS"
+
+      - name: Verify home widget is packaged in release APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-release.apk"
+          BUILD_TOOLS="$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
+          AAPT2="$ANDROID_HOME/build-tools/$BUILD_TOOLS/aapt2"
+          MANIFEST_FILE="$(mktemp)"
+          RESOURCES_FILE="$(mktemp)"
+          trap 'rm -f "$MANIFEST_FILE" "$RESOURCES_FILE"' EXIT
+
+          "$AAPT2" dump xmltree --file AndroidManifest.xml "$APK" > "$MANIFEST_FILE"
+          "$AAPT2" dump resources "$APK" > "$RESOURCES_FILE"
+
+          grep -F 'IslamiHayatWidgetProvider' "$MANIFEST_FILE"
+          grep -F 'android.appwidget.action.APPWIDGET_UPDATE' "$MANIFEST_FILE"
+          grep -F 'android.appwidget.provider' "$MANIFEST_FILE"
+
+          # aapt2's resource-table formatting differs across build-tools versions.
+          # Match the compiled entry names themselves instead of assuming a
+          # brittle ':type/name' text rendering. These names can only appear
+          # here if the corresponding resources survived release packaging.
+          grep -F 'islami_hayat_widget_info' "$RESOURCES_FILE"
+          grep -F 'islami_hayat_widget' "$RESOURCES_FILE"
+
+          echo "T0297 release widget packaging audit PASS"
+
+      - name: Verify trusted Quran assets are packaged in release APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-release.apk"
+          unzip -l "$APK" | grep -F 'flutter_assets/assets/quran/source/quran-uthmani.txt'
+          unzip -l "$APK" | grep -F 'flutter_assets/assets/quran/source/quran-uthmani.manifest.json'
+          unzip -l "$APK" | grep -F 'flutter_assets/assets/quran/meals/turkish_rwwad.json'
+          unzip -l "$APK" | grep -F 'flutter_assets/assets/quran/meals/english_rwwad.json'
+          echo "Canonical Quran + verified meal packaging audit PASS"
+
+      - name: Record trusted content and artifact SHA-256
+        run: |
+          sha256sum build/app/outputs/bundle/release/app-release.aab | tee release-aab.sha256
+          sha256sum build/app/outputs/flutter-apk/app-release.apk | tee release-apk.sha256
+          sha256sum assets/quran/source/quran-uthmani.txt | tee quran-source.sha256
+          sha256sum assets/quran/meals/turkish_rwwad.json | tee meal-tr.sha256
+          sha256sum assets/quran/meals/english_rwwad.json | tee meal-en.sha256
+          grep -F 'a0c001b1e690cc022351d55b9951a7410fde4a6266638766c553fa91f401b1b7' meal-tr.sha256
+          grep -F '24c81ccfa5818e417b96f3b457955d34308a95d006a65c894ac69eaba580a3c0' meal-en.sha256
+
+      - name: Upload release verification artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-verification
+          retention-days: 7
+          path: |
+            build/app/outputs/bundle/release/app-release.aab
+            build/app/outputs/flutter-apk/app-release.apk
+            release-aab.sha256
+            release-apk.sha256
+            quran-source.sha256
+            meal-tr.sha256
+            meal-en.sha256
+            assets/quran/source/quran-uthmani.manifest.json

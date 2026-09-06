@@ -1,0 +1,142 @@
+import tempfile
+import unittest
+from pathlib import Path
+from unittest import mock
+
+import configure_android_home_widget_t0297 as module
+
+
+class ConfigureAndroidHomeWidgetT0297Test(unittest.TestCase):
+    def test_generates_bridge_provider_app_language_resources_and_debug_pin_probe(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            main = root / "android/app/src/main/kotlin/com/example/islami_hayat/MainActivity.kt"
+            main.parent.mkdir(parents=True)
+            main.write_text(
+                "package com.example.islami_hayat\n\nimport io.flutter.embedding.android.FlutterActivity\nclass MainActivity: FlutterActivity()\n",
+                encoding="utf-8",
+            )
+            with mock.patch.object(module, "ROOT", root), mock.patch.object(
+                module, "ANDROID_MAIN", root / "android/app/src/main"
+            ):
+                module.configure()
+
+            activity = main.read_text(encoding="utf-8")
+            provider = (main.parent / "IslamiHayatWidgetProvider.kt").read_text(encoding="utf-8")
+            layout = (root / "android/app/src/main/res/layout/islami_hayat_widget.xml").read_text(encoding="utf-8")
+            info = (root / "android/app/src/main/res/xml/islami_hayat_widget_info.xml").read_text(encoding="utf-8")
+            strings = (root / "android/app/src/main/res/values/islami_hayat_widget_strings.xml").read_text(encoding="utf-8")
+            pin_probe = (
+                root
+                / "android/app/src/debug/kotlin/com/example/islami_hayat/WidgetPinSmokeActivity.kt"
+            ).read_text(encoding="utf-8")
+            debug_manifest = (root / "android/app/src/debug/AndroidManifest.xml").read_text(
+                encoding="utf-8"
+            )
+
+            self.assertIn('MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "islami_hayat/home_widget")', activity)
+            self.assertIn('INVALID_WIDGET_SNAPSHOT', activity)
+            self.assertIn('call.argument<String>("civilDateKey")', activity)
+            self.assertIn('.putString("civilDateKey", civilDateKey)', activity)
+            self.assertIn('Regex("\\\\d{4}-\\\\d{2}-\\\\d{2}")', activity)
+            self.assertIn('(languageCode != "ar" && verseTranslation.isEmpty())', activity)
+            self.assertIn('class IslamiHayatWidgetProvider', provider)
+            self.assertIn('civilDateKey == currentCivilDateKey()', provider)
+            self.assertIn('val hasContent = isCurrentCivilDate &&', provider)
+            self.assertIn('private fun currentCivilDateKey()', provider)
+            self.assertIn('(languageCode == "ar" || verseTranslation.isNotBlank())', provider)
+            self.assertIn('if (hasContent) verseArabic else ""', provider)
+            self.assertIn('R.id.widget_verse_translation, if (hasContent && verseTranslation.isNotBlank()) View.VISIBLE else View.GONE', provider)
+            self.assertIn('PendingIntent.FLAG_IMMUTABLE', provider)
+
+            # Tap routing must be explicit to our MainActivity rather than
+            # depending on OEM/package launcher intent resolution.
+            self.assertIn('Intent(context, MainActivity::class.java).apply', provider)
+            self.assertIn('OPEN_FROM_WIDGET_ACTION', provider)
+            self.assertIn('putExtra("fromHomeWidgetT0297", true)', provider)
+            self.assertNotIn('getLaunchIntentForPackage', provider)
+
+            # A RemoteViews host can target the visible child rather than bubble
+            # the click through the root layout. Keep the same immutable explicit
+            # PendingIntent attached to every user-facing surface so empty and
+            # populated widgets are both tappable across launcher hosts.
+            for view_id in (
+                'widget_root',
+                'widget_empty',
+                'widget_content',
+                'widget_verse_arabic',
+                'widget_verse_translation',
+                'widget_dua',
+                'widget_pro_mark',
+            ):
+                self.assertIn(f'views.setOnClickPendingIntent(R.id.{view_id}, pending)', provider)
+
+            # Empty-state language must follow the language stored in the app
+            # snapshot rather than Android's independently configured locale.
+            self.assertIn('val emptyTextRes = when (languageCode)', provider)
+            self.assertIn('"tr" -> R.string.islami_hayat_widget_empty_tr', provider)
+            self.assertIn('"ar" -> R.string.islami_hayat_widget_empty_ar', provider)
+            self.assertIn('else -> R.string.islami_hayat_widget_empty_en', provider)
+            self.assertIn('context.getString(emptyTextRes)', provider)
+
+            # The real-launcher pin probe must be debug-only. It requests the
+            # platform pin flow, records only a valid callback appWidgetId and
+            # is never merged into release because it lives in src/debug.
+            self.assertIn('class WidgetPinSmokeActivity : Activity()', pin_probe)
+            self.assertIn('manager.isRequestPinAppWidgetSupported', pin_probe)
+            self.assertIn('manager.requestPinAppWidget(', pin_probe)
+            self.assertIn('ComponentName(this, IslamiHayatWidgetProvider::class.java)', pin_probe)
+            self.assertIn('AppWidgetManager.EXTRA_APPWIDGET_ID', pin_probe)
+            self.assertIn('AppWidgetManager.INVALID_APPWIDGET_ID', pin_probe)
+            self.assertIn('.putString("status", "pinned")', pin_probe)
+            self.assertIn('.putInt("widgetId", widgetId)', pin_probe)
+
+            # Android's requestPinAppWidget success sender fills the newly
+            # allocated appWidgetId into the callback. This one callback must
+            # therefore be mutable, while remaining explicit, debug-only and
+            # one-shot. Production widget taps above stay immutable.
+            self.assertIn('Intent(this, WidgetPinSmokeResultReceiver::class.java)', pin_probe)
+            self.assertIn('PendingIntent.FLAG_ONE_SHOT', pin_probe)
+            self.assertIn('PendingIntent.FLAG_MUTABLE', pin_probe)
+            self.assertNotIn('PendingIntent.FLAG_IMMUTABLE', pin_probe)
+
+            self.assertIn('android:name=".WidgetPinSmokeActivity"', debug_manifest)
+            self.assertIn('android:name=".WidgetPinSmokeResultReceiver"', debug_manifest)
+            self.assertIn('android:exported="true"', debug_manifest)
+            self.assertIn('android:exported="false"', debug_manifest)
+            self.assertFalse((root / "android/app/src/main/kotlin/com/example/islami_hayat/WidgetPinSmokeActivity.kt").exists())
+
+            self.assertIn('@+id/widget_verse_arabic', layout)
+            self.assertIn('@string/islami_hayat_widget_empty_en', layout)
+            self.assertNotIn('android:text="İslami Hayat"', layout)
+
+            # RemoteViews can inflate only its allowlisted widget classes. A raw
+            # android.view.View divider was accepted into the APK but caused the
+            # real Launcher3 host to render "Can't load widget". Keep every
+            # layout node on RemoteViews-safe classes.
+            self.assertNotIn('\n        <View\n', layout)
+            self.assertGreaterEqual(layout.count('<TextView'), 5)
+
+            self.assertIn('name="islami_hayat_widget_empty_en"', strings)
+            self.assertIn('Open Islami Hayat to prepare today’s widget.', strings)
+            self.assertIn('name="islami_hayat_widget_empty_tr"', strings)
+            self.assertIn('Bugünün widget’ını hazırlamak için İslami Hayat’ı açın.', strings)
+            self.assertIn('name="islami_hayat_widget_empty_ar"', strings)
+            self.assertIn('افتح إسلامي حيات لإعداد أداة اليوم.', strings)
+            self.assertFalse((root / "android/app/src/main/res/values-tr/islami_hayat_widget_strings.xml").exists())
+            self.assertFalse((root / "android/app/src/main/res/values-ar/islami_hayat_widget_strings.xml").exists())
+            self.assertIn('android:resizeMode="horizontal|vertical"', info)
+            self.assertNotIn('@string/app_name', info)
+
+    def test_rejects_missing_generated_main_activity(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with mock.patch.object(module, "ROOT", root), mock.patch.object(
+                module, "ANDROID_MAIN", root / "android/app/src/main"
+            ):
+                with self.assertRaisesRegex(RuntimeError, "Expected exactly one"):
+                    module.configure()
+
+
+if __name__ == "__main__":
+    unittest.main()
