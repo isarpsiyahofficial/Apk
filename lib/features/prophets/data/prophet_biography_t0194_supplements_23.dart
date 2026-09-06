@@ -2,35 +2,40 @@ import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
 import 'prophet_content.dart';
 
-const _muhammadBirthSource = SourceReference(
-  id: 'sahih-muslim-1162e-muhammad-birth',
-  title: 'Sahih Muslim',
-  sourceClass: ReligiousSourceClass.sahihHasanHadith,
-  licenseId: 'REFERENCE-ONLY',
-  locator: 'Sahih Muslim 1162e',
-);
+SourceReference _quranSource(String stableId, String locator) => SourceReference(
+      id: 'tanzil-uthmani-v1.1-$stableId',
+      title: 'Tanzil Project — Uthmani Quran Text v1.1',
+      sourceClass: ReligiousSourceClass.quran,
+      licenseId: 'CC-BY-3.0',
+      locator: locator,
+    );
 
 /// Twenty-third T0194 source-reviewed batch.
 ///
-/// Sahih Muslim 1162e records the Prophet Muhammad saying, when asked about
-/// fasting on Monday, that it was the day on which he was born and revelation
-/// was sent down to him. This field therefore records only the weekday claim.
-/// It does not infer an exact Gregorian/Hijri date, year, birthplace, or any
-/// later chronological detail from this hadith.
+/// Quran 17:1 recounts Allah taking His servant by night from al-Masjid
+/// al-Haram to al-Masjid al-Aqsa in order to show him some of His signs. In the
+/// Prophet Muhammad biography this is kept at the Quranic boundary of the
+/// Night Journey: the field does not add a calendar date, route, transport
+/// mechanism, or details of the Ascension that are not stated in this verse.
 final t0194ProphetBiographySupplements23 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'muhammad': <ProphetBiographySectionKey, ProphetBiographyField>{
-    ProphetBiographySectionKey.birth: ProphetBiographyField(
-      text: const LocalizedReligiousText(
-        tr: 'Sahih Muslim’de aktarılan rivayette Hz. Muhammed, Pazartesi günü oruç hakkında sorulduğunda o günün doğduğu ve kendisine vahyin indirildiği gün olduğunu bildirir. Bu alan yalnız doğumun Pazartesi günü olduğu bilgisini aktarır; rivayetin vermediği kesin tarih, yıl veya doğum yeri eklenmez.',
-        en: 'In the report recorded in Sahih Muslim, when Prophet Muhammad was asked about fasting on Monday, he stated that it was the day on which he was born and revelation was sent down to him. This field records only that his birth was on a Monday and adds no exact date, year, or birthplace not supplied by the report.',
-        ar: 'في الرواية التي أخرجها صحيح مسلم، سُئل النبي محمد عن صيام يوم الاثنين فقال إنه اليوم الذي وُلد فيه وأُنزل عليه فيه الوحي. ويقتصر هذا الحقل على أن مولده كان يوم الاثنين، ولا يضيف تاريخًا أو سنةً أو مكان ولادة لم تذكره الرواية.',
+    ProphetBiographySectionKey.miracles: ProphetBiographyField(
+      text: LocalizedReligiousText(
+        tr: 'Kur’an, Allah’ın kulunu bir gece Mescid-i Harâm’dan çevresini bereketlendirdiği Mescid-i Aksâ’ya, ona ayetlerinden bazılarını göstermek için götürdüğünü bildirir. Bu alan İsrâ olayını ayetin verdiği sınırda aktarır; kesin tarih, güzergâh, ulaşım mekanizması veya ayette yer almayan Mi‘rac ayrıntıları eklemez.',
+        en: 'The Quran states that Allah took His servant by night from al-Masjid al-Haram to al-Masjid al-Aqsa, whose surroundings He blessed, in order to show him some of His signs. This field records the Night Journey only within the verse’s boundary and adds no exact date, route, transport mechanism, or Ascension details not stated in the verse.',
+        ar: 'يذكر القرآن أن الله أسرى بعبده ليلًا من المسجد الحرام إلى المسجد الأقصى الذي بارك حوله ليريه من آياته. ويقتصر هذا الحقل على حادثة الإسراء في حدود ما تنص عليه الآية، فلا يضيف تاريخًا دقيقًا ولا مسارًا ولا كيفية انتقال ولا تفاصيل عن المعراج لم تذكرها الآية.',
       ),
       status: ProphetBiographyFieldStatus.sourceBacked,
-      sources: <SourceReference>[_muhammadBirthSource],
+      sources: <SourceReference>[
+        _quranSource('muhammad-q17-1-night-journey', 'Quran 17:1'),
+      ],
     ),
   },
 };
 
-const t0194ProphetSupplementReferences23 =
-    <String, List<ProphetVerseReference>>{};
+final t0194ProphetSupplementReferences23 = <String, List<ProphetVerseReference>>{
+  'muhammad': const <ProphetVerseReference>[
+    ProphetVerseReference(surah: 17, ayah: 1),
+  ],
+};
