@@ -123,6 +123,11 @@ const _zakariyaYahyaParentSource = SourceReference(
   locator: 'Quran 19:7',
 );
 
+const _reviewedFamilySources = <SourceReference>[
+  _musaHarunSiblingSource,
+  _zakariyaYahyaParentSource,
+];
+
 /// Intentionally conservative seed facts.
 ///
 /// Quran 20:30 explicitly identifies Harun as Musa's brother. Quran 19:7
@@ -168,27 +173,70 @@ List<ProphetFamilyRelation> verifiedFamilyRelationsFor(String canonicalId) {
   return List.unmodifiable(result);
 }
 
-bool get verifiedProphetFamilyGraphIsValid {
-  if (verifiedProphetKinshipFacts.isEmpty ||
-      verifiedProphetKinshipFacts.any((fact) => !fact.isValid)) {
+bool get verifiedProphetFamilyGraphIsValid =>
+    verifiedProphetFamilyGraphIsValidFor(verifiedProphetKinshipFacts);
+
+/// Audits a complete candidate graph rather than only validating facts in
+/// isolation. This prevents individually plausible records from forming a
+/// contradictory genealogy when composed together.
+bool verifiedProphetFamilyGraphIsValidFor(
+  Iterable<VerifiedProphetKinshipFact> facts,
+) {
+  final factList = List<VerifiedProphetKinshipFact>.unmodifiable(facts);
+  if (factList.isEmpty || factList.any((fact) => !fact.isValid)) {
     return false;
   }
 
-  final ids = verifiedProphetKinshipFacts.map((fact) => fact.id).toList();
+  final ids = factList.map((fact) => fact.id).toList();
   if (ids.toSet().length != ids.length) return false;
 
   final pairs = <String>{};
-  for (final fact in verifiedProphetKinshipFacts) {
+  final directedEdges = <String, Set<String>>{};
+  for (final fact in factList) {
     final pair = [fact.firstProphetId, fact.secondProphetId]..sort();
-    final key = '${pair[0]}|${pair[1]}';
-    if (!pairs.add(key)) return false;
+    final pairKey = '${pair[0]}|${pair[1]}';
+
+    // A canonical pair may carry only one reviewed relationship claim. This
+    // rejects sibling-vs-parent, reversed parent-child and duplicate claims.
+    if (!pairs.add(pairKey)) return false;
 
     final relations = fact.asRelations();
     if (relations.length != 2 || relations.any((relation) => !relation.isValid)) {
       return false;
     }
+
+    if (fact.kind == VerifiedProphetKinshipKind.parentChild ||
+        fact.kind == VerifiedProphetKinshipKind.ancestorDescendant) {
+      directedEdges
+          .putIfAbsent(fact.firstProphetId, () => <String>{})
+          .add(fact.secondProphetId);
+    }
   }
-  return true;
+
+  return !_containsDirectedAncestryCycle(directedEdges);
+}
+
+bool _containsDirectedAncestryCycle(Map<String, Set<String>> edges) {
+  final visiting = <String>{};
+  final visited = <String>{};
+
+  bool visit(String node) {
+    if (visiting.contains(node)) return true;
+    if (visited.contains(node)) return false;
+
+    visiting.add(node);
+    for (final next in edges[node] ?? const <String>{}) {
+      if (visit(next)) return true;
+    }
+    visiting.remove(node);
+    visited.add(node);
+    return false;
+  }
+
+  for (final node in edges.keys) {
+    if (visit(node)) return true;
+  }
+  return false;
 }
 
 bool _isAllowedFamilySource(SourceReference source) {
@@ -199,6 +247,14 @@ bool _isAllowedFamilySource(SourceReference source) {
     return false;
   }
 
-  return source.sourceClass == ReligiousSourceClass.quran ||
-      source.sourceClass == ReligiousSourceClass.sahihHasanHadith;
+  // Source class alone is not proof. Family facts are accepted only when the
+  // exact reviewed source identity + locator + licence tuple is allowlisted.
+  return _reviewedFamilySources.any(
+    (reviewed) =>
+        source.id == reviewed.id &&
+        source.title == reviewed.title &&
+        source.sourceClass == reviewed.sourceClass &&
+        source.licenseId == reviewed.licenseId &&
+        source.locator == reviewed.locator,
+  );
 }
