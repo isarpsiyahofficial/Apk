@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_supplements_21.dart';
 import 'prophet_content.dart';
 
 SourceReference _quranSource(String stableId, String locator) => SourceReference(
@@ -33,9 +34,15 @@ ProphetBiographyField _quranField({
 /// the verse onto a named later church, empire, state, denomination, date, or
 /// political event, and it does not claim that every member of a community
 /// shared one response.
+///
+/// The twenty-first source-reviewed supplement is composed here as the next
+/// chronological layer. It adds only Quran 23:50's unnamed elevated-place
+/// description for geography and keeps later location identifications out of
+/// the Quran-backed claim.
 final t0194ProphetBiographySupplements20 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'isa': <ProphetBiographySectionKey, ProphetBiographyField>{
+    ...t0194ProphetBiographySupplements21['isa']!,
     ProphetBiographySectionKey.laterImpact: _quranField(
       tr: 'Kur’an, Meryem oğlu Îsâ’nın havârilere Allah yolunda kimlerin kendisine yardımcı olacağını sorduğunu ve onların Allah’ın yardımcıları olduklarını söylediklerini hatırlatır. Ardından İsrailoğullarından bir grubun iman ettiğini, bir grubun inkâr ettiğini ve Allah’ın iman edenleri düşmanlarına karşı desteklediğini bildirir. Bu alan ayeti daha sonraki belirli bir kilise, mezhep, imparatorluk, devlet, tarih veya siyasî olaya eşitlemez ve bütün bir topluluğun tek bir tepki verdiğini iddia etmez.',
       en: 'The Quran recalls Jesus son of Mary asking the disciples who would be his helpers toward Allah and their reply that they were Allah’s helpers. It then states that a faction of the Children of Israel believed, another faction disbelieved, and that Allah supported those who believed against their enemy. This field does not identify the verse with any specific later church, denomination, empire, state, date, or political event, and it does not claim that an entire community had one uniform response.',
@@ -47,7 +54,8 @@ final t0194ProphetBiographySupplements20 =
 };
 
 final t0194ProphetSupplementReferences20 = <String, List<ProphetVerseReference>>{
-  'isa': const <ProphetVerseReference>[
-    ProphetVerseReference(surah: 61, ayah: 14),
+  'isa': <ProphetVerseReference>[
+    const ProphetVerseReference(surah: 61, ayah: 14),
+    ...t0194ProphetSupplementReferences21['isa']!,
   ],
 };
