@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophet_biographies.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophets.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_biography_t0194_dataset.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_content.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_source_class_audit.dart';
 
@@ -56,7 +57,7 @@ void main() {
     }
   });
 
-  test('T0196 allowlist is exactly the eight prophet source semantics', () {
+  test('T0196 allowlist is exactly the prophet source semantics', () {
     expect(
       prophetBiographySourceClassAllowlist,
       equals({
