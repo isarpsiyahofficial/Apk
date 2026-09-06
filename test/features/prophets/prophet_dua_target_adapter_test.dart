@@ -4,6 +4,7 @@ import 'package:islami_hayat/features/dua/data/dua_content.dart';
 import 'package:islami_hayat/features/dua/data/dua_library_repository.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_content.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_deep_links.dart';
+import 'package:islami_hayat/features/prophets/domain/prophet_deep_link_authorization_t0202.dart';
 import 'package:islami_hayat/features/prophets/domain/prophet_dua_target_adapter.dart';
 
 DuaContent _reviewedDua(String id) => DuaContent(
@@ -30,6 +31,17 @@ DuaContent _reviewedDua(String id) => DuaContent(
       ],
     );
 
+ProphetDeepLinkAuthorization _authorization() =>
+    ProphetDeepLinkAuthorization(const <ProphetDeepLinkBundle>[
+      ProphetDeepLinkBundle(
+        prophetId: 'adam',
+        quranReferences: <ProphetVerseReference>[],
+        duaReferences: <ProphetDuaReference>[
+          ProphetDuaReference(duaId: 'adam-q7-23'),
+        ],
+      ),
+    ]);
+
 void main() {
   test('resolves exact stable dua id only from reviewed production library', () {
     final dua = _reviewedDua('adam-q7-23');
@@ -41,6 +53,41 @@ void main() {
 
     expect(adapter.canOpen(link), isTrue);
     expect(adapter.resolve(link), same(dua));
+  });
+
+  test('relationship gate accepts exact reviewed prophet to dua binding', () {
+    final dua = _reviewedDua('adam-q7-23');
+    final adapter = ProphetDuaTargetAdapter(
+      DuaLibraryRepository([dua]),
+      authorization: _authorization(),
+    );
+
+    expect(
+      adapter.resolve(
+        ProphetDeepLink.dua(prophetId: 'adam', duaId: 'adam-q7-23'),
+      ),
+      same(dua),
+    );
+  });
+
+  test('relationship gate rejects cross-prophet rebinding of valid dua', () async {
+    final adapter = ProphetDuaTargetAdapter(
+      DuaLibraryRepository([_reviewedDua('adam-q7-23')]),
+      authorization: _authorization(),
+    );
+    final rebound = ProphetDeepLink.dua(
+      prophetId: 'nuh',
+      duaId: 'adam-q7-23',
+    );
+    var called = false;
+
+    expect(adapter.resolve(rebound), isNull);
+    expect(adapter.canOpen(rebound), isFalse);
+    expect(
+      await adapter.open(rebound, onOpen: (_) async => called = true),
+      isFalse,
+    );
+    expect(called, isFalse);
   });
 
   test('missing target id fails closed without text or prophet-name fallback', () {
