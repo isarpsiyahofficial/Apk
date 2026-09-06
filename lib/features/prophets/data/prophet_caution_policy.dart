@@ -70,6 +70,13 @@ class ProphetCautionPolicy {
   static bool _allowsNoah(ProphetCautionAssertion value) {
     if (value.canonicalProphetId != 'nuh') return false;
 
+    if (value.sourceClass == ReligiousSourceClass.quran ||
+        value.sourceClass == ReligiousSourceClass.sahihHasanHadith) {
+      return value.layer == ProphetKnowledgeLayer.islamicRevelation &&
+          (value.certainty == CertaintyLevel.explicitSource ||
+              value.certainty == CertaintyLevel.stronglyAttested);
+    }
+
     if (value.sourceClass == ReligiousSourceClass.israiliyat ||
         value.sourceClass == ReligiousSourceClass.laterTradition ||
         value.sourceClass == ReligiousSourceClass.classicalTraditional) {
