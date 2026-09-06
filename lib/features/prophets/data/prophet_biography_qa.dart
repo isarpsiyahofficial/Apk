@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_dataset.dart';
 import 'prophet_content.dart';
 import 'prophet_timeline.dart';
 import 'verified_prophet_family_relations.dart';
@@ -39,11 +40,29 @@ final class ProphetBiographyQaAudit {
     return ProphetBiographyQaResult(errors: List.unmodifiable(errors));
   }
 
-  ProphetBiographyQaResult auditCanonicalResearchDataset() => audit(
-        drafts: canonicalProphetBiographyDrafts,
-        kinshipFacts: verifiedProphetKinshipFacts,
-        chronology: mainApproximateProphetChronology,
-      );
+  ProphetBiographyQaResult auditCanonicalResearchDataset() {
+    final result = audit(
+      drafts: canonicalProphetBiographyT0194Dataset,
+      kinshipFacts: verifiedProphetKinshipFacts,
+      chronology: mainApproximateProphetChronology,
+    );
+    final errors = <String>[...result.errors];
+
+    // The generic QA above checks structural source metadata, genealogy and
+    // chronology. T0194 additionally has an exact fail-closed provenance gate
+    // for its pinned Quran, admitted hadith and citation-only modern-history
+    // sources. Run that gate over the supplemented working dataset as part of
+    // the canonical release audit so late supplements cannot bypass D10.
+    for (final draft in canonicalProphetBiographyT0194Dataset) {
+      if (!prophetBiographyT0194DraftHasTraceableProvenance(draft)) {
+        errors.add(
+          '${draft.identity.canonicalId}: T0194 exact provenance gate failed',
+        );
+      }
+    }
+
+    return ProphetBiographyQaResult(errors: List.unmodifiable(errors));
+  }
 
   void _auditBiographySources(
     List<CanonicalProphetBiographyDraft> drafts,
