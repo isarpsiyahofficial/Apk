@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_supplements_20.dart';
 import 'prophet_content.dart';
 
 SourceReference _quranSource(String stableId, String locator) => SourceReference(
@@ -32,9 +33,14 @@ ProphetBiographyField _quranField({
 /// This field records only that Quranic sequence. It does not invent the food
 /// on the table, a date or place, a recurring ritual, or details from later
 /// narrative traditions.
+///
+/// The twentieth source-reviewed supplement is composed here as the next
+/// chronological layer, adding only Quran 61:14's later-impact statement about
+/// the believing and disbelieving factions and Allah supporting the believers.
 final t0194ProphetBiographySupplements19 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
   'isa': <ProphetBiographySectionKey, ProphetBiographyField>{
+    ...t0194ProphetBiographySupplements20['isa']!,
     ProphetBiographySectionKey.keyEvents: _quranField(
       tr: 'Kur’an, havârilerin Meryem oğlu Îsâ’dan gökten bir sofra indirilmesi hakkında Rablerine dua etmesini istemeleri bağlamını anlatır. Îsâ önce Allah’tan sakınmalarını söyler; onlar sofradan yemek, kalplerinin tatmin olması, Îsâ’nın kendilerine doğru söylediğini bilmek ve olaya şahitlik etmek istediklerini belirtirler. Îsâ dua eder; Allah da sofrayı indireceğini bildirir ve sonrasında inkâr edenler için ağır bir uyarıda bulunur. Bu alan sofradaki yiyecekleri, tarih veya yeri, tekrarlanan bir ritüeli ya da sonraki rivayet ayrıntılarını uydurmaz.',
       en: 'The Quran recounts the disciples asking Jesus son of Mary about a table being sent down from heaven. Jesus first tells them to fear Allah; they say that they wish to eat from it, have their hearts reassured, know that he has spoken truthfully to them, and be witnesses to it. Jesus supplicates, and Allah states that He will send it down while warning against disbelief afterwards. This field does not invent the food on the table, a date or place, a recurring ritual, or details from later narrative traditions.',
@@ -46,10 +52,11 @@ final t0194ProphetBiographySupplements19 =
 };
 
 final t0194ProphetSupplementReferences19 = <String, List<ProphetVerseReference>>{
-  'isa': const <ProphetVerseReference>[
-    ProphetVerseReference(surah: 5, ayah: 112),
-    ProphetVerseReference(surah: 5, ayah: 113),
-    ProphetVerseReference(surah: 5, ayah: 114),
-    ProphetVerseReference(surah: 5, ayah: 115),
+  'isa': <ProphetVerseReference>[
+    const ProphetVerseReference(surah: 5, ayah: 112),
+    const ProphetVerseReference(surah: 5, ayah: 113),
+    const ProphetVerseReference(surah: 5, ayah: 114),
+    const ProphetVerseReference(surah: 5, ayah: 115),
+    ...t0194ProphetSupplementReferences20['isa']!,
   ],
 };
