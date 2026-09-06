@@ -1,6 +1,7 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
 import 'prophet_biography_t0194_supplements_16.dart';
+import 'prophet_biography_t0194_supplements_23.dart';
 import 'prophet_content.dart';
 
 SourceReference _quranSource(String stableId, String locator) => SourceReference(
@@ -34,11 +35,13 @@ ProphetBiographyField _quranField({
 /// response visible in the verses and does not generalise the disbelief to the
 /// entire community or infer a date, place, ruler, or later historical outcome.
 ///
-/// The sixteenth source-reviewed supplement is composed here as the next
-/// chronological layer so the existing dataset import chain stays stable while
-/// adding Isa's Quran 5:114 supplication field and reference index entry.
+/// The sixteenth source-reviewed supplement remains composed here for Isa's
+/// subsequent fields. The twenty-third chain root is also spread at this
+/// boundary so supplements that introduce a different canonical prophet are
+/// not lost by the older Isa-only nested composition path.
 final t0194ProphetBiographySupplements15 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
+  ...t0194ProphetBiographySupplements23,
   'isa': <ProphetBiographySectionKey, ProphetBiographyField>{
     ...t0194ProphetBiographySupplements16['isa']!,
     ProphetBiographySectionKey.communityResponse: _quranField(
@@ -52,6 +55,7 @@ final t0194ProphetBiographySupplements15 =
 };
 
 final t0194ProphetSupplementReferences15 = <String, List<ProphetVerseReference>>{
+  ...t0194ProphetSupplementReferences23,
   'isa': <ProphetVerseReference>[
     const ProphetVerseReference(surah: 3, ayah: 52),
     const ProphetVerseReference(surah: 3, ayah: 53),
