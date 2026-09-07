@@ -18,6 +18,7 @@ void main() {
         expect(history.order, seerah.order);
         expect(history.phase, seerah.phase);
         expect(bridge.resolveSeerahEvent(history.historyEventId), same(seerah));
+        expect(bridge.resolveHistoryLink(seerah.id), same(history));
       }
     });
 
@@ -40,7 +41,35 @@ void main() {
       );
     });
 
-    test('rejects empty timelines and unknown history ids', () {
+    test('rejects a backward phase transition even when numeric order increases', () {
+      final meccan = muhammadSeerahT0201Events.firstWhere(
+        (event) => event.phase == SeerahPhase.meccan,
+      );
+      final early = muhammadSeerahT0201Events.firstWhere(
+        (event) => event.phase == SeerahPhase.birthAndEarlyLife,
+      );
+      final syntheticEarlyAfterMecca = MuhammadSeerahEvent(
+        id: '${early.id}-late-copy',
+        order: meccan.order + 1000,
+        kind: early.kind,
+        phase: early.phase,
+        title: early.title,
+        summary: early.summary,
+        certainty: early.certainty,
+        sources: early.sources,
+        links: early.links,
+      );
+
+      expect(
+        () => MuhammadHistorySeerahBridge.validated([
+          meccan,
+          syntheticEarlyAfterMecca,
+        ]),
+        throwsStateError,
+      );
+    });
+
+    test('rejects empty timelines and unknown ids in both directions', () {
       expect(
         () => MuhammadHistorySeerahBridge.validated(const []),
         throwsStateError,
@@ -49,6 +78,11 @@ void main() {
       expect(
         () => canonicalMuhammadHistorySeerahBridge
             .resolveSeerahEvent('history:missing-event'),
+        throwsStateError,
+      );
+      expect(
+        () => canonicalMuhammadHistorySeerahBridge
+            .resolveHistoryLink('missing-event'),
         throwsStateError,
       );
     });
