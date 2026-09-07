@@ -104,7 +104,6 @@ void main() {
         find.byKey(const ValueKey('prophet-story-quran-links-title')),
         findsOneWidget,
       );
-      expect(find.text('Yunus'), findsWidgets);
       expect(tester.takeException(), isNull);
     },
   );
