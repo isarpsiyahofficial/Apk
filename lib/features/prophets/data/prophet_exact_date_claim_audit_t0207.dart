@@ -1,12 +1,14 @@
+import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
 
-/// T0207 fail-closed scan for unstructured calendar-year claims in prophet
+/// T0207 fail-closed scan for calendar-year claims embedded in prophet
 /// biography prose.
 ///
-/// Prophet chronology is deliberately structured as approximate/unknown unless
-/// exact evidence exists. A calendar year embedded directly in biography prose
-/// bypasses that structured certainty model, so this audit rejects such claims
-/// before release QA can treat the draft as clean.
+/// Calendar chronology may only appear when it is explicitly presented as an
+/// approximation/periodization and backed by a traceable modern-history source.
+/// Quran or hadith evidence must never be stretched into an unsupported civil
+/// calendar year, and wording that upgrades an approximation into an exact
+/// claim remains release-blocking.
 final class ProphetExactDateClaimAuditT0207 {
   const ProphetExactDateClaimAuditT0207();
 
@@ -19,11 +21,21 @@ final class ProphetExactDateClaimAuditT0207 {
     caseSensitive: false,
   );
   static final RegExp _wordedCalendarYear = RegExp(
-    r'\b(?:miladi|gregorian|hijri|hicri)\s+(?:year\s+)?\d{2,4}\b|\b\d{2,4}\s+(?:miladi|gregorian|hijri|hicri)\b',
+    r'\b(?:miladi|miladî|gregorian|hijri|hicri)\s+(?:year\s+)?\d{2,4}\b|\b\d{2,4}\s+(?:miladi|miladî|gregorian|hijri|hicri)\b',
     caseSensitive: false,
   );
   static final RegExp _arabicCalendarYear = RegExp(
     r'(?:عام|سنة)\s*[0-9٠-٩]{2,4}\s*(?:ق\.?\s*م\.?|م|هـ|ميلادي(?:ة)?|هجري(?:ة)?)|[0-9٠-٩]{2,4}\s*(?:ق\.?\s*م\.?|م|هـ|ميلادي(?:ة)?|هجري(?:ة)?)',
+  );
+
+  static final RegExp _approximationQualifier = RegExp(
+    r'\b(?:yaklaşık|tahminen|circa|ca\.|approximately|around|roughly)\b|(?:تقريبًا|تقريبا|نحو|قرابة|تقارب)',
+    caseSensitive: false,
+  );
+
+  static final RegExp _exactnessQualifier = RegExp(
+    r'\b(?:kesin|kesinlikle|tam olarak|exact|exactly|precisely|definitively)\b|(?:قطعي(?:ة|ًا|ا)?|بالضبط|بدقة|دقيق(?:ة|ًا|ا)?)',
+    caseSensitive: false,
   );
 
   List<String> audit(Iterable<CanonicalProphetBiographyDraft> drafts) {
@@ -37,7 +49,7 @@ final class ProphetExactDateClaimAuditT0207 {
           field.text.ar,
         ];
         for (final text in texts) {
-          if (_containsUnstructuredCalendarYear(text)) {
+          if (_containsUnsupportedCalendarYear(text, field)) {
             errors.add(
               '${draft.identity.canonicalId}/${entry.key.name}: '
               'unstructured exact calendar-year claim in biography prose',
@@ -50,7 +62,29 @@ final class ProphetExactDateClaimAuditT0207 {
     return List.unmodifiable(errors);
   }
 
-  bool _containsUnstructuredCalendarYear(String text) =>
+  bool _containsUnsupportedCalendarYear(
+    String text,
+    ProphetBiographyField field,
+  ) {
+    if (!_containsCalendarYear(text)) return false;
+
+    final hasTraceableModernHistoryEvidence =
+        field.status == ProphetBiographyFieldStatus.sourceBacked &&
+            field.sources.any(
+              (source) =>
+                  source.sourceClass ==
+                      ReligiousSourceClass.modernHistoryArchaeology &&
+                  (source.locator?.trim().isNotEmpty ?? false) &&
+                  source.url != null &&
+                  source.licenseId.trim().isNotEmpty,
+            );
+    if (!hasTraceableModernHistoryEvidence) return true;
+
+    if (_exactnessQualifier.hasMatch(text)) return true;
+    return !_approximationQualifier.hasMatch(text);
+  }
+
+  bool _containsCalendarYear(String text) =>
       _latinPrefix.hasMatch(text) ||
       _latinSuffix.hasMatch(text) ||
       _wordedCalendarYear.hasMatch(text) ||
