@@ -50,6 +50,68 @@ class HistoryFilterResult {
   final List<IslamicHistoryThemeEntry> horizontalThemes;
 }
 
+class T0221CanonicalFilterGate {
+  const T0221CanonicalFilterGate._();
+
+  static const expectedDynastyIdsByEvent = <String, Set<String>>{
+    'umayyad_caliphate': {'umayyad'},
+    'abbasid_caliphate': {'abbasid'},
+    'umayyad_al_andalus': {'umayyad_al_andalus'},
+    'fatimid_caliphate': {'fatimid'},
+    'samanid_regional_power': {'samanid'},
+    'buyid_regional_power': {'buyid'},
+    'great_seljuq_sultanate': {'great_seljuq'},
+    'ayyubid_egypt_syria': {'ayyubid'},
+    'mamluk_sultanate_egypt_syria': {'mamluk'},
+    'ottoman_empire': {'ottoman'},
+    'safavid_iran': {'safavid'},
+    'mughal_empire': {'mughal'},
+  };
+
+  static const expectedSubjectsByEvent = <String, Set<HistorySubjectFacet>>{
+    'first_fitna': {HistorySubjectFacet.war},
+    'crusading_movement_levant': {HistorySubjectFacet.war},
+    'mongol_invasions_islamic_lands': {HistorySubjectFacet.war},
+  };
+
+  static void validate({
+    required List<HistoryEventRecord> events,
+    required Map<String, Set<String>> dynastyIdsByEvent,
+    required Map<String, Set<HistorySubjectFacet>> subjectsByEvent,
+  }) {
+    final eventIds = events.map((event) => event.id).toSet();
+    final requiredEventIds = <String>{
+      ...expectedDynastyIdsByEvent.keys,
+      ...expectedSubjectsByEvent.keys,
+    };
+    if (!eventIds.containsAll(requiredEventIds)) {
+      throw StateError('T0221 canonical filter events are incomplete.');
+    }
+    if (!_sameMapOfSets(dynastyIdsByEvent, expectedDynastyIdsByEvent)) {
+      throw StateError('T0221 canonical dynasty metadata changed or is incomplete.');
+    }
+    if (!_sameMapOfSets(subjectsByEvent, expectedSubjectsByEvent)) {
+      throw StateError('T0221 canonical subject metadata changed or is incomplete.');
+    }
+  }
+
+  static bool _sameMapOfSets<T>(Map<String, Set<T>> actual, Map<String, Set<T>> expected) {
+    if (actual.keys.toSet().length != expected.keys.toSet().length ||
+        !actual.keys.toSet().containsAll(expected.keys)) {
+      return false;
+    }
+    for (final entry in expected.entries) {
+      final actualValues = actual[entry.key];
+      if (actualValues == null ||
+          actualValues.length != entry.value.length ||
+          !actualValues.containsAll(entry.value)) {
+        return false;
+      }
+    }
+    return true;
+  }
+}
+
 class HistoryFilterIndex {
   HistoryFilterIndex._({
     required this.events,
@@ -83,6 +145,12 @@ class HistoryFilterIndex {
     if (subjectsByEvent.values.any((value) => value.isEmpty)) {
       throw StateError('T0221 subject metadata must not contain empty assignments.');
     }
+
+    T0221CanonicalFilterGate.validate(
+      events: events,
+      dynastyIdsByEvent: dynastyIdsByEvent,
+      subjectsByEvent: subjectsByEvent,
+    );
 
     return HistoryFilterIndex._(
       events: List.unmodifiable(events),
@@ -139,9 +207,6 @@ class HistoryFilterIndex {
   }
 
   bool _matchesTheme(IslamicHistoryThemeEntry theme, HistoryFilterQuery query) {
-    // Horizontal themes do not claim a single dynasty, person or region. If one
-    // of those event-only dimensions is active, exclude them rather than
-    // manufacturing an association.
     if (query.regionIds.isNotEmpty || query.dynastyIds.isNotEmpty || query.personIds.isNotEmpty) {
       return false;
     }
@@ -192,36 +257,17 @@ class HistoryFilterIndex {
 }
 
 Map<String, Set<String>> _canonicalDynastyIds(List<HistoryEventRecord> events) {
-  const known = <String, Set<String>>{
-    'umayyad_caliphate': {'umayyad'},
-    'abbasid_caliphate': {'abbasid'},
-    'umayyad_al_andalus': {'umayyad_al_andalus'},
-    'fatimid_caliphate': {'fatimid'},
-    'samanid_regional_power': {'samanid'},
-    'buyid_regional_power': {'buyid'},
-    'great_seljuq_sultanate': {'great_seljuq'},
-    'ayyubid_egypt_syria': {'ayyubid'},
-    'mamluk_sultanate_egypt_syria': {'mamluk'},
-    'ottoman_empire': {'ottoman'},
-    'safavid_iran': {'safavid'},
-    'mughal_empire': {'mughal'},
-  };
   final eventIds = events.map((event) => event.id).toSet();
   return {
-    for (final entry in known.entries)
+    for (final entry in T0221CanonicalFilterGate.expectedDynastyIdsByEvent.entries)
       if (eventIds.contains(entry.key)) entry.key: entry.value,
   };
 }
 
 Map<String, Set<HistorySubjectFacet>> _canonicalEventSubjects(List<HistoryEventRecord> events) {
-  const known = <String, Set<HistorySubjectFacet>>{
-    'first_fitna': {HistorySubjectFacet.war},
-    'crusading_movement_levant': {HistorySubjectFacet.war},
-    'mongol_invasions_islamic_lands': {HistorySubjectFacet.war},
-  };
   final eventIds = events.map((event) => event.id).toSet();
   return {
-    for (final entry in known.entries)
+    for (final entry in T0221CanonicalFilterGate.expectedSubjectsByEvent.entries)
       if (eventIds.contains(entry.key)) entry.key: entry.value,
   };
 }
