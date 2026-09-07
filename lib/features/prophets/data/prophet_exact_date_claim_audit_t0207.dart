@@ -23,7 +23,7 @@ final class ProphetExactDateClaimAuditT0207 {
     caseSensitive: false,
   );
   static final RegExp _arabicCalendarYear = RegExp(
-    r'(?:عام|سنة)\s*[0-9٠-٩]{2,4}\s*(?:م|هـ|ميلادي(?:ة)?|هجري(?:ة)?)|[0-9٠-٩]{2,4}\s*(?:م|هـ|ميلادي(?:ة)?|هجري(?:ة)?)',
+    r'(?:عام|سنة)\s*[0-9٠-٩]{2,4}\s*(?:ق\.?\s*م\.?|م|هـ|ميلادي(?:ة)?|هجري(?:ة)?)|[0-9٠-٩]{2,4}\s*(?:ق\.?\s*م\.?|م|هـ|ميلادي(?:ة)?|هجري(?:ة)?)',
   );
 
   List<String> audit(Iterable<CanonicalProphetBiographyDraft> drafts) {
