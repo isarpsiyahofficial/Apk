@@ -163,11 +163,13 @@ const preIslamWorldTopicResearchSources = <String, List<String>>{
   'aksum': ['grasso_2023_ch4', 'bowersock_2013_throne_adulis'],
   'south_arabia_yemen': [
     'grasso_2023_ch3',
+    'grasso_2023_ch4',
     'robin_2015_himyar_aksum',
     'bowersock_2013_throne_adulis',
   ],
   'mecca': [
     'cambridge_history_islam_pre_islamic_arabia',
+    'hallaq_pre_islamic_near_east',
     'hoyland_2001_arabia_arabs',
   ],
   'yathrib_medina': [
