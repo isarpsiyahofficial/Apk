@@ -1,12 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophet_biographies.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_biography_t0194_dataset.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_exact_date_claim_audit_t0207.dart';
 
 void main() {
   const audit = ProphetExactDateClaimAuditT0207();
 
   test('canonical T0194 biography prose has no unstructured exact calendar year', () {
-    expect(audit.audit(canonicalProphetBiographyT0194DatasetForQa), isEmpty);
+    expect(audit.audit(canonicalProphetBiographyT0194Dataset), isEmpty);
   });
 
   test('rejects Latin calendar-year claims embedded directly in biography prose', () {
@@ -64,16 +66,14 @@ void main() {
     final sections = Map<ProphetBiographySectionKey, ProphetBiographyField>.from(
       nuh.sections,
     );
-    sections[ProphetBiographySectionKey.keyEvents] = ProphetBiographyField(
-      text: const LocalizedReligiousText(
+    sections[ProphetBiographySectionKey.keyEvents] = const ProphetBiographyField(
+      text: LocalizedReligiousText(
         tr: 'Kur’an, Nûh’un kavmi içinde bin yıldan elli yıl eksik kaldığını bildirir.',
         en: 'The Quran states that Noah remained among his people for a thousand years minus fifty.',
         ar: 'يذكر القرآن أنه لبث في قومه ألف سنة إلا خمسين عامًا.',
       ),
       status: ProphetBiographyFieldStatus.sourceBacked,
-      sources: nuh.quranReferences.isNotEmpty
-          ? [prophetUniversalMessageSource]
-          : const [],
+      sources: [prophetUniversalMessageSource],
     );
     final injected = CanonicalProphetBiographyDraft(
       identity: nuh.identity,
@@ -84,7 +84,3 @@ void main() {
     expect(audit.audit([injected]), isEmpty);
   });
 }
-
-/// Keeps the canonical release QA input explicit for this test without
-/// silently widening to non-canonical candidate records.
-final canonicalProphetBiographyT0194DatasetForQa = canonicalProphetBiographyDrafts;
