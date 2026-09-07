@@ -85,6 +85,32 @@ void main() {
     expect(audit.audit([injected]), isNotEmpty);
   });
 
+  test('approximation elsewhere cannot mask a positive exact-year claim', () {
+    final muhammad = canonicalProphetBiographyT0194Dataset.singleWhere(
+      (draft) => draft.identity.canonicalId == 'muhammad',
+    );
+    final original = muhammad.sections[ProphetBiographySectionKey.period]!;
+    final sections = Map<ProphetBiographySectionKey, ProphetBiographyField>.from(
+      muhammad.sections,
+    );
+    sections[ProphetBiographySectionKey.period] = ProphetBiographyField(
+      text: const LocalizedReligiousText(
+        tr: 'Dönem yaklaşık yedinci yüzyıldır; Hz. Muhammed kesin olarak miladî 570 yılında doğmuştur.',
+        en: 'The broader period is approximately the seventh century; Muhammad was born exactly in 570 CE.',
+        ar: 'الفترة العامة تقريبًا في القرن السابع، لكن سنة 570م هي سنة الميلاد بالضبط.',
+      ),
+      status: ProphetBiographyFieldStatus.sourceBacked,
+      sources: original.sources,
+    );
+    final injected = CanonicalProphetBiographyDraft(
+      identity: muhammad.identity,
+      quranReferences: muhammad.quranReferences,
+      sections: sections,
+    );
+
+    expect(audit.audit([injected]), isNotEmpty);
+  });
+
   test('modern-history calendar claim without approximation fails closed', () {
     final muhammad = canonicalProphetBiographyT0194Dataset.singleWhere(
       (draft) => draft.identity.canonicalId == 'muhammad',
