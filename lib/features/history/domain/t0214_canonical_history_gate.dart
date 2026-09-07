@@ -17,6 +17,8 @@ class T0214CanonicalHistoryGate {
     'buyid_regional_power': MedievalHistoryTrack.regionalDynasties,
   };
 
+  static void validateCanonicalDataset() => validate(medievalHistoryT0214);
+
   static void validate(MedievalHistoryDataset dataset) {
     final ids = dataset.entries.map((entry) => entry.id).toSet();
     final requiredIds = requiredTrackByEntryId.keys.toSet();
