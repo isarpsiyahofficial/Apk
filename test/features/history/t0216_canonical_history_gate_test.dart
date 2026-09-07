@@ -79,5 +79,38 @@ void main() {
         throwsStateError,
       );
     });
+
+    test('rejects a canonical record whose governed sources are replaced', () {
+      final ottoman = earlyModernEmpiresT0216Entries.singleWhere(
+        (entry) => entry.id == 'ottoman_empire',
+      );
+      final replacement = EarlyModernEmpireEntry(
+        id: ottoman.id,
+        track: ottoman.track,
+        title: ottoman.title,
+        summary: ottoman.summary,
+        startYearCe: ottoman.startYearCe,
+        endYearCe: ottoman.endYearCe,
+        certainty: ottoman.certainty,
+        caveat: ottoman.caveat,
+        sourceIds: const [
+          'richards_mughal_empire',
+          'asher_talbot_india_before_europe',
+        ],
+        status: ottoman.status,
+      );
+
+      final dataset = EarlyModernEmpiresDataset.validated(
+        sources: earlyModernEmpiresT0216Sources,
+        entries: earlyModernEmpiresT0216Entries
+            .map((entry) => entry.id == ottoman.id ? replacement : entry)
+            .toList(),
+      );
+
+      expect(
+        () => T0216CanonicalHistoryGate.validate(dataset),
+        throwsStateError,
+      );
+    });
   });
 }
