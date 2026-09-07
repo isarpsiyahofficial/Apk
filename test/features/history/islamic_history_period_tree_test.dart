@@ -90,5 +90,83 @@ void main() {
         throwsStateError,
       );
     });
+
+    test('rejects a second disconnected root', () {
+      const disconnected = IslamicHistoryPeriod(
+        id: 'late_antiquity',
+        title: LocalizedHistoryText(
+          tr: 'Geç Antik Çağ',
+          en: 'Late Antiquity',
+          ar: 'العصور القديمة المتأخرة',
+        ),
+        certainty: HistoryDateCertainty.broadEra,
+      );
+
+      expect(
+        () => IslamicHistoryPeriodTree.validated(
+          const [preIslamWorldPeriod, disconnected],
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('rejects parent cycles that never reach the canonical root', () {
+      const lateAntiquity = IslamicHistoryPeriod(
+        id: 'late_antiquity',
+        parentId: 'arabia_context',
+        title: LocalizedHistoryText(
+          tr: 'Geç Antik Çağ',
+          en: 'Late Antiquity',
+          ar: 'العصور القديمة المتأخرة',
+        ),
+        certainty: HistoryDateCertainty.broadEra,
+      );
+      const arabia = IslamicHistoryPeriod(
+        id: 'arabia_context',
+        parentId: 'late_antiquity',
+        title: LocalizedHistoryText(
+          tr: 'Arabistan bağlamı',
+          en: 'Arabian context',
+          ar: 'سياق الجزيرة العربية',
+        ),
+        certainty: HistoryDateCertainty.broadEra,
+      );
+
+      expect(
+        () => IslamicHistoryPeriodTree.validated(
+          const [preIslamWorldPeriod, lateAntiquity, arabia],
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('accepts descendants only when they terminate at the canonical root', () {
+      const lateAntiquity = IslamicHistoryPeriod(
+        id: 'late_antiquity',
+        parentId: IslamicHistoryPeriodTree.preIslamWorldId,
+        title: LocalizedHistoryText(
+          tr: 'Geç Antik Çağ',
+          en: 'Late Antiquity',
+          ar: 'العصور القديمة المتأخرة',
+        ),
+        certainty: HistoryDateCertainty.broadEra,
+      );
+      const arabia = IslamicHistoryPeriod(
+        id: 'arabia_context',
+        parentId: 'late_antiquity',
+        title: LocalizedHistoryText(
+          tr: 'Arabistan bağlamı',
+          en: 'Arabian context',
+          ar: 'سياق الجزيرة العربية',
+        ),
+        certainty: HistoryDateCertainty.broadEra,
+      );
+
+      final tree = IslamicHistoryPeriodTree.validated(
+        const [preIslamWorldPeriod, lateAntiquity, arabia],
+      );
+
+      expect(tree.periods.map((period) => period.id), contains('arabia_context'));
+    });
   });
 }
