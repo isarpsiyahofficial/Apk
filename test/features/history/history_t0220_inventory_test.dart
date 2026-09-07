@@ -7,7 +7,26 @@ import 'package:islami_hayat/features/history/data/modern_global_events_t0220.da
 import 'package:islami_hayat/features/history/data/muhammad_period_events_t0220.dart';
 import 'package:islami_hayat/features/history/data/rashidun_first_fitna_events_t0220.dart';
 import 'package:islami_hayat/features/history/data/regional_events_t0220.dart';
+import 'package:islami_hayat/features/history/domain/history_event_contract.dart';
 import 'package:islami_hayat/features/history/domain/history_record_classification.dart';
+
+HistoryEventRecord _cloneWithId(HistoryEventRecord source, String id) =>
+    HistoryEventRecord.validated(
+      id: id,
+      title: source.title,
+      startYearCe: source.startYearCe,
+      endYearCe: source.endYearCe,
+      dateCertainty: source.dateCertainty,
+      dateCaveat: source.dateCaveat,
+      beforeContext: source.beforeContext,
+      causes: source.causes,
+      consequences: source.consequences,
+      people: source.people,
+      geographies: source.geographies,
+      sourceIds: source.sourceIds,
+      knownSourceIds: source.sourceIds.toSet(),
+      status: source.status,
+    );
 
 void main() {
   group('T0220 final inventory', () {
@@ -69,6 +88,35 @@ void main() {
         () => HistoryT0220Inventory.validated(
           events: [events.first, ...events],
           nonEvents: historyNonEventClassificationT0220,
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('canonical aggregate rejects a valid-looking extra synthetic event', () {
+      final events = historyT0220Inventory.events;
+      final expectedIds = historyT0220Inventory.eventIds;
+      final synthetic = _cloneWithId(events.first, 'synthetic:unreviewed_history_event');
+
+      expect(
+        () => HistoryT0220Inventory.validated(
+          events: [...events, synthetic],
+          nonEvents: historyNonEventClassificationT0220,
+          expectedEventIds: expectedIds,
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('canonical aggregate rejects a silently dropped governed event', () {
+      final events = historyT0220Inventory.events;
+      final expectedIds = historyT0220Inventory.eventIds;
+
+      expect(
+        () => HistoryT0220Inventory.validated(
+          events: events.skip(1).toList(growable: false),
+          nonEvents: historyNonEventClassificationT0220,
+          expectedEventIds: expectedIds,
         ),
         throwsStateError,
       );
