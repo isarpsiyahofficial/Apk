@@ -33,8 +33,16 @@ final class ProphetExactDateClaimAuditT0207 {
     caseSensitive: false,
   );
 
-  static final RegExp _exactnessQualifier = RegExp(
-    r'\b(?:kesin|kesinlikle|tam olarak|exact|exactly|precisely|definitively)\b|(?:قطعي(?:ة|ًا|ا)?|بالضبط|بدقة|دقيق(?:ة|ًا|ا)?)',
+  /// Positive exact-year wording is intentionally narrower than a generic
+  /// search for words such as `exact`/`kesin`/`قطعي`. Canonical biographies may
+  /// contain explicit disclaimers such as "not presented as an exact birth
+  /// year" or "kesin bir doğum yılı ... sunulmaz"; those statements lower
+  /// certainty and must not themselves trigger this release gate.
+  static final RegExp _positiveExactCalendarClaim = RegExp(
+    r'(?:\b(?:kesin(?:likle)?|tam\s+olarak)\b.{0,48}(?:MÖ|M\.Ö\.|MS|M\.S\.|BC|BCE|AD|CE|AH|H\.|miladi|miladî|hicri|hijri)?\s*\d{2,4}\b)'
+    r'|(?:\b(?:exactly|precisely|definitively)\b.{0,32}(?:in\s+)?\d{2,4}\s*(?:BC|BCE|AD|CE|AH)?\b)'
+    r'|(?:[0-9٠-٩]{2,4}\s*(?:ق\.?\s*م\.?|م|هـ|ميلادي(?:ة)?|هجري(?:ة)?)?\s*(?:بالضبط|بدقة))'
+    r'|(?:(?:بالضبط|بدقة)\s*(?:عام|سنة)?\s*[0-9٠-٩]{2,4})',
     caseSensitive: false,
   );
 
@@ -80,7 +88,7 @@ final class ProphetExactDateClaimAuditT0207 {
             );
     if (!hasTraceableModernHistoryEvidence) return true;
 
-    if (_exactnessQualifier.hasMatch(text)) return true;
+    if (_positiveExactCalendarClaim.hasMatch(text)) return true;
     return !_approximationQualifier.hasMatch(text);
   }
 
