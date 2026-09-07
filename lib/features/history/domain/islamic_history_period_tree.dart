@@ -39,14 +39,15 @@ class IslamicHistoryPeriodTree {
       throw StateError('History period tree must not be empty.');
     }
 
-    final ids = <String>{};
+    final byId = <String, IslamicHistoryPeriod>{};
     for (final period in periods) {
       if (period.id.trim().isEmpty || !period.title.isComplete) {
         throw StateError('History periods require stable IDs and TR/EN/AR titles.');
       }
-      if (!ids.add(period.id)) {
+      if (byId.containsKey(period.id)) {
         throw StateError('Duplicate history period ID: ${period.id}');
       }
+      byId[period.id] = period;
     }
 
     if (periods.first.id != preIslamWorldId) {
@@ -55,15 +56,47 @@ class IslamicHistoryPeriodTree {
       );
     }
 
+    final root = byId[preIslamWorldId];
+    if (root == null || root.parentId != null) {
+      throw StateError('The pre-Islam world period must be the single root.');
+    }
+
     for (final period in periods) {
       final parentId = period.parentId;
-      if (parentId != null && !ids.contains(parentId)) {
+      if (period.id == preIslamWorldId) {
+        continue;
+      }
+      if (parentId == null) {
+        throw StateError(
+          'History period ${period.id} must be connected to the canonical root.',
+        );
+      }
+      if (!byId.containsKey(parentId)) {
         throw StateError(
           'History period ${period.id} references missing parent $parentId.',
         );
       }
       if (parentId == period.id) {
         throw StateError('History period ${period.id} cannot parent itself.');
+      }
+    }
+
+    for (final period in periods) {
+      final visited = <String>{};
+      var current = period;
+      while (current.id != preIslamWorldId) {
+        if (!visited.add(current.id)) {
+          throw StateError(
+            'History period tree contains a parent cycle at ${current.id}.',
+          );
+        }
+        final parentId = current.parentId;
+        if (parentId == null) {
+          throw StateError(
+            'History period ${period.id} is disconnected from the canonical root.',
+          );
+        }
+        current = byId[parentId]!;
       }
     }
 
