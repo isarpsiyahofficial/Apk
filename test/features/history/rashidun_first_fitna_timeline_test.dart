@@ -70,6 +70,95 @@ void main() {
       );
     });
 
+    test('rejects wrong canonical certainty classification', () {
+      final fitna = earlyCaliphateResearchEntries.last;
+      final incorrectlyEstablishedFitna = EarlyCaliphateTimelineEntry(
+        id: fitna.id,
+        title: fitna.title,
+        summary: fitna.summary,
+        startYearCe: fitna.startYearCe,
+        endYearCe: fitna.endYearCe,
+        certainty: EarlyCaliphateCertainty.establishedChronology,
+        caveat: null,
+        sourceIds: fitna.sourceIds,
+        status: fitna.status,
+      );
+
+      expect(
+        () => EarlyCaliphateTimelineDataset.validated(
+          sources: earlyCaliphateResearchSources,
+          entries: [
+            ...earlyCaliphateResearchEntries.take(4),
+            incorrectlyEstablishedFitna,
+          ],
+        ),
+        throwsStateError,
+      );
+
+      final abuBakr = earlyCaliphateResearchEntries.first;
+      final incorrectlyContestedCaliphate = EarlyCaliphateTimelineEntry(
+        id: abuBakr.id,
+        title: abuBakr.title,
+        summary: abuBakr.summary,
+        startYearCe: abuBakr.startYearCe,
+        endYearCe: abuBakr.endYearCe,
+        certainty: EarlyCaliphateCertainty.contestedInterpretation,
+        caveat: const LocalizedHistorySummary(
+          tr: 'İhtilaflı yorum.',
+          en: 'Contested interpretation.',
+          ar: 'تفسير محل خلاف.',
+        ),
+        sourceIds: abuBakr.sourceIds,
+        status: abuBakr.status,
+      );
+
+      expect(
+        () => EarlyCaliphateTimelineDataset.validated(
+          sources: earlyCaliphateResearchSources,
+          entries: [
+            incorrectlyContestedCaliphate,
+            ...earlyCaliphateResearchEntries.skip(1),
+          ],
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('rejects extra non-canonical periods even when otherwise valid', () {
+      final ali = earlyCaliphateResearchEntries[3];
+      final extra = EarlyCaliphateTimelineEntry(
+        id: 'extra_period',
+        title: const LocalizedHistorySummary(
+          tr: 'Ek Dönem',
+          en: 'Extra Period',
+          ar: 'فترة إضافية',
+        ),
+        summary: const LocalizedHistorySummary(
+          tr: 'Canonical T0213 kapsamı dışı sentetik dönem.',
+          en: 'Synthetic period outside the canonical T0213 scope.',
+          ar: 'فترة تجريبية خارج النطاق المعتمد للمهمة T0213.',
+        ),
+        startYearCe: 656,
+        endYearCe: 660,
+        certainty: EarlyCaliphateCertainty.establishedChronology,
+        caveat: null,
+        sourceIds: ali.sourceIds,
+        status: HistoryResearchStatus.researchDraft,
+      );
+
+      expect(
+        () => EarlyCaliphateTimelineDataset.validated(
+          sources: earlyCaliphateResearchSources,
+          entries: [
+            ...earlyCaliphateResearchEntries.take(4),
+            extra,
+            earlyCaliphateResearchEntries.last,
+          ],
+        ),
+        throwsStateError,
+      );
+    });
+
     test('rejects single-source claims, missing required periods and chronology drift', () {
       final abuBakr = earlyCaliphateResearchEntries.first;
       final singleSource = EarlyCaliphateTimelineEntry(
