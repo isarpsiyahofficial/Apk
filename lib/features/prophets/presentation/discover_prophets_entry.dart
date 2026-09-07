@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 import 'revelation_journey_page.dart';
 
 class DiscoverProphetsEntry extends StatelessWidget {
-  const DiscoverProphetsEntry({super.key});
+  const DiscoverProphetsEntry({
+    this.quranTargetOpener,
+    super.key,
+  });
+
+  final ProphetQuranTargetOpener? quranTargetOpener;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +38,9 @@ class DiscoverProphetsEntry extends StatelessWidget {
         trailing: const Icon(Icons.chevron_right),
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (_) => const RevelationJourneyPage(),
+            builder: (_) => RevelationJourneyPage(
+              quranTargetOpener: quranTargetOpener,
+            ),
           ),
         ),
       ),
