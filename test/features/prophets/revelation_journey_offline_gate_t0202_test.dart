@@ -26,6 +26,17 @@ final class _MemoryPrivateStore implements PrivateUserStore {
   Future<void> write(String key, String value) async => values[key] = value;
 }
 
+Future<void> _tapAfterBringingIntoView(
+  WidgetTester tester,
+  Finder finder,
+) async {
+  expect(finder, findsOneWidget);
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets(
     'Discover journey prophet Quran target reuses AppShell FREE reachability gate',
@@ -71,10 +82,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey('journey-filter-abrahamic')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('journey-prophet-ibrahim')));
-      await tester.pumpAndSettle();
+      await _tapAfterBringingIntoView(
+        tester,
+        find.byKey(const ValueKey('journey-filter-abrahamic')),
+      );
+      await _tapAfterBringingIntoView(
+        tester,
+        find.byKey(const ValueKey('journey-prophet-ibrahim')),
+      );
 
       expect(find.text('Doğrulanmış Kur’an referansları'), findsOneWidget);
       await tester.tap(find.byType(ListTile).first);
