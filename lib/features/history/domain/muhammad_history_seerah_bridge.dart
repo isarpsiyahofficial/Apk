@@ -38,7 +38,9 @@ class MuhammadHistorySeerahBridge {
 
     final ids = <String>{};
     final orders = <int>{};
+    final historyIds = <String>{};
     var previousOrder = -1;
+    var previousPhaseRank = -1;
     final links = <MuhammadHistoryTimelineLink>[];
 
     for (final event in seerahEvents) {
@@ -56,14 +58,20 @@ class MuhammadHistorySeerahBridge {
       }
       previousOrder = event.order;
 
+      final phaseRank = _phaseRank(event.phase);
+      if (phaseRank < previousPhaseRank) {
+        throw StateError('Seerah phase cannot move backwards in history.');
+      }
+      previousPhaseRank = phaseRank;
+
       final link = MuhammadHistoryTimelineLink(
         historyEventId: 'history:${event.id}',
         seerahEventId: event.id,
         order: event.order,
         phase: event.phase,
       );
-      if (!link.isValid) {
-        throw StateError('Invalid history/seerah link: ${event.id}');
+      if (!link.isValid || !historyIds.add(link.historyEventId)) {
+        throw StateError('Invalid or duplicate history/seerah link: ${event.id}');
       }
       links.add(link);
     }
@@ -88,7 +96,25 @@ class MuhammadHistorySeerahBridge {
     final seerahId = matchingLinks.single.seerahEventId;
     return _seerahEvents.singleWhere((event) => event.id == seerahId);
   }
+
+  MuhammadHistoryTimelineLink resolveHistoryLink(String seerahEventId) {
+    final matchingLinks = links.where(
+      (link) => link.seerahEventId == seerahEventId,
+    );
+    if (matchingLinks.length != 1) {
+      throw StateError('Unknown or ambiguous seerah event: $seerahEventId');
+    }
+    return matchingLinks.single;
+  }
 }
+
+int _phaseRank(SeerahPhase phase) => switch (phase) {
+      SeerahPhase.birthAndEarlyLife => 0,
+      SeerahPhase.meccan => 1,
+      SeerahPhase.hijrah => 2,
+      SeerahPhase.medinan => 3,
+      SeerahPhase.finalYears => 4,
+    };
 
 final canonicalMuhammadHistorySeerahBridge =
     MuhammadHistorySeerahBridge.validated(muhammadSeerahT0201Events);
