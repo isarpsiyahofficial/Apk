@@ -1,5 +1,6 @@
 import '../domain/history_event_contract.dart';
 import '../domain/history_record_classification.dart';
+import '../domain/t0214_canonical_history_gate.dart';
 import 'early_modern_events_t0220.dart';
 import 'high_medieval_events_t0220.dart';
 import 'medieval_caliphates_events_t0220.dart';
@@ -43,6 +44,11 @@ class HistoryT0220Inventory {
   Set<String> get eventIds => events.map((event) => event.id).toSet();
 }
 
+List<HistoryEventRecord> _validatedT0214Events() {
+  T0214CanonicalHistoryGate.validateCanonicalDataset();
+  return medievalHistoryT0214EventDatasetT0220.events;
+}
+
 /// Final T0220 engineering inventory.
 ///
 /// T0212–T0218 are the canonical event-bearing history tracks and each already
@@ -54,7 +60,7 @@ final historyT0220Inventory = HistoryT0220Inventory.validated(
   events: <HistoryEventRecord>[
     ...muhammadPeriodEventsT0220.events,
     ...earlyCaliphateT0220Dataset.events,
-    ...medievalHistoryT0214EventDatasetT0220.events,
+    ..._validatedT0214Events(),
     ...highMedievalHistoryT0215EventDatasetT0220.events,
     ...earlyModernEventsT0220.events,
     ...regionalEventsT0220.events,
