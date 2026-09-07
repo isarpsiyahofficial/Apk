@@ -12,6 +12,8 @@ Bu temalar siyasi hanedan kronolojisinin yerine geçmez. Farklı dönem ve bölg
 
 - Her kayıt TR/EN/AR başlık, özet ve certainty/caveat metni taşır.
 - Her kayıt en az iki bağımsız akademik **work family** ile desteklenir. Aynı monografinin iki bölümü/locator'ı iki bağımsız kaynak sayılmaz.
+- Canonical görünüm tam olarak dokuz governed ID kabul eder; ID→tema ve ID→akademik provenance eşleşmeleri değiştirilemez.
+- Fazladan kayıt, tema swap'i veya başka iki geçerli akademik kaynakla sessiz provenance replacement fail-closed reddedilir.
 - Bilinmeyen kaynak, eksik tema, eksik dil metni ve tek work-family fail-closed reddedilir.
 - Bütün T0219 kayıtları şimdilik `researchDraft` durumundadır.
 - Factual/editorial review ve gerçek TR/EN/AR native review kanıtları tamamlanmadan `reviewedForProduction` yapılmaz; bu nedenle TEST_MATRIX D12/D14 bu çalışma ile otomatik PASS olmaz.
@@ -25,9 +27,14 @@ Bu temalar siyasi hanedan kronolojisinin yerine geçmez. Farklı dönem ve bölg
 - Christopher Melchert, *The Formation of the Sunni Schools of Law, 9th-10th Centuries C.E.*, Brill, 1997 — ISBN `9789004109520`.
 - Richard Ettinghausen, Oleg Grabar & Marilyn Jenkins-Madina, *Islamic Art and Architecture, 650–1250*, Yale University Press — DOI `10.37862/aaeportal.00202`.
 - Ira M. Lapidus, *A History of Islamic Societies*, 3rd ed., Cambridge University Press, 2014 — DOI `10.1017/CBO9781139048828`.
+- Fanny Bessard, *Caliphs and Merchants: Cities and Economies of Power in the Near East (700–950)*, Oxford University Press, 2020 — DOI `10.1093/oso/9780198855828.001.0001`.
 - George Makdisi, *The Rise of Colleges: Institutions of Learning in Islam and the West*, Edinburgh University Press — ISBN `9780852243756`.
 - Asma Sayeed, *Women and the Transmission of Religious Knowledge in Islam*, Cambridge University Press, 2013 — DOI `10.1017/CBO9781139381871`.
 - Leila Ahmed, *Women and Gender in Islam: Historical Roots of a Modern Debate*, Yale University Press — ISBN `9780300257311`.
+
+## Ticaret/şehirleşme provenance düzeltmesi
+
+Ham araştırma datasetindeki `trade_urbanization_history` kaydı daha önce Lapidus + Makdisi kullanıyordu. Makdisi'nin eseri eğitim kurumlarına odaklandığı için canonical production görünümünde bu eşleşme kullanılmaz. Ticaret/şehirleşme kaydı Lapidus + Bessard ile pinlenmiştir. Bessard'ın OUP çalışması erken İslam döneminde şehirler, pazarlar, tüccarlar ve siyasal-ekonomik ilişkileri doğrudan inceler; Lapidus ise daha geniş bölgesel ve dönemsel çerçeveyi sağlar.
 
 ## Certainty kararları
 
@@ -38,6 +45,9 @@ Bu temalar siyasi hanedan kronolojisinin yerine geçmez. Farklı dönem ve bölg
 ## Kod/test kanıtı
 
 - `lib/features/history/data/islamic_history_horizontal_themes.dart`
+- `lib/features/history/data/islamic_history_t0219_canonical.dart`
 - `test/features/history/islamic_history_horizontal_themes_test.dart`
+- `test/features/history/islamic_history_t0219_canonical_test.dart`
+- `lib/features/history/data/history_t0220_inventory.dart`
 
-Testler 9/9 tema kapsamı, research-draft production engeli, aynı work-family sahte iki kaynak, unknown source, eksik tema ve eksik AR certainty caveat failure-path'lerini doğrular.
+Testler 9/9 tema kapsamı, research-draft production engeli, aynı work-family sahte iki kaynak, unknown source, eksik tema, eksik AR certainty caveat, exact ID→tema mapping, exact provenance, extra-record ve replacement failure-path'lerini doğrular.
