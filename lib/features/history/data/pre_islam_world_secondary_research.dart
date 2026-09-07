@@ -10,6 +10,7 @@ class IndependentHistoryResearchRegistry {
   factory IndependentHistoryResearchRegistry.validated({
     required List<HistorySourceLocator> baseSources,
     required List<HistorySourceLocator> supplementalSources,
+    required List<PreIslamWorldContextEntry> baseEntries,
     required Map<String, String> sourceFamilies,
     required Map<String, List<String>> topicSourceIds,
   }) {
@@ -25,18 +26,46 @@ class IndependentHistoryResearchRegistry {
       byId[source.id] = source;
     }
 
-    if (!topicSourceIds.keys.toSet().containsAll(
-          PreIslamWorldContextDataset.requiredTopicIds,
-        )) {
-      throw StateError('Every required pre-Islam topic needs research evidence.');
+    if (sourceFamilies.keys.any((sourceId) => !byId.containsKey(sourceId))) {
+      throw StateError('History source-family metadata contains an unknown source.');
     }
 
-    for (final topicId in PreIslamWorldContextDataset.requiredTopicIds) {
+    final requiredTopicIds = PreIslamWorldContextDataset.requiredTopicIds;
+    final registeredTopicIds = topicSourceIds.keys.toSet();
+    if (registeredTopicIds.length != requiredTopicIds.length ||
+        !registeredTopicIds.containsAll(requiredTopicIds)) {
+      throw StateError(
+        'Research registry must contain exactly the required pre-Islam topics.',
+      );
+    }
+
+    final baseEntriesById = <String, PreIslamWorldContextEntry>{};
+    for (final entry in baseEntries) {
+      if (entry.id.trim().isEmpty || baseEntriesById.containsKey(entry.id)) {
+        throw StateError('Base history entries require unique, non-empty IDs.');
+      }
+      baseEntriesById[entry.id] = entry;
+    }
+    if (!baseEntriesById.keys.toSet().containsAll(requiredTopicIds)) {
+      throw StateError('Every required pre-Islam topic needs a canonical base entry.');
+    }
+
+    for (final topicId in requiredTopicIds) {
       final ids = topicSourceIds[topicId] ?? const <String>[];
       if (ids.length != ids.toSet().length ||
           ids.any((sourceId) => !byId.containsKey(sourceId))) {
         throw StateError('Topic $topicId has duplicate or unknown sources.');
       }
+
+      final canonicalEntry = baseEntriesById[topicId]!;
+      final missingCanonicalSources =
+          canonicalEntry.sourceIds.where((sourceId) => !ids.contains(sourceId));
+      if (missingCanonicalSources.isNotEmpty) {
+        throw StateError(
+          'Topic $topicId research evidence must retain its canonical source set.',
+        );
+      }
+
       final families = <String>{};
       for (final sourceId in ids) {
         final family = sourceFamilies[sourceId];
@@ -164,6 +193,7 @@ final preIslamWorldIndependentResearch =
     IndependentHistoryResearchRegistry.validated(
   baseSources: preIslamWorldResearchSources,
   supplementalSources: preIslamWorldSupplementalSources,
+  baseEntries: preIslamWorldResearchEntries,
   sourceFamilies: preIslamWorldIndependentSourceFamilies,
   topicSourceIds: preIslamWorldTopicResearchSources,
 );
