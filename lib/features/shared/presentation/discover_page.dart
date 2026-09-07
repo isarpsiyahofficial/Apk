@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/features/prophets/presentation/discover_prophets_entry.dart';
+import 'package:islami_hayat/features/prophets/presentation/revelation_journey_page.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
 class DiscoverPage extends StatelessWidget {
-  const DiscoverPage({super.key});
+  const DiscoverPage({
+    this.prophetQuranTargetOpener,
+    super.key,
+  });
+
+  final ProphetQuranTargetOpener? prophetQuranTargetOpener;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +28,9 @@ class DiscoverPage extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyLarge,
         ),
         const SizedBox(height: 24),
-        const DiscoverProphetsEntry(),
+        DiscoverProphetsEntry(
+          quranTargetOpener: prophetQuranTargetOpener,
+        ),
       ],
     );
   }
