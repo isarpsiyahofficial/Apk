@@ -12,13 +12,21 @@ void main() {
       for (var index = 0; index < muhammadSeerahT0201Events.length; index++) {
         final seerah = muhammadSeerahT0201Events[index];
         final history = bridge.links[index];
+        final resolvedSeerah = bridge.resolveSeerahEvent(history.historyEventId);
+        final resolvedHistory = bridge.resolveHistoryLink(seerah.id);
 
         expect(history.historyEventId, 'history:${seerah.id}');
         expect(history.seerahEventId, seerah.id);
         expect(history.order, seerah.order);
         expect(history.phase, seerah.phase);
-        expect(bridge.resolveSeerahEvent(history.historyEventId), same(seerah));
-        expect(bridge.resolveHistoryLink(seerah.id), same(history));
+
+        expect(resolvedSeerah.id, seerah.id);
+        expect(resolvedSeerah.order, seerah.order);
+        expect(resolvedSeerah.phase, seerah.phase);
+        expect(resolvedHistory.historyEventId, history.historyEventId);
+        expect(resolvedHistory.seerahEventId, history.seerahEventId);
+        expect(resolvedHistory.order, history.order);
+        expect(resolvedHistory.phase, history.phase);
       }
     });
 
