@@ -9,7 +9,7 @@ void main() {
 
   const validator = ProphetQuranReferenceValidator();
 
-  test('all canonical prophet Quran references resolve in pinned ayah DB', () async {
+  test('all 25 canonical prophet Quran references resolve in pinned ayah DB', () async {
     final result = await validator.validateBundledCanonicalDrafts();
 
     expect(result.prophetCount, 25);
@@ -46,6 +46,42 @@ void main() {
 
     expect(
       () => validator.validate(drafts: [invalid], quran: quran),
+      throwsA(isA<ProphetQuranReferenceValidationException>()),
+    );
+  });
+
+  test('rejects a biography that drops its explicit Quran-name anchor', () async {
+    final quran = await CanonicalQuranAssetLoader().load();
+    final nuh = canonicalProphetBiographyDrafts.firstWhere(
+      (draft) => draft.identity.canonicalId == 'nuh',
+    );
+    final anchorId = nuh.identity.explicitNameReference.stableId;
+    final remaining = nuh.quranReferences
+        .where((reference) => reference.stableId != anchorId)
+        .toList(growable: false);
+
+    expect(remaining, isNotEmpty);
+    final invalid = CanonicalProphetBiographyDraft(
+      identity: nuh.identity,
+      quranReferences: remaining,
+      sections: nuh.sections,
+    );
+
+    expect(
+      () => validator.validate(drafts: [invalid], quran: quran),
+      throwsA(isA<ProphetQuranReferenceValidationException>()),
+    );
+  });
+
+  test('canonical-set mode rejects a partial prophet dataset', () async {
+    final quran = await CanonicalQuranAssetLoader().load();
+
+    expect(
+      () => validator.validate(
+        drafts: [canonicalProphetBiographyDrafts.first],
+        quran: quran,
+        requireCanonicalSet: true,
+      ),
       throwsA(isA<ProphetQuranReferenceValidationException>()),
     );
   });
