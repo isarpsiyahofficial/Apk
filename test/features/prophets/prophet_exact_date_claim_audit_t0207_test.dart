@@ -7,7 +7,7 @@ import 'package:islami_hayat/features/prophets/data/prophet_exact_date_claim_aud
 void main() {
   const audit = ProphetExactDateClaimAuditT0207();
 
-  test('canonical T0194 biography prose has no unstructured exact calendar year', () {
+  test('canonical T0194 accepts only sourced approximate calendar chronology', () {
     expect(audit.audit(canonicalProphetBiographyT0194Dataset), isEmpty);
   });
 
@@ -53,6 +53,58 @@ void main() {
     final injected = CanonicalProphetBiographyDraft(
       identity: adam.identity,
       quranReferences: adam.quranReferences,
+      sections: sections,
+    );
+
+    expect(audit.audit([injected]), isNotEmpty);
+  });
+
+  test('modern-history citation cannot promote an exact date claim', () {
+    final muhammad = canonicalProphetBiographyT0194Dataset.singleWhere(
+      (draft) => draft.identity.canonicalId == 'muhammad',
+    );
+    final original = muhammad.sections[ProphetBiographySectionKey.period]!;
+    final sections = Map<ProphetBiographySectionKey, ProphetBiographyField>.from(
+      muhammad.sections,
+    );
+    sections[ProphetBiographySectionKey.period] = ProphetBiographyField(
+      text: const LocalizedReligiousText(
+        tr: 'Hz. Muhammed kesin olarak miladî 570 yılında doğmuştur.',
+        en: 'Muhammad was born exactly in 570 CE.',
+        ar: 'وُلد محمد ﷺ سنة 570م بالضبط.',
+      ),
+      status: ProphetBiographyFieldStatus.sourceBacked,
+      sources: original.sources,
+    );
+    final injected = CanonicalProphetBiographyDraft(
+      identity: muhammad.identity,
+      quranReferences: muhammad.quranReferences,
+      sections: sections,
+    );
+
+    expect(audit.audit([injected]), isNotEmpty);
+  });
+
+  test('modern-history calendar claim without approximation fails closed', () {
+    final muhammad = canonicalProphetBiographyT0194Dataset.singleWhere(
+      (draft) => draft.identity.canonicalId == 'muhammad',
+    );
+    final original = muhammad.sections[ProphetBiographySectionKey.period]!;
+    final sections = Map<ProphetBiographySectionKey, ProphetBiographyField>.from(
+      muhammad.sections,
+    );
+    sections[ProphetBiographySectionKey.period] = ProphetBiographyField(
+      text: const LocalizedReligiousText(
+        tr: 'Hz. Muhammed miladî 570 yılında doğmuştur.',
+        en: 'Muhammad was born in 570 CE.',
+        ar: 'وُلد محمد ﷺ سنة 570م.',
+      ),
+      status: ProphetBiographyFieldStatus.sourceBacked,
+      sources: original.sources,
+    );
+    final injected = CanonicalProphetBiographyDraft(
+      identity: muhammad.identity,
+      quranReferences: muhammad.quranReferences,
       sections: sections,
     );
 
