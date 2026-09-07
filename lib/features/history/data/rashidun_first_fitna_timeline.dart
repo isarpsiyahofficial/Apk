@@ -57,6 +57,12 @@ class EarlyCaliphateTimelineDataset {
           entry.sourceIds.any((sourceId) => !sourceIds.contains(sourceId))) {
         throw StateError('Early caliphate entries failed chronology/source validation.');
       }
+      final expectedCertainty = requiredCertaintyByEntryId[entry.id];
+      if (expectedCertainty == null || entry.certainty != expectedCertainty) {
+        throw StateError(
+          'Early caliphate entry certainty must match its canonical period classification.',
+        );
+      }
       if (entry.certainty == EarlyCaliphateCertainty.contestedInterpretation &&
           (entry.caveat == null || !entry.caveat!.isComplete)) {
         throw StateError('Contested early-history entries require TR/EN/AR caveats.');
@@ -64,9 +70,14 @@ class EarlyCaliphateTimelineDataset {
       previousStart = entry.startYearCe;
     }
 
-    final missing = requiredEntryIds.difference(entryIds);
-    if (missing.isNotEmpty) {
-      throw StateError('Missing required Rashidun/First Fitna entries: $missing');
+    if (entryIds.length != requiredEntryIds.length ||
+        !entryIds.containsAll(requiredEntryIds)) {
+      final missing = requiredEntryIds.difference(entryIds);
+      final unexpected = entryIds.difference(requiredEntryIds);
+      throw StateError(
+        'Rashidun/First Fitna entry set must be canonical. '
+        'Missing: $missing; unexpected: $unexpected',
+      );
     }
 
     return EarlyCaliphateTimelineDataset._(
@@ -81,6 +92,14 @@ class EarlyCaliphateTimelineDataset {
     'uthman_caliphate',
     'ali_caliphate',
     'first_fitna',
+  };
+
+  static const Map<String, EarlyCaliphateCertainty> requiredCertaintyByEntryId = {
+    'abu_bakr_caliphate': EarlyCaliphateCertainty.establishedChronology,
+    'umar_caliphate': EarlyCaliphateCertainty.establishedChronology,
+    'uthman_caliphate': EarlyCaliphateCertainty.establishedChronology,
+    'ali_caliphate': EarlyCaliphateCertainty.establishedChronology,
+    'first_fitna': EarlyCaliphateCertainty.contestedInterpretation,
   };
 
   final List<HistorySourceLocator> sources;
