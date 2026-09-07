@@ -20,6 +20,7 @@ class HistoryT0220Inventory {
   factory HistoryT0220Inventory.validated({
     required List<HistoryEventRecord> events,
     required HistoryNonEventClassificationDataset nonEvents,
+    Set<String>? expectedEventIds,
   }) {
     if (events.isEmpty) {
       throw StateError('T0220 final event inventory must not be empty.');
@@ -29,6 +30,22 @@ class HistoryT0220Inventory {
     for (final event in events) {
       if (!eventIds.add(event.id)) {
         throw StateError('T0220 final inventory contains a duplicate event ID: ${event.id}');
+      }
+    }
+
+    if (expectedEventIds != null) {
+      final normalizedExpectedIds = expectedEventIds.map((id) => id.trim()).toSet();
+      if (normalizedExpectedIds.length != expectedEventIds.length ||
+          normalizedExpectedIds.any((id) => id.isEmpty)) {
+        throw StateError('T0220 canonical expected event IDs must be unique and non-empty.');
+      }
+
+      final missing = normalizedExpectedIds.difference(eventIds);
+      final unexpected = eventIds.difference(normalizedExpectedIds);
+      if (missing.isNotEmpty || unexpected.isNotEmpty) {
+        throw StateError(
+          'T0220 canonical event inventory drift. Missing: $missing; unexpected: $unexpected',
+        );
       }
     }
 
@@ -81,26 +98,58 @@ void _validateT0219HorizontalThemes() {
   }
 }
 
+Set<String> _canonicalT0220EventIds({
+  required List<HistoryEventRecord> t0214Events,
+  required List<HistoryEventRecord> t0215Events,
+  required List<HistoryEventRecord> t0216Events,
+  required List<HistoryEventRecord> t0217Events,
+  required List<HistoryEventRecord> t0218Events,
+}) =>
+    <String>{
+      ...muhammadPeriodEventsT0220.events.map((event) => event.id),
+      ...earlyCaliphateT0220Dataset.events.map((event) => event.id),
+      ...t0214Events.map((event) => event.id),
+      ...t0215Events.map((event) => event.id),
+      ...t0216Events.map((event) => event.id),
+      ...t0217Events.map((event) => event.id),
+      ...t0218Events.map((event) => event.id),
+    };
+
 /// Final T0220 engineering inventory.
 ///
 /// T0212–T0218 are the canonical event-bearing history tracks and each already
-/// has a migration test proving 1:1 correspondence with its legacy dataset.
+/// has a migration/canonical gate proving its governed source projection.
 /// T0211 and T0219 are explicitly classified as non-event background/theme
 /// records so the event contract cannot force artificial dates or actors onto
-/// contextual material. T0219 still passes its canonical ID/theme/provenance
-/// gate before the final history inventory can initialize.
+/// contextual material. The aggregate itself is also exact-ID gated so a
+/// valid-looking synthetic event cannot be inserted directly into the final
+/// inventory and a canonical event cannot be silently dropped.
 final historyT0220Inventory = (() {
   _validateT0219HorizontalThemes();
+  final t0214Events = _validatedT0214Events();
+  final t0215Events = _validatedT0215Events();
+  final t0216Events = _validatedT0216Events();
+  final t0217Events = _validatedT0217Events();
+  final t0218Events = _validatedT0218Events();
+  final events = <HistoryEventRecord>[
+    ...muhammadPeriodEventsT0220.events,
+    ...earlyCaliphateT0220Dataset.events,
+    ...t0214Events,
+    ...t0215Events,
+    ...t0216Events,
+    ...t0217Events,
+    ...t0218Events,
+  ];
+
   return HistoryT0220Inventory.validated(
-    events: <HistoryEventRecord>[
-      ...muhammadPeriodEventsT0220.events,
-      ...earlyCaliphateT0220Dataset.events,
-      ..._validatedT0214Events(),
-      ..._validatedT0215Events(),
-      ..._validatedT0216Events(),
-      ..._validatedT0217Events(),
-      ..._validatedT0218Events(),
-    ],
+    events: events,
     nonEvents: historyNonEventClassificationT0220,
+    expectedEventIds: _canonicalT0220EventIds(
+      t0214Events: t0214Events,
+      t0215Events: t0215Events,
+      t0216Events: t0216Events,
+      t0217Events: t0217Events,
+      t0218Events: t0218Events,
+    ),
   );
 })();
