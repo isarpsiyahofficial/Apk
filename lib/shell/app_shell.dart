@@ -11,6 +11,7 @@ import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.d
 import 'package:islami_hayat/features/premium/presentation/startup_access_gate.dart';
 import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_content.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_deep_links.dart';
 import 'package:islami_hayat/features/prophets/presentation/prophet_story_page.dart';
 import 'package:islami_hayat/features/quran/data/quran_reading_progress_repository.dart';
 import 'package:islami_hayat/features/quran/data/quran_search_repository.dart';
@@ -158,6 +159,26 @@ class _AppShellState extends State<AppShell> {
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
+  Future<bool> _openJourneyProphetQuranTarget(
+    BuildContext _,
+    ProphetDeepLink link,
+  ) async {
+    if (!link.isValid ||
+        link.kind != ProphetDeepLinkKind.quranVerse ||
+        link.surah == null ||
+        link.ayah == null) {
+      return false;
+    }
+    final before = await _quranProgressRepository.loadSaved();
+    await _openQuranAt(QuranAddress(surah: link.surah!, ayah: link.ayah!));
+    if (!mounted) return false;
+    final after = await _quranProgressRepository.loadSaved();
+    return after != null &&
+        after.surah == link.surah &&
+        after.ayah == link.ayah &&
+        (before == null || before.surah != after.surah || before.ayah != after.ayah);
+  }
+
   Future<void> _openProphetStory(String prophetId) async {
     if (!await _guardNewContent() || !mounted) return;
     await Navigator.of(context).push(
@@ -221,7 +242,9 @@ class _AppShellState extends State<AppShell> {
         ),
       ),
       QuranHubPage(progressRepository: _quranProgressRepository),
-      const DiscoverPage(),
+      DiscoverPage(
+        prophetQuranTargetOpener: _openJourneyProphetQuranTarget,
+      ),
       const DhikrHubPage(),
       const ProfilePage(),
     ];
