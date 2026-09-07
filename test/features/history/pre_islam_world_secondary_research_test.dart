@@ -8,7 +8,7 @@ void main() {
 
     expect(
       registry.topicSourceIds.keys.toSet(),
-      containsAll(PreIslamWorldContextDataset.requiredTopicIds),
+      equals(PreIslamWorldContextDataset.requiredTopicIds),
     );
 
     for (final topicId in PreIslamWorldContextDataset.requiredTopicIds) {
@@ -17,7 +17,15 @@ void main() {
           .map((sourceId) => registry.sourceFamilies[sourceId])
           .whereType<String>()
           .toSet();
+      final canonicalEntry = preIslamWorldResearchEntries.singleWhere(
+        (entry) => entry.id == topicId,
+      );
 
+      expect(
+        sourceIds,
+        containsAll(canonicalEntry.sourceIds),
+        reason: '$topicId must retain its canonical research citations',
+      );
       expect(
         families.length,
         greaterThanOrEqualTo(2),
@@ -31,6 +39,7 @@ void main() {
       () => IndependentHistoryResearchRegistry.validated(
         baseSources: preIslamWorldResearchSources,
         supplementalSources: preIslamWorldSupplementalSources,
+        baseEntries: preIslamWorldResearchEntries,
         sourceFamilies: preIslamWorldIndependentSourceFamilies,
         topicSourceIds: {
           ...preIslamWorldTopicResearchSources,
@@ -49,6 +58,7 @@ void main() {
       () => IndependentHistoryResearchRegistry.validated(
         baseSources: preIslamWorldResearchSources,
         supplementalSources: preIslamWorldSupplementalSources,
+        baseEntries: preIslamWorldResearchEntries,
         sourceFamilies: preIslamWorldIndependentSourceFamilies,
         topicSourceIds: {
           ...preIslamWorldTopicResearchSources,
@@ -68,8 +78,63 @@ void main() {
       () => IndependentHistoryResearchRegistry.validated(
         baseSources: preIslamWorldResearchSources,
         supplementalSources: preIslamWorldSupplementalSources,
+        baseEntries: preIslamWorldResearchEntries,
         sourceFamilies: preIslamWorldIndependentSourceFamilies,
         topicSourceIds: incomplete,
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('unexpected topic IDs fail closed instead of becoming orphan evidence', () {
+    expect(
+      () => IndependentHistoryResearchRegistry.validated(
+        baseSources: preIslamWorldResearchSources,
+        supplementalSources: preIslamWorldSupplementalSources,
+        baseEntries: preIslamWorldResearchEntries,
+        sourceFamilies: preIslamWorldIndependentSourceFamilies,
+        topicSourceIds: {
+          ...preIslamWorldTopicResearchSources,
+          'mecca_typo': const [
+            'cambridge_history_islam_pre_islamic_arabia',
+            'hoyland_2001_arabia_arabs',
+          ],
+        },
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('two replacement works cannot silently drop a canonical citation', () {
+    expect(
+      () => IndependentHistoryResearchRegistry.validated(
+        baseSources: preIslamWorldResearchSources,
+        supplementalSources: preIslamWorldSupplementalSources,
+        baseEntries: preIslamWorldResearchEntries,
+        sourceFamilies: preIslamWorldIndependentSourceFamilies,
+        topicSourceIds: {
+          ...preIslamWorldTopicResearchSources,
+          'late_antiquity': const [
+            'fisher_2015_arabs_empires',
+            'hoyland_2001_arabia_arabs',
+          ],
+        },
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('orphan source-family metadata fails closed', () {
+    expect(
+      () => IndependentHistoryResearchRegistry.validated(
+        baseSources: preIslamWorldResearchSources,
+        supplementalSources: preIslamWorldSupplementalSources,
+        baseEntries: preIslamWorldResearchEntries,
+        sourceFamilies: {
+          ...preIslamWorldIndependentSourceFamilies,
+          'not-a-real-source': 'orphan-family',
+        },
+        topicSourceIds: preIslamWorldTopicResearchSources,
       ),
       throwsStateError,
     );
