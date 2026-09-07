@@ -177,16 +177,24 @@ const preIslamWorldTopicResearchSources = <String, List<String>>{
     'hallaq_pre_islamic_near_east',
     'hoyland_2001_arabia_arabs',
   ],
-  'tribal_society': ['grasso_2023_ch1', 'hoyland_2001_arabia_arabs'],
+  'tribal_society': [
+    'grasso_2023_ch1',
+    'cambridge_history_islam_pre_islamic_arabia',
+    'hoyland_2001_arabia_arabs',
+  ],
   'jewish_communities': [
     'grasso_2023_ch3',
+    'cambridge_history_islam_pre_islamic_arabia',
     'robin_harris_2021_judaism_arabia',
   ],
   'christian_communities': [
     'grasso_2023_ch4',
+    'cambridge_history_islam_pre_islamic_arabia',
     'fisher_2015_arabs_empires',
   ],
   'arabian_polytheism': [
+    'grasso_2023_ch1',
+    'grasso_2023_ch3',
     'hawting_idolatry',
     'hoyland_2001_arabia_arabs',
   ],
