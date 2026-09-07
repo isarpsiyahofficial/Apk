@@ -174,6 +174,7 @@ const preIslamWorldTopicResearchSources = <String, List<String>>{
   ],
   'yathrib_medina': [
     'cambridge_history_islam_pre_islamic_arabia',
+    'hallaq_pre_islamic_near_east',
     'hoyland_2001_arabia_arabs',
   ],
   'tribal_society': ['grasso_2023_ch1', 'hoyland_2001_arabia_arabs'],
