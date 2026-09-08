@@ -13,17 +13,20 @@ class RuntimeReligiousShareContentT0243 {
     required this.requiresGeneralDuaLabel,
   });
 
-  factory RuntimeReligiousShareContentT0243.fromCanonicalQuranAyah(
-    QuranAyah ayah,
-  ) {
-    if (ayah.arabic.trim().isEmpty) {
+  factory RuntimeReligiousShareContentT0243.fromCanonicalQuranDataset({
+    required CanonicalQuranDataset dataset,
+    required int sura,
+    required int ayah,
+  }) {
+    final canonicalAyah = dataset.ayah(sura, ayah);
+    if (canonicalAyah.arabic.trim().isEmpty) {
       throw StateError('T0243 cannot render an empty canonical Quran ayah.');
     }
     return RuntimeReligiousShareContentT0243._(
-      contentId: 'quran:${ayah.key}',
+      contentId: 'quran:${canonicalAyah.key}',
       type: ContentType.quranVerse,
-      text: ayah.arabic,
-      sourceLabel: 'Quran ${ayah.sura}:${ayah.ayah}',
+      text: canonicalAyah.arabic,
+      sourceLabel: 'Quran ${canonicalAyah.sura}:${canonicalAyah.ayah}',
       sourceClass: ReligiousSourceClass.quran,
       requiresGeneralDuaLabel: false,
     );
