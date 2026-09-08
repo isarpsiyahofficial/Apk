@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:islami_hayat/features/share/domain/share_canvas_layout_t0242.dart';
+import 'package:islami_hayat/features/share/domain/share_readability_t0247.dart';
 
 class ShareRasterExportResultT0242 {
   const ShareRasterExportResultT0242({
@@ -25,7 +26,14 @@ class ShareRasterExporterT0242 {
   Future<ShareRasterExportResultT0242> exportPng({
     required GlobalKey repaintBoundaryKey,
     required ShareCanvasFormatT0242 format,
+    required ShareReadabilityDecisionT0247 readabilityDecision,
   }) async {
+    // T0247 is an export gate, not only a preview hint. Every production raster
+    // export must carry the exact readability decision that was used by the
+    // renderer, and an unreadable candidate must fail before any PNG bytes are
+    // produced.
+    readabilityDecision.requireExportable();
+
     final layout = ShareCanvasLayoutT0242.forFormat(format)..validate();
     final context = repaintBoundaryKey.currentContext;
     if (context == null) {
