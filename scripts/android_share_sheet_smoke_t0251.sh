@@ -14,6 +14,25 @@ dump_chooser() {
   adb pull /sdcard/t0251-chooser.xml /tmp/t0251-chooser.xml >/dev/null 2>&1 || true
 }
 
+wait_for_prefs() {
+  EXPECTED_STATUS="$1"
+  EXPECTED_DESTINATION="$2"
+  ATTEMPT=1
+  while [ "$ATTEMPT" -le 6 ]; do
+    PREFS_TEXT="$(read_prefs)"
+    if printf '%s\n' "$PREFS_TEXT" | grep -Fq ">$EXPECTED_STATUS<" && \
+       printf '%s\n' "$PREFS_TEXT" | grep -Fq ">$EXPECTED_DESTINATION<"; then
+      printf '%s\n' "$PREFS_TEXT"
+      return 0
+    fi
+    sleep 1
+    ATTEMPT=$((ATTEMPT + 1))
+  done
+  echo "T0251 expected status=$EXPECTED_STATUS destination=$EXPECTED_DESTINATION not observed" >&2
+  printf '%s\n' "$PREFS_TEXT" >&2
+  return 1
+}
+
 # General share must open Android's real chooser and expose only a content:// URI.
 adb shell am force-stop "$PACKAGE"
 adb shell am start -n "$SMOKE_ACTIVITY" --es destination general --es format square11 >/tmp/t0251-general-start.txt
@@ -75,21 +94,18 @@ printf '%s\n' "$PREFS_TEXT" | grep -F '>content<'
 echo 'T0251 general Android chooser + content URI read grant PASS'
 
 # Hosted CI does not ship Instagram or WhatsApp. Their absence must fail closed;
-# never silently route a targeted request into the general chooser.
+# never silently route a targeted request into the general chooser. Activity
+# startup can be delayed for a few seconds on a just-booted hosted emulator, so
+# poll the exact persisted status instead of weakening the assertion.
 for CASE in 'instagramStory instagramStory916' 'whatsapp whatsappStatus916'; do
   set -- $CASE
   adb shell am force-stop "$PACKAGE"
   adb shell am start -n "$SMOKE_ACTIVITY" --es destination "$1" --es format "$2" >/dev/null
-  sleep 1
-  PREFS_TEXT="$(read_prefs)"
-  printf '%s\n' "$PREFS_TEXT" | grep -F '>package_unavailable<'
-  printf '%s\n' "$PREFS_TEXT" | grep -F ">$1<"
+  wait_for_prefs package_unavailable "$1" >/dev/null
 done
 
 # Wrong target/format combinations are rejected before an Android intent starts.
 adb shell am force-stop "$PACKAGE"
 adb shell am start -n "$SMOKE_ACTIVITY" --es destination instagramStory --es format square11 >/dev/null
-sleep 1
-PREFS_TEXT="$(read_prefs)"
-printf '%s\n' "$PREFS_TEXT" | grep -F '>invalid_request<'
+wait_for_prefs invalid_request instagramStory >/dev/null
 echo 'T0251 targeted-app unavailable + invalid-format failure paths PASS'
