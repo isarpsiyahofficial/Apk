@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/features/share/domain/share_canvas_layout_t0242.dart';
 import 'package:islami_hayat/features/share/presentation/share_layout_renderer_t0242.dart';
+import 'package:islami_hayat/features/share/presentation/share_raster_exporter_t0242.dart';
 
 void main() {
   test('T0242 pins canonical export dimensions for all required formats', () {
@@ -89,6 +90,105 @@ void main() {
     final padding = tester.widget<Padding>(find.byType(Padding));
     expect(padding.padding, isA<EdgeInsetsDirectional>());
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('device-side exporter emits exact PNG pixels for all formats', (
+    tester,
+  ) async {
+    const exporter = ShareRasterExporterT0242();
+
+    for (final format in ShareCanvasFormatT0242.values) {
+      final boundaryKey = GlobalKey();
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Center(
+            child: SizedBox(
+              width: 270,
+              child: ShareLayoutRendererT0242(
+                format: format,
+                repaintBoundaryKey: boundaryKey,
+                background: const ColoredBox(color: Color(0xFFF7F2E8)),
+                content: const Center(child: Text('Verified runtime text')),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final expected = ShareCanvasLayoutT0242.forFormat(format);
+      final result = await exporter.exportPng(
+        repaintBoundaryKey: boundaryKey,
+        format: format,
+      );
+
+      expect(result.format, format);
+      expect(result.pixelWidth, expected.pixelWidth);
+      expect(result.pixelHeight, expected.pixelHeight);
+      expect(result.pngBytes.length, greaterThan(8));
+      expect(
+        result.pngBytes.take(8).toList(),
+        <int>[137, 80, 78, 71, 13, 10, 26, 10],
+      );
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets('exporter fails closed when boundary is not mounted', (
+    tester,
+  ) async {
+    const exporter = ShareRasterExporterT0242();
+    final boundaryKey = GlobalKey();
+
+    await tester.pumpWidget(const SizedBox());
+
+    await expectLater(
+      exporter.exportPng(
+        repaintBoundaryKey: boundaryKey,
+        format: ShareCanvasFormatT0242.instagramStory916,
+      ),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          contains('not mounted'),
+        ),
+      ),
+    );
+  });
+
+  testWidgets('exporter rejects a boundary with the wrong aspect ratio', (
+    tester,
+  ) async {
+    const exporter = ShareRasterExporterT0242();
+    final boundaryKey = GlobalKey();
+
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: RepaintBoundary(
+            key: boundaryKey,
+            child: const SizedBox(width: 200, height: 200),
+          ),
+        ),
+      ),
+    );
+
+    await expectLater(
+      exporter.exportPng(
+        repaintBoundaryKey: boundaryKey,
+        format: ShareCanvasFormatT0242.instagramStory916,
+      ),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          contains('aspect ratio'),
+        ),
+      ),
+    );
   });
 
   test('all production layout profiles pass the fail-closed validator', () {
