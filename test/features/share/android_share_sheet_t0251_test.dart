@@ -16,9 +16,9 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
   });
 
-  tearDown(() async {
+  tearDown(() {
     debugDefaultTargetPlatformOverride = null;
-    await messenger.setMockMethodCallHandler(channel, null);
+    messenger.setMockMethodCallHandler(channel, null);
   });
 
   group('T0251 Android share request policy', () {
@@ -90,7 +90,7 @@ void main() {
 
     test('native launched status is propagated with exact target arguments', () async {
       MethodCall? captured;
-      await messenger.setMockMethodCallHandler(channel, (call) async {
+      messenger.setMockMethodCallHandler(channel, (call) async {
         captured = call;
         return 'launched';
       });
@@ -112,7 +112,7 @@ void main() {
     });
 
     test('missing target package does not silently fall back to general share', () async {
-      await messenger.setMockMethodCallHandler(channel, (call) async {
+      messenger.setMockMethodCallHandler(channel, (call) async {
         return 'package_unavailable';
       });
 
@@ -128,7 +128,7 @@ void main() {
     });
 
     test('unknown native result fails closed', () async {
-      await messenger.setMockMethodCallHandler(channel, (call) async => 'maybe');
+      messenger.setMockMethodCallHandler(channel, (call) async => 'maybe');
 
       expect(
         () => AndroidShareSheetBridgeT0251(channel: channel).sharePng(
