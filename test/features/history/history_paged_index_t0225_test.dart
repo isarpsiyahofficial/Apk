@@ -1,6 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/features/history/data/history_t0220_inventory.dart';
+import 'package:islami_hayat/features/history/domain/history_event_contract.dart';
 import 'package:islami_hayat/features/history/domain/history_paged_index_t0225.dart';
+
+int _compareChronologically(HistoryEventRecord a, HistoryEventRecord b) {
+  final aYear = a.startYearCe;
+  final bYear = b.startYearCe;
+  if (aYear == null && bYear != null) return 1;
+  if (aYear != null && bYear == null) return -1;
+  if (aYear != null && bYear != null) {
+    final startCompare = aYear.compareTo(bYear);
+    if (startCompare != 0) return startCompare;
+    final endCompare = a.endYearCe!.compareTo(b.endYearCe!);
+    if (endCompare != 0) return endCompare;
+  }
+  return a.id.compareTo(b.id);
+}
 
 void main() {
   group('HistoryPagedIndexT0225', () {
@@ -24,6 +39,66 @@ void main() {
 
       index.loadPage(cursor: firstPage.nextCursor!, pageSize: 5);
       expect(loaderCalls, 1);
+    });
+
+    test('paged source reads only requested slice before an index lookup', () {
+      final ordered = List<HistoryEventRecord>.of(historyT0220Inventory.events)
+        ..sort(_compareChronologically);
+      final pageRequests = <String>[];
+      var fullLoaderCalls = 0;
+      final index = HistoryPagedIndexT0225(
+        totalCount: ordered.length,
+        pageLoader: (cursor, limit) {
+          pageRequests.add('$cursor:$limit');
+          return ordered.sublist(cursor, cursor + limit);
+        },
+        loader: () {
+          fullLoaderCalls += 1;
+          return ordered;
+        },
+      );
+
+      expect(index.isLoaded, isFalse);
+      expect(index.isIndexLoaded, isFalse);
+
+      final first = index.loadPage(pageSize: 3);
+      expect(first.items, hasLength(3));
+      expect(pageRequests, ['0:3']);
+      expect(fullLoaderCalls, 0);
+      expect(index.isLoaded, isTrue);
+      expect(index.isIndexLoaded, isFalse);
+
+      index.loadPage(cursor: first.nextCursor!, pageSize: 2);
+      expect(pageRequests, ['0:3', '3:2']);
+      expect(fullLoaderCalls, 0);
+
+      expect(index.eventById(first.items.first.id), isNotNull);
+      expect(fullLoaderCalls, 1);
+      expect(index.isIndexLoaded, isTrue);
+    });
+
+    test('paged source fails closed on short, oversized or unsorted pages', () {
+      final ordered = List<HistoryEventRecord>.of(historyT0220Inventory.events)
+        ..sort(_compareChronologically);
+
+      final short = HistoryPagedIndexT0225(
+        totalCount: ordered.length,
+        pageLoader: (cursor, limit) => ordered.sublist(cursor, cursor + limit - 1),
+      );
+      expect(() => short.loadPage(pageSize: 3), throwsStateError);
+
+      final oversized = HistoryPagedIndexT0225(
+        totalCount: ordered.length,
+        pageLoader: (cursor, limit) => ordered.sublist(cursor, cursor + limit + 1),
+      );
+      expect(() => oversized.loadPage(pageSize: 3), throwsStateError);
+
+      final unsorted = HistoryPagedIndexT0225(
+        totalCount: ordered.length,
+        pageLoader: (cursor, limit) =>
+            ordered.sublist(cursor, cursor + limit).reversed.toList(growable: false),
+      );
+      expect(() => unsorted.loadPage(pageSize: 3), throwsStateError);
     });
 
     test('pages are deterministic, bounded and do not overlap', () {
@@ -71,9 +146,7 @@ void main() {
       );
       expect(geographyEvents, isNotEmpty);
       expect(
-        geographyEvents.every(
-          (event) => event.geographies.any((geo) => geo.id == geographyId),
-        ),
+        geographyEvents.every((event) => event.geographies.any((geo) => geo.id == geographyId)),
         isTrue,
       );
       expect(index.eventById(seed.id)?.id, seed.id);
