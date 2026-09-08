@@ -13,8 +13,10 @@ void main() {
 
   setUpAll(() async {
     final dataset = await CanonicalQuranAssetLoader().load();
-    longestAyah = RuntimeReligiousShareContentT0243.fromCanonicalQuranAyah(
-      dataset.ayah(2, 282),
+    longestAyah = RuntimeReligiousShareContentT0243.fromCanonicalQuranDataset(
+      dataset: dataset,
+      sura: 2,
+      ayah: 282,
     );
   });
 
