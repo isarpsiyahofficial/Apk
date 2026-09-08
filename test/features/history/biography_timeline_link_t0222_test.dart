@@ -34,8 +34,10 @@ void main() {
       );
 
       expect(expected, isNotEmpty);
-      expect(actual.map((event) => event.id).toList(),
-          expected.map((event) => event.id).toList());
+      expect(
+        actual.map((event) => event.id).toList(),
+        expected.map((event) => event.id).toList(),
+      );
       expect(
         actual.every(
           (event) => event.people.any(
@@ -134,6 +136,112 @@ void main() {
           ],
           events: historyT0220Inventory.events,
         ),
+        throwsStateError,
+      );
+    });
+  });
+
+  group('T0222 canonical production gate failure paths', () {
+    test('accepts the current canonical production bridge', () {
+      expect(
+        () => T0222CanonicalBiographyTimelineGate.validate(
+          historyBiographyTimelineT0222,
+        ),
+        returnsNormally,
+      );
+    });
+
+    test('rejects a silently dropped canonical biography page', () {
+      expect(
+        () => HistoryBiographyTimelineIndexT0222.fromCanonicalProphetBiographies(
+          biographies: canonicalProphetBiographyDrafts.take(24).toList(),
+          events: historyT0220Inventory.events,
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('rejects a canonical biography remapped to another person ID', () {
+      final alteredEntries = historyBiographyTimelineT0222.entries
+          .map(
+            (entry) => entry.biographyId == 'prophet:muhammad'
+                ? const HistoryBiographyTimelineEntryT0222(
+                    biographyId: 'prophet:muhammad',
+                    personId: 'prophet:ibrahim',
+                    relatedEventIds: [],
+                  )
+                : HistoryBiographyTimelineEntryT0222(
+                    biographyId: entry.biographyId,
+                    personId: entry.personId,
+                    relatedEventIds: entry.relatedEventIds,
+                  ),
+          )
+          .toList(growable: false);
+      final genericIndex = HistoryBiographyTimelineIndexT0222.validated(
+        entries: alteredEntries,
+        events: historyT0220Inventory.events,
+      );
+
+      expect(
+        () => T0222CanonicalBiographyTimelineGate.validate(genericIndex),
+        throwsStateError,
+      );
+    });
+
+    test('rejects a silently dropped canonical biography-event relation', () {
+      final muhammad = historyBiographyTimelineT0222.requireBiography(
+        'prophet:muhammad',
+      );
+      expect(muhammad.relatedEventIds.length, greaterThan(1));
+
+      final alteredEntries = historyBiographyTimelineT0222.entries
+          .map(
+            (entry) => entry.biographyId == 'prophet:muhammad'
+                ? HistoryBiographyTimelineEntryT0222(
+                    biographyId: entry.biographyId,
+                    personId: entry.personId,
+                    relatedEventIds: entry.relatedEventIds.skip(1).toList(),
+                  )
+                : HistoryBiographyTimelineEntryT0222(
+                    biographyId: entry.biographyId,
+                    personId: entry.personId,
+                    relatedEventIds: entry.relatedEventIds,
+                  ),
+          )
+          .toList(growable: false);
+      final genericIndex = HistoryBiographyTimelineIndexT0222.validated(
+        entries: alteredEntries,
+        events: historyT0220Inventory.events,
+      );
+
+      expect(
+        () => T0222CanonicalBiographyTimelineGate.validate(genericIndex),
+        throwsStateError,
+      );
+    });
+
+    test('rejects an extra unreviewed biography even when it has no event link', () {
+      final alteredEntries = [
+        ...historyBiographyTimelineT0222.entries.map(
+          (entry) => HistoryBiographyTimelineEntryT0222(
+            biographyId: entry.biographyId,
+            personId: entry.personId,
+            relatedEventIds: entry.relatedEventIds,
+          ),
+        ),
+        const HistoryBiographyTimelineEntryT0222(
+          biographyId: 'prophet:unreviewed',
+          personId: 'prophet:unreviewed',
+          relatedEventIds: [],
+        ),
+      ];
+      final genericIndex = HistoryBiographyTimelineIndexT0222.validated(
+        entries: alteredEntries,
+        events: historyT0220Inventory.events,
+      );
+
+      expect(
+        () => T0222CanonicalBiographyTimelineGate.validate(genericIndex),
         throwsStateError,
       );
     });
