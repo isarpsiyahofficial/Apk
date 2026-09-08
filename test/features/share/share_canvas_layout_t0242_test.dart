@@ -118,17 +118,25 @@ void main() {
       await tester.pump();
 
       final expected = ShareCanvasLayoutT0242.forFormat(format);
-      final result = await exporter.exportPng(
-        repaintBoundaryKey: boundaryKey,
-        format: format,
+      // RenderRepaintBoundary.toImage / ui.Image.toByteData complete on the real
+      // engine event loop. Running this native raster work outside FakeAsync
+      // prevents a false 10-minute widget-test timeout while preserving the
+      // full 1080px production export and PNG encoder path.
+      final result = await tester.runAsync(
+        () => exporter.exportPng(
+          repaintBoundaryKey: boundaryKey,
+          format: format,
+        ),
       );
+      expect(result, isNotNull);
+      final raster = result!;
 
-      expect(result.format, format);
-      expect(result.pixelWidth, expected.pixelWidth);
-      expect(result.pixelHeight, expected.pixelHeight);
-      expect(result.pngBytes.length, greaterThan(8));
+      expect(raster.format, format);
+      expect(raster.pixelWidth, expected.pixelWidth);
+      expect(raster.pixelHeight, expected.pixelHeight);
+      expect(raster.pngBytes.length, greaterThan(8));
       expect(
-        result.pngBytes.take(8).toList(),
+        raster.pngBytes.take(8).toList(),
         <int>[137, 80, 78, 71, 13, 10, 26, 10],
       );
       expect(tester.takeException(), isNull);
