@@ -11,8 +11,25 @@ class ShareTextCustomizationControlsT0246 extends StatelessWidget {
   final ShareTextPreferencesT0246 preferences;
   final ValueChanged<ShareTextPreferencesT0246> onChanged;
 
+  IconData _alignmentIcon(
+    ShareTextAlignmentT0246 alignment,
+    TextDirection textDirection,
+  ) {
+    return switch (alignment) {
+      ShareTextAlignmentT0246.start => textDirection == TextDirection.rtl
+          ? Icons.format_align_right
+          : Icons.format_align_left,
+      ShareTextAlignmentT0246.center => Icons.format_align_center,
+      ShareTextAlignmentT0246.end => textDirection == TextDirection.rtl
+          ? Icons.format_align_left
+          : Icons.format_align_right,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
+    final textDirection = Directionality.of(context);
+
     return Wrap(
       key: const ValueKey('t0246-share-text-controls'),
       spacing: 8,
@@ -38,11 +55,7 @@ class ShareTextCustomizationControlsT0246 extends StatelessWidget {
             onPressed: () {
               onChanged(preferences.copyWith(alignment: alignment));
             },
-            icon: Icon(switch (alignment) {
-              ShareTextAlignmentT0246.start => Icons.format_align_left,
-              ShareTextAlignmentT0246.center => Icons.format_align_center,
-              ShareTextAlignmentT0246.end => Icons.format_align_right,
-            }),
+            icon: Icon(_alignmentIcon(alignment, textDirection)),
           ),
       ],
     );
