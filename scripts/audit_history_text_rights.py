@@ -40,12 +40,12 @@ FORBIDDEN_LOCALIZED_MARKERS = (
 
 # History user-facing locale fields may use either Dart single- or double-
 # quoted string literals. Keep the opening quote as a backreference so a
-# harmless style change cannot bypass the rights audit. Escaped characters are
-# consumed as part of the same literal; multiline/triple-quoted prose is not a
-# supported history data format and is guarded below as an unparsed locale
-# assignment instead of silently passing.
+# harmless style change cannot bypass the rights audit. Triple-quoted strings
+# are deliberately not accepted by this compact scanner: if one is introduced,
+# LOCALIZED_ASSIGNMENT_RE below reports it as an unparsed locale assignment and
+# CI fails instead of silently skipping potentially user-facing prose.
 LOCALIZED_FIELD_RE = re.compile(
-    r"\b(?P<locale>tr|en|ar)\s*:\s*(?P<quote>['\"])(?P<text>(?:\\.|(?!(?P=quote))[\s\S])*)(?P=quote)",
+    r"\b(?P<locale>tr|en|ar)\s*:\s*(?P<quote>['\"])(?!(?P=quote))(?P<text>(?:\\.|(?!(?P=quote))[\s\S])*)(?P=quote)",
     re.MULTILINE,
 )
 LOCALIZED_ASSIGNMENT_RE = re.compile(r"\b(?P<locale>tr|en|ar)\s*:", re.MULTILINE)
