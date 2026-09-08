@@ -78,22 +78,39 @@ final class SharePngRequestT0251 {
       };
 }
 
-final class AndroidShareSheetBridgeT0251 {
-  AndroidShareSheetBridgeT0251({MethodChannel? channel})
+abstract interface class AndroidShareNativeGatewayT0251 {
+  Future<String?> sharePng(Map<String, Object> arguments);
+}
+
+final class MethodChannelAndroidShareNativeGatewayT0251
+    implements AndroidShareNativeGatewayT0251 {
+  MethodChannelAndroidShareNativeGatewayT0251({MethodChannel? channel})
       : _channel = channel ?? const MethodChannel('islami_hayat/share_t0251');
 
   final MethodChannel _channel;
 
+  @override
+  Future<String?> sharePng(Map<String, Object> arguments) =>
+      _channel.invokeMethod<String>('sharePng', arguments);
+}
+
+final class AndroidShareSheetBridgeT0251 {
+  AndroidShareSheetBridgeT0251({
+    AndroidShareNativeGatewayT0251? gateway,
+    TargetPlatform? platform,
+  })  : _gateway = gateway ?? MethodChannelAndroidShareNativeGatewayT0251(),
+        _platform = platform ?? defaultTargetPlatform;
+
+  final AndroidShareNativeGatewayT0251 _gateway;
+  final TargetPlatform _platform;
+
   Future<ShareLaunchStatusT0251> sharePng(SharePngRequestT0251 request) async {
     request.validate();
-    if (defaultTargetPlatform != TargetPlatform.android) {
+    if (_platform != TargetPlatform.android) {
       throw UnsupportedError('T0251 Android share sheet is Android-only.');
     }
 
-    final result = await _channel.invokeMethod<String>(
-      'sharePng',
-      request.toChannelArguments(),
-    );
+    final result = await _gateway.sharePng(request.toChannelArguments());
     return switch (result) {
       'launched' => ShareLaunchStatusT0251.launched,
       'package_unavailable' => ShareLaunchStatusT0251.packageUnavailable,
