@@ -55,7 +55,11 @@ ReligiousContentRecord _sunnahDua() => ReligiousContentRecord(
   lastReviewedAt: DateTime.utc(2026, 9, 1),
 );
 
-Widget _app({required Locale locale, required RuntimeReligiousShareContentT0243 content}) {
+Widget _app({
+  required Locale locale,
+  required RuntimeReligiousShareContentT0243 content,
+  required ShareCanvasFormatT0242 format,
+}) {
   return MaterialApp(
     locale: locale,
     supportedLocales: AppLocalizations.supportedLocales,
@@ -69,7 +73,7 @@ Widget _app({required Locale locale, required RuntimeReligiousShareContentT0243 
       body: SizedBox(
         width: 360,
         child: RuntimeReligiousShareCardT0243(
-          format: ShareCanvasFormatT0242.instagramStory916,
+          format: format,
           background: const SizedBox.expand(),
           content: content,
         ),
@@ -77,6 +81,13 @@ Widget _app({required Locale locale, required RuntimeReligiousShareContentT0243 
     ),
   );
 }
+
+ShareContentLocaleT0243 _contentLocale(Locale locale) =>
+    switch (locale.languageCode) {
+      'en' => ShareContentLocaleT0243.en,
+      'ar' => ShareContentLocaleT0243.ar,
+      _ => ShareContentLocaleT0243.tr,
+    };
 
 void main() {
   test('T0245 derives General Dua requirement from governed editorial metadata', () {
@@ -132,51 +143,65 @@ void main() {
     );
   });
 
-  for (final fixture in <(Locale, String)>[
-    (const Locale('tr'), 'Genel Dua'),
-    (const Locale('en'), 'General Dua'),
-    (const Locale('ar'), 'دعاء عام'),
-  ]) {
-    testWidgets('T0245 renders mandatory localized label for ${fixture.$1.languageCode}', (
-      tester,
-    ) async {
-      final locale = fixture.$1;
-      final content = RuntimeReligiousShareContentT0243.fromPublishedRecord(
-        record: _editorialDua().toGovernedRecord(),
-        locale: switch (locale.languageCode) {
-          'en' => ShareContentLocaleT0243.en,
-          'ar' => ShareContentLocaleT0243.ar,
-          _ => ShareContentLocaleT0243.tr,
+  const localeFixtures = <(Locale, String)>[
+    (Locale('tr'), 'Genel Dua'),
+    (Locale('en'), 'General Dua'),
+    (Locale('ar'), 'دعاء عام'),
+  ];
+  const formats = ShareCanvasFormatT0242.values;
+
+  for (final fixture in localeFixtures) {
+    for (final format in formats) {
+      testWidgets(
+        'T0245 preserves mandatory ${fixture.$1.languageCode} General Dua label in ${format.name}',
+        (tester) async {
+          final locale = fixture.$1;
+          final content = RuntimeReligiousShareContentT0243.fromPublishedRecord(
+            record: _editorialDua().toGovernedRecord(),
+            locale: _contentLocale(locale),
+          );
+
+          await tester.pumpWidget(
+            _app(locale: locale, content: content, format: format),
+          );
+          await tester.pumpAndSettle();
+
+          expect(
+            find.byKey(const ValueKey('general-dua-label-t0245')),
+            findsOneWidget,
+          );
+          expect(find.text(fixture.$2), findsOneWidget);
+          expect(tester.takeException(), isNull);
         },
       );
-
-      await tester.pumpWidget(_app(locale: locale, content: content));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.byKey(const ValueKey('general-dua-label-t0245')),
-        findsOneWidget,
-      );
-      expect(find.text(fixture.$2), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
+    }
   }
 
-  testWidgets('T0245 label cannot be hidden on an editorial share card', (tester) async {
-    final content = RuntimeReligiousShareContentT0243.fromPublishedRecord(
-      record: _editorialDua().toGovernedRecord(),
-      locale: ShareContentLocaleT0243.en,
-    );
+  for (final format in formats) {
+    testWidgets(
+      'T0245 sourced Sunnah dua never receives General Dua label in ${format.name}',
+      (tester) async {
+        final content = RuntimeReligiousShareContentT0243.fromPublishedRecord(
+          record: _sunnahDua(),
+          locale: ShareContentLocaleT0243.en,
+        );
 
-    await tester.pumpWidget(
-      _app(locale: const Locale('en'), content: content),
-    );
-    await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _app(
+            locale: const Locale('en'),
+            content: content,
+            format: format,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-    final card = tester.widget<RuntimeReligiousShareCardT0243>(
-      find.byType(RuntimeReligiousShareCardT0243),
+        expect(
+          find.byKey(const ValueKey('general-dua-label-t0245')),
+          findsNothing,
+        );
+        expect(find.text('General Dua'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
     );
-    expect(card.content.requiresGeneralDuaLabel, isTrue);
-    expect(find.text('General Dua'), findsOneWidget);
-  });
+  }
 }
