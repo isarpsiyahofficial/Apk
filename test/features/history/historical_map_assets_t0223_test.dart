@@ -14,6 +14,13 @@ const _license = HistoricalMapLicense(
   redistributionAllowed: true,
   aiGenerated: false,
 );
+const _canonicalLicense = HistoricalMapLicense(
+  licenseId: 'PROJECT-ORIGINAL-T0223',
+  rightsStatement: 'Original schematic vector authored for this repository; no third-party map geometry or raster artwork embedded.',
+  evidencePath: 'docs/HISTORY_T0223_MAP_POLICY.md',
+  redistributionAllowed: true,
+  aiGenerated: false,
+);
 
 void main() {
   final knownGeographies = historyT0220Inventory.events
@@ -168,6 +175,87 @@ void main() {
         asset('a', 'assets/history/maps/same.svg'),
         asset('b', 'assets/history/maps/same.svg'),
       ]),
+      throwsStateError,
+    );
+  });
+
+  test('T0223 canonical gate accepts the governed production catalog', () {
+    expect(
+      () => T0223CanonicalMapGate.validate(historicalMapCatalogT0223),
+      returnsNormally,
+    );
+  });
+
+  test('T0223 canonical gate rejects a missing governed map', () {
+    final missingOne = HistoricalMapCatalog.validated([
+      historicalMapCatalogT0223.assets.first,
+    ]);
+    expect(() => T0223CanonicalMapGate.validate(missingOne), throwsStateError);
+  });
+
+  test('T0223 canonical gate rejects an extra unreviewed map', () {
+    final extra = HistoricalMapAsset.validated(
+      id: 'history-map:unreviewed-extra',
+      assetPath: 'assets/history/maps/unreviewed-extra.svg',
+      title: _label,
+      representation: HistoricalMapRepresentation.schematic,
+      precisionNotice: _label,
+      targetGeographyIds: [knownGeographies.first],
+      knownGeographyIds: knownGeographies,
+      sourceIds: [knownSource],
+      knownSourceIds: knownSources,
+      license: _license,
+    );
+    final withExtra = HistoricalMapCatalog.validated([
+      ...historicalMapCatalogT0223.assets,
+      extra,
+    ]);
+    expect(() => T0223CanonicalMapGate.validate(withExtra), throwsStateError);
+  });
+
+  test('T0223 canonical gate rejects path or representation drift', () {
+    final canonicalHijaz = historicalMapCatalogT0223.assets.firstWhere(
+      (asset) => asset.id == 'history-map:hijaz-seerah-schematic',
+    );
+    final canonicalAbyssinia = historicalMapCatalogT0223.assets.firstWhere(
+      (asset) => asset.id == 'history-map:abyssinia-context-schematic',
+    );
+
+    HistoricalMapAsset drifted({
+      required String path,
+      required HistoricalMapRepresentation representation,
+    }) =>
+        HistoricalMapAsset.validated(
+          id: canonicalHijaz.id,
+          assetPath: path,
+          title: canonicalHijaz.title,
+          representation: representation,
+          precisionNotice: canonicalHijaz.precisionNotice,
+          targetGeographyIds: canonicalHijaz.targetGeographyIds,
+          knownGeographyIds: knownGeographies,
+          sourceIds: canonicalHijaz.sourceIds,
+          knownSourceIds: knownSources,
+          license: _canonicalLicense,
+        );
+
+    final wrongPath = HistoricalMapCatalog.validated([
+      drifted(
+        path: 'assets/history/maps/hijaz-renamed.svg',
+        representation: HistoricalMapRepresentation.schematic,
+      ),
+      canonicalAbyssinia,
+    ]);
+    expect(() => T0223CanonicalMapGate.validate(wrongPath), throwsStateError);
+
+    final wrongRepresentation = HistoricalMapCatalog.validated([
+      drifted(
+        path: canonicalHijaz.assetPath,
+        representation: HistoricalMapRepresentation.approximateRegion,
+      ),
+      canonicalAbyssinia,
+    ]);
+    expect(
+      () => T0223CanonicalMapGate.validate(wrongRepresentation),
       throwsStateError,
     );
   });
