@@ -101,6 +101,51 @@ void main() {
   );
 
   testWidgets(
+    'T0249 Quran text stays RTL when the surrounding app locale is LTR',
+    (tester) async {
+      const paginator = QuranLongTextPaginatorT0248();
+
+      for (final format in ShareCanvasFormatT0242.values) {
+        final page = paginator.paginate(
+          content: arabicLongAyah,
+          format: format,
+          textDirection: TextDirection.rtl,
+        ).first;
+
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(
+                width: 360,
+                child: QuranSharePageCardT0248(
+                  format: format,
+                  background: const SizedBox.expand(),
+                  content: arabicLongAyah,
+                  page: page,
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final textFinder = find.byKey(
+          ValueKey('t0248-quran-page-text-${page.pageIndex}'),
+        );
+        expect(textFinder, findsOneWidget);
+        final paragraph = tester.renderObject<RenderParagraph>(textFinder);
+        expect(
+          paragraph.textDirection,
+          TextDirection.rtl,
+          reason: '${format.name} Quran Arabic must not inherit LTR app direction',
+        );
+        expect(tester.takeException(), isNull, reason: format.name);
+      }
+    },
+  );
+
+  testWidgets(
     'T0249 Arabic text and locked source remain inside format safe areas',
     (tester) async {
       const paginator = QuranLongTextPaginatorT0248();
