@@ -29,7 +29,7 @@ Official references checked:
 
 T0224 audits every `*.dart` file under `lib/features/history/data/`, not a hand-maintained subset. That includes the T0211–T0219 research datasets, T0220 event migrations, T0223 map metadata and the aggregate inventory as the directory evolves.
 
-The automated gate extracts localized `tr:`, `en:` and `ar:` user-facing strings and fails on source/copyright artefacts including:
+The automated gate extracts localized `tr:`, `en:` and `ar:` user-facing strings written with ordinary Dart single- or double-quoted literals and fails on source/copyright artefacts including:
 
 - TDV / İslâm Ansiklopedisi site markers,
 - TDV copy-interface or copyright boilerplate,
@@ -37,19 +37,23 @@ The automated gate extracts localized `tr:`, `en:` and `ar:` user-facing strings
 - DOI / ISBN / Cambridge Core locator text inside localized narration,
 - common HTML / quote markup indicating pasted source material.
 
+Parser coverage is also fail-closed. If a history data file introduces a `tr:`, `en:` or `ar:` assignment in syntax the audit does not understand (for example a triple-quoted/multiline locale literal), that assignment is reported as an audit finding instead of being silently skipped. Supporting a new locale-string syntax therefore requires extending the scanner and its failure-path tests first.
+
 Source citations and locators remain allowed in dedicated source metadata; they are not user-facing article prose.
 
 ## Failure-path evidence
 
 `scripts/test_audit_history_text_rights.py` proves the gate fails for:
 
-1. TDV reference text inserted into a localized field,
-2. a source URL inserted into localized narration,
-3. zero parser coverage,
+1. TDV reference text inserted into a single-quoted localized field,
+2. the same TDV marker inserted through a double-quoted localized field,
+3. a source URL inserted into single- or double-quoted localized narration,
+4. an unsupported localized field syntax that would otherwise evade parsing,
+5. zero parser coverage,
 
 and proves that dedicated citation/locator metadata outside localized narration remains allowed. UTF-8 Turkish/Arabic text and escaped Dart apostrophes are also covered so the audit does not corrupt or skip those locales.
 
-`Flutter CI` runs both the failure-path tests and the live branch audit before the full Flutter test suite. A new pasted source artefact therefore leaves the branch red.
+`Flutter CI` runs both the failure-path tests and the live branch audit before the full Flutter test suite. A new pasted source artefact or parser-bypass locale field therefore leaves the branch red.
 
 ## Audit conclusion for the current history data
 
