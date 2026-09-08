@@ -43,6 +43,49 @@ void main() {
       expect(unknown.sourceLabel(SearchLocaleT0232.ar), 'المصدر غير موثّق');
     });
 
+    test('traditional and approximate material cannot look strongly sourced', () {
+      final traditional = SearchSourceBadgeT0233(
+        sourceClass: ReligiousSourceClass.ebcedHavasTradition,
+        certainty: CertaintyLevel.traditional,
+        sourceIds: const ['tradition:abjad:1'],
+      );
+      final approximate = SearchSourceBadgeT0233(
+        sourceClass: ReligiousSourceClass.modernHistoryArchaeology,
+        certainty: CertaintyLevel.approximate,
+        sourceIds: const ['history:archaeology:1'],
+      );
+
+      expect(traditional.isWarning, isTrue);
+      expect(approximate.isWarning, isTrue);
+      expect(
+        traditional.reliabilityLabel(SearchLocaleT0232.tr),
+        'Geleneksel aktarım',
+      );
+      expect(
+        approximate.reliabilityLabel(SearchLocaleT0232.en),
+        'Approximate / contextual',
+      );
+    });
+
+    test('unverified source cannot masquerade as verified certainty', () {
+      expect(
+        () => SearchSourceBadgeT0233(
+          sourceClass: ReligiousSourceClass.unknown,
+          certainty: CertaintyLevel.explicitSource,
+          sourceIds: const ['source:unverified:1'],
+        ),
+        throwsStateError,
+      );
+      expect(
+        () => SearchSourceBadgeT0233(
+          sourceClass: ReligiousSourceClass.unknown,
+          certainty: CertaintyLevel.stronglyAttested,
+          sourceIds: const ['source:unverified:2'],
+        ),
+        throwsStateError,
+      );
+    });
+
     test('rejects missing and duplicate stable source IDs', () {
       expect(
         () => SearchSourceBadgeT0233(
@@ -71,7 +114,9 @@ void main() {
           SourceAwareSearchDocumentT0233(
             category: UniversalSearchCategoryT0231.verse,
             stableId: '2:286',
-            searchableTexts: const ['Allah hiç kimseye gücünün yettiğinden fazlasını yüklemez'],
+            searchableTexts: const [
+              'Allah hiç kimseye gücünün yettiğinden fazlasını yüklemez',
+            ],
             sourceBadge: SearchSourceBadgeT0233(
               sourceClass: ReligiousSourceClass.quran,
               certainty: CertaintyLevel.explicitSource,
@@ -188,6 +233,7 @@ void main() {
       expect(badge.reliabilityLabel(SearchLocaleT0232.tr), 'Geleneksel aktarım');
       expect(badge.sourceClass, ReligiousSourceClass.ebcedHavasTradition);
       expect(badge.certainty, CertaintyLevel.traditional);
+      expect(badge.isWarning, isTrue);
     });
 
     test('source-aware production wrapper keeps all-category gate enabled', () {
