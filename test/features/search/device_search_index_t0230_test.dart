@@ -141,5 +141,27 @@ void main() {
       expect(index.documentById('history:badi'), isNull);
       expect(index.documentById(''), isNull);
     });
+
+    test('loader data is snapshotted and cannot mutate the live index', () {
+      final mutableTexts = <String>['Mekke', 'Medine'];
+      final sourceDocument = SearchDocumentT0230(
+        id: 'history:seerah',
+        searchableTexts: mutableTexts,
+      );
+      final index = DeviceSearchIndexT0230(loader: () => [sourceDocument]);
+
+      expect(index.search('mekke').single.documentId, 'history:seerah');
+
+      mutableTexts
+        ..clear()
+        ..add('Injected after validation');
+
+      expect(index.search('mekke').single.documentId, 'history:seerah');
+      expect(index.search('injected'), isEmpty);
+      expect(
+        () => index.documentById('history:seerah')!.searchableTexts.add('mutate'),
+        throwsUnsupportedError,
+      );
+    });
   });
 }
