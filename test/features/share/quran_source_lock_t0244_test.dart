@@ -7,9 +7,19 @@ import 'package:islami_hayat/features/share/domain/share_canvas_layout_t0242.dar
 import 'package:islami_hayat/features/share/presentation/quran_share_card_t0244.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  late CanonicalQuranDataset dataset;
+
+  setUpAll(() async {
+    dataset = await CanonicalQuranAssetLoader().load();
+  });
+
   RuntimeReligiousShareContentT0243 canonical() {
-    return RuntimeReligiousShareContentT0243.fromCanonicalQuranAyah(
-      const QuranAyah(sura: 2, ayah: 255, arabic: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ'),
+    return RuntimeReligiousShareContentT0243.fromCanonicalQuranDataset(
+      dataset: dataset,
+      sura: 2,
+      ayah: 255,
     );
   }
 
