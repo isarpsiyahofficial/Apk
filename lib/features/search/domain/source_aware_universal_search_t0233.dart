@@ -54,14 +54,21 @@ class SourceAwareCategorizedResultsT0233 {
 /// This layer is intentionally fail-closed: every indexed religious/search
 /// result must carry a badge backed by at least one stable source ID. Search
 /// ranking never changes provenance or certainty.
+///
+/// Production callers keep [requireAllCategories] enabled so the source-aware
+/// wrapper preserves T0231's SPEC 71 eight-category coverage gate. Focused
+/// component tests or deliberately partial administrative indexes must opt out
+/// explicitly instead of weakening the production default.
 class SourceAwareUniversalSearchIndexT0233 {
   SourceAwareUniversalSearchIndexT0233({
     required SourceAwareSearchDocumentLoaderT0233 loader,
     SearchTextNormalizerT0230 normalizer = basicSearchNormalizerT0230,
+    bool requireAllCategories = true,
   }) : _loader = loader {
     _index = UniversalSearchIndexT0231(
       loader: _loadIntoUniversalIndex,
       normalizer: normalizer,
+      requireAllCategories: requireAllCategories,
     );
   }
 
