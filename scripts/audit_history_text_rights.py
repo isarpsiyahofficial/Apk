@@ -38,14 +38,17 @@ FORBIDDEN_LOCALIZED_MARKERS = (
     "©",
 )
 
-# Current history datasets use single-quoted tr/en/ar fields for user-facing
-# LocalizedHistorySummary content. Dart escapes are kept as text; only the two
-# quote/backslash escapes needed for marker scanning are normalized, avoiding
-# accidental re-decoding of UTF-8 Turkish/Arabic characters.
+# History user-facing locale fields may use either Dart single- or double-
+# quoted string literals. Keep the opening quote as a backreference so a
+# harmless style change cannot bypass the rights audit. Escaped characters are
+# consumed as part of the same literal; multiline/triple-quoted prose is not a
+# supported history data format and is guarded below as an unparsed locale
+# assignment instead of silently passing.
 LOCALIZED_FIELD_RE = re.compile(
-    r"\b(?P<locale>tr|en|ar)\s*:\s*'(?P<text>(?:\\.|[^'\\])*)'",
+    r"\b(?P<locale>tr|en|ar)\s*:\s*(?P<quote>['\"])(?P<text>(?:\\.|(?!(?P=quote))[\s\S])*)(?P=quote)",
     re.MULTILINE,
 )
+LOCALIZED_ASSIGNMENT_RE = re.compile(r"\b(?P<locale>tr|en|ar)\s*:", re.MULTILINE)
 SOURCE_ARTEFACT_RE = re.compile(
     r"(?:https?://|<\/?(?:p|div|span|article|blockquote)\b|\[/?(?:quote|url)\])",
     re.IGNORECASE,
@@ -61,7 +64,11 @@ class Finding:
 
 
 def _dart_unescape_for_scan(text: str) -> str:
-    return text.replace("\\'", "'").replace("\\\\", "\\")
+    return (
+        text.replace("\\'", "'")
+        .replace('\\"', '"')
+        .replace("\\\\", "\\")
+    )
 
 
 def _normalize(text: str) -> str:
@@ -80,6 +87,19 @@ def audit_file(path: pathlib.Path) -> tuple[int, list[Finding]]:
     source = path.read_text(encoding="utf-8")
     matches = list(LOCALIZED_FIELD_RE.finditer(source))
     findings: list[Finding] = []
+
+    parsed_assignment_starts = {match.start() for match in matches}
+    for assignment in LOCALIZED_ASSIGNMENT_RE.finditer(source):
+        if assignment.start() not in parsed_assignment_starts:
+            preview = source[assignment.start() : assignment.start() + 180]
+            findings.append(
+                Finding(
+                    path,
+                    assignment.group("locale"),
+                    "unparsed localized field syntax",
+                    preview.replace("\n", " "),
+                )
+            )
 
     for match in matches:
         locale = match.group("locale")
