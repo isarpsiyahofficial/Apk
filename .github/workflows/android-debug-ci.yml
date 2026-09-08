@@ -45,6 +45,9 @@ jobs:
       - name: Materialize Android home widget bridge
         run: python3 scripts/configure_android_home_widget_t0297.py
 
+      - name: Materialize Android share bridge
+        run: python3 scripts/configure_android_share_t0251.py
+
       - name: Audit Android source security policy
         run: python3 scripts/audit_android_security.py
 
@@ -91,7 +94,7 @@ jobs:
           fi
           echo "Final APK permission audit PASS"
 
-      - name: Verify home widget is packaged
+      - name: Verify home widget and share bridge are packaged
         shell: bash
         run: |
           set -euo pipefail
@@ -104,4 +107,6 @@ jobs:
           printf '%s\n' "$MANIFEST" | grep -F 'android.appwidget.action.APPWIDGET_UPDATE'
           printf '%s\n' "$ZIP_ENTRIES" | grep -Fx 'res/xml/islami_hayat_widget_info.xml'
           printf '%s\n' "$ZIP_ENTRIES" | grep -Fx 'res/layout/islami_hayat_widget.xml'
-          echo "T0297 packaged widget audit PASS"
+          printf '%s\n' "$MANIFEST" | grep -F 'androidx.core.content.FileProvider'
+          printf '%s\n' "$ZIP_ENTRIES" | grep -Fx 'res/xml/islami_hayat_share_paths.xml'
+          echo "T0297 widget + T0251 secure share packaging audit PASS"
