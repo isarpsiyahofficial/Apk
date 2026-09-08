@@ -46,6 +46,33 @@ void main() {
     );
   }
 
+  ReligiousContentRecord publishedQuranLookalike() {
+    return ReligiousContentRecord(
+      id: 'quran:2:255',
+      type: ContentType.quranVerse,
+      sourceStatus: ReligiousSourceClass.quran,
+      version: 1,
+      reviewStatus: ContentReviewStatus.published,
+      certainty: CertaintyLevel.stronglyAttested,
+      text: const LocalizedReligiousText(
+        tr: 'Elle girilmiş Kur’an benzeri metin',
+        en: 'Manually injected Quran-like text',
+        ar: 'نص يدوي غير مأخوذ من مجموعة القرآن المثبتة',
+      ),
+      sources: const [
+        SourceReference(
+          id: 'quran:lookalike:2:255',
+          title: 'Quran',
+          sourceClass: ReligiousSourceClass.quran,
+          licenseId: 'reviewed-license',
+          locator: '2:255',
+        ),
+      ],
+      lastReviewedAt: DateTime.utc(2026, 9, 1),
+      reviewer: 'reviewed',
+    );
+  }
+
   test('T0243 accepts Quran text only through verified canonical dataset', () {
     final expected = canonicalDataset.ayah(1, 1);
     final content = RuntimeReligiousShareContentT0243.fromCanonicalQuranDataset(
@@ -76,6 +103,19 @@ void main() {
         ayah: 1,
       ),
       throwsRangeError,
+    );
+  });
+
+  test('T0243 rejects published-record Quran lookalikes', () {
+    final record = publishedQuranLookalike();
+    expect(record.canEnterProductionDataset, isTrue);
+
+    expect(
+      () => RuntimeReligiousShareContentT0243.fromPublishedRecord(
+        record: record,
+        locale: ShareContentLocaleT0243.ar,
+      ),
+      throwsStateError,
     );
   });
 

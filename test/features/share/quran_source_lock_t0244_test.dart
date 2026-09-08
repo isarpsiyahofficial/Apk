@@ -31,28 +31,30 @@ void main() {
     expect(lock.lockedSourceLabel, 'Quran 2:255');
   });
 
-  testWidgets('Quran share card always renders locked source line', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      Directionality(
-        textDirection: TextDirection.rtl,
-        child: SizedBox(
-          width: 270,
-          child: QuranShareCardT0244(
-            format: ShareCanvasFormatT0242.instagramStory916,
-            background: const SizedBox.expand(),
-            content: canonical(),
+  for (final format in ShareCanvasFormatT0242.values) {
+    testWidgets('Quran share card always renders locked source in $format', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.rtl,
+          child: SizedBox(
+            width: 270,
+            child: QuranShareCardT0244(
+              format: format,
+              background: const SizedBox.expand(),
+              content: canonical(),
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('Quran 2:255'), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('t0244-locked-quran-source')),
-      findsOneWidget,
-    );
-    expect(tester.takeException(), isNull);
-  });
+      expect(find.text('Quran 2:255'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('t0244-locked-quran-source')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
 }

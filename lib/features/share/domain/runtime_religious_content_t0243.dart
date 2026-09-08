@@ -41,8 +41,12 @@ class RuntimeReligiousShareContentT0243 {
         'T0243 only renders religious text from production-approved records.',
       );
     }
+    if (record.type == ContentType.quranVerse) {
+      throw StateError(
+        'T0243 Quran verses must be rendered only from CanonicalQuranDataset.',
+      );
+    }
     if (record.type != ContentType.dua &&
-        record.type != ContentType.quranVerse &&
         record.type != ContentType.translation &&
         record.type != ContentType.dhikr &&
         record.type != ContentType.divineName) {
