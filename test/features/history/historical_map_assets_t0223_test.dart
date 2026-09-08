@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/features/history/data/historical_maps_t0223.dart';
 import 'package:islami_hayat/features/history/data/history_t0220_inventory.dart';
@@ -21,6 +22,12 @@ const _canonicalLicense = HistoricalMapLicense(
   redistributionAllowed: true,
   aiGenerated: false,
 );
+const _canonicalAssetHashes = <String, String>{
+  'history-map:hijaz-seerah-schematic':
+      '25ad004a83de447792267a3622ec97c086e3989942999abf5e9231e61d2dfad5',
+  'history-map:abyssinia-context-schematic':
+      'e50ef88db916c8ea3b5d9ad74df4e5b6267166d4478276e6e50ef39b240a287e',
+};
 
 void main() {
   final knownGeographies = historyT0220Inventory.events
@@ -46,11 +53,17 @@ void main() {
       expect(asset.targetGeographyIds.every(knownGeographies.contains), isTrue);
       expect(asset.sourceIds.every(knownSources.contains), isTrue);
 
-      final svg = File(asset.assetPath).readAsStringSync();
+      final file = File(asset.assetPath);
+      final svg = file.readAsStringSync();
       expect(svg, contains('<svg'));
       expect(svg.toLowerCase(), isNot(contains('<script')));
       expect(svg.toLowerCase(), isNot(contains('<image')));
       expect(svg.toLowerCase(), isNot(contains('href=')));
+      expect(
+        sha256.convert(file.readAsBytesSync()).toString(),
+        _canonicalAssetHashes[asset.id],
+        reason: 'T0223 canonical vector bytes changed without provenance review.',
+      );
     }
   });
 
