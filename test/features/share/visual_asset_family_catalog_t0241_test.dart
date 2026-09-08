@@ -55,6 +55,23 @@ void main() {
     );
   }
 
+  List<VisualAssetFamilyTagT0241> distribution({
+    required int warmMinimal,
+    required int naturalTexture,
+  }) {
+    return List.generate(100, (index) {
+      final family = index < warmMinimal
+          ? VisualAssetFamilyT0241.warmMinimal
+          : index < warmMinimal + naturalTexture
+          ? VisualAssetFamilyT0241.naturalTexture
+          : VisualAssetFamilyT0241.calmLight;
+      return VisualAssetFamilyTagT0241(
+        assetId: assetId(index),
+        family: family,
+      );
+    });
+  }
+
   test('T0241 tags every final asset exactly once across several families', () {
     final catalog = VisualAssetFamilyCatalogT0241.forFinalAssets(
       assets: assets(),
@@ -145,6 +162,35 @@ void main() {
       () => VisualAssetFamilyCatalogT0241.forFinalAssets(
         assets: assets(),
         tags: twoFamilies,
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('formally three-family but 98/1/1 catalog still fails closed', () {
+    expect(
+      () => VisualAssetFamilyCatalogT0241.forFinalAssets(
+        assets: assets(),
+        tags: distribution(warmMinimal: 98, naturalTexture: 1),
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('dominant-family boundary is deterministic at 60 percent', () {
+    final accepted = VisualAssetFamilyCatalogT0241.forFinalAssets(
+      assets: assets(),
+      tags: distribution(warmMinimal: 60, naturalTexture: 20),
+    );
+
+    expect(
+      accepted.countByFamily[VisualAssetFamilyT0241.warmMinimal],
+      60,
+    );
+    expect(
+      () => VisualAssetFamilyCatalogT0241.forFinalAssets(
+        assets: assets(),
+        tags: distribution(warmMinimal: 61, naturalTexture: 20),
       ),
       throwsStateError,
     );
