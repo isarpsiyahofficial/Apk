@@ -1,4 +1,5 @@
 import '../domain/history_chunked_page_source_t0225.dart';
+import '../domain/history_event_contract.dart';
 import '../domain/history_paged_index_t0225.dart';
 import '../domain/t0214_canonical_history_gate.dart';
 import '../domain/t0215_canonical_history_gate.dart';
