@@ -66,6 +66,7 @@ void main() {
   group('SourceAwareUniversalSearchIndexT0233', () {
     test('returns badge metadata on search hits without changing ranking', () {
       final index = SourceAwareUniversalSearchIndexT0233(
+        requireAllCategories: false,
         loader: () => [
           SourceAwareSearchDocumentT0233(
             category: UniversalSearchCategoryT0231.verse,
@@ -159,6 +160,7 @@ void main() {
 
     test('does not promote traditional/ebced provenance in search results', () {
       final index = SourceAwareUniversalSearchIndexT0233(
+        requireAllCategories: false,
         loader: () => [
           SourceAwareSearchDocumentT0233(
             category: UniversalSearchCategoryT0231.asma,
@@ -186,6 +188,25 @@ void main() {
       expect(badge.reliabilityLabel(SearchLocaleT0232.tr), 'Geleneksel aktarım');
       expect(badge.sourceClass, ReligiousSourceClass.ebcedHavasTradition);
       expect(badge.certainty, CertaintyLevel.traditional);
+    });
+
+    test('source-aware production wrapper keeps all-category gate enabled', () {
+      final index = SourceAwareUniversalSearchIndexT0233(
+        loader: () => [
+          SourceAwareSearchDocumentT0233(
+            category: UniversalSearchCategoryT0231.verse,
+            stableId: '2:286',
+            searchableTexts: const ['ayet'],
+            sourceBadge: SearchSourceBadgeT0233(
+              sourceClass: ReligiousSourceClass.quran,
+              certainty: CertaintyLevel.explicitSource,
+              sourceIds: const ['quran:tanzil-uthmani-v1.1'],
+            ),
+          ),
+        ],
+      );
+
+      expect(() => index.search('ayet'), throwsStateError);
     });
   });
 }
