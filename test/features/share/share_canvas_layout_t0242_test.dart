@@ -1,10 +1,16 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/features/share/domain/share_canvas_layout_t0242.dart';
+import 'package:islami_hayat/features/share/domain/share_readability_t0247.dart';
 import 'package:islami_hayat/features/share/presentation/share_layout_renderer_t0242.dart';
 import 'package:islami_hayat/features/share/presentation/share_raster_exporter_t0242.dart';
 
 void main() {
+  const readabilityPolicy = ShareReadabilityPolicyT0247();
+  final readableDecision = readabilityPolicy.evaluate(
+    backgroundSamples: const [Color(0xFFF7F2E8)],
+  );
+
   test('T0242 pins canonical export dimensions for all required formats', () {
     final story = ShareCanvasLayoutT0242.forFormat(
       ShareCanvasFormatT0242.instagramStory916,
@@ -108,6 +114,7 @@ void main() {
               child: ShareLayoutRendererT0242(
                 format: format,
                 repaintBoundaryKey: boundaryKey,
+                readabilityDecision: readableDecision,
                 background: const ColoredBox(color: Color(0xFFF7F2E8)),
                 content: const Center(child: Text('Verified runtime text')),
               ),
@@ -126,6 +133,7 @@ void main() {
         () => exporter.exportPng(
           repaintBoundaryKey: boundaryKey,
           format: format,
+          readabilityDecision: readableDecision,
         ),
       );
       expect(result, isNotNull);
@@ -155,6 +163,7 @@ void main() {
       exporter.exportPng(
         repaintBoundaryKey: boundaryKey,
         format: ShareCanvasFormatT0242.instagramStory916,
+        readabilityDecision: readableDecision,
       ),
       throwsA(
         isA<StateError>().having(
@@ -188,6 +197,7 @@ void main() {
       exporter.exportPng(
         repaintBoundaryKey: boundaryKey,
         format: ShareCanvasFormatT0242.instagramStory916,
+        readabilityDecision: readableDecision,
       ),
       throwsA(
         isA<StateError>().having(
