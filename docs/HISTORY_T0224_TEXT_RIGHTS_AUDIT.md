@@ -42,7 +42,7 @@ The automated gate extracts localized `tr:`, `en:` and `ar:` user-facing strings
 - DOI / ISBN / Cambridge Core locator text inside localized narration,
 - common HTML / quote markup indicating pasted source material.
 
-Parser coverage is also fail-closed. If a history data file introduces a `tr:`, `en:` or `ar:` assignment in syntax the audit does not understand (for example a triple-quoted/multiline locale literal), that assignment is reported as an audit finding instead of being silently skipped. Supporting a new locale-string syntax therefore requires extending the scanner and its failure-path tests first.
+Parser coverage is also fail-closed for literal prose. If a history data file introduces a `tr:`, `en:` or `ar:` **string literal** in syntax the audit does not understand (for example a triple-quoted/multiline locale literal), that literal is reported as an audit finding instead of being silently skipped. Delegated already-governed values such as `tr: value.tr` or helper parameters such as `tr: tr` are not new prose and are therefore allowed. Supporting a new locale-string literal syntax requires extending the scanner and its failure-path tests first.
 
 Source citations and locators remain allowed in dedicated source metadata; they are not user-facing article prose.
 
@@ -53,12 +53,12 @@ Source citations and locators remain allowed in dedicated source metadata; they 
 1. TDV reference text inserted into a single-quoted localized field,
 2. the same TDV marker inserted through a double-quoted localized field,
 3. a source URL inserted into single- or double-quoted localized narration,
-4. an unsupported localized field syntax that would otherwise evade parsing,
+4. an unsupported localized literal syntax that would otherwise evade parsing,
 5. zero parser coverage,
 
-and proves that dedicated citation/locator metadata outside localized narration remains allowed. UTF-8 Turkish/Arabic text and escaped Dart apostrophes are also covered so the audit does not corrupt or skip those locales.
+and proves that dedicated citation/locator metadata outside localized narration and delegated existing locale values remain allowed. UTF-8 Turkish/Arabic text and escaped Dart apostrophes are also covered so the audit does not corrupt or skip those locales.
 
-`Flutter CI` runs both the failure-path tests and the live branch audit before the full Flutter test suite. A new pasted source artefact or parser-bypass locale field therefore leaves the branch red.
+`Flutter CI` runs both the failure-path tests and the live branch audit before the full Flutter test suite. A new pasted source artefact or parser-bypass locale literal therefore leaves the branch red.
 
 ## Audit conclusion for the current history data
 
