@@ -20,15 +20,34 @@ class SearchSourceBadgeT0233 {
     if (this.sourceIds.toSet().length != this.sourceIds.length) {
       throw StateError('T0233 source badge contains duplicate source IDs.');
     }
+    if (sourceClass == ReligiousSourceClass.unknown &&
+        certainty != CertaintyLevel.unknown) {
+      throw StateError(
+        'T0233 an unverified source cannot carry a verified certainty label.',
+      );
+    }
   }
 
   final ReligiousSourceClass sourceClass;
   final CertaintyLevel certainty;
   final List<String> sourceIds;
 
+  /// True when the result must be presented with visible caution styling in
+  /// addition to its textual source and reliability labels.
+  ///
+  /// SPEC 288–295 requires traditional/Ebced material to remain visibly
+  /// distinct from default reliable religious content. SPEC 553 also forbids
+  /// conveying reliability by color alone, so callers must still render the
+  /// localized [sourceLabel] and [reliabilityLabel] text.
   bool get isWarning =>
+      sourceClass == ReligiousSourceClass.classicalTraditional ||
+      sourceClass == ReligiousSourceClass.israiliyat ||
+      sourceClass == ReligiousSourceClass.laterTradition ||
+      sourceClass == ReligiousSourceClass.ebcedHavasTradition ||
       sourceClass == ReligiousSourceClass.disputed ||
       sourceClass == ReligiousSourceClass.unknown ||
+      certainty == CertaintyLevel.approximate ||
+      certainty == CertaintyLevel.traditional ||
       certainty == CertaintyLevel.disputed ||
       certainty == CertaintyLevel.unknown;
 
