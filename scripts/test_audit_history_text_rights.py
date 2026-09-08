@@ -113,7 +113,21 @@ class HistoryTextRightsAuditTest(unittest.TestCase):
             self.assertEqual(count, 3)
             self.assertEqual(findings, [])
 
-    def test_unparsed_locale_assignment_fails_closed(self):
+    def test_delegated_locale_values_are_not_mistaken_for_unscanned_prose(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            self._write(
+                root,
+                "const seed = LocalizedHistorySummary("
+                "tr: 'Özgün özet', en: 'Original summary', ar: 'ملخص أصلي');\n"
+                "LocalizedHistorySummary copy(LocalizedHistorySummary value) => "
+                "LocalizedHistorySummary(tr: value.tr, en: value.en, ar: value.ar);",
+            )
+            _, count, findings = audit_tree(root)
+            self.assertEqual(count, 3)
+            self.assertEqual(findings, [])
+
+    def test_unparsed_locale_literal_fails_closed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             self._write(
@@ -125,7 +139,7 @@ class HistoryTextRightsAuditTest(unittest.TestCase):
             _, count, findings = audit_tree(root)
             self.assertEqual(count, 2)
             self.assertTrue(
-                any(item.marker == 'unparsed localized field syntax' for item in findings)
+                any(item.marker == 'unparsed localized literal syntax' for item in findings)
             )
 
     def test_zero_parser_coverage_fails_closed(self):
