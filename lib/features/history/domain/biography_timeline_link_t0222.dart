@@ -19,6 +19,67 @@ class HistoryBiographyTimelineEntryT0222 {
   final List<String> relatedEventIds;
 }
 
+/// Fail-closed production gate for the canonical T0222 bridge.
+///
+/// The generic index validator is intentionally reusable for isolated tests and
+/// future reviewed biography families. Production, however, must not silently
+/// drop a canonical prophet biography, add an unreviewed biography page, swap a
+/// biography to another person's stable ID, or omit/add a canonical history
+/// event relation. This gate pins the bridge to the reviewed canonical prophet
+/// dataset and the canonical T0220 inventory.
+class T0222CanonicalBiographyTimelineGate {
+  const T0222CanonicalBiographyTimelineGate._();
+
+  static void validate(HistoryBiographyTimelineIndexT0222 index) {
+    final expectedBiographyIds = canonicalProphetBiographyDrafts
+        .map((biography) => 'prophet:${biography.identity.canonicalId.trim()}')
+        .toList(growable: false);
+    if (expectedBiographyIds.any((id) => id == 'prophet:') ||
+        expectedBiographyIds.toSet().length != expectedBiographyIds.length) {
+      throw StateError(
+        'T0222 canonical prophet biography IDs must be non-empty and unique.',
+      );
+    }
+
+    final actualByBiographyId = <String, HistoryBiographyTimelineEntryT0222>{
+      for (final entry in index.entries) entry.biographyId: entry,
+    };
+    if (actualByBiographyId.length != expectedBiographyIds.length ||
+        !expectedBiographyIds.every(actualByBiographyId.containsKey)) {
+      throw StateError(
+        'T0222 production biography set must exactly match the canonical prophet biographies.',
+      );
+    }
+
+    for (final biographyId in expectedBiographyIds) {
+      final entry = actualByBiographyId[biographyId]!;
+      if (entry.personId != biographyId) {
+        throw StateError(
+          'T0222 canonical biography/person ID mismatch: $biographyId -> ${entry.personId}',
+        );
+      }
+
+      final expectedEventIds = historyT0220Inventory.events
+          .where(
+            (event) => event.people.any((person) => person.id == biographyId),
+          )
+          .map((event) => event.id)
+          .toList(growable: false);
+      final actualEventIds = entry.relatedEventIds;
+      final exactOrderedMatch = actualEventIds.length == expectedEventIds.length &&
+          List.generate(
+            expectedEventIds.length,
+            (index) => actualEventIds[index] == expectedEventIds[index],
+          ).every((matches) => matches);
+      if (!exactOrderedMatch) {
+        throw StateError(
+          'T0222 canonical timeline links changed for $biographyId.',
+        );
+      }
+    }
+  }
+}
+
 class HistoryBiographyTimelineIndexT0222 {
   HistoryBiographyTimelineIndexT0222._({
     required this.entries,
@@ -124,10 +185,12 @@ class HistoryBiographyTimelineIndexT0222 {
       );
     }
 
-    return HistoryBiographyTimelineIndexT0222.validated(
+    final index = HistoryBiographyTimelineIndexT0222.validated(
       entries: entries,
       events: events,
     );
+    T0222CanonicalBiographyTimelineGate.validate(index);
+    return index;
   }
 
   final List<HistoryBiographyTimelineEntryT0222> entries;
