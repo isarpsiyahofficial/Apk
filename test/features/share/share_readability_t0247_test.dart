@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/features/share/domain/share_canvas_layout_t0242.dart';
 import 'package:islami_hayat/features/share/domain/share_readability_t0247.dart';
 import 'package:islami_hayat/features/share/presentation/share_layout_renderer_t0242.dart';
+import 'package:islami_hayat/features/share/presentation/share_raster_exporter_t0242.dart';
 
 void main() {
   const policy = ShareReadabilityPolicyT0247();
@@ -131,5 +132,42 @@ void main() {
     );
 
     expect(tester.takeException(), isA<StateError>());
+  });
+
+  testWidgets('T0247 raster exporter cannot bypass a failed readability decision', (
+    tester,
+  ) async {
+    const exporter = ShareRasterExporterT0242();
+    final boundaryKey = GlobalKey();
+    final blockedDecision = policy.evaluate(
+      backgroundSamples: const [Color(0xFFFFFFFF), Color(0xFF000000)],
+    );
+
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: RepaintBoundary(
+            key: boundaryKey,
+            child: const SizedBox(width: 270, height: 480),
+          ),
+        ),
+      ),
+    );
+
+    await expectLater(
+      exporter.exportPng(
+        repaintBoundaryKey: boundaryKey,
+        format: ShareCanvasFormatT0242.instagramStory916,
+        readabilityDecision: blockedDecision,
+      ),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          contains('contrast'),
+        ),
+      ),
+    );
   });
 }
