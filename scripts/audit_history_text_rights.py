@@ -42,13 +42,16 @@ FORBIDDEN_LOCALIZED_MARKERS = (
 # quoted string literals. Keep the opening quote as a backreference so a
 # harmless style change cannot bypass the rights audit. Triple-quoted strings
 # are deliberately not accepted by this compact scanner: if one is introduced,
-# LOCALIZED_ASSIGNMENT_RE below reports it as an unparsed locale assignment and
+# LOCALIZED_LITERAL_ASSIGNMENT_RE below reports it as an unparsed literal and
 # CI fails instead of silently skipping potentially user-facing prose.
 LOCALIZED_FIELD_RE = re.compile(
     r"\b(?P<locale>tr|en|ar)\s*:\s*(?P<quote>['\"])(?!(?P=quote))(?P<text>(?:\\.|(?!(?P=quote))[\s\S])*)(?P=quote)",
     re.MULTILINE,
 )
-LOCALIZED_ASSIGNMENT_RE = re.compile(r"\b(?P<locale>tr|en|ar)\s*:", re.MULTILINE)
+LOCALIZED_LITERAL_ASSIGNMENT_RE = re.compile(
+    r"\b(?P<locale>tr|en|ar)\s*:\s*(?P<quote>['\"])",
+    re.MULTILINE,
+)
 SOURCE_ARTEFACT_RE = re.compile(
     r"(?:https?://|<\/?(?:p|div|span|article|blockquote)\b|\[/?(?:quote|url)\])",
     re.IGNORECASE,
@@ -88,15 +91,19 @@ def audit_file(path: pathlib.Path) -> tuple[int, list[Finding]]:
     matches = list(LOCALIZED_FIELD_RE.finditer(source))
     findings: list[Finding] = []
 
+    # Only literal locale assignments are parser-owned. Delegating an already
+    # governed value (for example `tr: value.tr` or `tr: tr`) is valid Dart and
+    # must not be mistaken for unscanned prose. A literal that starts with a
+    # quote but is not parsed, however, is a real coverage gap and fails closed.
     parsed_assignment_starts = {match.start() for match in matches}
-    for assignment in LOCALIZED_ASSIGNMENT_RE.finditer(source):
+    for assignment in LOCALIZED_LITERAL_ASSIGNMENT_RE.finditer(source):
         if assignment.start() not in parsed_assignment_starts:
             preview = source[assignment.start() : assignment.start() + 180]
             findings.append(
                 Finding(
                     path,
                     assignment.group("locale"),
-                    "unparsed localized field syntax",
+                    "unparsed localized literal syntax",
                     preview.replace("\n", " "),
                 )
             )
