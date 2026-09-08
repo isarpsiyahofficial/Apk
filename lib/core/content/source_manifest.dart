@@ -46,6 +46,7 @@ class VisualAssetManifestEntry extends SourceManifestEntry {
     required this.isAiGenerated,
     required this.isCanvaProContent,
     this.hasIndependentReusableLicense = false,
+    this.localAssetPath,
     super.version,
     super.licenseEvidenceUrl,
   });
@@ -61,6 +62,10 @@ class VisualAssetManifestEntry extends SourceManifestEntry {
   /// Examples can include CC0/Public Domain or another separately verified
   /// source license whose exact terms allow both operations.
   final bool hasIndependentReusableLicense;
+
+  /// Exact Flutter bundle path of the downloaded background. Candidate-only
+  /// records may leave this null; T0240 final-catalog promotion requires it.
+  final String? localAssetPath;
 
   bool get canBeFinalReusableBackground =>
       isComplete &&
