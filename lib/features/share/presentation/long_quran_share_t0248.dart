@@ -95,6 +95,52 @@ class QuranLongTextPaginatorT0248 {
     );
   }
 
+  /// Rejects pages that were not produced losslessly from the canonical Quran
+  /// content for the exact format/direction/preferences being rendered.
+  ///
+  /// [QuranSharePageT0248] is intentionally a lightweight immutable value
+  /// object, so callers can construct one manually. The render boundary must
+  /// therefore re-derive the canonical page and compare it before painting;
+  /// otherwise modified Quran text could be paired with a valid locked source
+  /// label and bypass the paginator's byte-preservation guarantee.
+  void requireCanonicalPage({
+    required RuntimeReligiousShareContentT0243 content,
+    required ShareCanvasFormatT0242 format,
+    required TextDirection textDirection,
+    required QuranSharePageT0248 page,
+  }) {
+    if (page.pageIndex < 0 ||
+        page.pageCount < 1 ||
+        page.pageIndex >= page.pageCount) {
+      throw StateError('T0248 page coordinates are invalid.');
+    }
+
+    final canonicalPages = paginate(
+      content: content,
+      format: format,
+      textDirection: textDirection,
+      requestedPreferences: page.textPreferences,
+    );
+    if (page.pageCount != canonicalPages.length ||
+        page.pageIndex >= canonicalPages.length) {
+      throw StateError('T0248 page does not belong to canonical pagination.');
+    }
+
+    final canonicalPage = canonicalPages[page.pageIndex];
+    final samePreferences =
+        canonicalPage.textPreferences.fontSizePreset ==
+            page.textPreferences.fontSizePreset &&
+        canonicalPage.textPreferences.alignment == page.textPreferences.alignment;
+    if (canonicalPage.text != page.text ||
+        canonicalPage.pageIndex != page.pageIndex ||
+        canonicalPage.pageCount != page.pageCount ||
+        !samePreferences) {
+      throw StateError(
+        'T0248 rendered Quran page must match canonical pagination exactly.',
+      );
+    }
+  }
+
   List<ShareFontSizePresetT0246> _fallbackPresets(
     ShareFontSizePresetT0246 requested,
   ) {
@@ -255,11 +301,13 @@ class QuranSharePageCardT0248 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sourceLock = QuranShareSourceLockT0244.fromRuntimeContent(content);
-    if (page.pageIndex < 0 ||
-        page.pageCount < 1 ||
-        page.pageIndex >= page.pageCount) {
-      throw StateError('T0248 page coordinates are invalid.');
-    }
+    const paginator = QuranLongTextPaginatorT0248();
+    paginator.requireCanonicalPage(
+      content: content,
+      format: format,
+      textDirection: Directionality.of(context),
+      page: page,
+    );
 
     return ShareLayoutRendererT0242(
       format: format,
