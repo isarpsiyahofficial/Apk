@@ -107,6 +107,7 @@ void main() {
 
     test('same stable ID may exist in different categories without collision', () {
       final index = UniversalSearchIndexT0231(
+        requireAllCategories: false,
         loader: () => const [
           UniversalSearchDocumentT0231(
             category: UniversalSearchCategoryT0231.prophet,
@@ -169,8 +170,37 @@ void main() {
       );
     });
 
+    test('rejects a production corpus when any SPEC 71 category is missing', () {
+      final withoutReligiousDay = documents
+          .where(
+            (document) =>
+                document.category != UniversalSearchCategoryT0231.religiousDay,
+          )
+          .toList(growable: false);
+      final index = UniversalSearchIndexT0231(loader: () => withoutReligiousDay);
+
+      expect(() => index.documentCount, throwsStateError);
+    });
+
+    test('partial category coverage requires an explicit opt-out', () {
+      final index = UniversalSearchIndexT0231(
+        requireAllCategories: false,
+        loader: () => const [
+          UniversalSearchDocumentT0231(
+            category: UniversalSearchCategoryT0231.history,
+            stableId: 'badir',
+            searchableTexts: ['Bedir'],
+          ),
+        ],
+      );
+
+      expect(index.documentCount, 1);
+      expect(index.search('bedir').totalCount, 1);
+    });
+
     test('rejects duplicate IDs inside one category', () {
       final index = UniversalSearchIndexT0231(
+        requireAllCategories: false,
         loader: () => const [
           UniversalSearchDocumentT0231(
             category: UniversalSearchCategoryT0231.dua,
@@ -195,6 +225,7 @@ void main() {
       );
       expect(
         () => UniversalSearchIndexT0231(
+          requireAllCategories: false,
           loader: () => const [
             UniversalSearchDocumentT0231(
               category: UniversalSearchCategoryT0231.verse,
@@ -207,6 +238,7 @@ void main() {
       );
       expect(
         () => UniversalSearchIndexT0231(
+          requireAllCategories: false,
           loader: () => const [
             UniversalSearchDocumentT0231(
               category: UniversalSearchCategoryT0231.verse,
