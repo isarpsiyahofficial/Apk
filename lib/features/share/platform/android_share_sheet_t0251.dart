@@ -58,14 +58,16 @@ final class SharePngRequestT0251 {
             'T0251 Instagram Story target accepts only the canonical 9:16 Story export.',
           );
         }
+        return;
       case ShareDestinationT0251.whatsapp:
         if (format == ShareCanvasFormatT0242.instagramStory916) {
           throw StateError(
             'T0251 WhatsApp target must use Status 9:16, 4:5 or 1:1 output.',
           );
         }
+        return;
       case ShareDestinationT0251.general:
-        break;
+        return;
     }
   }
 
