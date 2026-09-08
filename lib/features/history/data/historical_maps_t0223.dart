@@ -59,25 +59,88 @@ HistoricalMapAsset _schematic({
       license: _mapLicense,
     );
 
-final historicalMapCatalogT0223 = HistoricalMapCatalog.validated([
-  _schematic(
-    id: 'history-map:hijaz-seerah-schematic',
-    path: 'assets/history/maps/hijaz-seerah-schematic.svg',
-    title: _text(
-      'Hicaz siyer bağlamı',
-      'Hijaz seerah context',
-      'سياق السيرة في الحجاز',
+class T0223CanonicalMapGate {
+  const T0223CanonicalMapGate._();
+
+  static const _expectedPaths = <String, String>{
+    'history-map:hijaz-seerah-schematic':
+        'assets/history/maps/hijaz-seerah-schematic.svg',
+    'history-map:abyssinia-context-schematic':
+        'assets/history/maps/abyssinia-context-schematic.svg',
+  };
+
+  static const _expectedGeographies = <String, Set<String>>{
+    'history-map:hijaz-seerah-schematic': {'city:mecca', 'city:medina'},
+    'history-map:abyssinia-context-schematic': {'region:abyssinia'},
+  };
+
+  static void validate(HistoricalMapCatalog catalog) {
+    final actualIds = catalog.assets.map((asset) => asset.id).toSet();
+    if (actualIds.length != _expectedPaths.length ||
+        !actualIds.containsAll(_expectedPaths.keys)) {
+      throw StateError(
+        'T0223 canonical map catalog must contain exactly the governed map IDs.',
+      );
+    }
+
+    for (final asset in catalog.assets) {
+      final expectedPath = _expectedPaths[asset.id];
+      final expectedGeographies = _expectedGeographies[asset.id];
+      if (expectedPath == null || expectedGeographies == null) {
+        throw StateError('T0223 encountered an ungoverned canonical map.');
+      }
+      if (asset.assetPath != expectedPath) {
+        throw StateError('T0223 canonical map asset path drift detected.');
+      }
+      if (asset.representation != HistoricalMapRepresentation.schematic) {
+        throw StateError('T0223 canonical maps must remain explicitly schematic.');
+      }
+      if (asset.license.licenseId != _mapLicense.licenseId ||
+          !asset.license.isEligibleForBundling) {
+        throw StateError('T0223 canonical map license/provenance drift detected.');
+      }
+
+      final actualGeographies = asset.targetGeographyIds.toSet();
+      if (actualGeographies.length != expectedGeographies.length ||
+          !actualGeographies.containsAll(expectedGeographies)) {
+        throw StateError('T0223 canonical map geography drift detected.');
+      }
+
+      final expectedSources = _sourcesForGeographies(expectedGeographies).toSet();
+      final actualSources = asset.sourceIds.toSet();
+      if (actualSources.length != expectedSources.length ||
+          !actualSources.containsAll(expectedSources)) {
+        throw StateError('T0223 canonical map source provenance drift detected.');
+      }
+    }
+  }
+}
+
+HistoricalMapCatalog _buildHistoricalMapCatalogT0223() {
+  final catalog = HistoricalMapCatalog.validated([
+    _schematic(
+      id: 'history-map:hijaz-seerah-schematic',
+      path: 'assets/history/maps/hijaz-seerah-schematic.svg',
+      title: _text(
+        'Hicaz siyer bağlamı',
+        'Hijaz seerah context',
+        'سياق السيرة في الحجاز',
+      ),
+      geographies: const {'city:mecca', 'city:medina'},
     ),
-    geographies: const {'city:mecca', 'city:medina'},
-  ),
-  _schematic(
-    id: 'history-map:abyssinia-context-schematic',
-    path: 'assets/history/maps/abyssinia-context-schematic.svg',
-    title: _text(
-      'Habeşistan hicreti bağlamı',
-      'Abyssinia migration context',
-      'سياق الهجرة إلى الحبشة',
+    _schematic(
+      id: 'history-map:abyssinia-context-schematic',
+      path: 'assets/history/maps/abyssinia-context-schematic.svg',
+      title: _text(
+        'Habeşistan hicreti bağlamı',
+        'Abyssinia migration context',
+        'سياق الهجرة إلى الحبشة',
+      ),
+      geographies: const {'region:abyssinia'},
     ),
-    geographies: const {'region:abyssinia'},
-  ),
-]);
+  ]);
+  T0223CanonicalMapGate.validate(catalog);
+  return catalog;
+}
+
+final historicalMapCatalogT0223 = _buildHistoricalMapCatalogT0223();
