@@ -7,6 +7,14 @@ import 'package:islami_hayat/features/share/domain/share_canvas_layout_t0242.dar
 import 'package:islami_hayat/features/share/presentation/runtime_religious_share_card_t0243.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  late CanonicalQuranDataset canonicalDataset;
+
+  setUpAll(() async {
+    canonicalDataset = await CanonicalQuranAssetLoader().load();
+  });
+
   ReligiousContentRecord publishedDua({
     ContentReviewStatus reviewStatus = ContentReviewStatus.published,
     ReligiousSourceClass sourceStatus = ReligiousSourceClass.sahihHasanHadith,
@@ -38,16 +46,37 @@ void main() {
     );
   }
 
-  test('T0243 accepts exact canonical Quran ayah runtime text', () {
-    const ayah = QuranAyah(sura: 1, ayah: 1, arabic: 'بِسْمِ اللَّهِ');
-
-    final content =
-        RuntimeReligiousShareContentT0243.fromCanonicalQuranAyah(ayah);
+  test('T0243 accepts Quran text only through verified canonical dataset', () {
+    final expected = canonicalDataset.ayah(1, 1);
+    final content = RuntimeReligiousShareContentT0243.fromCanonicalQuranDataset(
+      dataset: canonicalDataset,
+      sura: 1,
+      ayah: 1,
+    );
 
     expect(content.contentId, 'quran:1:1');
-    expect(content.text, ayah.arabic);
+    expect(content.text, expected.arabic);
     expect(content.sourceClass, ReligiousSourceClass.quran);
     expect(content.sourceLabel, 'Quran 1:1');
+  });
+
+  test('T0243 rejects Quran coordinates outside verified dataset bounds', () {
+    expect(
+      () => RuntimeReligiousShareContentT0243.fromCanonicalQuranDataset(
+        dataset: canonicalDataset,
+        sura: 1,
+        ayah: 8,
+      ),
+      throwsRangeError,
+    );
+    expect(
+      () => RuntimeReligiousShareContentT0243.fromCanonicalQuranDataset(
+        dataset: canonicalDataset,
+        sura: 115,
+        ayah: 1,
+      ),
+      throwsRangeError,
+    );
   });
 
   test('T0243 selects locale text only from published governed record', () {
