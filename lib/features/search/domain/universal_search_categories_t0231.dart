@@ -81,11 +81,18 @@ class CategorizedSearchResultsT0231 {
 /// required by SPEC 71 without introducing network search or fuzzy identity
 /// matching. Locale/Arabic normalization stays delegated to T0232 through the
 /// injected T0230 normalizer.
+///
+/// Production callers keep [requireAllCategories] enabled. This makes the
+/// universal corpus fail closed when any SPEC 71 family is accidentally
+/// omitted. Focused component tests or deliberately partial administrative
+/// indexes may opt out explicitly; partial coverage is never the default.
 class UniversalSearchIndexT0231 {
   UniversalSearchIndexT0231({
     required UniversalSearchDocumentLoaderT0231 loader,
     SearchTextNormalizerT0230 normalizer = basicSearchNormalizerT0230,
-  }) : _loader = loader {
+    bool requireAllCategories = true,
+  })  : _loader = loader,
+        _requireAllCategories = requireAllCategories {
     _index = DeviceSearchIndexT0230(
       loader: _loadIntoDeviceIndex,
       normalizer: normalizer,
@@ -93,6 +100,7 @@ class UniversalSearchIndexT0231 {
   }
 
   final UniversalSearchDocumentLoaderT0231 _loader;
+  final bool _requireAllCategories;
   late final DeviceSearchIndexT0230 _index;
 
   Map<String, UniversalSearchDocumentT0231>? _metadataByIndexId;
@@ -165,6 +173,7 @@ class UniversalSearchIndexT0231 {
 
     final metadataByIndexId = <String, UniversalSearchDocumentT0231>{};
     final searchDocuments = <SearchDocumentT0230>[];
+    final seenCategories = <UniversalSearchCategoryT0231>{};
 
     for (final document in loaded) {
       final stableId = document.stableId.trim();
@@ -182,17 +191,32 @@ class UniversalSearchIndexT0231 {
         throw StateError('T0231 duplicate category/stable ID: $indexId');
       }
 
+      final searchableTexts = List<String>.unmodifiable(document.searchableTexts);
       metadataByIndexId[indexId] = UniversalSearchDocumentT0231(
         category: document.category,
         stableId: stableId,
-        searchableTexts: List<String>.unmodifiable(document.searchableTexts),
+        searchableTexts: searchableTexts,
       );
       searchDocuments.add(
         SearchDocumentT0230(
           id: indexId,
-          searchableTexts: document.searchableTexts,
+          searchableTexts: searchableTexts,
         ),
       );
+      seenCategories.add(document.category);
+    }
+
+    if (_requireAllCategories) {
+      final missingCategories = UniversalSearchCategoryT0231.values
+          .where((category) => !seenCategories.contains(category))
+          .map((category) => category.stableKey)
+          .toList(growable: false);
+      if (missingCategories.isNotEmpty) {
+        throw StateError(
+          'T0231 universal search corpus is missing required categories: '
+          '${missingCategories.join(', ')}',
+        );
+      }
     }
 
     _metadataByIndexId =
