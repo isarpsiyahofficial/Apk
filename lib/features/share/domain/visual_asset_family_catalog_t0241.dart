@@ -67,6 +67,20 @@ class VisualAssetFamilyCatalogT0241 {
       );
     }
 
+    final maximumAllowedFamilyCount =
+        (assetIds.length * maximumDominantFamilyShare).floor();
+    final dominantFamily = countByFamily.entries.reduce(
+      (current, next) => next.value > current.value ? next : current,
+    );
+    if (dominantFamily.value > maximumAllowedFamilyCount) {
+      throw StateError(
+        'T0241 visual family distribution is too concentrated: '
+        '${dominantFamily.key.name} contains ${dominantFamily.value} of '
+        '${assetIds.length} assets; maximum allowed is '
+        '$maximumAllowedFamilyCount.',
+      );
+    }
+
     return VisualAssetFamilyCatalogT0241._(
       byAssetId: Map.unmodifiable(byAssetId),
       countByFamily: Map.unmodifiable(countByFamily),
@@ -74,6 +88,11 @@ class VisualAssetFamilyCatalogT0241 {
   }
 
   static const minimumDistinctFamilyCount = 3;
+
+  /// Prevents a formally multi-family catalog from still being visually
+  /// dominated by one repeated tone. For the canonical 100-asset set no
+  /// single family may contain more than 60 assets.
+  static const maximumDominantFamilyShare = 0.60;
 
   final Map<String, VisualAssetFamilyT0241> byAssetId;
   final Map<VisualAssetFamilyT0241, int> countByFamily;
