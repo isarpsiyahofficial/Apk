@@ -10,14 +10,19 @@ This rule is binding together with `docs/CONTENT_SOURCE_POLICY.md`, especially t
 
 ## TDV / İSAM decision
 
-The official TDV İslâm Ansiklopedisi copyright notice and usage terms were re-checked on 2026-08-31. They state that the work is copyrighted by TDV İslâm Araştırmaları Merkezi / İSAM, whole articles may not be republished, and only short quotations are permitted subject to source attribution and a direct active link. TDV visual material may not be republished in another medium under those site terms.
+The official TDV İslâm Ansiklopedisi copyright footer and usage terms were re-checked on **2026-09-08**.
+
+- The encyclopedia copyright notice says whole articles may not be republished and describes a limited short-quotation path with source attribution and a direct active link; it also says TDV visual material may not be republished in another medium.
+- The separate `Kullanım Şartları` page reserves rights over site content and contains stricter language stating that listed content elements may not be used without permission even when the source is shown.
+
+Because those official site statements differ in strictness, the application does **not** infer a reusable-content licence from either page. It applies the stricter fail-closed product rule below; this is a product compliance decision, not a claim that the audit itself gives legal permission.
 
 Product rule:
 
 - TDV may be used as a research/reference source.
 - No TDV article is bundled or reproduced as product narration.
 - No TDV image, map, table, drawing or photograph is bundled.
-- A future direct quotation is forbidden by default. It requires a separately reviewed quotation record satisfying the then-current TDV terms and product disclosure requirements.
+- A future direct quotation is forbidden by default. It requires separately documented permission/licence review for the exact reuse plus the then-current attribution/disclosure requirements.
 - Facts learned from TDV must be independently expressed as editorial synthesis and, for major historical claims, cross-checked with another reliable source when reasonably possible.
 
 Official references checked:
