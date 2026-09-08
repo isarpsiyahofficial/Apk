@@ -302,10 +302,11 @@ class QuranSharePageCardT0248 extends StatelessWidget {
   Widget build(BuildContext context) {
     final sourceLock = QuranShareSourceLockT0244.fromRuntimeContent(content);
     const paginator = QuranLongTextPaginatorT0248();
+    const quranTextDirection = TextDirection.rtl;
     paginator.requireCanonicalPage(
       content: content,
       format: format,
-      textDirection: Directionality.of(context),
+      textDirection: quranTextDirection,
       page: page,
     );
 
@@ -320,6 +321,7 @@ class QuranSharePageCardT0248 extends StatelessWidget {
             page.text,
             key: ValueKey('t0248-quran-page-text-${page.pageIndex}'),
             textAlign: page.textPreferences.textAlign,
+            textDirection: quranTextDirection,
             style: TextStyle(
               fontSize: page.textPreferences.fontSizeFor(
                 QuranLongTextPaginatorT0248._baseFontSize,
