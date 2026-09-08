@@ -4,14 +4,18 @@ import 'package:islami_hayat/features/share/domain/visual_asset_catalog_t0240.da
 import 'package:islami_hayat/features/share/domain/visual_asset_family_catalog_t0241.dart';
 
 void main() {
+  String assetId(int index) =>
+      'Canva-${(index + 1).toString().padLeft(3, '0')}';
+
   VisualAssetManifestEntry licensedEntry(int index) {
+    final padded = (index + 1).toString().padLeft(3, '0');
     return VisualAssetManifestEntry(
-      id: 'visual-$index',
-      title: 'Verified visual $index',
-      sourceUrl: Uri.parse('https://www.canva.com/'),
+      id: assetId(index),
+      title: 'Verified visual ${index + 1}',
+      sourceUrl: Uri.parse('https://www.canva.com/design/DAF$padded'),
       licenseId: 'CC0-1.0',
-      retrievedAt: DateTime.utc(2026, 9, 1),
-      sha256: index.toRadixString(16).padLeft(64, '0'),
+      retrievedAt: DateTime.utc(2026, 9, 8),
+      sha256: (index + 1).toRadixString(16).padLeft(64, '0'),
       attribution: 'Exact underlying source recorded',
       licenseEvidenceUrl: Uri.parse(
         'https://creativecommons.org/publicdomain/zero/1.0/',
@@ -21,6 +25,7 @@ void main() {
       isAiGenerated: false,
       isCanvaProContent: false,
       hasIndependentReusableLicense: true,
+      localAssetPath: 'assets/share/backgrounds/canva-$padded.webp',
     );
   }
 
@@ -44,7 +49,7 @@ void main() {
     return List.generate(
       100,
       (index) => VisualAssetFamilyTagT0241(
-        assetId: 'visual-$index',
+        assetId: assetId(index),
         family: families[index % families.length],
       ),
     );
@@ -80,7 +85,7 @@ void main() {
   test('unknown asset family tag fails closed', () {
     final tags = validTags();
     tags[99] = const VisualAssetFamilyTagT0241(
-      assetId: 'visual-unknown',
+      assetId: 'Canva-unknown',
       family: VisualAssetFamilyT0241.calmLight,
     );
 
@@ -96,8 +101,8 @@ void main() {
   test('duplicate family tag for one asset fails closed', () {
     final tags = validTags()
       ..add(
-        const VisualAssetFamilyTagT0241(
-          assetId: 'visual-0',
+        VisualAssetFamilyTagT0241(
+          assetId: assetId(0),
           family: VisualAssetFamilyT0241.calmLight,
         ),
       );
@@ -115,14 +120,14 @@ void main() {
     final singleTone = List.generate(
       100,
       (index) => VisualAssetFamilyTagT0241(
-        assetId: 'visual-$index',
+        assetId: assetId(index),
         family: VisualAssetFamilyT0241.warmMinimal,
       ),
     );
     final twoFamilies = List.generate(
       100,
       (index) => VisualAssetFamilyTagT0241(
-        assetId: 'visual-$index',
+        assetId: assetId(index),
         family: index.isEven
             ? VisualAssetFamilyT0241.warmMinimal
             : VisualAssetFamilyT0241.naturalTexture,
