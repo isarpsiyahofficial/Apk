@@ -72,6 +72,7 @@ void main() {
   group('T0232 integration with T0231/T0230', () {
     test('unvocalized Arabic query matches vocalized indexed text', () {
       final index = UniversalSearchIndexT0231(
+        requireAllCategories: false,
         normalizer: localeAwareSearchNormalizerT0232(SearchLocaleT0232.ar),
         loader: () => const [
           UniversalSearchDocumentT0231(
@@ -92,6 +93,7 @@ void main() {
 
     test('Arabic alif variant query and indexed form resolve identically', () {
       final index = UniversalSearchIndexT0231(
+        requireAllCategories: false,
         normalizer: localeAwareSearchNormalizerT0232(SearchLocaleT0232.ar),
         loader: () => const [
           UniversalSearchDocumentT0231(
@@ -108,6 +110,7 @@ void main() {
 
     test('Turkish locale matches dotted/dotless-I without English leakage', () {
       final index = UniversalSearchIndexT0231(
+        requireAllCategories: false,
         normalizer: localeAwareSearchNormalizerT0232(SearchLocaleT0232.tr),
         loader: () => const [
           UniversalSearchDocumentT0231(
