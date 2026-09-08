@@ -54,6 +54,10 @@ jobs:
         working-directory: scripts
         run: python3 -m unittest -v test_configure_android_home_widget_t0297.py
 
+      - name: Test Android share materializer
+        working-directory: scripts
+        run: python3 -m unittest -v test_configure_android_share_t0251.py
+
       - name: Audit history user-facing text rights
         run: python3 scripts/audit_history_text_rights.py
 
