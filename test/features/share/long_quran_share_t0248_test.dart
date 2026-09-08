@@ -112,6 +112,43 @@ void main() {
     }
   });
 
+  testWidgets(
+    'T0248 rejects forged Quran text even with valid page coordinates/source',
+    (tester) async {
+      const paginator = QuranLongTextPaginatorT0248();
+      final canonicalPages = paginator.paginate(
+        content: longestAyah,
+        format: ShareCanvasFormatT0242.square11,
+        textDirection: TextDirection.rtl,
+      );
+      final canonicalPage = canonicalPages.first;
+      final forgedPage = QuranSharePageT0248(
+        text: '${canonicalPage.text} değiştirilmiş',
+        textPreferences: canonicalPage.textPreferences,
+        pageIndex: canonicalPage.pageIndex,
+        pageCount: canonicalPage.pageCount,
+      );
+
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.rtl,
+          child: SizedBox(
+            width: 360,
+            child: QuranSharePageCardT0248(
+              format: ShareCanvasFormatT0242.square11,
+              background: const SizedBox.expand(),
+              content: longestAyah,
+              page: forgedPage,
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isA<StateError>());
+      expect(find.text(forgedPage.text), findsNothing);
+    },
+  );
+
   testWidgets('T0248 rejects invalid page coordinates before rendering', (
     tester,
   ) async {
