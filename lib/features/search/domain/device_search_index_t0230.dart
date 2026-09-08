@@ -27,6 +27,10 @@ class SearchHitT0230 {
 /// on first search/index access and indexed once per process. Locale-specific
 /// and Arabic normalization deliberately remains injectable so T0232 can own
 /// those semantics without rebuilding the storage contract.
+///
+/// The loader is snapshotted on first access. IDs and searchable fields are
+/// copied into immutable objects before the inverted index is published so a
+/// caller cannot mutate the live search corpus after validation has passed.
 class DeviceSearchIndexT0230 {
   DeviceSearchIndexT0230({
     required SearchDocumentLoaderT0230 loader,
@@ -127,7 +131,8 @@ class DeviceSearchIndexT0230 {
         throw StateError('T0230 search document $id has no searchable text.');
       }
 
-      final normalizedFields = document.searchableTexts
+      final searchableTexts = List<String>.unmodifiable(document.searchableTexts);
+      final normalizedFields = searchableTexts
           .map(_normalizer)
           .where((value) => value.isNotEmpty)
           .toList(growable: false);
@@ -141,7 +146,10 @@ class DeviceSearchIndexT0230 {
         throw StateError('T0230 search document $id has no indexable token.');
       }
 
-      documentsById[id] = document;
+      documentsById[id] = SearchDocumentT0230(
+        id: id,
+        searchableTexts: searchableTexts,
+      );
       normalizedCorpusById[id] = corpus;
       for (final token in tokens) {
         documentIdsByToken.putIfAbsent(token, () => <String>{}).add(id);
