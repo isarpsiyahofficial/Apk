@@ -4,10 +4,14 @@ import 'package:islami_hayat/features/search/domain/universal_search_categories_
 
 void main() {
   group('normalizeSearchTextT0232', () {
-    test('uses Turkish dotted and dotless I casing correctly', () {
+    test('uses Turkish casing and ASCII character tolerance correctly', () {
       expect(
         normalizeSearchTextT0232('İSLAM IŞIK', locale: SearchLocaleT0232.tr),
-        'islam ışık',
+        'islam isik',
+      );
+      expect(
+        normalizeSearchTextT0232('ÇÖĞÜŞÜ', locale: SearchLocaleT0232.tr),
+        'cogusu',
       );
       expect(
         normalizeSearchTextT0232('ISLAM', locale: SearchLocaleT0232.en),
@@ -108,7 +112,7 @@ void main() {
       expect(index.search('آدم').totalCount, 1);
     });
 
-    test('Turkish locale matches dotted/dotless-I without English leakage', () {
+    test('Turkish locale matches native and ASCII keyboard forms', () {
       final index = UniversalSearchIndexT0231(
         requireAllCategories: false,
         normalizer: localeAwareSearchNormalizerT0232(SearchLocaleT0232.tr),
@@ -116,14 +120,15 @@ void main() {
           UniversalSearchDocumentT0231(
             category: UniversalSearchCategoryT0231.history,
             stableId: 'islam-history',
-            searchableTexts: ['İSLAM TARİHİ', 'IŞIK'],
+            searchableTexts: ['İSLAM TARİHİ', 'IŞIK', 'GÖÇ'],
           ),
         ],
       );
 
       expect(index.search('islam tarihi').totalCount, 1);
       expect(index.search('ışık').totalCount, 1);
-      expect(index.search('isik').totalCount, 0);
+      expect(index.search('isik').totalCount, 1);
+      expect(index.search('goc').totalCount, 1);
     });
   });
 }
