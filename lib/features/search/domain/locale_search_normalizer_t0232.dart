@@ -14,7 +14,9 @@ SearchTextNormalizerT0230 localeAwareSearchNormalizerT0232(
 /// produces an ephemeral index/query representation. Arabic harakat, Quranic
 /// annotation marks and tatweel are ignored for lookup; common alif/hamza and
 /// seat variants are collapsed so unvocalized user queries can match indexed
-/// Arabic text. Turkish casing explicitly preserves dotted/dotless-I rules.
+/// Arabic text. Turkish casing explicitly preserves dotted/dotless-I rules
+/// before a search-only ASCII-tolerance fold is applied, so users can find
+/// Turkish content even when their keyboard omits Turkish diacritics.
 String normalizeSearchTextT0232(
   String value, {
   required SearchLocaleT0232 locale,
@@ -28,6 +30,7 @@ String normalizeSearchTextT0232(
           .replaceAll('İ', 'i')
           .replaceAll('I', 'ı')
           .toLowerCase();
+      normalized = _normalizeTurkishSearchForm(normalized);
     case SearchLocaleT0232.en:
       normalized = normalized.toLowerCase();
     case SearchLocaleT0232.ar:
@@ -46,6 +49,16 @@ String normalizeSearchTextT0232(
       .trim();
 
   return normalized;
+}
+
+String _normalizeTurkishSearchForm(String value) {
+  return value
+      .replaceAll('ı', 'i')
+      .replaceAll('ş', 's')
+      .replaceAll('ğ', 'g')
+      .replaceAll('ç', 'c')
+      .replaceAll('ö', 'o')
+      .replaceAll('ü', 'u');
 }
 
 String _normalizeArabicSearchForm(String value) {
