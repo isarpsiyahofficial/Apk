@@ -46,6 +46,8 @@ void main() {
   test('T0246 rejects invalid base font sizes', () {
     const preferences = ShareTextPreferencesT0246();
     expect(() => preferences.fontSizeFor(0), throwsArgumentError);
+    expect(() => preferences.fontSizeFor(-1), throwsArgumentError);
+    expect(() => preferences.fontSizeFor(double.nan), throwsArgumentError);
     expect(() => preferences.fontSizeFor(double.infinity), throwsArgumentError);
   });
 
@@ -86,6 +88,48 @@ void main() {
     expect(preferences.alignment, ShareTextAlignmentT0246.start);
     expect(find.byType(TextField), findsNothing);
     expect(find.byType(EditableText), findsNothing);
+  });
+
+  testWidgets('T0246 alignment controls mirror start and end icons in RTL', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ar'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: Scaffold(
+          body: ShareTextCustomizationControlsT0246(
+            preferences: const ShareTextPreferencesT0246(),
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final startIcon = tester.widget<Icon>(
+      find.descendant(
+        of: find.byKey(const ValueKey('t0246-align-start')),
+        matching: find.byType(Icon),
+      ),
+    );
+    final endIcon = tester.widget<Icon>(
+      find.descendant(
+        of: find.byKey(const ValueKey('t0246-align-end')),
+        matching: find.byType(Icon),
+      ),
+    );
+
+    expect(Directionality.of(tester.element(find.byType(Scaffold))), TextDirection.rtl);
+    expect(startIcon.icon, Icons.format_align_right);
+    expect(endIcon.icon, Icons.format_align_left);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('T0246 share card renders governed text as non-editable Text', (
