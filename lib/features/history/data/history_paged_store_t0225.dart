@@ -86,7 +86,7 @@ final historyChunkedPageSourceT0225 = HistoryChunkedPageSourceT0225(
     ),
     HistoryLazyChunkT0225(
       id: 't0212-muhammad-relative-chronology',
-      itemCount: 12,
+      itemCount: 19,
       unknownDatesOnly: true,
       loader: () => muhammadPeriodEventsT0220.events,
     ),
