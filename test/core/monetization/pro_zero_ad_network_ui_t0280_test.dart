@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/core/monetization/ad_network_dispatch_t0280.dart';
 import 'package:islami_hayat/core/monetization/ad_placement_policy.dart';
+import 'package:islami_hayat/core/monetization/ad_privacy_policy_t0273.dart';
 import 'package:islami_hayat/core/monetization/ad_safety_policy_t0272.dart';
 import 'package:islami_hayat/core/monetization/entitlement_gated_ad_sdk.dart';
 import 'package:islami_hayat/core/monetization/free_home_banner_surface.dart';
 import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.dart';
 
-final class _NetworkBoundarySpy implements AdSdkAdapter {
+final class _NetworkBoundarySpy
+    implements AdSdkAdapter, AdNetworkRequestTransportT0280 {
   int sdkInitializeCalls = 0;
   int networkRequestCalls = 0;
+  final List<AdFormat> requestedFormats = <AdFormat>[];
+  final List<AdSdkRequestPayloadT0273> observedPayloads =
+      <AdSdkRequestPayloadT0273>[];
 
   @override
   Future<AdSafetyConfigurationEvidenceT0272> initialize({
@@ -23,8 +29,14 @@ final class _NetworkBoundarySpy implements AdSdkAdapter {
     );
   }
 
-  void recordNetworkRequest() {
+  @override
+  Future<void> requestAd({
+    required AdFormat format,
+    required AdSdkRequestPayloadT0273 payload,
+  }) async {
     networkRequestCalls += 1;
+    requestedFormats.add(format);
+    observedPayloads.add(payload);
   }
 }
 
@@ -35,24 +47,6 @@ final class _LoadedAdSpy implements LoadedAdHandle {
   Future<void> dispose() async {
     disposeCalls += 1;
   }
-}
-
-void _attemptNetworkDispatch({
-  required EntitlementGatedAdSdkCoordinator coordinator,
-  required _NetworkBoundarySpy network,
-  required EntitlementState entitlement,
-  required AppAdSurface surface,
-  required AdFormat format,
-}) {
-  coordinator.buildPrivacySafeAdRequestFor(
-    entitlement: entitlement,
-    surface: surface,
-    format: format,
-  );
-
-  // A concrete SDK request is permitted only after the production coordinator
-  // has returned a privacy-safe descriptor. PRO must throw before this point.
-  network.recordNetworkRequest();
 }
 
 Widget _bannerHost({required EntitlementState entitlement}) {
@@ -96,10 +90,10 @@ void main() {
               isFalse,
               reason: 'PRO must reject $surface / $format',
             );
-            expect(
-              () => _attemptNetworkDispatch(
+            await expectLater(
+              dispatchPrivacySafeAdRequestT0280(
                 coordinator: coordinator,
-                network: network,
+                transport: network,
                 entitlement: entitlement,
                 surface: surface,
                 format: format,
@@ -111,8 +105,60 @@ void main() {
         }
 
         expect(network.networkRequestCalls, 0);
+        expect(network.requestedFormats, isEmpty);
+        expect(network.observedPayloads, isEmpty);
       });
     }
+
+    test('FREE positive control reaches transport only for allowed placements', () async {
+      final network = _NetworkBoundarySpy();
+      final coordinator = EntitlementGatedAdSdkCoordinator(sdk: network);
+      const free = EntitlementState.free();
+
+      await coordinator.evaluateAndInitialize(free);
+
+      await dispatchPrivacySafeAdRequestT0280(
+        coordinator: coordinator,
+        transport: network,
+        entitlement: free,
+        surface: AppAdSurface.todayHome,
+        format: AdFormat.banner,
+      );
+      await dispatchPrivacySafeAdRequestT0280(
+        coordinator: coordinator,
+        transport: network,
+        entitlement: free,
+        surface: AppAdSurface.shareDesignUnlock,
+        format: AdFormat.rewarded,
+      );
+
+      expect(network.sdkInitializeCalls, 1);
+      expect(network.networkRequestCalls, 2);
+      expect(network.requestedFormats, <AdFormat>[
+        AdFormat.banner,
+        AdFormat.rewarded,
+      ]);
+      expect(network.observedPayloads, hasLength(2));
+      for (final payload in network.observedPayloads) {
+        expect(payload.isStrictV1, isTrue);
+        expect(
+          payload.toPlatformParameters().keys.toSet(),
+          AdSdkRequestPayloadT0273.allowedPlatformParameterKeys,
+        );
+      }
+
+      await expectLater(
+        dispatchPrivacySafeAdRequestT0280(
+          coordinator: coordinator,
+          transport: network,
+          entitlement: free,
+          surface: AppAdSurface.quranReader,
+          format: AdFormat.banner,
+        ),
+        throwsStateError,
+      );
+      expect(network.networkRequestCalls, 2);
+    });
 
     testWidgets('verified and cached PRO render zero banner UI', (tester) async {
       for (final entitlement in <EntitlementState>[
@@ -175,10 +221,10 @@ void main() {
 
       expect(lateRewarded.disposeCalls, 1);
       expect(coordinator.loadedAdCount, 0);
-      expect(
-        () => _attemptNetworkDispatch(
+      await expectLater(
+        dispatchPrivacySafeAdRequestT0280(
           coordinator: coordinator,
-          network: network,
+          transport: network,
           entitlement: pro,
           surface: AppAdSurface.shareDesignUnlock,
           format: AdFormat.rewarded,
