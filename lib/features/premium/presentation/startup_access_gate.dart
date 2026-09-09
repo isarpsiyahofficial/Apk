@@ -99,7 +99,14 @@ class _StartupAccessGateState extends State<StartupAccessGate> {
       setState(() => _state = StartupAccessState.checking);
     }
 
-    final reachability = await widget.verifier.verify();
+    InternetReachability reachability;
+    try {
+      reachability = await widget.verifier.verify();
+    } on Object {
+      // A FREE cold-start must never fail open or remain indefinitely in the
+      // checking state when the reachability infrastructure itself fails.
+      reachability = InternetReachability.unreachable;
+    }
     if (!mounted || token != _evaluationToken) return;
 
     setState(() {
