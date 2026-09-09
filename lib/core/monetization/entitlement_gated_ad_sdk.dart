@@ -114,8 +114,9 @@ final class EntitlementGatedAdSdkCoordinator {
   ///
   /// A replacement disposes the previous object first. If entitlement has
   /// already become PRO, the newly-arrived object is disposed immediately and
-  /// is never placed in the in-memory registry. This closes the race where an
-  /// asynchronous SDK load completes just after purchase/restore activates PRO.
+  /// is never placed in the in-memory registry. This closes both the ordinary
+  /// late-load race and the replacement race where PRO activates while the old
+  /// loaded object is still being asynchronously disposed.
   Future<void> retainLoadedAd({
     required LoadedAdKind kind,
     required LoadedAdHandle ad,
@@ -123,7 +124,7 @@ final class EntitlementGatedAdSdkCoordinator {
   }) async {
     if (!entitlement.allowsAdSdk ||
         _state == AdSdkBootstrapState.suppressedForPro) {
-      await ad.dispose();
+      await _disposeIncomingAdFailClosed(kind: kind, ad: ad);
       return;
     }
 
@@ -133,6 +134,16 @@ final class EntitlementGatedAdSdkCoordinator {
     if (previous != null && !identical(previous, ad)) {
       await previous.dispose();
     }
+
+    // The previous dispose may yield to a purchase/restore callback. Re-check
+    // coordinator state after that await so a stale FREE entitlement captured by
+    // the load callback cannot resurrect a loaded ad after PRO has suppressed
+    // the SDK.
+    if (_state == AdSdkBootstrapState.suppressedForPro) {
+      await _disposeIncomingAdFailClosed(kind: kind, ad: ad);
+      return;
+    }
+
     _loadedAds[kind] = ad;
   }
 
@@ -206,6 +217,22 @@ final class EntitlementGatedAdSdkCoordinator {
     )) {
       throw StateError(
         'Ad request blocked: placement is forbidden, entitlement is PRO, or SDK is not safely initialized.',
+      );
+    }
+  }
+
+  Future<void> _disposeIncomingAdFailClosed({
+    required LoadedAdKind kind,
+    required LoadedAdHandle ad,
+  }) async {
+    try {
+      await ad.dispose();
+    } catch (error) {
+      _lastDisposalFailures = List<AdDisposalFailure>.unmodifiable(
+        <AdDisposalFailure>[
+          ..._lastDisposalFailures,
+          AdDisposalFailure(kind: kind, error: error),
+        ],
       );
     }
   }
