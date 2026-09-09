@@ -15,6 +15,7 @@ class IslamiHayatApp extends StatelessWidget {
     this.locale,
     this.startupAccessVerifier,
     this.initialEntitlement = const EntitlementState.free(),
+    this.freeHomeBanner,
     this.notificationTapController,
   });
 
@@ -28,6 +29,15 @@ class IslamiHayatApp extends StatelessWidget {
   /// independently.
   final InternetReachabilityVerifier? startupAccessVerifier;
   final EntitlementState initialEntitlement;
+
+  /// Filled FREE-home banner supplied by the concrete ad integration.
+  ///
+  /// Null represents not-loaded/no-fill and deliberately collapses without
+  /// blocking home content. The entitlement is propagated separately to
+  /// [AppShell], so cached or verified PRO always suppresses this widget even
+  /// if a stale ad callback supplies content after the entitlement decision.
+  final Widget? freeHomeBanner;
+
   final NotificationTapControllerT0291? notificationTapController;
 
   @override
@@ -41,6 +51,8 @@ class IslamiHayatApp extends StatelessWidget {
           );
     final shell = AppShell(
       canEnterNewContent: transitionGuard?.canEnterNewContent,
+      entitlement: initialEntitlement,
+      freeHomeBanner: freeHomeBanner,
       notificationTapController: notificationTapController,
     );
     final home = verifier == null
