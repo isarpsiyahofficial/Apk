@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/monetization/ad_safety_policy_t0272.dart';
 import 'package:islami_hayat/core/monetization/entitlement_gated_ad_sdk.dart';
@@ -30,6 +32,21 @@ final class _FakeLoadedAd implements LoadedAdHandle {
     if (failDispose) {
       throw StateError('simulated dispose failure');
     }
+  }
+}
+
+final class _BlockingLoadedAd implements LoadedAdHandle {
+  final Completer<void> disposeStarted = Completer<void>();
+  final Completer<void> allowDisposeToFinish = Completer<void>();
+  int disposeCalls = 0;
+
+  @override
+  Future<void> dispose() async {
+    disposeCalls += 1;
+    if (!disposeStarted.isCompleted) {
+      disposeStarted.complete();
+    }
+    await allowDisposeToFinish.future;
   }
 }
 
@@ -142,6 +159,53 @@ void main() {
       expect(replacement.disposeCalls, 0);
       expect(coordinator.loadedAdCount, 1);
       expect(coordinator.loadedAdKinds, <LoadedAdKind>{LoadedAdKind.banner});
+    });
+
+    test('PRO activation during replacement dispose cannot resurrect a loaded ad', () async {
+      final coordinator = EntitlementGatedAdSdkCoordinator(sdk: _FakeAdSdk());
+      const free = EntitlementState.free();
+      const pro = EntitlementState.verifiedPro();
+      final current = _BlockingLoadedAd();
+      final replacement = _FakeLoadedAd();
+
+      await coordinator.evaluateAndInitialize(free);
+      await coordinator.retainLoadedAd(kind: LoadedAdKind.banner, ad: current, entitlement: free);
+
+      final replacementFuture = coordinator.retainLoadedAd(
+        kind: LoadedAdKind.banner,
+        ad: replacement,
+        entitlement: free,
+      );
+      await current.disposeStarted.future;
+
+      await coordinator.evaluateAndInitialize(pro);
+      current.allowDisposeToFinish.complete();
+      await replacementFuture;
+
+      expect(coordinator.state, AdSdkBootstrapState.suppressedForPro);
+      expect(current.disposeCalls, 1);
+      expect(replacement.disposeCalls, 1);
+      expect(coordinator.loadedAdCount, 0);
+      expect(coordinator.canIssueAdRequest(pro), isFalse);
+    });
+
+    test('late PRO disposal failure is recorded while ad remains detached', () async {
+      final coordinator = EntitlementGatedAdSdkCoordinator(sdk: _FakeAdSdk());
+      const pro = EntitlementState.verifiedPro();
+      final brokenLateAd = _FakeLoadedAd(failDispose: true);
+
+      await coordinator.evaluateAndInitialize(pro);
+      await coordinator.retainLoadedAd(
+        kind: LoadedAdKind.rewarded,
+        ad: brokenLateAd,
+        entitlement: pro,
+      );
+
+      expect(brokenLateAd.disposeCalls, 1);
+      expect(coordinator.loadedAdCount, 0);
+      expect(coordinator.lastDisposalFailures, hasLength(1));
+      expect(coordinator.lastDisposalFailures.single.kind, LoadedAdKind.rewarded);
+      expect(coordinator.canIssueAdRequest(pro), isFalse);
     });
   });
 }
