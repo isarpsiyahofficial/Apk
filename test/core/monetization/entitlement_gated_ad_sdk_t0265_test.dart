@@ -18,7 +18,9 @@ final class _FakeAdSdk implements AdSdkAdapter {
       throw StateError('simulated SDK init failure');
     }
     return const AdSafetyConfigurationEvidenceT0272(
-      runtimeMaxContentRatingApplied: true,
+      runtimeAppliedMaxContentRating: AdContentRatingT0272.general,
+      verifiedBlockedCategories:
+          AdSafetyProfileT0272.mandatoryBlockedCategories,
       accountCategoryBlocksVerified: true,
     );
   }
