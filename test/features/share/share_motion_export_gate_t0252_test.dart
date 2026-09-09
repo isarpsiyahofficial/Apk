@@ -25,7 +25,7 @@ void main() {
         isA<StateError>().having(
           (error) => error.message,
           'message',
-          contains('Reels motion export is disabled in V1'),
+          contains('Reels motion export is outside the V1 release scope'),
         ),
       ),
     );
