@@ -74,6 +74,30 @@ final class InternetReachabilityVerifier {
         'must be positive',
       );
     }
+
+    for (final probe in this.probes) {
+      if (probe.uri.scheme != 'https' || probe.uri.host.isEmpty) {
+        throw ArgumentError.value(
+          probe.uri,
+          'probes',
+          'reachability probes must use absolute HTTPS URLs',
+        );
+      }
+      if (probe.uri.userInfo.isNotEmpty || probe.uri.fragment.isNotEmpty) {
+        throw ArgumentError.value(
+          probe.uri,
+          'probes',
+          'reachability probes must not contain credentials or fragments',
+        );
+      }
+      if (probe.expectedStatusCode != HttpStatus.noContent) {
+        throw ArgumentError.value(
+          probe.expectedStatusCode,
+          'probes',
+          'reachability probes must require HTTP 204',
+        );
+      }
+    }
   }
 
   final InternetProbeClient _client;
