@@ -16,6 +16,7 @@ final class PlayRestoreStateT0276 {
     required this.phase,
     required this.entitlement,
     this.productId,
+    this.verificationEvidenceFingerprint,
   });
 
   const PlayRestoreStateT0276.idle({
@@ -29,6 +30,11 @@ final class PlayRestoreStateT0276 {
   final EntitlementState entitlement;
   final String? productId;
 
+  /// Non-secret fingerprint binding the ownership callback to its later
+  /// verification result. Raw Play purchase tokens/receipts are deliberately
+  /// excluded from this state object.
+  final String? verificationEvidenceFingerprint;
+
   bool get isRestoring => phase == PlayRestorePhaseT0276.restoring;
   bool get isRestored => phase == PlayRestorePhaseT0276.restored;
   bool get grantsPro => isRestored && entitlement.isPro;
@@ -36,25 +42,51 @@ final class PlayRestoreStateT0276 {
 
 /// Ownership snapshot returned by the Google Play restore/query boundary.
 ///
-/// Product IDs are intentionally kept separate from entitlement. Discovering
-/// the canonical product only creates a verification candidate; it never grants
-/// PRO by itself.
+/// Product IDs remain separate from entitlement. Canonical ownership also has
+/// to carry a non-secret fingerprint derived from the exact Play verification
+/// material. Discovery alone never grants PRO.
 final class PlayRestoreOwnershipSnapshotT0276 {
-  PlayRestoreOwnershipSnapshotT0276({required Iterable<String> ownedProductIds})
-      : ownedProductIds = Set<String>.unmodifiable(ownedProductIds);
+  PlayRestoreOwnershipSnapshotT0276({
+    required Iterable<String> ownedProductIds,
+    Map<String, String> verificationEvidenceFingerprintsByProductId = const {},
+  })  : ownedProductIds = Set<String>.unmodifiable(ownedProductIds),
+        verificationEvidenceFingerprintsByProductId = Map<String, String>.unmodifiable(
+          verificationEvidenceFingerprintsByProductId.map((productId, evidence) {
+            final normalizedEvidence = evidence.trim();
+            if (normalizedEvidence.isEmpty) {
+              throw StateError('Restore verification evidence must not be blank.');
+            }
+            return MapEntry(productId, normalizedEvidence);
+          }),
+        ) {
+    for (final productId in verificationEvidenceFingerprintsByProductId.keys) {
+      if (!this.ownedProductIds.contains(productId)) {
+        throw StateError(
+          'Restore verification evidence cannot reference an unowned product.',
+        );
+      }
+    }
+  }
 
   final Set<String> ownedProductIds;
+  final Map<String, String> verificationEvidenceFingerprintsByProductId;
 
   bool get containsLifetimePro => ownedProductIds.contains(
         PlayBillingProductCatalogT0274.lifetimeProProductId,
       );
+
+  String? get lifetimeProVerificationEvidenceFingerprint =>
+      verificationEvidenceFingerprintsByProductId[
+        PlayBillingProductCatalogT0274.lifetimeProProductId
+      ];
 }
 
 /// Fail-closed restore lifecycle for the V1 Google Play Lifetime PRO product.
 ///
 /// Restore is deliberately two-step: Google Play ownership discovery followed
-/// by explicit purchase verification. Neither an unrelated product nor a query
-/// callback alone may create PRO entitlement.
+/// by explicit purchase verification. Neither an unrelated product, a query
+/// callback alone, nor verification evidence from another purchase may create
+/// PRO entitlement.
 final class PlayRestorePurchasesStateMachineT0276 {
   const PlayRestorePurchasesStateMachineT0276({
     this.entitlementStateMachine = const EntitlementStateMachine(),
@@ -82,10 +114,20 @@ final class PlayRestorePurchasesStateMachineT0276 {
       );
     }
 
+    final evidence = snapshot.lifetimeProVerificationEvidenceFingerprint;
+    if (evidence == null || evidence.isEmpty) {
+      return PlayRestoreStateT0276._(
+        phase: PlayRestorePhaseT0276.verificationFailed,
+        entitlement: current.entitlement,
+        productId: PlayBillingProductCatalogT0274.lifetimeProProductId,
+      );
+    }
+
     return PlayRestoreStateT0276._(
       phase: PlayRestorePhaseT0276.awaitingVerification,
       entitlement: current.entitlement,
       productId: PlayBillingProductCatalogT0274.lifetimeProProductId,
+      verificationEvidenceFingerprint: evidence,
     );
   }
 
@@ -101,9 +143,11 @@ final class PlayRestorePurchasesStateMachineT0276 {
   PlayRestoreStateT0276 markVerifiedRestore(
     PlayRestoreStateT0276 current, {
     required String productId,
+    required String verificationEvidenceFingerprint,
   }) {
     PlayBillingProductCatalogT0274.requireKnownProduct(productId);
-    _requireMatchingVerificationCandidate(current, productId);
+    final evidence = verificationEvidenceFingerprint.trim();
+    _requireMatchingVerificationCandidate(current, productId, evidence);
 
     return PlayRestoreStateT0276._(
       phase: PlayRestorePhaseT0276.restored,
@@ -112,20 +156,24 @@ final class PlayRestorePurchasesStateMachineT0276 {
         EntitlementEvent.restoredPurchase,
       ),
       productId: productId,
+      verificationEvidenceFingerprint: evidence,
     );
   }
 
   PlayRestoreStateT0276 markVerificationFailed(
     PlayRestoreStateT0276 current, {
     required String productId,
+    required String verificationEvidenceFingerprint,
   }) {
     PlayBillingProductCatalogT0274.requireKnownProduct(productId);
-    _requireMatchingVerificationCandidate(current, productId);
+    final evidence = verificationEvidenceFingerprint.trim();
+    _requireMatchingVerificationCandidate(current, productId, evidence);
 
     return PlayRestoreStateT0276._(
       phase: PlayRestorePhaseT0276.verificationFailed,
       entitlement: current.entitlement,
       productId: productId,
+      verificationEvidenceFingerprint: evidence,
     );
   }
 
@@ -138,11 +186,14 @@ final class PlayRestorePurchasesStateMachineT0276 {
   void _requireMatchingVerificationCandidate(
     PlayRestoreStateT0276 current,
     String productId,
+    String verificationEvidenceFingerprint,
   ) {
-    if (current.phase != PlayRestorePhaseT0276.awaitingVerification ||
-        current.productId != productId) {
+    if (verificationEvidenceFingerprint.isEmpty ||
+        current.phase != PlayRestorePhaseT0276.awaitingVerification ||
+        current.productId != productId ||
+        current.verificationEvidenceFingerprint != verificationEvidenceFingerprint) {
       throw StateError(
-        'Restore must discover and match the canonical product before verification.',
+        'Restore verification must match the canonical product and exact ownership evidence.',
       );
     }
   }
