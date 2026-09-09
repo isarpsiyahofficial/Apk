@@ -5,11 +5,14 @@ import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.d
 
 final class _SafetyAwareSdk implements AdSdkAdapter {
   _SafetyAwareSdk({
-    this.runtimeRatingApplied = true,
+    this.appliedRating = AdContentRatingT0272.general,
+    this.verifiedBlockedCategories =
+        AdSafetyProfileT0272.mandatoryBlockedCategories,
     this.categoryBlocksVerified = true,
   });
 
-  final bool runtimeRatingApplied;
+  final AdContentRatingT0272 appliedRating;
+  final Set<BlockedAdCategoryT0272> verifiedBlockedCategories;
   final bool categoryBlocksVerified;
   AdSafetyProfileT0272? receivedProfile;
   int initializeCalls = 0;
@@ -21,7 +24,8 @@ final class _SafetyAwareSdk implements AdSdkAdapter {
     initializeCalls += 1;
     receivedProfile = safetyProfile;
     return AdSafetyConfigurationEvidenceT0272(
-      runtimeMaxContentRatingApplied: runtimeRatingApplied,
+      runtimeAppliedMaxContentRating: appliedRating,
+      verifiedBlockedCategories: verifiedBlockedCategories,
       accountCategoryBlocksVerified: categoryBlocksVerified,
     );
   }
@@ -85,8 +89,10 @@ void main() {
       expect(coordinator.canIssueAdRequest(const EntitlementState.free()), isTrue);
     });
 
-    test('missing runtime max-rating evidence fails closed', () async {
-      final sdk = _SafetyAwareSdk(runtimeRatingApplied: false);
+    test('runtime PG evidence fails closed even when adapter claims setup completed', () async {
+      final sdk = _SafetyAwareSdk(
+        appliedRating: AdContentRatingT0272.parentalGuidance,
+      );
       final coordinator = EntitlementGatedAdSdkCoordinator(sdk: sdk);
 
       await expectLater(
@@ -98,7 +104,27 @@ void main() {
       expect(coordinator.canIssueAdRequest(const EntitlementState.free()), isFalse);
     });
 
-    test('missing account category-block evidence fails closed', () async {
+    test('wrong exact category evidence fails closed', () async {
+      final sdk = _SafetyAwareSdk(
+        verifiedBlockedCategories: const <BlockedAdCategoryT0272>{
+          BlockedAdCategoryT0272.alcohol,
+          BlockedAdCategoryT0272.gambling,
+          BlockedAdCategoryT0272.adultContent,
+          BlockedAdCategoryT0272.dating,
+        },
+      );
+      final coordinator = EntitlementGatedAdSdkCoordinator(sdk: sdk);
+
+      await expectLater(
+        coordinator.evaluateAndInitialize(const EntitlementState.free()),
+        throwsStateError,
+      );
+
+      expect(coordinator.state, AdSdkBootstrapState.awaitingEntitlement);
+      expect(coordinator.canIssueAdRequest(const EntitlementState.free()), isFalse);
+    });
+
+    test('unverified account category controls fail closed', () async {
       final sdk = _SafetyAwareSdk(categoryBlocksVerified: false);
       final coordinator = EntitlementGatedAdSdkCoordinator(sdk: sdk);
 
