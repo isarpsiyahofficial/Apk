@@ -83,5 +83,39 @@ void main() {
         }
       }
     });
+
+    test('V1 interstitial is fail-closed on every surface in FREE', () {
+      for (final surface in AppAdSurface.values) {
+        expect(
+          AdPlacementPolicy.canRequest(
+            surface: surface,
+            format: AdFormat.interstitial,
+            isPro: false,
+          ),
+          isFalse,
+          reason:
+              'Interstitial must stay disabled unless a future spec adds an explicit safe placement: ${surface.name}',
+        );
+      }
+    });
+
+    test('sacred classification and request policy cannot diverge', () {
+      for (final surface in AppAdSurface.values) {
+        if (!AdPlacementPolicy.isSacredContentSurface(surface)) continue;
+
+        for (final format in AdFormat.values) {
+          expect(
+            AdPlacementPolicy.canRequest(
+              surface: surface,
+              format: format,
+              isPro: false,
+            ),
+            isFalse,
+            reason:
+                'Sacred surface classification must always dominate ad format allow-lists: ${surface.name}/${format.name}',
+          );
+        }
+      }
+    });
   });
 }
