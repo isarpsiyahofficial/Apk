@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/network/internet_reachability.dart';
 
@@ -109,6 +111,48 @@ void main() {
       );
 
       expect(await verifier.verify(), InternetReachability.unreachable);
+    });
+
+    test('rejects HTTP probes that a captive portal could spoof', () {
+      expect(
+        () => InternetReachabilityVerifier(
+          client: _FakeProbeClient(<String, int?>{}),
+          probes: <InternetProbe>[
+            InternetProbe(uri: Uri.parse('http://one.example/generate_204')),
+          ],
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('rejects non-204 success contracts', () {
+      expect(
+        () => InternetReachabilityVerifier(
+          client: _FakeProbeClient(<String, int?>{}),
+          probes: <InternetProbe>[
+            InternetProbe(
+              uri: Uri.parse('https://one.example/login'),
+              expectedStatusCode: HttpStatus.ok,
+            ),
+          ],
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('rejects probe credentials and fragments', () {
+      for (final uri in <Uri>[
+        Uri.parse('https://user:pass@one.example/generate_204'),
+        Uri.parse('https://one.example/generate_204#fragment'),
+      ]) {
+        expect(
+          () => InternetReachabilityVerifier(
+            client: _FakeProbeClient(<String, int?>{}),
+            probes: <InternetProbe>[InternetProbe(uri: uri)],
+          ),
+          throwsArgumentError,
+        );
+      }
     });
 
     test('empty probe set and non-positive timeout are rejected', () {
