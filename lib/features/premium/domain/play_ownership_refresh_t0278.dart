@@ -1,4 +1,5 @@
 import 'entitlement_state_machine.dart';
+import 'play_billing_product_catalog_t0274.dart';
 import 'secure_entitlement_cache_t0277.dart';
 
 enum PlayOwnershipEvidenceT0278 {
@@ -9,14 +10,21 @@ enum PlayOwnershipEvidenceT0278 {
 
 /// Authoritative online ownership result for the canonical Lifetime PRO SKU.
 ///
-/// The gateway producing this value is responsible for querying Google Play and
-/// verifying the returned purchase evidence. Transient query/verification
-/// failures are represented by exceptions instead of being converted into a
-/// false no-ownership result.
+/// [verificationEvidenceFingerprint] is a non-secret fingerprint produced by
+/// the Play verification boundary. Raw purchase tokens/receipts must not be
+/// stored in this domain model. Even a negative/revoked result must be bound to
+/// the exact canonical product query so evidence for another SKU can never
+/// downgrade Lifetime PRO.
 final class PlayOwnershipSnapshotT0278 {
-  const PlayOwnershipSnapshotT0278(this.evidence);
+  const PlayOwnershipSnapshotT0278({
+    required this.productId,
+    required this.evidence,
+    required this.verificationEvidenceFingerprint,
+  });
 
+  final String productId;
   final PlayOwnershipEvidenceT0278 evidence;
+  final String verificationEvidenceFingerprint;
 }
 
 abstract interface class PlayOwnershipRefreshGatewayT0278 {
@@ -43,9 +51,10 @@ final class PlayOwnershipRefreshResultT0278 {
 
 /// Online refresh boundary for Google Play Lifetime PRO ownership.
 ///
-/// A downgrade is allowed only after authoritative verified evidence. Network,
-/// Play query, or verification failures never masquerade as revocation and do
-/// not erase a previously verified cache. Verified revoke/refund or verified
+/// A downgrade is allowed only after authoritative verified evidence bound to
+/// the canonical V1 product ID. Network, Play query, verification failures, an
+/// unknown SKU, or missing evidence never masquerade as revocation and do not
+/// erase a previously verified cache. Verified revoke/refund or verified
 /// no-ownership immediately drops the in-memory entitlement to FREE and clears
 /// the Keystore-backed cache so a later offline restart cannot resurrect stale
 /// PRO state.
@@ -75,10 +84,11 @@ final class PlayOwnershipRefreshServiceT0278 {
     try {
       snapshot = await gateway.queryVerifiedLifetimeProOwnership();
     } on Object {
-      return PlayOwnershipRefreshResultT0278(
-        outcome: PlayOwnershipRefreshOutcomeT0278.transientFailure,
-        entitlement: current,
-      );
+      return _transientFailure(current);
+    }
+
+    if (!_isAuthoritativeCanonicalEvidence(snapshot)) {
+      return _transientFailure(current);
     }
 
     return switch (snapshot.evidence) {
@@ -88,6 +98,22 @@ final class PlayOwnershipRefreshServiceT0278 {
       PlayOwnershipEvidenceT0278.verifiedNoOwnership =>
         _handleNoOwnership(current),
     };
+  }
+
+  bool _isAuthoritativeCanonicalEvidence(PlayOwnershipSnapshotT0278 snapshot) {
+    return PlayBillingProductCatalogT0274.isLifetimeProProduct(
+          snapshot.productId,
+        ) &&
+        snapshot.verificationEvidenceFingerprint.trim().isNotEmpty;
+  }
+
+  PlayOwnershipRefreshResultT0278 _transientFailure(
+    EntitlementState current,
+  ) {
+    return PlayOwnershipRefreshResultT0278(
+      outcome: PlayOwnershipRefreshOutcomeT0278.transientFailure,
+      entitlement: current,
+    );
   }
 
   Future<PlayOwnershipRefreshResultT0278> _handleOwned(
