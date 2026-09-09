@@ -18,6 +18,12 @@ final class EntitlementState {
           verification: EntitlementVerification.initial,
         );
 
+  const EntitlementState.verifiedFree()
+      : this._(
+          tier: EntitlementTier.free,
+          verification: EntitlementVerification.verifiedOnline,
+        );
+
   const EntitlementState.cachedPro()
       : this._(
           tier: EntitlementTier.pro,
@@ -62,7 +68,7 @@ final class EntitlementStateMachine {
       EntitlementEvent.verifiedPurchase ||
       EntitlementEvent.restoredPurchase => const EntitlementState.verifiedPro(),
       EntitlementEvent.verifiedRevokedOrRefunded ||
-      EntitlementEvent.verifiedNoOwnership => const EntitlementState.free(),
+      EntitlementEvent.verifiedNoOwnership => const EntitlementState.verifiedFree(),
     };
   }
 
