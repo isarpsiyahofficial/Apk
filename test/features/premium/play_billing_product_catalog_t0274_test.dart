@@ -14,6 +14,10 @@ void main() {
 
     test('catalog contains exactly one V1 non-consumable Lifetime PRO product', () {
       expect(PlayBillingProductCatalogT0274.products, hasLength(1));
+      expect(
+        PlayBillingProductCatalogT0274.queryProductIds,
+        <String>{'islami_hayat_lifetime_pro'},
+      );
 
       final product = PlayBillingProductCatalogT0274.lifetimePro;
       expect(product.id, 'islami_hayat_lifetime_pro');
@@ -33,6 +37,17 @@ void main() {
       );
     });
 
+    test('exact Play result resolves only the canonical Lifetime PRO product', () {
+      final product = PlayBillingProductCatalogT0274.requireExactStoreCatalog(
+        const PlayBillingCatalogEvidenceT0274(
+          returnedProductIds: <String>{'islami_hayat_lifetime_pro'},
+          notFoundProductIds: <String>{},
+        ),
+      );
+
+      expect(identical(product, PlayBillingProductCatalogT0274.lifetimePro), isTrue);
+    });
+
     test('unknown or subscription-like IDs fail closed', () {
       expect(
         () => PlayBillingProductCatalogT0274.requireKnownProduct(
@@ -45,6 +60,72 @@ void main() {
           'islami_hayat_monthly_pro',
         ),
         isFalse,
+      );
+      expect(
+        () => PlayBillingProductCatalogT0274.requireExactStoreCatalog(
+          const PlayBillingCatalogEvidenceT0274(
+            returnedProductIds: <String>{'islami_hayat_monthly_pro'},
+            notFoundProductIds: <String>{},
+          ),
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('missing/not-found canonical product fails closed', () {
+      expect(
+        () => PlayBillingProductCatalogT0274.requireExactStoreCatalog(
+          const PlayBillingCatalogEvidenceT0274(
+            returnedProductIds: <String>{},
+            notFoundProductIds: <String>{'islami_hayat_lifetime_pro'},
+          ),
+        ),
+        throwsStateError,
+      );
+      expect(
+        () => PlayBillingProductCatalogT0274.requireExactStoreCatalog(
+          const PlayBillingCatalogEvidenceT0274(
+            returnedProductIds: <String>{},
+            notFoundProductIds: <String>{},
+          ),
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('unexpected or contradictory store evidence fails closed', () {
+      expect(
+        () => PlayBillingProductCatalogT0274.requireExactStoreCatalog(
+          const PlayBillingCatalogEvidenceT0274(
+            returnedProductIds: <String>{
+              'islami_hayat_lifetime_pro',
+              'islami_hayat_monthly_pro',
+            },
+            notFoundProductIds: <String>{},
+          ),
+        ),
+        throwsStateError,
+      );
+      expect(
+        () => PlayBillingProductCatalogT0274.requireExactStoreCatalog(
+          const PlayBillingCatalogEvidenceT0274(
+            returnedProductIds: <String>{'islami_hayat_lifetime_pro'},
+            notFoundProductIds: <String>{'islami_hayat_lifetime_pro'},
+          ),
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('query product ID set cannot be mutated by callers', () {
+      final ids = PlayBillingProductCatalogT0274.queryProductIds;
+      expect(
+        () => ids.add('islami_hayat_monthly_pro'),
+        throwsUnsupportedError,
+      );
+      expect(
+        PlayBillingProductCatalogT0274.queryProductIds,
+        <String>{'islami_hayat_lifetime_pro'},
       );
     });
   });
