@@ -59,26 +59,39 @@ final class AdSafetyProfileT0272 {
 /// Evidence returned by a concrete ad SDK adapter after applying the safety
 /// profile.
 ///
+/// A pair of booleans is deliberately not enough here: the adapter must report
+/// the exact runtime rating it applied and the exact category set verified in
+/// the ad-network account. This prevents a PG/T/MA rating or an incomplete
+/// category block list from being accidentally accepted as "configured".
+///
 /// Sensitive category exclusions are commonly controlled in the ad-network
 /// account/console rather than purely by a mobile SDK. The adapter therefore
-/// must not report the configuration as ready until both the runtime maximum
-/// content rating and the account-side category exclusions have been verified.
+/// must not report the configuration as ready until the account-side controls
+/// have also been verified.
 final class AdSafetyConfigurationEvidenceT0272 {
   const AdSafetyConfigurationEvidenceT0272({
-    required this.runtimeMaxContentRatingApplied,
+    required this.runtimeAppliedMaxContentRating,
+    required this.verifiedBlockedCategories,
     required this.accountCategoryBlocksVerified,
   });
 
-  final bool runtimeMaxContentRatingApplied;
+  final AdContentRatingT0272 runtimeAppliedMaxContentRating;
+  final Set<BlockedAdCategoryT0272> verifiedBlockedCategories;
   final bool accountCategoryBlocksVerified;
 
-  bool get isComplete =>
-      runtimeMaxContentRatingApplied && accountCategoryBlocksVerified;
+  bool get isComplete {
+    const requiredProfile = AdSafetyProfileT0272.strictV1;
+    return accountCategoryBlocksVerified &&
+        runtimeAppliedMaxContentRating == requiredProfile.maxContentRating &&
+        verifiedBlockedCategories.length ==
+            requiredProfile.blockedCategories.length &&
+        verifiedBlockedCategories.containsAll(requiredProfile.blockedCategories);
+  }
 
   void requireComplete() {
     if (!isComplete) {
       throw StateError(
-        'Ad SDK initialization blocked: strict ad-safety evidence is incomplete.',
+        'Ad SDK initialization blocked: exact G-rating and mandatory category-block evidence is incomplete or mismatched.',
       );
     }
   }
