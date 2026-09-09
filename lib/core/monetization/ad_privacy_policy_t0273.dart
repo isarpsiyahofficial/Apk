@@ -111,6 +111,13 @@ final class AdSdkRequestPayloadT0273 {
     required this.publisherFirstPartyIdEnabled,
   });
 
+  static const Set<String> allowedPlatformParameterKeys = <String>{
+    'surface',
+    'non_personalized_ads',
+    'contextual_only',
+    'publisher_first_party_id_enabled',
+  };
+
   final AdContextSurfaceT0273 surface;
   final bool nonPersonalizedAds;
   final bool contextualOnly;
@@ -128,5 +135,20 @@ final class AdSdkRequestPayloadT0273 {
         'requests without a publisher-provided user identifier.',
       );
     }
+  }
+
+  /// Exact allow-listed data a concrete platform adapter may consume.
+  ///
+  /// Returning a fixed, unmodifiable map makes accidental keyword/custom
+  /// targeting additions visible to regression tests and code review instead of
+  /// allowing arbitrary data to be forwarded to an SDK.
+  Map<String, Object> toPlatformParameters() {
+    requireStrictV1();
+    return Map<String, Object>.unmodifiable(<String, Object>{
+      'surface': surface.name,
+      'non_personalized_ads': nonPersonalizedAds,
+      'contextual_only': contextualOnly,
+      'publisher_first_party_id_enabled': publisherFirstPartyIdEnabled,
+    });
   }
 }
