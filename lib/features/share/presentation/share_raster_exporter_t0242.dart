@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:islami_hayat/features/share/domain/share_canvas_layout_t0242.dart';
+import 'package:islami_hayat/features/share/domain/share_motion_policy_t0252.dart';
 import 'package:islami_hayat/features/share/domain/share_readability_t0247.dart';
 
 class ShareRasterExportResultT0242 {
@@ -27,7 +28,13 @@ class ShareRasterExporterT0242 {
     required GlobalKey repaintBoundaryKey,
     required ShareCanvasFormatT0242 format,
     required ShareReadabilityDecisionT0247 readabilityDecision,
+    ShareExportModeT0252 exportMode = ShareExportModeT0252.stillImage,
   }) async {
+    // T0252 is enforced at the production export boundary, not only in the UI
+    // or in a standalone feature-policy test. V1 is intentionally still-image
+    // only; a forged/direct Reels export request must fail before raster work.
+    ShareMotionPolicyT0252.v1.requireExportAllowed(exportMode);
+
     // T0247 is an export gate, not only a preview hint. Every production raster
     // export must carry the exact readability decision that was used by the
     // renderer, and an unreadable candidate must fail before any PNG bytes are
