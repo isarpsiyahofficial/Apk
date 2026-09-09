@@ -19,6 +19,23 @@ final class _FakeProbeClient implements InternetProbeClient {
   }
 }
 
+final class _ThrowingProbeClient implements InternetProbeClient {
+  _ThrowingProbeClient({this.reachableUri});
+
+  final Uri? reachableUri;
+  final List<Uri> calls = <Uri>[];
+
+  @override
+  Future<int?> statusCode(
+    Uri uri, {
+    required Duration timeout,
+  }) async {
+    calls.add(uri);
+    if (uri == reachableUri) return HttpStatus.noContent;
+    throw const SocketException('simulated probe infrastructure failure');
+  }
+}
+
 void main() {
   final first = InternetProbe(uri: Uri.parse('https://one.example/generate_204'));
   final second = InternetProbe(uri: Uri.parse('https://two.example/generate_204'));
@@ -97,6 +114,28 @@ void main() {
       final result = await verifier.verify();
 
       expect(result, InternetReachability.reachable);
+      expect(client.calls, <Uri>[first.uri, second.uri]);
+    });
+
+    test('probe exception falls back to the next pinned HTTPS endpoint', () async {
+      final client = _ThrowingProbeClient(reachableUri: second.uri);
+      final verifier = InternetReachabilityVerifier(
+        client: client,
+        probes: <InternetProbe>[first, second],
+      );
+
+      expect(await verifier.verify(), InternetReachability.reachable);
+      expect(client.calls, <Uri>[first.uri, second.uri]);
+    });
+
+    test('all probe exceptions remain fail-closed unreachable', () async {
+      final client = _ThrowingProbeClient();
+      final verifier = InternetReachabilityVerifier(
+        client: client,
+        probes: <InternetProbe>[first, second],
+      );
+
+      expect(await verifier.verify(), InternetReachability.unreachable);
       expect(client.calls, <Uri>[first.uri, second.uri]);
     });
 
