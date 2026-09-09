@@ -11,7 +11,9 @@ final class _PrivacyTestSdk implements AdSdkAdapter {
     required AdSafetyProfileT0272 safetyProfile,
   }) async {
     return const AdSafetyConfigurationEvidenceT0272(
-      runtimeMaxContentRatingApplied: true,
+      runtimeAppliedMaxContentRating: AdContentRatingT0272.general,
+      verifiedBlockedCategories:
+          AdSafetyProfileT0272.mandatoryBlockedCategories,
       accountCategoryBlocksVerified: true,
     );
   }
