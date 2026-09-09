@@ -19,6 +19,19 @@ final class _MutableProbeClient implements InternetProbeClient {
   }
 }
 
+final class _ThrowingProbeClient implements InternetProbeClient {
+  int calls = 0;
+
+  @override
+  Future<int?> statusCode(
+    Uri uri, {
+    required Duration timeout,
+  }) async {
+    calls += 1;
+    throw StateError('probe infrastructure failed');
+  }
+}
+
 Widget _app({
   required EntitlementState entitlement,
   required InternetReachabilityVerifier verifier,
@@ -74,6 +87,28 @@ void main() {
       expect(find.text('İnternet bağlantısı gerekli'), findsOneWidget);
       expect(find.text('CORE_CONTENT'), findsNothing);
       expect(client.calls, <Uri>[probe.uri]);
+    });
+
+    testWidgets('probe exception fails closed instead of hanging or opening core',
+        (tester) async {
+      final client = _ThrowingProbeClient();
+      final verifier = InternetReachabilityVerifier(
+        client: client,
+        probes: <InternetProbe>[probe],
+      );
+
+      await tester.pumpWidget(
+        _app(
+          entitlement: const EntitlementState.free(),
+          verifier: verifier,
+        ),
+      );
+      await tester.pump();
+
+      expect(client.calls, 1);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text('İnternet bağlantısı gerekli'), findsOneWidget);
+      expect(find.text('CORE_CONTENT'), findsNothing);
     });
 
     testWidgets('retry opens FREE core only after verified 204', (tester) async {
