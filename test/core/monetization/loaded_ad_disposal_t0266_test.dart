@@ -14,7 +14,9 @@ final class _FakeAdSdk implements AdSdkAdapter {
   }) async {
     initializeCalls += 1;
     return const AdSafetyConfigurationEvidenceT0272(
-      runtimeMaxContentRatingApplied: true,
+      runtimeAppliedMaxContentRating: AdContentRatingT0272.general,
+      verifiedBlockedCategories:
+          AdSafetyProfileT0272.mandatoryBlockedCategories,
       accountCategoryBlocksVerified: true,
     );
   }
