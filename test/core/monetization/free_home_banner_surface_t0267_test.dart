@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/app.dart';
 import 'package:islami_hayat/core/monetization/free_home_banner_surface.dart';
 import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.dart';
 
@@ -105,6 +106,41 @@ void main() {
         expect(tester.takeException(), isNull);
       }
     });
+
+    testWidgets(
+      'production app propagates FREE/PRO entitlement to the home banner boundary',
+      (tester) async {
+        const banner = SizedBox(
+          key: ValueKey('production-injected-banner'),
+          height: 50,
+          width: 320,
+        );
+
+        await tester.pumpWidget(
+          const IslamiHayatApp(
+            initialEntitlement: EntitlementState.free(),
+            freeHomeBanner: banner,
+          ),
+        );
+        await tester.pump();
+
+        expect(find.byKey(const ValueKey('production-injected-banner')), findsOneWidget);
+        expect(find.byKey(const ValueKey('free-home-banner-surface')), findsOneWidget);
+        expect(tester.takeException(), isNull);
+
+        await tester.pumpWidget(
+          const IslamiHayatApp(
+            initialEntitlement: EntitlementState.cachedPro(),
+            freeHomeBanner: banner,
+          ),
+        );
+        await tester.pump();
+
+        expect(find.byKey(const ValueKey('production-injected-banner')), findsNothing);
+        expect(find.byKey(const ValueKey('free-home-banner-surface')), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
 
     test('shell mounts banner outside TodayPage instead of inside sacred blocks', () {
       final source = File('lib/shell/app_shell.dart').readAsStringSync();
