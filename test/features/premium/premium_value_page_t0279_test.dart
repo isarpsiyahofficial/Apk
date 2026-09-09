@@ -46,7 +46,7 @@ Future<void> _scrollUntilVisible(
 }
 
 void main() {
-  testWidgets('TR value proposition states comfort benefits and no truth paywall', (
+  testWidgets('TR value proposition is limited to implemented V1 benefits', (
     tester,
   ) async {
     await _setSurface(tester, size: const Size(390, 844));
@@ -59,6 +59,17 @@ void main() {
     expect(find.text('100 tasarımın tamamı'), findsOneWidget);
     expect(find.text('Gelişmiş kişiselleştirme'), findsOneWidget);
 
+    await _scrollUntilVisible(
+      tester,
+      find.textContaining('Paylaşım tasarımlarında güvenli yazı boyutu'),
+    );
+    expect(
+      find.textContaining('dini metin ve kaynak bilgisi değiştirilemez'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('widget görünümü'), findsNothing);
+    expect(find.textContaining('Gelişmiş tema'), findsNothing);
+
     await _scrollUntilVisible(tester, find.byKey(PremiumValuePage.truthBoundaryKey));
     expect(find.text('Dini doğruluk paywall değildir'), findsOneWidget);
     expect(find.textContaining('Kur’an’ın temel metni'), findsOneWidget);
@@ -68,7 +79,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('EN narrow phone with large font scrolls without overflow', (
+  testWidgets('EN narrow phone with large font keeps truthful copy without overflow', (
     tester,
   ) async {
     await _setSurface(
@@ -82,12 +93,20 @@ void main() {
     await _scrollUntilVisible(tester, find.text('Zero ads'));
     expect(find.text('Zero ads'), findsOneWidget);
 
+    await _scrollUntilVisible(
+      tester,
+      find.textContaining('safe text-size and alignment controls'),
+    );
+    expect(find.textContaining('religious text and source information'), findsOneWidget);
+    expect(find.textContaining('widget appearance'), findsNothing);
+    expect(find.textContaining('advanced theme'), findsNothing);
+
     await _scrollUntilVisible(tester, find.byKey(PremiumValuePage.truthBoundaryKey));
     expect(find.text('Religious truth is not paywalled'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('AR is RTL and remains readable on tablet landscape', (
+  testWidgets('AR is RTL and truthful on tablet landscape', (
     tester,
   ) async {
     await _setSurface(tester, size: const Size(1200, 800), textScale: 1.3);
@@ -100,6 +119,15 @@ void main() {
     expect(directionality.textDirection, TextDirection.rtl);
     expect(find.text('بلا إعلانات'), findsOneWidget);
     expect(find.text('جميع التصاميم المئة'), findsOneWidget);
+
+    await _scrollUntilVisible(
+      tester,
+      find.textContaining('خيارات آمنة لحجم النص ومحاذاته'),
+    );
+    expect(find.textContaining('النص الديني ومعلومات المصدر'), findsOneWidget);
+    expect(find.textContaining('الودجت'), findsNothing);
+
+    await _scrollUntilVisible(tester, find.byKey(PremiumValuePage.truthBoundaryKey));
     expect(
       find.text('صحة المعلومة الدينية ليست خلف جدار دفع'),
       findsOneWidget,
