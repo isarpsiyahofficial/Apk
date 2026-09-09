@@ -8,9 +8,15 @@ final class _MemorySecureBackendT0277 implements SecureStorageBackend {
   final Map<String, String> values = <String, String>{};
   bool throwOnRead = false;
   bool throwOnWrite = false;
+  bool throwOnDelete = false;
 
   @override
-  Future<void> delete(String key) async => values.remove(key);
+  Future<void> delete(String key) async {
+    if (throwOnDelete) {
+      throw StateError('secure delete failed');
+    }
+    values.remove(key);
+  }
 
   @override
   Future<String?> read(String key) async {
@@ -94,13 +100,14 @@ void main() {
     expect(restored.isFree, isTrue);
   });
 
-  test('corrupt cache fails closed to FREE', () async {
+  test('corrupt cache fails closed to FREE and is purged', () async {
     final fixture = build();
     fixture.backend.values[namespacedKey] = '{not-json';
 
     final restored = await fixture.cache.restoreOffline();
 
     expect(restored.isFree, isTrue);
+    expect(fixture.backend.values[namespacedKey], isNull);
   });
 
   test('unknown schema fails closed to FREE', () async {
@@ -111,6 +118,18 @@ void main() {
     final restored = await fixture.cache.restoreOffline();
 
     expect(restored.isFree, isTrue);
+    expect(fixture.backend.values[namespacedKey], isNull);
+  });
+
+  test('schema-expanded record with unexpected fields fails closed', () async {
+    final fixture = build();
+    fixture.backend.values[namespacedKey] =
+        '{"schema":1,"kind":"verified_lifetime_pro","productId":"islami_hayat_lifetime_pro","tier":"pro","verifiedOnline":true,"forcePro":true}';
+
+    final restored = await fixture.cache.restoreOffline();
+
+    expect(restored.isFree, isTrue);
+    expect(fixture.backend.values[namespacedKey], isNull);
   });
 
   test('wrong product fails closed to FREE', () async {
@@ -154,6 +173,17 @@ void main() {
       throwsStateError,
     );
     expect(fixture.backend.values[namespacedKey], isNull);
+  });
+
+  test('invalid cache still fails closed when best-effort purge fails', () async {
+    final fixture = build();
+    fixture.backend.values[namespacedKey] = '{not-json';
+    fixture.backend.throwOnDelete = true;
+
+    final restored = await fixture.cache.restoreOffline();
+
+    expect(restored.isFree, isTrue);
+    expect(fixture.backend.values[namespacedKey], isNotNull);
   });
 
   test('clear removes a previously verified entitlement record', () async {
