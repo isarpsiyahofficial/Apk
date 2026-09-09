@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/storage/secure_private_user_store.dart';
 import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.dart';
+import 'package:islami_hayat/features/premium/domain/play_billing_product_catalog_t0274.dart';
 import 'package:islami_hayat/features/premium/domain/play_ownership_refresh_t0278.dart';
 import 'package:islami_hayat/features/premium/domain/secure_entitlement_cache_t0277.dart';
 
@@ -25,7 +26,7 @@ final class _MemorySecureBackendT0278 implements SecureStorageBackend {
 final class _GatewayT0278 implements PlayOwnershipRefreshGatewayT0278 {
   _GatewayT0278(this.snapshot);
 
-  final PlayOwnershipSnapshotT0278 snapshot;
+  PlayOwnershipSnapshotT0278 snapshot;
   bool shouldThrow = false;
   int calls = 0;
 
@@ -49,7 +50,13 @@ void main() {
     final cache = SecureEntitlementCacheT0277(
       store: SecurePrivateUserStore(backend: backend),
     );
-    final gateway = _GatewayT0278(PlayOwnershipSnapshotT0278(evidence));
+    final gateway = _GatewayT0278(
+      PlayOwnershipSnapshotT0278(
+        productId: PlayBillingProductCatalogT0274.lifetimeProProductId,
+        evidence: evidence,
+        verificationEvidenceFingerprint: 'verified-play-query-fingerprint',
+      ),
+    );
     return (
       service: PlayOwnershipRefreshServiceT0278(
         gateway: gateway,
@@ -113,6 +120,80 @@ void main() {
     );
 
     expect(result.outcome, PlayOwnershipRefreshOutcomeT0278.noOwnership);
+    expect(result.entitlement.isFree, isTrue);
+    expect((await fixture.cache.restoreOffline()).isFree, isTrue);
+  });
+
+  test('wrong-SKU revoke evidence cannot downgrade canonical Lifetime PRO',
+      () async {
+    final fixture = build(
+      PlayOwnershipEvidenceT0278.verifiedRevokedOrRefunded,
+    );
+    await fixture.cache.persistVerifiedPro(
+      const EntitlementState.verifiedPro(),
+    );
+    fixture.gateway.snapshot = const PlayOwnershipSnapshotT0278(
+      productId: 'islami_hayat_monthly_pro',
+      evidence: PlayOwnershipEvidenceT0278.verifiedRevokedOrRefunded,
+      verificationEvidenceFingerprint: 'wrong-sku-fingerprint',
+    );
+
+    final result = await fixture.service.refresh(
+      current: const EntitlementState.cachedPro(),
+      hasVerifiedInternetReachability: true,
+    );
+
+    expect(
+      result.outcome,
+      PlayOwnershipRefreshOutcomeT0278.transientFailure,
+    );
+    expect(result.entitlement.isPro, isTrue);
+    expect((await fixture.cache.restoreOffline()).isPro, isTrue);
+  });
+
+  test('missing verification fingerprint cannot revoke cached PRO', () async {
+    final fixture = build(
+      PlayOwnershipEvidenceT0278.verifiedRevokedOrRefunded,
+    );
+    await fixture.cache.persistVerifiedPro(
+      const EntitlementState.verifiedPro(),
+    );
+    fixture.gateway.snapshot = const PlayOwnershipSnapshotT0278(
+      productId: PlayBillingProductCatalogT0274.lifetimeProProductId,
+      evidence: PlayOwnershipEvidenceT0278.verifiedRevokedOrRefunded,
+      verificationEvidenceFingerprint: '   ',
+    );
+
+    final result = await fixture.service.refresh(
+      current: const EntitlementState.cachedPro(),
+      hasVerifiedInternetReachability: true,
+    );
+
+    expect(
+      result.outcome,
+      PlayOwnershipRefreshOutcomeT0278.transientFailure,
+    );
+    expect(result.entitlement.isPro, isTrue);
+    expect((await fixture.cache.restoreOffline()).isPro, isTrue);
+  });
+
+  test('wrong-SKU owned evidence cannot grant Lifetime PRO', () async {
+    final fixture = build(PlayOwnershipEvidenceT0278.verifiedOwned);
+    fixture.gateway.snapshot = const PlayOwnershipSnapshotT0278(
+      productId: 'debug_lifetime_pro',
+      evidence: PlayOwnershipEvidenceT0278.verifiedOwned,
+      verificationEvidenceFingerprint: 'wrong-sku-owned',
+    );
+
+    final result = await fixture.service.refresh(
+      current: const EntitlementState.free(),
+      hasVerifiedInternetReachability: true,
+    );
+
+    expect(
+      result.outcome,
+      PlayOwnershipRefreshOutcomeT0278.transientFailure,
+    );
     expect(result.entitlement.isFree, isTrue);
     expect((await fixture.cache.restoreOffline()).isFree, isTrue);
   });
