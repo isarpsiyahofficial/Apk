@@ -15,6 +15,7 @@ final class PlayPurchaseStateT0275 {
     required this.phase,
     required this.entitlement,
     this.productId,
+    this.verificationEvidenceFingerprint,
   });
 
   const PlayPurchaseStateT0275.idle({
@@ -27,6 +28,11 @@ final class PlayPurchaseStateT0275 {
   final PlayPurchasePhaseT0275 phase;
   final EntitlementState entitlement;
   final String? productId;
+
+  /// Non-secret fingerprint that binds the Play purchase callback to the
+  /// verification result. Raw purchase tokens/receipts must not be persisted in
+  /// this state object.
+  final String? verificationEvidenceFingerprint;
 
   bool get isPending => phase == PlayPurchasePhaseT0275.pending;
   bool get isCancelled => phase == PlayPurchasePhaseT0275.cancelled;
@@ -44,18 +50,24 @@ final class PlayPurchaseUpdateT0275 {
   const PlayPurchaseUpdateT0275({
     required this.kind,
     required this.productId,
+    this.verificationEvidenceFingerprint,
   });
 
   final PlayPurchaseUpdateKindT0275 kind;
   final String productId;
+
+  /// Required only for PURCHASED. This is a fingerprint derived by the billing
+  /// boundary from Play verification material; it is not the raw token itself.
+  final String? verificationEvidenceFingerprint;
 }
 
 /// Fail-closed Google Play purchase lifecycle for the V1 Lifetime PRO product.
 ///
 /// A Play `PURCHASED` callback is intentionally represented as
 /// [PlayPurchasePhaseT0275.awaitingVerification]. Entitlement is granted only
-/// after the same canonical product is explicitly confirmed by
-/// [markVerifiedPurchase]. `PENDING` and cancellation never grant PRO.
+/// after the same canonical product and the same purchase-evidence fingerprint
+/// are explicitly confirmed by [markVerifiedPurchase]. `PENDING` and
+/// cancellation never grant PRO.
 final class PlayPurchaseStateMachineT0275 {
   const PlayPurchaseStateMachineT0275({
     this.entitlementStateMachine = const EntitlementStateMachine(),
@@ -68,6 +80,23 @@ final class PlayPurchaseStateMachineT0275 {
     PlayPurchaseUpdateT0275 update,
   ) {
     PlayBillingProductCatalogT0274.requireKnownProduct(update.productId);
+
+    final evidence = update.verificationEvidenceFingerprint?.trim();
+    switch (update.kind) {
+      case PlayPurchaseUpdateKindT0275.pending:
+      case PlayPurchaseUpdateKindT0275.cancelled:
+        if (evidence != null && evidence.isNotEmpty) {
+          throw StateError(
+            'Pending/cancelled purchases must not carry verification evidence.',
+          );
+        }
+      case PlayPurchaseUpdateKindT0275.purchased:
+        if (evidence == null || evidence.isEmpty) {
+          throw StateError(
+            'PURCHASED requires verification evidence before it can await verification.',
+          );
+        }
+    }
 
     return switch (update.kind) {
       PlayPurchaseUpdateKindT0275.pending => PlayPurchaseStateT0275._(
@@ -84,6 +113,7 @@ final class PlayPurchaseStateMachineT0275 {
           phase: PlayPurchasePhaseT0275.awaitingVerification,
           entitlement: current.entitlement,
           productId: update.productId,
+          verificationEvidenceFingerprint: evidence,
         ),
     };
   }
@@ -91,13 +121,17 @@ final class PlayPurchaseStateMachineT0275 {
   PlayPurchaseStateT0275 markVerifiedPurchase(
     PlayPurchaseStateT0275 current, {
     required String productId,
+    required String verificationEvidenceFingerprint,
   }) {
     PlayBillingProductCatalogT0274.requireKnownProduct(productId);
+    final evidence = verificationEvidenceFingerprint.trim();
 
-    if (current.phase != PlayPurchasePhaseT0275.awaitingVerification ||
-        current.productId != productId) {
+    if (evidence.isEmpty ||
+        current.phase != PlayPurchasePhaseT0275.awaitingVerification ||
+        current.productId != productId ||
+        current.verificationEvidenceFingerprint != evidence) {
       throw StateError(
-        'Purchase must be PURCHASED and match the canonical product before verification.',
+        'Purchase verification must match the canonical product and exact purchase evidence.',
       );
     }
 
@@ -108,24 +142,30 @@ final class PlayPurchaseStateMachineT0275 {
         EntitlementEvent.verifiedPurchase,
       ),
       productId: productId,
+      verificationEvidenceFingerprint: evidence,
     );
   }
 
   PlayPurchaseStateT0275 markVerificationFailed(
     PlayPurchaseStateT0275 current, {
     required String productId,
+    required String verificationEvidenceFingerprint,
   }) {
     PlayBillingProductCatalogT0274.requireKnownProduct(productId);
+    final evidence = verificationEvidenceFingerprint.trim();
 
-    if (current.phase != PlayPurchasePhaseT0275.awaitingVerification ||
-        current.productId != productId) {
-      throw StateError('No matching purchase is awaiting verification.');
+    if (evidence.isEmpty ||
+        current.phase != PlayPurchasePhaseT0275.awaitingVerification ||
+        current.productId != productId ||
+        current.verificationEvidenceFingerprint != evidence) {
+      throw StateError('No matching purchase evidence is awaiting verification.');
     }
 
     return PlayPurchaseStateT0275._(
       phase: PlayPurchasePhaseT0275.verificationFailed,
       entitlement: current.entitlement,
       productId: productId,
+      verificationEvidenceFingerprint: evidence,
     );
   }
 }
