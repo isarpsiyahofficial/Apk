@@ -1,3 +1,5 @@
+import 'dart:mirrors';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/monetization/ad_placement_policy.dart';
 import 'package:islami_hayat/core/monetization/ad_privacy_policy_t0273.dart';
@@ -110,6 +112,73 @@ void main() {
       expect(request.surface, AdContextSurfaceT0273.shareVisualUnlock);
       expect(request.profile.religiousInterestSignalsEnabled, isFalse);
       expect(request.profile.userTargetingKeywordsEnabled, isFalse);
+    });
+
+    test('SDK payload is fixed to contextual non-personalized serving', () async {
+      final coordinator = EntitlementGatedAdSdkCoordinator(sdk: _PrivacyTestSdk());
+      await coordinator.evaluateAndInitialize(const EntitlementState.free());
+
+      for (final entry in <(AppAdSurface, AdFormat)>[
+        (AppAdSurface.todayHome, AdFormat.banner),
+        (AppAdSurface.shareDesignUnlock, AdFormat.rewarded),
+      ]) {
+        final descriptor = coordinator.buildPrivacySafeAdRequestFor(
+          entitlement: const EntitlementState.free(),
+          surface: entry.$1,
+          format: entry.$2,
+        );
+        final payload = descriptor.toSdkPayload();
+
+        expect(payload.nonPersonalizedAds, isTrue);
+        expect(payload.contextualOnly, isTrue);
+        expect(payload.publisherFirstPartyIdEnabled, isFalse);
+        expect(payload.isStrictV1, isTrue);
+        expect(payload.requireStrictV1, returnsNormally);
+      }
+    });
+
+    test('SDK payload exposes no arbitrary targeting or sensitive-data fields', () {
+      final payload = PrivacySafeAdRequestT0273.strictV1(
+        surface: AdContextSurfaceT0273.homeGeneral,
+      ).toSdkPayload();
+      final instanceMirror = reflect(payload);
+      final publicFields = instanceMirror.type.declarations.entries
+          .where((entry) => entry.value is VariableMirror)
+          .map((entry) => MirrorSystem.getName(entry.key))
+          .toSet();
+
+      expect(
+        publicFields,
+        equals(<String>{
+          'surface',
+          'nonPersonalizedAds',
+          'contextualOnly',
+          'publisherFirstPartyIdEnabled',
+        }),
+      );
+
+      const forbiddenFragments = <String>[
+        'keyword',
+        'target',
+        'query',
+        'note',
+        'history',
+        'religious',
+        'interest',
+        'verse',
+        'dua',
+        'dhikr',
+        'userId',
+        'custom',
+      ];
+      final normalizedFields = publicFields.map((name) => name.toLowerCase());
+      for (final fragment in forbiddenFragments) {
+        expect(
+          normalizedFields.any((field) => field.contains(fragment.toLowerCase())),
+          isFalse,
+          reason: 'SDK payload must not expose a $fragment targeting channel.',
+        );
+      }
     });
 
     test('sacred surfaces cannot produce an ad request descriptor', () async {
