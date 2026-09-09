@@ -79,4 +79,54 @@ final class PrivacySafeAdRequestT0273 {
 
   final AdContextSurfaceT0273 surface;
   final AdPrivacyProfileT0273 profile;
+
+  /// Converts the product-owned descriptor into the only SDK-facing payload
+  /// shape permitted by V1.
+  ///
+  /// The payload is deliberately closed: there is no keyword, custom targeting,
+  /// content identifier, publisher-provided user ID, history, note, query or
+  /// religious-interest slot. Concrete SDK adapters must translate only these
+  /// fixed values to their platform-specific non-personalized/contextual flags.
+  AdSdkRequestPayloadT0273 toSdkPayload() {
+    profile.requireStrictV1();
+    return AdSdkRequestPayloadT0273._(
+      surface: surface,
+      nonPersonalizedAds: true,
+      contextualOnly: true,
+      publisherFirstPartyIdEnabled: false,
+    );
+  }
+}
+
+/// Closed SDK-facing payload for advertisement requests.
+///
+/// Do not add arbitrary maps, keywords or custom-targeting fields here. Any new
+/// field requires a privacy review because this type is the final application
+/// boundary before a concrete advertisement SDK adapter.
+final class AdSdkRequestPayloadT0273 {
+  const AdSdkRequestPayloadT0273._({
+    required this.surface,
+    required this.nonPersonalizedAds,
+    required this.contextualOnly,
+    required this.publisherFirstPartyIdEnabled,
+  });
+
+  final AdContextSurfaceT0273 surface;
+  final bool nonPersonalizedAds;
+  final bool contextualOnly;
+  final bool publisherFirstPartyIdEnabled;
+
+  bool get isStrictV1 =>
+      nonPersonalizedAds &&
+      contextualOnly &&
+      !publisherFirstPartyIdEnabled;
+
+  void requireStrictV1() {
+    if (!isStrictV1) {
+      throw StateError(
+        'Ad SDK payload rejected: V1 allows only contextual, non-personalized '
+        'requests without a publisher-provided user identifier.',
+      );
+    }
+  }
 }
