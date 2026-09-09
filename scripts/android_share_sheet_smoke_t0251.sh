@@ -14,6 +14,31 @@ dump_chooser() {
   adb pull /sdcard/t0251-chooser.xml /tmp/t0251-chooser.xml >/dev/null 2>&1 || true
 }
 
+dismiss_quickstep_anr() {
+  TARGET="$(python3 - /tmp/t0251-chooser.xml <<'PY'
+import re, sys, xml.etree.ElementTree as ET
+try:
+    root = ET.parse(sys.argv[1]).getroot()
+except Exception:
+    raise SystemExit(0)
+for node in root.iter('node'):
+    if (node.attrib.get('text') or '') != 'Wait':
+        continue
+    m = re.fullmatch(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', node.attrib.get('bounds') or '')
+    if m:
+        x1, y1, x2, y2 = map(int, m.groups())
+        print((x1 + x2) // 2, (y1 + y2) // 2)
+        break
+PY
+)"
+  if [ -n "$TARGET" ]; then
+    set -- $TARGET
+    adb shell input tap "$1" "$2" >/dev/null 2>&1 || true
+  else
+    adb shell input keyevent 4 >/dev/null 2>&1 || true
+  fi
+}
+
 wait_for_prefs() {
   EXPECTED_STATUS="$1"
   EXPECTED_DESTINATION="$2"
@@ -43,20 +68,23 @@ printf '%s\n' "$PREFS_TEXT" | grep -F '>general<'
 
 # Hosted Android images can occasionally surface a transient launcher/Quickstep
 # ANR dialog over the chooser immediately after boot. Keep the real chooser test,
-# but dismiss only that system overlay and retry the UI dump instead of treating
-# the overlay as evidence that our share target is missing.
+# but dismiss only that system overlay via its explicit Wait action and retry the
+# chooser dump. Back alone is not reliable on Android 35 and can leave the ANR
+# dialog covering a live chooser indefinitely.
 FOUND_SINK=0
 ATTEMPT=1
-while [ "$ATTEMPT" -le 6 ]; do
+while [ "$ATTEMPT" -le 10 ]; do
   dump_chooser
   if grep -Fq 'T0251 Share Sink' /tmp/t0251-chooser.xml 2>/dev/null; then
     FOUND_SINK=1
     break
   fi
   if grep -Fq "Quickstep isn't responding" /tmp/t0251-chooser.xml 2>/dev/null; then
-    adb shell input keyevent 4 >/dev/null 2>&1 || true
+    dismiss_quickstep_anr
+    sleep 2
+  else
+    sleep 1
   fi
-  sleep 1
   ATTEMPT=$((ATTEMPT + 1))
 done
 
