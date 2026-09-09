@@ -1,5 +1,3 @@
-import 'dart:mirrors';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/monetization/ad_placement_policy.dart';
 import 'package:islami_hayat/core/monetization/ad_privacy_policy_t0273.dart';
@@ -137,24 +135,22 @@ void main() {
       }
     });
 
-    test('SDK payload exposes no arbitrary targeting or sensitive-data fields', () {
-      final payload = PrivacySafeAdRequestT0273.strictV1(
+    test('platform parameters are exact allow-list with no targeting channel', () {
+      final parameters = PrivacySafeAdRequestT0273.strictV1(
         surface: AdContextSurfaceT0273.homeGeneral,
-      ).toSdkPayload();
-      final instanceMirror = reflect(payload);
-      final publicFields = instanceMirror.type.declarations.entries
-          .where((entry) => entry.value is VariableMirror)
-          .map((entry) => MirrorSystem.getName(entry.key))
-          .toSet();
+      ).toSdkPayload().toPlatformParameters();
 
       expect(
-        publicFields,
-        equals(<String>{
-          'surface',
-          'nonPersonalizedAds',
-          'contextualOnly',
-          'publisherFirstPartyIdEnabled',
-        }),
+        parameters.keys.toSet(),
+        equals(AdSdkRequestPayloadT0273.allowedPlatformParameterKeys),
+      );
+      expect(parameters['surface'], 'homeGeneral');
+      expect(parameters['non_personalized_ads'], isTrue);
+      expect(parameters['contextual_only'], isTrue);
+      expect(parameters['publisher_first_party_id_enabled'], isFalse);
+      expect(
+        () => parameters['keyword'] = 'religious-topic',
+        throwsUnsupportedError,
       );
 
       const forbiddenFragments = <String>[
@@ -168,16 +164,17 @@ void main() {
         'verse',
         'dua',
         'dhikr',
-        'userId',
+        'user_id',
         'custom',
       ];
-      final normalizedFields = publicFields.map((name) => name.toLowerCase());
-      for (final fragment in forbiddenFragments) {
-        expect(
-          normalizedFields.any((field) => field.contains(fragment.toLowerCase())),
-          isFalse,
-          reason: 'SDK payload must not expose a $fragment targeting channel.',
-        );
+      for (final key in parameters.keys) {
+        for (final fragment in forbiddenFragments) {
+          expect(
+            key.toLowerCase().contains(fragment),
+            isFalse,
+            reason: 'SDK payload must not expose a $fragment targeting channel.',
+          );
+        }
       }
     });
 
