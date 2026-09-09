@@ -112,10 +112,19 @@ final class InternetReachabilityVerifier {
     }
 
     for (final probe in probes) {
-      final status = await _client.statusCode(
-        probe.uri,
-        timeout: probeTimeout,
-      );
+      int? status;
+      try {
+        status = await _client.statusCode(
+          probe.uri,
+          timeout: probeTimeout,
+        );
+      } on Object {
+        // Reachability is a gate, so a broken DNS/socket/custom probe client
+        // must never bubble out as an accidental allow or crash. Treat the
+        // failed probe exactly like a timeout and continue to the next pinned
+        // HTTPS 204 endpoint. If every probe fails, the result stays closed.
+        status = null;
+      }
       if (status == probe.expectedStatusCode) {
         return InternetReachability.reachable;
       }
