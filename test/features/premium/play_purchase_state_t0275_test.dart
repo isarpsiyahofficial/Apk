@@ -6,9 +6,27 @@ import 'package:islami_hayat/features/premium/domain/play_purchase_state_t0275.d
 void main() {
   const machine = PlayPurchaseStateMachineT0275();
   const productId = PlayBillingProductCatalogT0274.lifetimeProProductId;
+  const evidence = 'sha256:purchase-evidence-a';
 
-  PlayPurchaseUpdateT0275 update(PlayPurchaseUpdateKindT0275 kind) {
-    return PlayPurchaseUpdateT0275(kind: kind, productId: productId);
+  PlayPurchaseUpdateT0275 update(
+    PlayPurchaseUpdateKindT0275 kind, {
+    String? verificationEvidenceFingerprint,
+  }) {
+    return PlayPurchaseUpdateT0275(
+      kind: kind,
+      productId: productId,
+      verificationEvidenceFingerprint: verificationEvidenceFingerprint,
+    );
+  }
+
+  PlayPurchaseStateT0275 purchasedState() {
+    return machine.handlePlayUpdate(
+      const PlayPurchaseStateT0275.idle(),
+      update(
+        PlayPurchaseUpdateKindT0275.purchased,
+        verificationEvidenceFingerprint: evidence,
+      ),
+    );
   }
 
   test('pending purchase never grants PRO', () {
@@ -22,6 +40,7 @@ void main() {
     expect(pending.phase, PlayPurchasePhaseT0275.pending);
     expect(pending.entitlement.isFree, isTrue);
     expect(pending.grantsPro, isFalse);
+    expect(pending.verificationEvidenceFingerprint, isNull);
   });
 
   test('cancelled purchase never grants PRO', () {
@@ -39,31 +58,25 @@ void main() {
     expect(cancelled.phase, PlayPurchasePhaseT0275.cancelled);
     expect(cancelled.entitlement.isFree, isTrue);
     expect(cancelled.grantsPro, isFalse);
+    expect(cancelled.verificationEvidenceFingerprint, isNull);
   });
 
-  test('PURCHASED waits for verification before granting PRO', () {
-    const initial = PlayPurchaseStateT0275.idle();
-
-    final purchased = machine.handlePlayUpdate(
-      initial,
-      update(PlayPurchaseUpdateKindT0275.purchased),
-    );
+  test('PURCHASED waits for exact verification evidence before granting PRO', () {
+    final purchased = purchasedState();
 
     expect(purchased.phase, PlayPurchasePhaseT0275.awaitingVerification);
     expect(purchased.entitlement.isFree, isTrue);
     expect(purchased.grantsPro, isFalse);
+    expect(purchased.verificationEvidenceFingerprint, evidence);
   });
 
-  test('verified canonical purchase transitions entitlement to PRO', () {
-    const initial = PlayPurchaseStateT0275.idle();
-    final purchased = machine.handlePlayUpdate(
-      initial,
-      update(PlayPurchaseUpdateKindT0275.purchased),
-    );
+  test('verified canonical purchase with exact evidence transitions to PRO', () {
+    final purchased = purchasedState();
 
     final success = machine.markVerifiedPurchase(
       purchased,
       productId: productId,
+      verificationEvidenceFingerprint: evidence,
     );
 
     expect(success.phase, PlayPurchasePhaseT0275.succeeded);
@@ -74,23 +87,74 @@ void main() {
       EntitlementVerification.verifiedOnline,
     );
     expect(success.grantsPro, isTrue);
+    expect(success.verificationEvidenceFingerprint, evidence);
   });
 
   test('verification failure preserves existing FREE entitlement', () {
-    const initial = PlayPurchaseStateT0275.idle();
-    final purchased = machine.handlePlayUpdate(
-      initial,
-      update(PlayPurchaseUpdateKindT0275.purchased),
-    );
+    final purchased = purchasedState();
 
     final failed = machine.markVerificationFailed(
       purchased,
       productId: productId,
+      verificationEvidenceFingerprint: evidence,
     );
 
     expect(failed.phase, PlayPurchasePhaseT0275.verificationFailed);
     expect(failed.entitlement.isFree, isTrue);
     expect(failed.grantsPro, isFalse);
+  });
+
+  test('PURCHASED without evidence fails closed', () {
+    const initial = PlayPurchaseStateT0275.idle();
+
+    expect(
+      () => machine.handlePlayUpdate(
+        initial,
+        update(PlayPurchaseUpdateKindT0275.purchased),
+      ),
+      throwsStateError,
+    );
+    expect(
+      () => machine.handlePlayUpdate(
+        initial,
+        update(
+          PlayPurchaseUpdateKindT0275.purchased,
+          verificationEvidenceFingerprint: '   ',
+        ),
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('pending and cancelled updates cannot smuggle verification evidence', () {
+    const initial = PlayPurchaseStateT0275.idle();
+
+    for (final kind in <PlayPurchaseUpdateKindT0275>[
+      PlayPurchaseUpdateKindT0275.pending,
+      PlayPurchaseUpdateKindT0275.cancelled,
+    ]) {
+      expect(
+        () => machine.handlePlayUpdate(
+          initial,
+          update(kind, verificationEvidenceFingerprint: evidence),
+        ),
+        throwsStateError,
+      );
+    }
+  });
+
+  test('mismatched verification evidence cannot grant PRO', () {
+    final purchased = purchasedState();
+
+    expect(
+      () => machine.markVerifiedPurchase(
+        purchased,
+        productId: productId,
+        verificationEvidenceFingerprint: 'sha256:different-purchase',
+      ),
+      throwsStateError,
+    );
+    expect(purchased.entitlement.isFree, isTrue);
   });
 
   test('pending or cancelled state cannot be promoted by verification', () {
@@ -105,11 +169,19 @@ void main() {
     );
 
     expect(
-      () => machine.markVerifiedPurchase(pending, productId: productId),
+      () => machine.markVerifiedPurchase(
+        pending,
+        productId: productId,
+        verificationEvidenceFingerprint: evidence,
+      ),
       throwsStateError,
     );
     expect(
-      () => machine.markVerifiedPurchase(cancelled, productId: productId),
+      () => machine.markVerifiedPurchase(
+        cancelled,
+        productId: productId,
+        verificationEvidenceFingerprint: evidence,
+      ),
       throwsStateError,
     );
   });
@@ -124,6 +196,8 @@ void main() {
           PlayPurchaseUpdateT0275(
             kind: kind,
             productId: 'unknown_lifetime_product',
+            verificationEvidenceFingerprint:
+                kind == PlayPurchaseUpdateKindT0275.purchased ? evidence : null,
           ),
         ),
         throwsStateError,
@@ -132,16 +206,13 @@ void main() {
   });
 
   test('mismatched product cannot complete a purchased transaction', () {
-    const initial = PlayPurchaseStateT0275.idle();
-    final purchased = machine.handlePlayUpdate(
-      initial,
-      update(PlayPurchaseUpdateKindT0275.purchased),
-    );
+    final purchased = purchasedState();
 
     expect(
       () => machine.markVerifiedPurchase(
         purchased,
         productId: 'unknown_lifetime_product',
+        verificationEvidenceFingerprint: evidence,
       ),
       throwsStateError,
     );
