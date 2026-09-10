@@ -11,6 +11,12 @@ enum ProphetSemanticDimension {
   historicalDate,
 }
 
+enum ProphetSemanticEvidenceState {
+  verified,
+  unknown,
+  pendingReview,
+}
+
 /// Typed semantic evidence used by the release QA layer. Text-only name
 /// matching is intentionally insufficient because another prophet may be
 /// mentioned naturally inside a biography. [subjectProphetId] identifies whose
@@ -25,6 +31,7 @@ final class ProphetSemanticClaim {
     required this.claimKey,
     required this.sourceIds,
     this.contextReference = false,
+    this.evidenceState = ProphetSemanticEvidenceState.verified,
   });
 
   final String biographyProphetId;
@@ -33,6 +40,7 @@ final class ProphetSemanticClaim {
   final String claimKey;
   final List<String> sourceIds;
   final bool contextReference;
+  final ProphetSemanticEvidenceState evidenceState;
 }
 
 final class ProphetSemanticOwnershipQaResult {
@@ -44,9 +52,10 @@ final class ProphetSemanticOwnershipQaResult {
 /// Extra fail-closed release gate for semantic biography ownership.
 ///
 /// This gate does not try to infer theology/history from words. Editorial data
-/// must provide typed subject ownership and sources for each semantic claim.
-/// That makes accidental copy/paste across prophet biographies detectable while
-/// still allowing explicit contextual mentions of another prophet.
+/// must provide typed subject ownership and sources for each verified semantic
+/// claim. Explicit unknown/pending records are allowed so editors never need to
+/// invent a date, lineage or location merely to fill the matrix, but those
+/// records never satisfy release coverage.
 ///
 /// Every non-exclusive claim key is namespaced by its semantic dimension
 /// (`identity:...`, `quranVerse:...`, etc.). This prevents an editor from making
@@ -82,6 +91,8 @@ final class ProphetSemanticOwnershipQa {
       final subjectId = claim.subjectProphetId.trim();
       final claimKey = claim.claimKey.trim();
       final normalizedSources = claim.sourceIds.map((id) => id.trim()).toList();
+      final isVerified =
+          claim.evidenceState == ProphetSemanticEvidenceState.verified;
 
       if (!_canonicalIds.contains(biographyId)) {
         errors.add('$biographyId: unknown biography prophet id');
@@ -90,10 +101,16 @@ final class ProphetSemanticOwnershipQa {
       if (!_canonicalIds.contains(subjectId)) {
         errors.add('$biographyId/$claimKey: unknown semantic subject $subjectId');
       }
-      if (claimKey.isEmpty ||
-          normalizedSources.isEmpty ||
-          normalizedSources.any((id) => id.isEmpty)) {
+      if (claimKey.isEmpty) {
         errors.add('$biographyId: incomplete semantic evidence');
+      }
+      if (isVerified &&
+          (normalizedSources.isEmpty ||
+              normalizedSources.any((id) => id.isEmpty))) {
+        errors.add('$biographyId: verified semantic evidence requires sources');
+      }
+      if (normalizedSources.any((id) => id.isEmpty)) {
+        errors.add('$biographyId: semantic source id must not be empty');
       }
       if (normalizedSources.toSet().length != normalizedSources.length) {
         errors.add('$biographyId/$claimKey: duplicate semantic source evidence');
@@ -113,7 +130,7 @@ final class ProphetSemanticOwnershipQa {
         );
       }
 
-      final evidenceKey = '${claim.biographyProphetId}|${claim.dimension.name}|$claimKey';
+      final evidenceKey = '$biographyId|${claim.dimension.name}|$claimKey';
       if (claimKey.isNotEmpty && !seenEvidenceKeys.add(evidenceKey)) {
         errors.add('$biographyId/$claimKey: duplicate semantic claim evidence');
       }
@@ -137,7 +154,7 @@ final class ProphetSemanticOwnershipQa {
         );
       }
 
-      if (!claim.contextReference) {
+      if (!claim.contextReference && isVerified) {
         seenDimensions
             .putIfAbsent(biographyId, () => <ProphetSemanticDimension>{})
             .add(claim.dimension);
