@@ -1,3 +1,4 @@
+import '../../../core/content/content_governance.dart';
 import 'canonical_prophets.dart';
 
 enum ProphetSemanticDimension {
@@ -30,6 +31,7 @@ final class ProphetSemanticClaim {
     required this.dimension,
     required this.claimKey,
     required this.sourceIds,
+    this.sourceClasses = const <ReligiousSourceClass>{},
     this.contextReference = false,
     this.evidenceState = ProphetSemanticEvidenceState.verified,
   });
@@ -39,6 +41,7 @@ final class ProphetSemanticClaim {
   final ProphetSemanticDimension dimension;
   final String claimKey;
   final List<String> sourceIds;
+  final Set<ReligiousSourceClass> sourceClasses;
   final bool contextReference;
   final ProphetSemanticEvidenceState evidenceState;
 }
@@ -62,6 +65,11 @@ final class ProphetSemanticOwnershipQaResult {
 /// an event satisfy the date/hadith/geography coverage merely by changing the
 /// enum value while reusing the same evidence key. Known exclusive events keep
 /// stable historical keys and are separately forced to the `event` dimension.
+///
+/// A source id alone is also insufficient for `verified` coverage. Each claim
+/// must declare source classes appropriate to its semantic dimension so, for
+/// example, a Quran citation cannot be relabelled as hadith evidence and a
+/// later/disputed tradition cannot silently satisfy a verified historical date.
 final class ProphetSemanticOwnershipQa {
   const ProphetSemanticOwnershipQa();
 
@@ -78,6 +86,31 @@ final class ProphetSemanticOwnershipQa {
     'ibrahim_fire_trial': 'ibrahim',
   };
 
+  static const Set<ReligiousSourceClass> _strongHistoricalSources = {
+    ReligiousSourceClass.quran,
+    ReligiousSourceClass.sahihHasanHadith,
+    ReligiousSourceClass.earlyIslamicHistoryTafsir,
+    ReligiousSourceClass.modernHistoryArchaeology,
+  };
+
+  static Set<ReligiousSourceClass> _allowedSourceClassesFor(
+    ProphetSemanticDimension dimension,
+  ) {
+    switch (dimension) {
+      case ProphetSemanticDimension.identity:
+      case ProphetSemanticDimension.quranVerse:
+        return const {ReligiousSourceClass.quran};
+      case ProphetSemanticDimension.hadith:
+        return const {ReligiousSourceClass.sahihHasanHadith};
+      case ProphetSemanticDimension.event:
+      case ProphetSemanticDimension.familyLineage:
+      case ProphetSemanticDimension.chronology:
+      case ProphetSemanticDimension.geography:
+      case ProphetSemanticDimension.historicalDate:
+        return _strongHistoricalSources;
+    }
+  }
+
   ProphetSemanticOwnershipQaResult audit({
     required Iterable<ProphetSemanticClaim> claims,
     bool requireFull25Coverage = true,
@@ -85,6 +118,12 @@ final class ProphetSemanticOwnershipQa {
     final errors = <String>[];
     final seenDimensions = <String, Set<ProphetSemanticDimension>>{};
     final seenEvidenceKeys = <String>{};
+
+    if (requireFull25Coverage && _canonicalIds.length != 25) {
+      errors.add(
+        'canonical prophet identity set must contain exactly 25 unique ids; got ${_canonicalIds.length}',
+      );
+    }
 
     for (final claim in claims) {
       final biographyId = claim.biographyProphetId.trim();
@@ -114,6 +153,26 @@ final class ProphetSemanticOwnershipQa {
       }
       if (normalizedSources.toSet().length != normalizedSources.length) {
         errors.add('$biographyId/$claimKey: duplicate semantic source evidence');
+      }
+
+      if (isVerified && claim.sourceClasses.isEmpty) {
+        errors.add(
+          '$biographyId/$claimKey: verified semantic evidence requires source classes',
+        );
+      }
+      if (!isVerified && claim.sourceClasses.isNotEmpty) {
+        errors.add(
+          '$biographyId/$claimKey: unresolved semantic evidence must not claim verified source classes',
+        );
+      }
+      if (isVerified && claim.sourceClasses.isNotEmpty) {
+        final allowed = _allowedSourceClassesFor(claim.dimension);
+        final invalidClasses = claim.sourceClasses.difference(allowed);
+        if (invalidClasses.isNotEmpty) {
+          errors.add(
+            '$biographyId/$claimKey: source class ${invalidClasses.map((e) => e.stableId).join(',')} cannot verify ${claim.dimension.name}',
+          );
+        }
       }
 
       final exclusiveOwner = _exclusiveEventOwners[claimKey];
