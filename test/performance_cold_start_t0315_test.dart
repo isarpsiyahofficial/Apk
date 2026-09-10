@@ -37,18 +37,61 @@ void main() {
     expect(script, contains('SAMPLE_COUNT=3'));
   });
 
-  test('T0315 workflow keeps functional debug smoke separate from timing', () {
+  test('T0315/T0319 workflow isolates debug-only smoke from release timing', () {
     final workflow = File('.github/workflows/android-emulator-smoke.yml')
         .readAsStringSync();
 
     final debugBuild = workflow.indexOf('flutter build apk --debug');
     final releaseBuild = workflow.indexOf('flutter build apk --release');
     final functionalSmoke = workflow.indexOf('android_emulator_smoke_retry.sh');
+    final shareSmoke = workflow.indexOf('android_share_sheet_smoke_t0251.sh');
     final performanceGate = workflow.indexOf('android_cold_start_t0315.sh');
+    final debugRestore = workflow.indexOf(
+      'adb install -r build/app/outputs/flutter-apk/app-debug.apk',
+    );
+    final matrixGate = workflow.indexOf('android_device_matrix_t0319.sh');
+    final widgetSmoke = workflow.indexOf('android_widget_launcher_smoke_t0297.sh');
 
     expect(debugBuild, greaterThanOrEqualTo(0));
     expect(releaseBuild, greaterThan(debugBuild));
     expect(functionalSmoke, greaterThan(releaseBuild));
-    expect(performanceGate, greaterThan(functionalSmoke));
+    expect(shareSmoke, greaterThan(functionalSmoke));
+    expect(
+      performanceGate,
+      greaterThan(shareSmoke),
+      reason: 'Debug-only share activity must run before release APK replaces it.',
+    );
+    expect(
+      debugRestore,
+      greaterThan(performanceGate),
+      reason: 'Functional debug APK must be restored after release timing.',
+    );
+    expect(matrixGate, greaterThan(debugRestore));
+    expect(widgetSmoke, greaterThan(matrixGate));
+  });
+
+  test('T0319 matrix stops app before resize and confirms viewport override', () {
+    final script = File('scripts/android_device_matrix_t0319.sh')
+        .readAsStringSync();
+
+    final loopStart = script.indexOf(
+      'for SIZE in 360x800 430x932 800x1280 1280x800 1920x1080 932x430',
+    );
+    final forceStop = script.indexOf('adb shell am force-stop "\$PACKAGE"', loopStart);
+    final resize = script.indexOf('adb shell wm size "\$SIZE"', loopStart);
+    final sizeCheck = script.indexOf('wait_for_size "\$SIZE"', loopStart);
+    final launch = script.indexOf('adb shell am start -W -n "\$ACTIVITY"', loopStart);
+
+    expect(loopStart, greaterThanOrEqualTo(0));
+    expect(forceStop, greaterThan(loopStart));
+    expect(resize, greaterThan(forceStop));
+    expect(sizeCheck, greaterThan(resize));
+    expect(launch, greaterThan(sizeCheck));
+    expect(
+      script,
+      contains("grep -F \"Override size: \$EXPECTED\""),
+      reason: 'Each emulator viewport must be confirmed before launch.',
+    );
+    expect(script, contains('dump_failure_evidence'));
   });
 }
