@@ -1,6 +1,7 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
 import 'canonical_prophets.dart';
+import 'prophet_biography_t0194_dataset.dart';
 import 'prophet_semantic_ownership_qa.dart';
 import 'verified_prophet_family_relations.dart';
 
@@ -12,9 +13,10 @@ import 'verified_prophet_family_relations.dart';
 /// inventing biography detail.
 ///
 /// Other dimensions are admitted only by bridging independently reviewed data:
-/// source-backed biography sections for event/period/geography and the verified
-/// genealogy graph for family-lineage. Unknown/pending biography fields are
-/// intentionally ignored and therefore remain release gaps.
+/// the provenance-checked T0194 working biography dataset for
+/// event/period/geography/hadith and the verified genealogy graph for
+/// family-lineage. Unknown/pending biography fields are intentionally ignored
+/// and therefore remain release gaps.
 final List<ProphetSemanticClaim> canonicalProphetIdentityVerseEvidenceT0336 =
     List<ProphetSemanticClaim>.unmodifiable(
   canonicalQuranNamedProphets.expand((identity) {
@@ -87,12 +89,25 @@ bool _hasOnlyStrongHistoricalSources(ProphetBiographyField field) =>
       (source) => _t0336StrongHistoricalSourceClasses.contains(source.sourceClass),
     );
 
+Iterable<CanonicalProphetBiographyDraft> get _t0336BiographyDrafts {
+  for (final draft in canonicalProphetBiographyT0194Dataset) {
+    if (!draft.isStructurallyComplete ||
+        !prophetBiographyT0194DraftHasTraceableProvenance(draft)) {
+      throw StateError(
+        'T0336 received biography without T0194 provenance: '
+        '${draft.identity.canonicalId}',
+      );
+    }
+    yield draft;
+  }
+}
+
 List<ProphetSemanticClaim> _sourceBackedSectionEvidence({
   required ProphetBiographySectionKey section,
   required ProphetSemanticDimension dimension,
 }) {
   final claims = <ProphetSemanticClaim>[];
-  for (final draft in canonicalProphetBiographyDrafts) {
+  for (final draft in _t0336BiographyDrafts) {
     final field = draft.sections[section];
     if (field == null ||
         field.status != ProphetBiographyFieldStatus.sourceBacked ||
@@ -139,18 +154,46 @@ final List<ProphetSemanticClaim> canonicalProphetChronologyEvidenceT0336 =
   dimension: ProphetSemanticDimension.chronology,
 );
 
-/// Geography coverage is admitted only when the canonical biography geography
-/// field itself is source-backed with strong provenance.
+/// Geography coverage is admitted only when the T0194 geography field itself
+/// is source-backed with strong provenance.
 final List<ProphetSemanticClaim> canonicalProphetGeographyEvidenceT0336 =
     _sourceBackedSectionEvidence(
   section: ProphetBiographySectionKey.geography,
   dimension: ProphetSemanticDimension.geography,
 );
 
+/// Hadith coverage is narrower than general source-backed coverage: each claim
+/// is tied to one exact sahih/hasan reference already admitted by T0194's
+/// fail-closed provenance registry. Quran/history sources cannot be relabelled
+/// as hadith evidence.
+final List<ProphetSemanticClaim> canonicalProphetHadithEvidenceT0336 =
+    List<ProphetSemanticClaim>.unmodifiable(
+  _t0336BiographyDrafts.expand((draft) sync* {
+    for (final entry in draft.sections.entries) {
+      final field = entry.value;
+      if (field.status != ProphetBiographyFieldStatus.sourceBacked) continue;
+      for (final source in field.sources) {
+        if (source.sourceClass != ReligiousSourceClass.sahihHasanHadith) {
+          continue;
+        }
+        yield ProphetSemanticClaim(
+          biographyProphetId: draft.identity.canonicalId,
+          subjectProphetId: draft.identity.canonicalId,
+          dimension: ProphetSemanticDimension.hadith,
+          claimKey:
+              'hadith:${draft.identity.canonicalId}:${entry.key.name}:${source.id}',
+          sourceIds: <String>[source.id],
+          sourceClasses: const {ReligiousSourceClass.sahihHasanHadith},
+        );
+      }
+    }
+  }),
+);
+
 /// Current canonical T0336 evidence surface. Full release coverage intentionally
 /// remains false until every prophet has all eight independently verified
-/// dimensions; hadith and historicalDate in particular are not synthesized from
-/// Quran/event/period evidence.
+/// dimensions. `historicalDate` is deliberately not synthesized from period,
+/// Quran, hadith, or approximate modern-history evidence.
 final List<ProphetSemanticClaim> canonicalProphetSemanticEvidenceT0336 =
     List<ProphetSemanticClaim>.unmodifiable([
   ...canonicalProphetIdentityVerseEvidenceT0336,
@@ -158,4 +201,5 @@ final List<ProphetSemanticClaim> canonicalProphetSemanticEvidenceT0336 =
   ...canonicalProphetEventEvidenceT0336,
   ...canonicalProphetChronologyEvidenceT0336,
   ...canonicalProphetGeographyEvidenceT0336,
+  ...canonicalProphetHadithEvidenceT0336,
 ]);
