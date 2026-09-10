@@ -7,13 +7,14 @@ ProphetSemanticClaim _claim({
   required ProphetSemanticDimension dimension,
   required String key,
   bool contextReference = false,
+  List<String> sourceIds = const ['verified-source'],
 }) =>
     ProphetSemanticClaim(
       biographyProphetId: biography,
       subjectProphetId: subject,
       dimension: dimension,
       claimKey: key,
-      sourceIds: const ['verified-source'],
+      sourceIds: sourceIds,
       contextReference: contextReference,
     );
 
@@ -62,7 +63,7 @@ void main() {
           biography: 'muhammad',
           subject: 'ibrahim',
           dimension: ProphetSemanticDimension.familyLineage,
-          key: 'contextual_lineage_reference',
+          key: 'familyLineage:contextual_lineage_reference',
           contextReference: true,
         ),
       ],
@@ -78,7 +79,7 @@ void main() {
           biography: 'muhammad',
           subject: 'muhammad',
           dimension: ProphetSemanticDimension.identity,
-          key: 'muhammad_identity',
+          key: 'identity:muhammad',
         ),
       ],
     );
@@ -96,7 +97,7 @@ void main() {
           biographyProphetId: 'muhammad',
           subjectProphetId: 'muhammad',
           dimension: ProphetSemanticDimension.historicalDate,
-          claimKey: 'hijra_year',
+          claimKey: 'historicalDate:hijra_year',
           sourceIds: [],
         ),
       ],
@@ -104,5 +105,73 @@ void main() {
 
     expect(result.isValid, isFalse);
     expect(result.errors.join('\n'), contains('incomplete semantic evidence'));
+  });
+
+  test('known exclusive event cannot be relabelled as another dimension', () {
+    final result = qa.audit(
+      requireFull25Coverage: false,
+      claims: [
+        _claim(
+          biography: 'muhammad',
+          subject: 'muhammad',
+          dimension: ProphetSemanticDimension.historicalDate,
+          key: 'muhammad_hijra_to_medina',
+        ),
+      ],
+    );
+
+    expect(result.isValid, isFalse);
+    expect(result.errors.join('\n'), contains('must use the event dimension'));
+  });
+
+  test('dimension label cannot be spoofed with a differently namespaced key', () {
+    final result = qa.audit(
+      requireFull25Coverage: false,
+      claims: [
+        _claim(
+          biography: 'muhammad',
+          subject: 'muhammad',
+          dimension: ProphetSemanticDimension.hadith,
+          key: 'geography:medina',
+        ),
+      ],
+    );
+
+    expect(result.isValid, isFalse);
+    expect(result.errors.join('\n'), contains('must be namespaced as hadith:'));
+  });
+
+  test('duplicate semantic source IDs fail closed', () {
+    final result = qa.audit(
+      requireFull25Coverage: false,
+      claims: [
+        _claim(
+          biography: 'yusuf',
+          subject: 'yusuf',
+          dimension: ProphetSemanticDimension.quranVerse,
+          key: 'quranVerse:yusuf_12_4',
+          sourceIds: const ['quran-12-4', 'quran-12-4'],
+        ),
+      ],
+    );
+
+    expect(result.isValid, isFalse);
+    expect(result.errors.join('\n'), contains('duplicate semantic source evidence'));
+  });
+
+  test('duplicate claim evidence cannot count twice toward release coverage', () {
+    final duplicate = _claim(
+      biography: 'musa',
+      subject: 'musa',
+      dimension: ProphetSemanticDimension.geography,
+      key: 'geography:exodus_context',
+    );
+    final result = qa.audit(
+      requireFull25Coverage: false,
+      claims: [duplicate, duplicate],
+    );
+
+    expect(result.isValid, isFalse);
+    expect(result.errors.join('\n'), contains('duplicate semantic claim evidence'));
   });
 }
