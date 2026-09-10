@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:islami_hayat/app.dart';
 import 'package:islami_hayat/core/network/internet_reachability.dart';
@@ -16,11 +18,35 @@ import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Entitlement restore is startup-critical: an offline PRO user must never
+  // flash or fall back to FREE while the secure local entitlement is loading.
   final initialEntitlement = await SecureEntitlementCacheT0277().restoreOffline();
   final verifier = InternetReachabilityVerifier(
     client: const IoInternetProbeClient(),
   );
   final notificationRuntime = NotificationRuntimeT0291.instance;
+
+  runApp(
+    IslamiHayatApp(
+      startupAccessVerifier: verifier,
+      initialEntitlement: initialEntitlement,
+      notificationTapController: notificationRuntime.tapController,
+    ),
+  );
+
+  // T0315: notification plugin/channel initialization and reminder restoration
+  // are not required to paint the first frame. Defer them until Flutter has
+  // rendered once so slow platform I/O cannot hold the launch screen hostage.
+  // NotificationRuntime keeps the initial launch payload pending until the app
+  // consumes it, so notification deep links remain lossless after deferral.
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(_restoreNotificationsAfterFirstFrame(notificationRuntime));
+  });
+}
+
+Future<void> _restoreNotificationsAfterFirstFrame(
+  NotificationRuntimeT0291 notificationRuntime,
+) async {
   try {
     await notificationRuntime.initialize();
 
@@ -94,12 +120,4 @@ Future<void> main() async {
     // from starting. Scheduling remains fail-closed until initialization or
     // reconciliation works, and the user can retry from notification settings.
   }
-
-  runApp(
-    IslamiHayatApp(
-      startupAccessVerifier: verifier,
-      initialEntitlement: initialEntitlement,
-      notificationTapController: notificationRuntime.tapController,
-    ),
-  );
 }
