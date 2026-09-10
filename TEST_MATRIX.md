@@ -56,8 +56,8 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 | D07 | Zikir sayıları source-backed vs kişisel | TODO | |
 | D08 | Ebced/havas sünnet gibi gösterilmiyor | TODO | |
 | D09 | Dini gün özel ibadet/dua iddiaları | TODO | |
-| D10 | Peygamber biyografileri source/certainty | PASS | `prophet_biography_t0194_coverage_test.dart` 25 canonical kaydı, source-backed/unknown fail-closed ayrımını ve kaynak sınıflarını tarıyor; `ProphetBiographyQaAudit.auditCanonicalResearchDataset()` gerçek supplemented T0194 datasetini ve exact Quran/hadis/modern-history provenance allowlist gate'ini tarıyor; Flutter + Android Release full test SUCCESS |
-| D11 | Peygamber timeline çelişki taraması | PASS | `prophet_biography_qa_test.dart` canonical supplemented T0194 QA + verified kinship/timeline taramasını geçiriyor; duplicate timeline, reversed genealogy ve ancestry-cycle/failure-path kontrolleri fail-closed; Flutter + Android Release full test SUCCESS |
+| D10 | Peygamber biyografileri source/certainty + 25×8 semantik sahiplik | TODO | Yapısal/provenance QA mevcut ve eski kapsamı geçiyor; v1.2 final kapısı için 25 peygamberin `identity→event→quranVerse→hadith→familyLineage→chronology→geography→historicalDate` boyutlarının tamamı gerçek canonical dataset üzerinde `verified` + uygun kaynak sınıfıyla kapanmalı. `prophet_semantic_ownership_qa_test.dart` yanlış peygambere olay atamasını ve source-class spoofing'i fail-closed test ediyor; full canonical 25×8 coverage henüz kanıtlanmadı. |
+| D11 | Peygamber timeline/soy/kronoloji/coğrafya çelişki taraması | TODO | `prophet_biography_qa_test.dart` duplicate timeline, reversed genealogy ve ancestry-cycle failure-path kontrollerini geçiriyor; ancak v1.2 D10/D11 final PASS için aynı gerçek 25×8 semantik registry'nin chronology/geography/date/lineage boyutlarıyla birlikte tamamlanması zorunlu. |
 | D12 | İslam tarihi iki kaynak/certainty | TODO | |
 | D13 | Yasak kesin para/aşk/şifa iddiası sıfır | TODO | |
 | D14 | Yazım/imla native TR/EN/AR review | TODO | |
@@ -142,14 +142,18 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 | B04 | Android debug build | PASS | current branch Android Debug CI |
 | B05 | Android release AAB verification build | PASS | current branch Android Release CI |
 | B06 | Android release APK verification build | PASS | current branch Android Release CI |
-| B07 | APK install/launch gerçek cihaz/emülatör | PASS | current branch Android Emulator Smoke: install + process + MainActivity + fatal-crash scan PASS |
+| B07 | APK install/launch gerçek cihaz/emülatör | PASS | Android Emulator Smoke #1232: debug functional/share smoke + release/AOT timing + debug restore + device matrix + widget smoke; process/MainActivity/fatal-crash kontrolleri PASS |
 | B08 | Final production artifact SHA-256 | TODO | verification hashes mevcut; production signing/final dataset sonrası yeniden üretilecek |
 | B09 | Privacy/Terms/Sources URLs | TODO | |
 | B10 | Store TR/EN/AR screenshots/copy | TODO | |
+| B11 | Release/AOT cold-start median <=3000 ms | PASS | Android 35 gerçek COLD launch örnekleri 1988 / 2183 / 2133 ms; median 2133 ms; `scripts/android_cold_start_t0315.sh`; eşik 3000 ms olarak korunuyor |
+| B12 | Düşük-RAM + Android cihaz/orientation matrisi | PASS | Android Emulator Smoke #1232; Android 29 low-memory 1536 MB RAM / 256 MB heap + 360×800, 430×932, 800×1280, 1280×800, 1920×1080, 932×430; process/foreground + fatal/OOM/LMKD gate PASS |
 
 ### Release-verification kanıtı
 
-- Current implementation HEAD öncesindeki canonical Quran entegrasyonunda Flutter CI, Quran Source Verify, Android Debug CI, Android Release CI ve Android Emulator Smoke birlikte SUCCESS durumundadır.
+- `8ac7770df4beb2233e4e7ca67408d3cf40d51daf` implementation HEAD için Flutter CI, Quran Source Verify, QuranEnc Meal Verify, Android Debug CI, Android Release CI ve Android Emulator Smoke birlikte SUCCESS oldu.
+- Android 35 release/AOT cold-start kapısında üç gerçek COLD launch 1988 / 2183 / 2133 ms, median 2133 ms ölçüldü; `<=3000 ms` şartı gevşetilmedi.
+- Emulator smoke aynı hatta debug functional/share smoke → release/AOT cold-start → debug restore → cihaz/orientation matrix → widget smoke sırasını ve Android 29 düşük-RAM job'unu başarıyla tamamladı.
 - Release APK/AAB verification CI hattı production signing öncesi doğrulama artifactleri üretmektedir.
 - Release APK birleşik izin auditinde yasak hassas izin bulunmamaktadır.
 - Canonical Tanzil kaynağının APK içine source + manifest olarak paketlendiği release CI tarafından `unzip -l` ile doğrulanmaktadır.
