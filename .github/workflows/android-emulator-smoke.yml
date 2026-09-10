@@ -51,7 +51,7 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Install, measure cold start, verify sharing, then pin/render/tap widget on Android 35
+      - name: Install, measure cold start, verify sharing, run device matrix, then pin/render/tap widget on Android 35
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -59,7 +59,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: sh scripts/android_emulator_smoke_retry.sh && sh scripts/android_cold_start_t0315.sh && sh scripts/android_share_sheet_smoke_t0251.sh && sh scripts/android_widget_launcher_smoke_t0297.sh
+          script: sh scripts/android_emulator_smoke_retry.sh && sh scripts/android_cold_start_t0315.sh && sh scripts/android_share_sheet_smoke_t0251.sh && sh scripts/android_device_matrix_t0319.sh && sh scripts/android_widget_launcher_smoke_t0297.sh
 
   low-memory-emulator-smoke:
     runs-on: ubuntu-latest
@@ -98,7 +98,7 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Install and launch on low-memory Android emulator
+      - name: Install, launch and run viewport matrix on low-memory Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
@@ -108,4 +108,4 @@ jobs:
           heap-size: 256M
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: MAX_MEMTOTAL_KB=2100000 sh scripts/android_emulator_smoke.sh
+          script: MAX_MEMTOTAL_KB=2100000 sh scripts/android_emulator_smoke.sh && sh scripts/android_device_matrix_t0319.sh
