@@ -183,40 +183,50 @@ final class DailyVerseNotificationCoordinatorT0291 {
 
 /// Production scheduling policy for the daily-verse reminder.
 ///
-/// The reminder uses a stable local 09:00 default. Enabling it before 09:00
-/// schedules the current civil day's verified verse; enabling it at/after
-/// 09:00 schedules the next civil day's verse so no stale/past notification is
-/// submitted to Android. A preference override is used during an explicit UI
-/// toggle so scheduling reflects the user's new choice before persistence
-/// finishes; if persistence rolls back, the UI emits the previous preference
-/// again and this policy cancels/reschedules accordingly.
+/// The reminder defaults to local 09:00, but a persisted user-selected time
+/// takes precedence. A constructor deliveryHour remains available only as an
+/// explicit test/integration override. If today's selected time has passed,
+/// the next civil day's verified verse is scheduled instead of a stale request.
 final class DailyVerseNotificationOrchestratorT0291 {
   const DailyVerseNotificationOrchestratorT0291({
     required DailyVerseNotificationCoordinatorT0291 coordinator,
     DateTime Function()? now,
-    this.deliveryHour = dailyVerseDefaultHourT0291,
+    this.deliveryHour,
+    this.deliveryMinute = 0,
   })  : _coordinator = coordinator,
         _now = now ?? DateTime.now;
 
   final DailyVerseNotificationCoordinatorT0291 _coordinator;
   final DateTime Function() _now;
-  final int deliveryHour;
+  final int? deliveryHour;
+  final int deliveryMinute;
 
   Future<void> sync({
     required String languageCode,
     required NotificationPreferences preferences,
   }) async {
-    if (deliveryHour < 0 || deliveryHour > 23) {
-      throw StateError('Daily verse delivery hour must be between 0 and 23.');
+    final overrideHour = deliveryHour;
+    if (overrideHour != null &&
+        (overrideHour < 0 ||
+            overrideHour > 23 ||
+            deliveryMinute < 0 ||
+            deliveryMinute > 59)) {
+      throw StateError(
+        'Daily verse delivery time must be a valid local clock time.',
+      );
     }
 
+    final deliveryTime = overrideHour == null
+        ? preferences.dailyVerseTime
+        : NotificationTime(hour: overrideHour, minute: deliveryMinute);
     final now = _now();
     var civilDate = DateTime(now.year, now.month, now.day);
     var scheduledAt = DateTime(
       civilDate.year,
       civilDate.month,
       civilDate.day,
-      deliveryHour,
+      deliveryTime.hour,
+      deliveryTime.minute,
     );
     if (!scheduledAt.isAfter(now)) {
       civilDate = civilDate.add(const Duration(days: 1));
@@ -224,7 +234,8 @@ final class DailyVerseNotificationOrchestratorT0291 {
         civilDate.year,
         civilDate.month,
         civilDate.day,
-        deliveryHour,
+        deliveryTime.hour,
+        deliveryTime.minute,
       );
     }
 
