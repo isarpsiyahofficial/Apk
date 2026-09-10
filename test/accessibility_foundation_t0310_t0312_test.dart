@@ -106,6 +106,58 @@ void main() {
     }
   });
 
+  testWidgets('bottom navigation exposes localized screen-reader labels',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+    addTearDown(semantics.dispose);
+
+    await pumpAccessibleApp(
+      tester,
+      locale: const Locale('tr'),
+      textScaleFactor: 1,
+    );
+
+    for (final label in const <String>[
+      'Bugün',
+      'Kur’an',
+      'Keşfet',
+      'Zikir',
+      'Ben',
+    ]) {
+      expect(
+        find.bySemanticsLabel(label),
+        findsWidgets,
+        reason: 'missing navigation semantics label: $label',
+      );
+    }
+  });
+
+  testWidgets('Arabic navigation exposes native RTL screen-reader labels',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+    addTearDown(semantics.dispose);
+
+    await pumpAccessibleApp(
+      tester,
+      locale: const Locale('ar'),
+      textScaleFactor: 1,
+    );
+
+    for (final label in const <String>[
+      'اليوم',
+      'القرآن',
+      'اكتشف',
+      'الذكر',
+      'أنا',
+    ]) {
+      expect(
+        find.bySemanticsLabel(label),
+        findsWidgets,
+        reason: 'missing Arabic navigation semantics label: $label',
+      );
+    }
+  });
+
   testWidgets('Arabic 2.0x accessibility run remains RTL', (tester) async {
     await pumpAccessibleApp(tester, locale: const Locale('ar'));
 
