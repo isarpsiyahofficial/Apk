@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophet_biographies.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophets.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_biography_t0194_dataset.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_evidence_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_qa.dart';
 import 'package:islami_hayat/features/prophets/data/verified_prophet_family_relations.dart';
@@ -16,14 +17,17 @@ void main() {
   };
 
   Set<String> admissibleIds(ProphetBiographySectionKey key) =>
-      canonicalProphetBiographyDrafts
+      canonicalProphetBiographyT0194Dataset
           .where((draft) {
             final field = draft.sections[key];
-            return field?.status == ProphetBiographyFieldStatus.sourceBacked &&
-                field!.sources.isNotEmpty &&
-                field.sources.every(
-                  (source) => strongHistoricalSources.contains(source.sourceClass),
-                );
+            if (field == null ||
+                field.status != ProphetBiographyFieldStatus.sourceBacked ||
+                field.sources.isEmpty) {
+              return false;
+            }
+            return field.sources.every(
+              (source) => strongHistoricalSources.contains(source.sourceClass),
+            );
           })
           .map((draft) => draft.identity.canonicalId)
           .toSet();
@@ -91,7 +95,17 @@ void main() {
     }
   });
 
-  test('event/chronology/geography bridges admit strong source-backed fields only', () {
+  test('T0336 source-backed bridges use provenance-checked T0194 dataset', () {
+    expect(canonicalProphetBiographyT0194Dataset, hasLength(25));
+    for (final draft in canonicalProphetBiographyT0194Dataset) {
+      expect(draft.isStructurallyComplete, isTrue, reason: draft.identity.canonicalId);
+      expect(
+        prophetBiographyT0194DraftHasTraceableProvenance(draft),
+        isTrue,
+        reason: draft.identity.canonicalId,
+      );
+    }
+
     final cases = <(
       ProphetBiographySectionKey,
       ProphetSemanticDimension,
@@ -134,7 +148,7 @@ void main() {
   });
 
   test('unknown or weak-source biography fields never manufacture coverage', () {
-    for (final draft in canonicalProphetBiographyDrafts) {
+    for (final draft in canonicalProphetBiographyT0194Dataset) {
       final checks = <(
         ProphetBiographySectionKey,
         List<ProphetSemanticClaim>
@@ -165,6 +179,30 @@ void main() {
     }
   });
 
+  test('hadith bridge admits exactly T0194-reviewed hadith references', () {
+    final expected = <String, String>{};
+    for (final draft in canonicalProphetBiographyT0194Dataset) {
+      for (final entry in draft.sections.entries) {
+        if (entry.value.status != ProphetBiographyFieldStatus.sourceBacked) continue;
+        for (final source in entry.value.sources) {
+          if (source.sourceClass == ReligiousSourceClass.sahihHasanHadith) {
+            expected[source.id] = draft.identity.canonicalId;
+          }
+        }
+      }
+    }
+
+    expect(expected, isNotEmpty);
+    expect(canonicalProphetHadithEvidenceT0336, hasLength(expected.length));
+    for (final claim in canonicalProphetHadithEvidenceT0336) {
+      expect(claim.dimension, ProphetSemanticDimension.hadith);
+      expect(claim.sourceClasses, {ReligiousSourceClass.sahihHasanHadith});
+      expect(claim.sourceIds, hasLength(1));
+      expect(expected[claim.sourceIds.single], claim.biographyProphetId);
+      expect(claim.subjectProphetId, claim.biographyProphetId);
+    }
+  });
+
   test('current canonical T0336 evidence is internally valid', () {
     expect(canonicalProphetSemanticEvidenceT0336.length, greaterThan(54));
 
@@ -178,12 +216,19 @@ void main() {
   });
 
   test('reviewed bridges cannot falsely complete 25x8 release gate', () {
+    expect(
+      canonicalProphetSemanticEvidenceT0336.where(
+        (claim) => claim.dimension == ProphetSemanticDimension.historicalDate,
+      ),
+      isEmpty,
+      reason: 'period/approximation evidence must not be promoted to exact dates',
+    );
+
     final result = qa.audit(claims: canonicalProphetSemanticEvidenceT0336);
 
     expect(result.isValid, isFalse);
     final errors = result.errors.join('\n');
     expect(errors, contains('semantic cross-check coverage missing'));
-    expect(errors, contains('hadith'));
     expect(errors, contains('historicalDate'));
 
     // A prophet without an independently reviewed genealogy must still report
@@ -199,7 +244,6 @@ void main() {
       (error) => error.startsWith('musa: semantic cross-check coverage missing'),
     );
     expect(musaError, isNot(contains('familyLineage')));
-    expect(musaError, contains('hadith'));
     expect(musaError, contains('historicalDate'));
   });
 }
