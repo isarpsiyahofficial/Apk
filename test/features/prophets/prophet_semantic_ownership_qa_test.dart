@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_qa.dart';
 
 ProphetSemanticClaim _claim({
@@ -8,6 +9,7 @@ ProphetSemanticClaim _claim({
   required String key,
   bool contextReference = false,
   List<String> sourceIds = const ['verified-source'],
+  Set<ReligiousSourceClass>? sourceClasses,
   ProphetSemanticEvidenceState evidenceState =
       ProphetSemanticEvidenceState.verified,
 }) =>
@@ -17,6 +19,10 @@ ProphetSemanticClaim _claim({
       dimension: dimension,
       claimKey: key,
       sourceIds: sourceIds,
+      sourceClasses: sourceClasses ??
+          (dimension == ProphetSemanticDimension.hadith
+              ? const {ReligiousSourceClass.sahihHasanHadith}
+              : const {ReligiousSourceClass.quran}),
       contextReference: contextReference,
       evidenceState: evidenceState,
     );
@@ -102,6 +108,7 @@ void main() {
           dimension: ProphetSemanticDimension.historicalDate,
           claimKey: 'historicalDate:hijra_year',
           sourceIds: [],
+          sourceClasses: {ReligiousSourceClass.quran},
         ),
       ],
     );
@@ -111,6 +118,86 @@ void main() {
       result.errors.join('\n'),
       contains('verified semantic evidence requires sources'),
     );
+  });
+
+  test('verified claim without source class fails closed', () {
+    final result = qa.audit(
+      requireFull25Coverage: false,
+      claims: const [
+        ProphetSemanticClaim(
+          biographyProphetId: 'muhammad',
+          subjectProphetId: 'muhammad',
+          dimension: ProphetSemanticDimension.identity,
+          claimKey: 'identity:muhammad',
+          sourceIds: ['quran-33-40'],
+        ),
+      ],
+    );
+
+    expect(result.isValid, isFalse);
+    expect(
+      result.errors.join('\n'),
+      contains('verified semantic evidence requires source classes'),
+    );
+  });
+
+  test('Quran source cannot be relabelled as verified hadith evidence', () {
+    final result = qa.audit(
+      requireFull25Coverage: false,
+      claims: [
+        _claim(
+          biography: 'muhammad',
+          subject: 'muhammad',
+          dimension: ProphetSemanticDimension.hadith,
+          key: 'hadith:example',
+          sourceIds: const ['quran-33-40'],
+          sourceClasses: const {ReligiousSourceClass.quran},
+        ),
+      ],
+    );
+
+    expect(result.isValid, isFalse);
+    expect(result.errors.join('\n'), contains('cannot verify hadith'));
+  });
+
+  test('history source cannot be relabelled as Quran-verse evidence', () {
+    final result = qa.audit(
+      requireFull25Coverage: false,
+      claims: [
+        _claim(
+          biography: 'yusuf',
+          subject: 'yusuf',
+          dimension: ProphetSemanticDimension.quranVerse,
+          key: 'quranVerse:yusuf_12_4',
+          sourceIds: const ['history-source'],
+          sourceClasses: const {
+            ReligiousSourceClass.modernHistoryArchaeology,
+          },
+        ),
+      ],
+    );
+
+    expect(result.isValid, isFalse);
+    expect(result.errors.join('\n'), contains('cannot verify quranVerse'));
+  });
+
+  test('later tradition cannot by itself verify an exact historical date', () {
+    final result = qa.audit(
+      requireFull25Coverage: false,
+      claims: [
+        _claim(
+          biography: 'idris',
+          subject: 'idris',
+          dimension: ProphetSemanticDimension.historicalDate,
+          key: 'historicalDate:claimed_exact_year',
+          sourceIds: const ['later-tradition'],
+          sourceClasses: const {ReligiousSourceClass.laterTradition},
+        ),
+      ],
+    );
+
+    expect(result.isValid, isFalse);
+    expect(result.errors.join('\n'), contains('cannot verify historicalDate'));
   });
 
   test('unknown evidence may stay explicit without invented source', () {
@@ -123,6 +210,7 @@ void main() {
           dimension: ProphetSemanticDimension.historicalDate,
           key: 'historicalDate:exact_date_unknown',
           sourceIds: const [],
+          sourceClasses: const {},
           evidenceState: ProphetSemanticEvidenceState.unknown,
         ),
       ],
@@ -141,6 +229,7 @@ void main() {
           dimension: dimension,
           key: '${dimension.name}:pending_${dimension.name}',
           sourceIds: const [],
+          sourceClasses: const {},
           evidenceState: ProphetSemanticEvidenceState.pendingReview,
         ),
       );
@@ -152,6 +241,29 @@ void main() {
     expect(
       result.errors.join('\n'),
       contains('muhammad: semantic cross-check coverage missing'),
+    );
+  });
+
+  test('unresolved evidence cannot carry verified source-class claims', () {
+    final result = qa.audit(
+      requireFull25Coverage: false,
+      claims: const [
+        ProphetSemanticClaim(
+          biographyProphetId: 'idris',
+          subjectProphetId: 'idris',
+          dimension: ProphetSemanticDimension.historicalDate,
+          claimKey: 'historicalDate:pending',
+          sourceIds: [],
+          sourceClasses: {ReligiousSourceClass.modernHistoryArchaeology},
+          evidenceState: ProphetSemanticEvidenceState.pendingReview,
+        ),
+      ],
+    );
+
+    expect(result.isValid, isFalse);
+    expect(
+      result.errors.join('\n'),
+      contains('unresolved semantic evidence must not claim verified source classes'),
     );
   });
 
