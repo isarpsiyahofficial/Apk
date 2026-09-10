@@ -118,56 +118,62 @@ void main() {
   testWidgets('bottom navigation exposes localized screen-reader labels',
       (tester) async {
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
-
-    await pumpAccessibleApp(
-      tester,
-      locale: const Locale('tr'),
-      textScaleFactor: 1,
-    );
-
-    for (final label in const <String>[
-      'Bugün',
-      'Kur’an',
-      'Keşfet',
-      'Zikir',
-      'Ben',
-    ]) {
-      // Material navigation enriches the spoken label with localized tab
-      // position/state (for example "tab 1 of 5"). Assert the native label is
-      // present without incorrectly requiring that enriched node to equal the
-      // visible text byte-for-byte.
-      expect(
-        find.bySemanticsLabel(RegExp(RegExp.escape(label))),
-        findsWidgets,
-        reason: 'missing navigation semantics label: $label',
+    try {
+      await pumpAccessibleApp(
+        tester,
+        locale: const Locale('tr'),
+        textScaleFactor: 1,
       );
+
+      for (final label in const <String>[
+        'Bugün',
+        'Kur’an',
+        'Keşfet',
+        'Zikir',
+        'Ben',
+      ]) {
+        // Material navigation enriches the spoken label with localized tab
+        // position/state (for example "tab 1 of 5"). Assert the native label
+        // is present without incorrectly requiring that enriched node to equal
+        // the visible text byte-for-byte.
+        expect(
+          find.bySemanticsLabel(RegExp(RegExp.escape(label))),
+          findsWidgets,
+          reason: 'missing navigation semantics label: $label',
+        );
+      }
+    } finally {
+      // Flutter verifies that semantics handles are closed before tearDown
+      // callbacks run, so dispose deterministically inside the test body.
+      semantics.dispose();
     }
   });
 
   testWidgets('Arabic navigation exposes native RTL screen-reader labels',
       (tester) async {
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
-
-    await pumpAccessibleApp(
-      tester,
-      locale: const Locale('ar'),
-      textScaleFactor: 1,
-    );
-
-    for (final label in const <String>[
-      'اليوم',
-      'القرآن',
-      'اكتشف',
-      'الذكر',
-      'أنا',
-    ]) {
-      expect(
-        find.bySemanticsLabel(RegExp(RegExp.escape(label))),
-        findsWidgets,
-        reason: 'missing Arabic navigation semantics label: $label',
+    try {
+      await pumpAccessibleApp(
+        tester,
+        locale: const Locale('ar'),
+        textScaleFactor: 1,
       );
+
+      for (final label in const <String>[
+        'اليوم',
+        'القرآن',
+        'اكتشف',
+        'الذكر',
+        'أنا',
+      ]) {
+        expect(
+          find.bySemanticsLabel(RegExp(RegExp.escape(label))),
+          findsWidgets,
+          reason: 'missing Arabic navigation semantics label: $label',
+        );
+      }
+    } finally {
+      semantics.dispose();
     }
   });
 
