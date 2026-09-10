@@ -46,3 +46,13 @@ Bu dosya `SPECIFICATION.md` v1.1 üzerinde alınan son kararları kilitler. `SPE
 - Bu ID lokalize UI adı, fiyat veya kampanya metninden bağımsızdır; kodda başka bir production PRO ürün ID'si kabul edilmeyecektir.
 - Product ID oluşturulduktan sonra değiştirilemez/yeniden kullanılamaz kabul edilerek billing, restore ve entitlement doğrulama akışlarının tamamı bu canonical ID üzerinden ilerleyecektir.
 - Bilinmeyen, aylık/yıllık abonelik izlenimi veren veya canonical ID dışındaki ürünler Lifetime PRO entitlement üretmeyecektir; failure-path fail-closed olacaktır.
+
+## 5. Peygamber biyografileri semantik çapraz doğrulama kapısı
+
+- Peygamber hayatları yalnız 25 canonical kimliğin ve kaynak alanlarının varlığıyla final kabul edilmeyecektir.
+- Her bir peygamber için **isim/kimlik → olay → Kur’an ayeti → hadis → aile/soy → dönem/kronoloji → coğrafya → tarih** boyutları typed QA verisiyle çapraz doğrulanacaktır.
+- Her biyografi iddiası hem **biyografi sahibi peygamberi** hem de iddianın gerçek **özne/olay sahibi peygamberini** açıkça taşıyacaktır; salt metin içinde isim aramak yeterli QA değildir.
+- Başka bir peygamberin adının aile, kronoloji, karşılaştırma veya bağlam içinde doğal biçimde geçmesi tek başına hata değildir; bu kullanım explicit contextual-reference olarak işaretlenmelidir.
+- Başka peygambere ait olayın yanlış biyografiye sahiplik verilmesi release FAIL olacaktır. Örnek zorunlu failure-pathler: Yûsuf’un kuyu/Mısır olayının Muhammed biyografisine atanması ve Muhammed’in Hicret/Medine olayının Yûsuf biyografisine atanması.
+- Tarih ve soy iddiaları ayrıca mevcut genealogy graph ve chronology band kontrolleriyle tutarlı olmalıdır; exact tarih yalnız exact-source evidence ile gösterilebilir.
+- Sekiz semantik boyutun 25 peygamberin tamamında coverage kaydı oluşmadan D10/D11 final PASS sayılamaz; bilinmeyen tarihsel ayrıntı uydurulmak yerine explicit unknown/pending bırakılır.
