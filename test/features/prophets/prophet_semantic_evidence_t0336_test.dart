@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/core/content/content_governance.dart';
+import 'package:islami_hayat/features/prophets/data/canonical_prophet_biographies.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophets.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_evidence_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_qa.dart';
@@ -7,6 +8,16 @@ import 'package:islami_hayat/features/prophets/data/verified_prophet_family_rela
 
 void main() {
   const qa = ProphetSemanticOwnershipQa();
+
+  Set<String> sourceBackedIds(ProphetBiographySectionKey key) =>
+      canonicalProphetBiographyDrafts
+          .where(
+            (draft) =>
+                draft.sections[key]?.status ==
+                ProphetBiographyFieldStatus.sourceBacked,
+          )
+          .map((draft) => draft.identity.canonicalId)
+          .toSet();
 
   test('canonical registry contributes identity + Quran verse for all 25', () {
     expect(canonicalQuranNamedProphets, hasLength(25));
@@ -71,8 +82,75 @@ void main() {
     }
   });
 
+  test('event/chronology/geography bridges admit source-backed fields only', () {
+    final cases = <(
+      ProphetBiographySectionKey,
+      ProphetSemanticDimension,
+      List<ProphetSemanticClaim>
+    )>[
+      (
+        ProphetBiographySectionKey.keyEvents,
+        ProphetSemanticDimension.event,
+        canonicalProphetEventEvidenceT0336,
+      ),
+      (
+        ProphetBiographySectionKey.period,
+        ProphetSemanticDimension.chronology,
+        canonicalProphetChronologyEvidenceT0336,
+      ),
+      (
+        ProphetBiographySectionKey.geography,
+        ProphetSemanticDimension.geography,
+        canonicalProphetGeographyEvidenceT0336,
+      ),
+    ];
+
+    for (final entry in cases) {
+      final expectedIds = sourceBackedIds(entry.$1);
+      final actualIds = entry.$3.map((claim) => claim.biographyProphetId).toSet();
+      expect(actualIds, expectedIds, reason: entry.$1.name);
+      expect(entry.$3, hasLength(expectedIds.length), reason: entry.$1.name);
+
+      for (final claim in entry.$3) {
+        expect(claim.dimension, entry.$2);
+        expect(claim.subjectProphetId, claim.biographyProphetId);
+        expect(claim.evidenceState, ProphetSemanticEvidenceState.verified);
+        expect(claim.contextReference, isFalse);
+        expect(claim.sourceIds, isNotEmpty);
+        expect(claim.sourceClasses, isNotEmpty);
+        expect(claim.claimKey, startsWith('${entry.$2.name}:'));
+      }
+    }
+  });
+
+  test('unknown biography fields never manufacture semantic coverage', () {
+    for (final draft in canonicalProphetBiographyDrafts) {
+      final checks = <(
+        ProphetBiographySectionKey,
+        List<ProphetSemanticClaim>
+      )>[
+        (ProphetBiographySectionKey.keyEvents, canonicalProphetEventEvidenceT0336),
+        (ProphetBiographySectionKey.period, canonicalProphetChronologyEvidenceT0336),
+        (ProphetBiographySectionKey.geography, canonicalProphetGeographyEvidenceT0336),
+      ];
+
+      for (final entry in checks) {
+        final field = draft.sections[entry.$1]!;
+        if (field.status == ProphetBiographyFieldStatus.unknownPendingResearch) {
+          expect(
+            entry.$2.where(
+              (claim) => claim.biographyProphetId == draft.identity.canonicalId,
+            ),
+            isEmpty,
+            reason: '${draft.identity.canonicalId}/${entry.$1.name}',
+          );
+        }
+      }
+    }
+  });
+
   test('current canonical T0336 evidence is internally valid', () {
-    expect(canonicalProphetSemanticEvidenceT0336, hasLength(54));
+    expect(canonicalProphetSemanticEvidenceT0336.length, greaterThan(54));
 
     final result = qa.audit(
       claims: canonicalProphetSemanticEvidenceT0336,
@@ -83,16 +161,13 @@ void main() {
     expect(result.isValid, isTrue);
   });
 
-  test('reviewed lineage bridge cannot falsely complete 25x8 release gate', () {
+  test('reviewed bridges cannot falsely complete 25x8 release gate', () {
     final result = qa.audit(claims: canonicalProphetSemanticEvidenceT0336);
 
     expect(result.isValid, isFalse);
     final errors = result.errors.join('\n');
     expect(errors, contains('semantic cross-check coverage missing'));
-    expect(errors, contains('event'));
     expect(errors, contains('hadith'));
-    expect(errors, contains('chronology'));
-    expect(errors, contains('geography'));
     expect(errors, contains('historicalDate'));
 
     // A prophet without an independently reviewed genealogy must still report
@@ -103,11 +178,12 @@ void main() {
     expect(adamError, contains('familyLineage'));
 
     // Prophets covered by the conservative graph no longer report that one
-    // dimension, while all remaining dimensions stay fail-closed.
+    // dimension, while unresolved dimensions remain fail-closed.
     final musaError = result.errors.singleWhere(
       (error) => error.startsWith('musa: semantic cross-check coverage missing'),
     );
     expect(musaError, isNot(contains('familyLineage')));
-    expect(musaError, contains('event'));
+    expect(musaError, contains('hadith'));
+    expect(musaError, contains('historicalDate'));
   });
 }
