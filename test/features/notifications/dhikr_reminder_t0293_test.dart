@@ -134,7 +134,33 @@ void main() {
     );
   });
 
-  test('orchestrator rolls over after delivery hour', () async {
+  test('T0290 selected dhikr time reaches the scheduler', () async {
+    final scheduler = _Scheduler();
+    final coordinator = DhikrReminderCoordinatorT0293(
+      preferencesStore: _Store(
+        const NotificationPreferences(dhikrReminder: true),
+      ),
+      scheduler: scheduler,
+    );
+
+    await DhikrReminderOrchestratorT0293(
+      coordinator: coordinator,
+      now: () => DateTime(2026, 9, 2, 18, 15),
+    ).sync(
+      languageCode: 'tr',
+      preferences: const NotificationPreferences(
+        dhikrReminder: true,
+        dhikrReminderTime: NotificationTime(hour: 18, minute: 40),
+      ),
+    );
+
+    expect(
+      scheduler.scheduled.single.scheduledAt,
+      DateTime(2026, 9, 2, 18, 40),
+    );
+  });
+
+  test('orchestrator rolls over after selected/default delivery time', () async {
     final scheduler = _Scheduler();
     final coordinator = DhikrReminderCoordinatorT0293(
       preferencesStore: _Store(
