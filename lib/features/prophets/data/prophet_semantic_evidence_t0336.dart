@@ -74,6 +74,19 @@ final List<ProphetSemanticClaim> canonicalProphetFamilyLineageEvidenceT0336 =
   }),
 );
 
+const _t0336StrongHistoricalSourceClasses = <ReligiousSourceClass>{
+  ReligiousSourceClass.quran,
+  ReligiousSourceClass.sahihHasanHadith,
+  ReligiousSourceClass.earlyIslamicHistoryTafsir,
+  ReligiousSourceClass.modernHistoryArchaeology,
+};
+
+bool _hasOnlyStrongHistoricalSources(ProphetBiographyField field) =>
+    field.sources.isNotEmpty &&
+    field.sources.every(
+      (source) => _t0336StrongHistoricalSourceClasses.contains(source.sourceClass),
+    );
+
 List<ProphetSemanticClaim> _sourceBackedSectionEvidence({
   required ProphetBiographySectionKey section,
   required ProphetSemanticDimension dimension,
@@ -83,7 +96,7 @@ List<ProphetSemanticClaim> _sourceBackedSectionEvidence({
     final field = draft.sections[section];
     if (field == null ||
         field.status != ProphetBiographyFieldStatus.sourceBacked ||
-        field.sources.isEmpty) {
+        !_hasOnlyStrongHistoricalSources(field)) {
       continue;
     }
 
@@ -109,8 +122,9 @@ List<ProphetSemanticClaim> _sourceBackedSectionEvidence({
   return List<ProphetSemanticClaim>.unmodifiable(claims);
 }
 
-/// A source-backed `keyEvents` field is the canonical biography's reviewed
-/// event summary. Unknown event fields never enter this list.
+/// A source-backed `keyEvents` field with strong provenance is the canonical
+/// biography's reviewed event summary. Unknown or weak-source event fields
+/// never enter this list.
 final List<ProphetSemanticClaim> canonicalProphetEventEvidenceT0336 =
     _sourceBackedSectionEvidence(
   section: ProphetBiographySectionKey.keyEvents,
@@ -126,7 +140,7 @@ final List<ProphetSemanticClaim> canonicalProphetChronologyEvidenceT0336 =
 );
 
 /// Geography coverage is admitted only when the canonical biography geography
-/// field itself is source-backed.
+/// field itself is source-backed with strong provenance.
 final List<ProphetSemanticClaim> canonicalProphetGeographyEvidenceT0336 =
     _sourceBackedSectionEvidence(
   section: ProphetBiographySectionKey.geography,
