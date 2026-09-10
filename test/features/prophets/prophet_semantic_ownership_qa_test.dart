@@ -8,6 +8,8 @@ ProphetSemanticClaim _claim({
   required String key,
   bool contextReference = false,
   List<String> sourceIds = const ['verified-source'],
+  ProphetSemanticEvidenceState evidenceState =
+      ProphetSemanticEvidenceState.verified,
 }) =>
     ProphetSemanticClaim(
       biographyProphetId: biography,
@@ -16,6 +18,7 @@ ProphetSemanticClaim _claim({
       claimKey: key,
       sourceIds: sourceIds,
       contextReference: contextReference,
+      evidenceState: evidenceState,
     );
 
 void main() {
@@ -89,7 +92,7 @@ void main() {
     expect(result.errors.join('\n'), contains('yusuf'));
   });
 
-  test('claim without source evidence fails closed', () {
+  test('verified claim without source evidence fails closed', () {
     final result = qa.audit(
       requireFull25Coverage: false,
       claims: const [
@@ -104,7 +107,52 @@ void main() {
     );
 
     expect(result.isValid, isFalse);
-    expect(result.errors.join('\n'), contains('incomplete semantic evidence'));
+    expect(
+      result.errors.join('\n'),
+      contains('verified semantic evidence requires sources'),
+    );
+  });
+
+  test('unknown evidence may stay explicit without invented source', () {
+    final result = qa.audit(
+      requireFull25Coverage: false,
+      claims: [
+        _claim(
+          biography: 'idris',
+          subject: 'idris',
+          dimension: ProphetSemanticDimension.historicalDate,
+          key: 'historicalDate:exact_date_unknown',
+          sourceIds: const [],
+          evidenceState: ProphetSemanticEvidenceState.unknown,
+        ),
+      ],
+    );
+
+    expect(result.isValid, isTrue);
+  });
+
+  test('unknown or pending evidence cannot satisfy release coverage', () {
+    final claims = <ProphetSemanticClaim>[];
+    for (final dimension in ProphetSemanticDimension.values) {
+      claims.add(
+        _claim(
+          biography: 'muhammad',
+          subject: 'muhammad',
+          dimension: dimension,
+          key: '${dimension.name}:pending_${dimension.name}',
+          sourceIds: const [],
+          evidenceState: ProphetSemanticEvidenceState.pendingReview,
+        ),
+      );
+    }
+
+    final result = qa.audit(claims: claims);
+
+    expect(result.isValid, isFalse);
+    expect(
+      result.errors.join('\n'),
+      contains('muhammad: semantic cross-check coverage missing'),
+    );
   });
 
   test('known exclusive event cannot be relabelled as another dimension', () {
