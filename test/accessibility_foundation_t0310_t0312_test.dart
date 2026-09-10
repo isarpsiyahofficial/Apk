@@ -22,6 +22,15 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> pumpNavigationTransition(WidgetTester tester) async {
+    // Some destination pages intentionally own periodic activity. Waiting for
+    // the entire app to become globally idle would therefore turn an
+    // accessibility assertion into a false timeout. Pump a bounded Material
+    // transition window instead, then inspect the rendered frame and errors.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+
   test('theme keeps common Material controls on a padded 48dp baseline', () {
     final theme = AppTheme.light();
 
@@ -74,7 +83,7 @@ void main() {
           final destination = find.byKey(ValueKey('nav-$id'));
           expect(destination, findsOneWidget);
           await tester.tap(destination);
-          await tester.pumpAndSettle();
+          await pumpNavigationTransition(tester);
           expect(
             tester.takeException(),
             isNull,
@@ -124,8 +133,12 @@ void main() {
       'Zikir',
       'Ben',
     ]) {
+      // Material navigation enriches the spoken label with localized tab
+      // position/state (for example "tab 1 of 5"). Assert the native label is
+      // present without incorrectly requiring that enriched node to equal the
+      // visible text byte-for-byte.
       expect(
-        find.bySemanticsLabel(label),
+        find.bySemanticsLabel(RegExp(RegExp.escape(label))),
         findsWidgets,
         reason: 'missing navigation semantics label: $label',
       );
@@ -151,7 +164,7 @@ void main() {
       'أنا',
     ]) {
       expect(
-        find.bySemanticsLabel(label),
+        find.bySemanticsLabel(RegExp(RegExp.escape(label))),
         findsWidgets,
         reason: 'missing Arabic navigation semantics label: $label',
       );
