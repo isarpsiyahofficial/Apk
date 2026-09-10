@@ -77,6 +77,24 @@ jobs:
           FORBIDDEN='ACCESS_FINE_LOCATION|ACCESS_COARSE_LOCATION|RECORD_AUDIO|CAMERA|READ_CONTACTS|WRITE_CONTACTS|GET_ACCOUNTS'
           if printf '%s\n' "$PERMS" | grep -E "$FORBIDDEN"; then echo "Forbidden sensitive permission found in release APK" >&2; exit 1; fi
           echo "Release APK permission audit PASS"
+      - name: Verify final release APK backup privacy
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-release.apk"
+          BUILD_TOOLS="$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
+          AAPT2="$ANDROID_HOME/build-tools/$BUILD_TOOLS/aapt2"
+          MANIFEST_FILE="$(mktemp)"
+          RESOURCES_FILE="$(mktemp)"
+          trap 'rm -f "$MANIFEST_FILE" "$RESOURCES_FILE"' EXIT
+          "$AAPT2" dump xmltree --file AndroidManifest.xml "$APK" > "$MANIFEST_FILE"
+          "$AAPT2" dump resources "$APK" > "$RESOURCES_FILE"
+          grep -E 'android:allowBackup.*(0x0|false)' "$MANIFEST_FILE"
+          grep -F 'android:fullBackupContent' "$MANIFEST_FILE"
+          grep -F 'android:dataExtractionRules' "$MANIFEST_FILE"
+          grep -F 'backup_rules' "$RESOURCES_FILE"
+          grep -F 'data_extraction_rules' "$RESOURCES_FILE"
+          echo "T0305 final release APK backup privacy audit PASS"
       - name: Verify notification reboot restore is packaged in release APK
         shell: bash
         run: |
