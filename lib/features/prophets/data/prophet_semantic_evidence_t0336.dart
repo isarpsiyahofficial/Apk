@@ -89,7 +89,7 @@ bool _hasOnlyStrongHistoricalSources(ProphetBiographyField field) =>
       (source) => _t0336StrongHistoricalSourceClasses.contains(source.sourceClass),
     );
 
-Iterable<CanonicalProphetBiographyDraft> get _t0336BiographyDrafts {
+Iterable<CanonicalProphetBiographyDraft> get _t0336BiographyDrafts sync* {
   for (final draft in canonicalProphetBiographyT0194Dataset) {
     if (!draft.isStructurallyComplete ||
         !prophetBiographyT0194DraftHasTraceableProvenance(draft)) {
