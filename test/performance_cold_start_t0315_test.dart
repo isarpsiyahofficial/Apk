@@ -25,7 +25,7 @@ void main() {
     );
     expect(
       script,
-      contains('MAX_COLD_START_MS="${MAX_COLD_START_MS:-3000}"'),
+      contains('MAX_COLD_START_MS="\${MAX_COLD_START_MS:-3000}"'),
       reason: 'The <=3 second release requirement must stay strict.',
     );
     expect(script, contains("grep -Fq 'LaunchState: COLD'"));
