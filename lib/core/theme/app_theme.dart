@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:islami_hayat/core/accessibility/app_motion.dart';
 
 abstract final class AppTheme {
   static const Color _ivory = Color(0xFFF8F5EE);
@@ -12,6 +13,18 @@ abstract final class AppTheme {
 
   static WidgetStateProperty<Size> get _minimumInteractiveTarget =>
       const WidgetStatePropertyAll(_minimumInteractiveSize);
+
+  static const PageTransitionsTheme _pageTransitionsTheme =
+      PageTransitionsTheme(
+        builders: <TargetPlatform, PageTransitionsBuilder>{
+          TargetPlatform.android: AppPageTransitionsBuilder(),
+          TargetPlatform.iOS: AppPageTransitionsBuilder(),
+          TargetPlatform.macOS: AppPageTransitionsBuilder(),
+          TargetPlatform.windows: AppPageTransitionsBuilder(),
+          TargetPlatform.linux: AppPageTransitionsBuilder(),
+          TargetPlatform.fuchsia: AppPageTransitionsBuilder(),
+        },
+      );
 
   static ThemeData light() {
     const scheme = ColorScheme(
@@ -32,6 +45,7 @@ abstract final class AppTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: _ivory,
       dividerColor: _sand.withValues(alpha: 0.55),
+      pageTransitionsTheme: _pageTransitionsTheme,
       // Accessibility baseline: common Material controls retain padded tap
       // targets even if a platform/device applies a compact visual density.
       // Feature-specific controls still need semantic and hit-target QA.
