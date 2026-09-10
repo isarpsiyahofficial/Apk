@@ -47,6 +47,12 @@ final class ProphetSemanticOwnershipQaResult {
 /// must provide typed subject ownership and sources for each semantic claim.
 /// That makes accidental copy/paste across prophet biographies detectable while
 /// still allowing explicit contextual mentions of another prophet.
+///
+/// Every non-exclusive claim key is namespaced by its semantic dimension
+/// (`identity:...`, `quranVerse:...`, etc.). This prevents an editor from making
+/// an event satisfy the date/hadith/geography coverage merely by changing the
+/// enum value while reusing the same evidence key. Known exclusive events keep
+/// stable historical keys and are separately forced to the `event` dimension.
 final class ProphetSemanticOwnershipQa {
   const ProphetSemanticOwnershipQa();
 
@@ -69,11 +75,13 @@ final class ProphetSemanticOwnershipQa {
   }) {
     final errors = <String>[];
     final seenDimensions = <String, Set<ProphetSemanticDimension>>{};
+    final seenEvidenceKeys = <String>{};
 
     for (final claim in claims) {
       final biographyId = claim.biographyProphetId.trim();
       final subjectId = claim.subjectProphetId.trim();
       final claimKey = claim.claimKey.trim();
+      final normalizedSources = claim.sourceIds.map((id) => id.trim()).toList();
 
       if (!_canonicalIds.contains(biographyId)) {
         errors.add('$biographyId: unknown biography prophet id');
@@ -83,9 +91,31 @@ final class ProphetSemanticOwnershipQa {
         errors.add('$biographyId/$claimKey: unknown semantic subject $subjectId');
       }
       if (claimKey.isEmpty ||
-          claim.sourceIds.isEmpty ||
-          claim.sourceIds.any((id) => id.trim().isEmpty)) {
+          normalizedSources.isEmpty ||
+          normalizedSources.any((id) => id.isEmpty)) {
         errors.add('$biographyId: incomplete semantic evidence');
+      }
+      if (normalizedSources.toSet().length != normalizedSources.length) {
+        errors.add('$biographyId/$claimKey: duplicate semantic source evidence');
+      }
+
+      final exclusiveOwner = _exclusiveEventOwners[claimKey];
+      if (exclusiveOwner != null) {
+        if (claim.dimension != ProphetSemanticDimension.event) {
+          errors.add(
+            '$biographyId/$claimKey: exclusive event must use the event dimension',
+          );
+        }
+      } else if (claimKey.isNotEmpty &&
+          !claimKey.startsWith('${claim.dimension.name}:')) {
+        errors.add(
+          '$biographyId/$claimKey: semantic key must be namespaced as ${claim.dimension.name}:...',
+        );
+      }
+
+      final evidenceKey = '${claim.biographyProphetId}|${claim.dimension.name}|$claimKey';
+      if (claimKey.isNotEmpty && !seenEvidenceKeys.add(evidenceKey)) {
+        errors.add('$biographyId/$claimKey: duplicate semantic claim evidence');
       }
 
       if (subjectId != biographyId && !claim.contextReference) {
@@ -94,7 +124,6 @@ final class ProphetSemanticOwnershipQa {
         );
       }
 
-      final exclusiveOwner = _exclusiveEventOwners[claimKey];
       if (exclusiveOwner != null && subjectId != exclusiveOwner) {
         errors.add(
           '$biographyId/$claimKey: exclusive event subject must be $exclusiveOwner, got $subjectId',
