@@ -8,6 +8,10 @@ abstract final class AppTheme {
   static const Color _sand = Color(0xFFD8C8A8);
   static const Color _ink = Color(0xFF20231F);
   static const Color _muted = Color(0xFF666A63);
+  static const Size _minimumInteractiveSize = Size(48, 48);
+
+  static WidgetStateProperty<Size> get _minimumInteractiveTarget =>
+      const WidgetStatePropertyAll(_minimumInteractiveSize);
 
   static ThemeData light() {
     const scheme = ColorScheme(
@@ -28,6 +32,26 @@ abstract final class AppTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: _ivory,
       dividerColor: _sand.withValues(alpha: 0.55),
+      // Accessibility baseline: common Material controls retain padded tap
+      // targets even if a platform/device applies a compact visual density.
+      // Feature-specific controls still need semantic and hit-target QA.
+      materialTapTargetSize: MaterialTapTargetSize.padded,
+      visualDensity: VisualDensity.standard,
+      iconButtonTheme: IconButtonThemeData(
+        style: ButtonStyle(minimumSize: _minimumInteractiveTarget),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: ButtonStyle(minimumSize: _minimumInteractiveTarget),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: ButtonStyle(minimumSize: _minimumInteractiveTarget),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: ButtonStyle(minimumSize: _minimumInteractiveTarget),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ButtonStyle(minimumSize: _minimumInteractiveTarget),
+      ),
       textTheme: const TextTheme(
         displaySmall: TextStyle(
           fontSize: 36,
