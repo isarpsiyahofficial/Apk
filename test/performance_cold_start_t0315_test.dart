@@ -20,7 +20,7 @@ void main() {
     );
     expect(
       script,
-      contains('adb install -r "$COLD_START_APK"'),
+      contains('adb install -r "\$COLD_START_APK"'),
       reason: 'The selected performance artifact must actually be installed.',
     );
     expect(
