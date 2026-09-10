@@ -74,10 +74,12 @@ class ShareAssetPackagingPolicyT0317 {
         if (!path.endsWith('.webp')) {
           throw StateError('WebP packaging plan requires a .webp asset.');
         }
+        break;
       case ShareAssetCodecT0317.pngLossless:
         if (!path.endsWith('.png')) {
           throw StateError('PNG lossless packaging plan requires a .png asset.');
         }
+        break;
       case ShareAssetCodecT0317.avifExperimental:
         throw StateError(
           'AVIF is not a V1 release codec until the complete Android device matrix proves decode support; use WebP or justified PNG lossless.',
