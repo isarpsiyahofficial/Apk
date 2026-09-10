@@ -72,12 +72,28 @@ final class _ArabicFixtureQuran implements QuranReaderDataSource {
   );
 }
 
-Future<void> _pumpUntilFound(WidgetTester tester, Finder finder) async {
+Finder get _arabicFinder => find.byWidgetPredicate(
+  (widget) => widget is SelectableText && widget.data == _arabicFixture,
+);
+
+Future<void> _pumpUntilReaderReady(WidgetTester tester) async {
+  final ready = find.byKey(const ValueKey('quran-saved-position'));
   for (var i = 0; i < 40; i++) {
-    if (finder.evaluate().isNotEmpty) return;
+    if (ready.evaluate().isNotEmpty) return;
     await tester.pump(const Duration(milliseconds: 25));
   }
-  throw TestFailure('Timed out waiting for Quran accessibility fixture');
+  throw TestFailure('Timed out waiting for Quran reader shell');
+}
+
+Future<void> _scrollUntilArabicVisible(WidgetTester tester) async {
+  final scrollable = find.byType(CustomScrollView);
+  for (var i = 0; i < 20; i++) {
+    if (_arabicFinder.evaluate().isNotEmpty) return;
+    expect(scrollable, findsOneWidget);
+    await tester.drag(scrollable, const Offset(0, -160));
+    await tester.pump();
+  }
+  throw TestFailure('Timed out scrolling to Quran accessibility fixture');
 }
 
 Future<void> _pumpReader(
@@ -113,12 +129,8 @@ Future<void> _pumpReader(
     ),
   );
 
-  await _pumpUntilFound(
-    tester,
-    find.byWidgetPredicate(
-      (widget) => widget is SelectableText && widget.data == _arabicFixture,
-    ),
-  );
+  await _pumpUntilReaderReady(tester);
+  await _scrollUntilArabicVisible(tester);
 }
 
 void main() {
@@ -226,9 +238,7 @@ void main() {
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
       await _pumpReader(tester, store: store, systemTextScale: 2);
-      final arabic = find.byWidgetPredicate(
-        (widget) => widget is SelectableText && widget.data == _arabicFixture,
-      );
+      final arabic = _arabicFinder;
       await tester.ensureVisible(arabic);
       await tester.pump();
 
@@ -258,14 +268,12 @@ void main() {
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
     await _pumpReader(tester, store: store, systemTextScale: 1);
-    final arabic = find.byWidgetPredicate(
-      (widget) => widget is SelectableText && widget.data == _arabicFixture,
-    );
-    final atOne = tester.widget<SelectableText>(arabic).style?.fontSize;
+    final atOne = tester.widget<SelectableText>(_arabicFinder).style?.fontSize;
 
     tester.platformDispatcher.textScaleFactorTestValue = 2;
     await tester.pump();
-    final atTwo = tester.widget<SelectableText>(arabic).style?.fontSize;
+    await _scrollUntilArabicVisible(tester);
+    final atTwo = tester.widget<SelectableText>(_arabicFinder).style?.fontSize;
 
     expect(atOne, closeTo(33.6, 0.01));
     expect(atTwo, closeTo(33.6, 0.01));
@@ -285,10 +293,7 @@ void main() {
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
     await _pumpReader(tester, store: store, systemTextScale: 1);
-    final arabic = find.byWidgetPredicate(
-      (widget) => widget is SelectableText && widget.data == _arabicFixture,
-    );
-    final widget = tester.widget<SelectableText>(arabic);
+    final widget = tester.widget<SelectableText>(_arabicFinder);
 
     expect(widget.style?.fontSize, closeTo(24, 0.01));
     expect(
