@@ -44,8 +44,10 @@ jobs:
         run: |
           flutter pub get
           flutter gen-l10n
-      - name: Build debug APK
+      - name: Build debug APK for functional smoke
         run: flutter build apk --debug
+      - name: Build profile APK for cold-start performance gate
+        run: flutter build apk --profile
       - name: Enable KVM group permissions
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -59,7 +61,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: sh scripts/android_emulator_smoke_retry.sh && sh scripts/android_cold_start_t0315.sh && sh scripts/android_share_sheet_smoke_t0251.sh && sh scripts/android_device_matrix_t0319.sh && sh scripts/android_widget_launcher_smoke_t0297.sh
+          script: sh scripts/android_emulator_smoke_retry.sh && COLD_START_APK=build/app/outputs/flutter-apk/app-profile.apk sh scripts/android_cold_start_t0315.sh && sh scripts/android_share_sheet_smoke_t0251.sh && sh scripts/android_device_matrix_t0319.sh && sh scripts/android_widget_launcher_smoke_t0297.sh
 
   low-memory-emulator-smoke:
     runs-on: ubuntu-latest
