@@ -72,22 +72,30 @@ class DeviceSearchIndexT0230 {
 
     _ensureLoaded();
 
-    Set<String>? candidateIds;
+    // T0316: intersect from the rarest token first. Starting from a broad
+    // token would copy its entire posting list only to discard most IDs on the
+    // next token, causing avoidable transient memory and CPU work on large
+    // device-local corpora. Result ordering remains deterministic below.
+    final postings = <Set<String>>[];
     for (final token in queryTokens) {
       final ids = _documentIdsByToken![token];
       if (ids == null || ids.isEmpty) {
         return const <SearchHitT0230>[];
       }
-      candidateIds = candidateIds == null
-          ? Set<String>.of(ids)
-          : candidateIds.intersection(ids);
+      postings.add(ids);
+    }
+    postings.sort((a, b) => a.length.compareTo(b.length));
+
+    final candidateIds = Set<String>.of(postings.first);
+    for (final ids in postings.skip(1)) {
+      candidateIds.retainAll(ids);
       if (candidateIds.isEmpty) {
         return const <SearchHitT0230>[];
       }
     }
 
     final hits = <SearchHitT0230>[];
-    for (final id in candidateIds!) {
+    for (final id in candidateIds) {
       final corpus = _normalizedCorpusById![id]!;
       var score = queryTokens.length * 10;
       if (corpus.contains(normalizedQuery)) {
