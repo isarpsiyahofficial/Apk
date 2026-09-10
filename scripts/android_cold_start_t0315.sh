@@ -4,6 +4,7 @@ set -eu
 PACKAGE='com.example.islami_hayat'
 ACTIVITY="$PACKAGE/.MainActivity"
 MAX_COLD_START_MS="${MAX_COLD_START_MS:-3000}"
+COLD_START_APK="${COLD_START_APK:-}"
 SAMPLE_COUNT=3
 SAMPLES_FILE="${TMPDIR:-/tmp}/t0315_cold_start_$$.txt"
 
@@ -23,9 +24,19 @@ if [ "$MAX_COLD_START_MS" -le 0 ]; then
   exit 1
 fi
 
+if [ -n "$COLD_START_APK" ]; then
+  if [ ! -f "$COLD_START_APK" ]; then
+    echo "T0315 cold-start gate: requested performance APK not found: $COLD_START_APK" >&2
+    exit 1
+  fi
+  echo "T0315 installing performance APK: $COLD_START_APK"
+  adb install -r "$COLD_START_APK"
+fi
+
 : > "$SAMPLES_FILE"
 
-# The APK is installed by the core emulator smoke before this gate. Every
+# The performance gate must reflect ahead-of-time compiled app behavior rather
+# than Flutter debug/JIT overhead. CI passes the profile APK explicitly. Every
 # sample force-stops the package and asks ActivityManager for a new process, so
 # all three timings are genuine cold launches while retaining normal app data.
 # A median keeps the <=3s product requirement strict without allowing a single
