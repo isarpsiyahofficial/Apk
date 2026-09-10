@@ -115,29 +115,40 @@ final class DhikrReminderOrchestratorT0293 {
   const DhikrReminderOrchestratorT0293({
     required DhikrReminderCoordinatorT0293 coordinator,
     DateTime Function()? now,
-    this.deliveryHour = dhikrReminderDefaultHourT0293,
+    this.deliveryHour,
+    this.deliveryMinute = 0,
   })  : _coordinator = coordinator,
         _now = now ?? DateTime.now;
 
   final DhikrReminderCoordinatorT0293 _coordinator;
   final DateTime Function() _now;
-  final int deliveryHour;
+  final int? deliveryHour;
+  final int deliveryMinute;
 
   Future<void> sync({
     required String languageCode,
     required NotificationPreferences preferences,
   }) async {
-    if (deliveryHour < 0 || deliveryHour > 23) {
-      throw StateError('Dhikr reminder delivery hour must be between 0 and 23.');
+    final overrideHour = deliveryHour;
+    if (overrideHour != null &&
+        (overrideHour < 0 ||
+            overrideHour > 23 ||
+            deliveryMinute < 0 ||
+            deliveryMinute > 59)) {
+      throw StateError('Dhikr reminder delivery time must be a valid local clock time.');
     }
 
+    final deliveryTime = overrideHour == null
+        ? preferences.dhikrReminderTime
+        : NotificationTime(hour: overrideHour, minute: deliveryMinute);
     final now = _now();
     var civilDate = DateTime(now.year, now.month, now.day);
     var scheduledAt = DateTime(
       civilDate.year,
       civilDate.month,
       civilDate.day,
-      deliveryHour,
+      deliveryTime.hour,
+      deliveryTime.minute,
     );
     if (!scheduledAt.isAfter(now)) {
       civilDate = civilDate.add(const Duration(days: 1));
@@ -145,7 +156,8 @@ final class DhikrReminderOrchestratorT0293 {
         civilDate.year,
         civilDate.month,
         civilDate.day,
-        deliveryHour,
+        deliveryTime.hour,
+        deliveryTime.minute,
       );
     }
 
