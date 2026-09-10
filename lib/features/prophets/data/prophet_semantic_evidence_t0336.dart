@@ -1,4 +1,5 @@
 import '../../../core/content/content_governance.dart';
+import 'canonical_prophet_biographies.dart';
 import 'canonical_prophets.dart';
 import 'prophet_semantic_ownership_qa.dart';
 import 'verified_prophet_family_relations.dart';
@@ -10,12 +11,10 @@ import 'verified_prophet_family_relations.dart';
 /// can safely satisfy the `identity` and `quranVerse` dimensions without
 /// inventing biography detail.
 ///
-/// The family-lineage slice is deliberately narrower: it is derived only from
-/// [verifiedProphetKinshipFacts], whose individual relation claims and composed
-/// graph are already fail-closed reviewed. A missing genealogy is therefore not
-/// guessed merely to increase coverage. The remaining event/hadith/chronology/
-/// geography/date dimensions stay outside this registry until their own
-/// reviewed evidence is attached.
+/// Other dimensions are admitted only by bridging independently reviewed data:
+/// source-backed biography sections for event/period/geography and the verified
+/// genealogy graph for family-lineage. Unknown/pending biography fields are
+/// intentionally ignored and therefore remain release gaps.
 final List<ProphetSemanticClaim> canonicalProphetIdentityVerseEvidenceT0336 =
     List<ProphetSemanticClaim>.unmodifiable(
   canonicalQuranNamedProphets.expand((identity) {
@@ -75,11 +74,74 @@ final List<ProphetSemanticClaim> canonicalProphetFamilyLineageEvidenceT0336 =
   }),
 );
 
+List<ProphetSemanticClaim> _sourceBackedSectionEvidence({
+  required ProphetBiographySectionKey section,
+  required ProphetSemanticDimension dimension,
+}) {
+  final claims = <ProphetSemanticClaim>[];
+  for (final draft in canonicalProphetBiographyDrafts) {
+    final field = draft.sections[section];
+    if (field == null ||
+        field.status != ProphetBiographyFieldStatus.sourceBacked ||
+        field.sources.isEmpty) {
+      continue;
+    }
+
+    final sourceIds = List<String>.unmodifiable(
+      field.sources.map((source) => source.id),
+    );
+    final sourceClasses = Set<ReligiousSourceClass>.unmodifiable(
+      field.sources.map((source) => source.sourceClass),
+    );
+
+    claims.add(
+      ProphetSemanticClaim(
+        biographyProphetId: draft.identity.canonicalId,
+        subjectProphetId: draft.identity.canonicalId,
+        dimension: dimension,
+        claimKey:
+            '${dimension.name}:${draft.identity.canonicalId}:${section.name}',
+        sourceIds: sourceIds,
+        sourceClasses: sourceClasses,
+      ),
+    );
+  }
+  return List<ProphetSemanticClaim>.unmodifiable(claims);
+}
+
+/// A source-backed `keyEvents` field is the canonical biography's reviewed
+/// event summary. Unknown event fields never enter this list.
+final List<ProphetSemanticClaim> canonicalProphetEventEvidenceT0336 =
+    _sourceBackedSectionEvidence(
+  section: ProphetBiographySectionKey.keyEvents,
+  dimension: ProphetSemanticDimension.event,
+);
+
+/// A source-backed `period` field contributes chronology only; it does not
+/// automatically become an exact historical date.
+final List<ProphetSemanticClaim> canonicalProphetChronologyEvidenceT0336 =
+    _sourceBackedSectionEvidence(
+  section: ProphetBiographySectionKey.period,
+  dimension: ProphetSemanticDimension.chronology,
+);
+
+/// Geography coverage is admitted only when the canonical biography geography
+/// field itself is source-backed.
+final List<ProphetSemanticClaim> canonicalProphetGeographyEvidenceT0336 =
+    _sourceBackedSectionEvidence(
+  section: ProphetBiographySectionKey.geography,
+  dimension: ProphetSemanticDimension.geography,
+);
+
 /// Current canonical T0336 evidence surface. Full release coverage intentionally
 /// remains false until every prophet has all eight independently verified
-/// dimensions.
+/// dimensions; hadith and historicalDate in particular are not synthesized from
+/// Quran/event/period evidence.
 final List<ProphetSemanticClaim> canonicalProphetSemanticEvidenceT0336 =
     List<ProphetSemanticClaim>.unmodifiable([
   ...canonicalProphetIdentityVerseEvidenceT0336,
   ...canonicalProphetFamilyLineageEvidenceT0336,
+  ...canonicalProphetEventEvidenceT0336,
+  ...canonicalProphetChronologyEvidenceT0336,
+  ...canonicalProphetGeographyEvidenceT0336,
 ]);
