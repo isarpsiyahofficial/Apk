@@ -4,6 +4,13 @@ set -eu
 PACKAGE='com.example.islami_hayat'
 ACTIVITY="$PACKAGE/.MainActivity"
 MAX_COLD_START_MS="${MAX_COLD_START_MS:-3000}"
+SAMPLE_COUNT=3
+SAMPLES_FILE="${TMPDIR:-/tmp}/t0315_cold_start_$$.txt"
+
+cleanup() {
+  rm -f "$SAMPLES_FILE"
+}
+trap cleanup EXIT INT TERM
 
 case "$MAX_COLD_START_MS" in
   ''|*[!0-9]*)
@@ -16,37 +23,62 @@ if [ "$MAX_COLD_START_MS" -le 0 ]; then
   exit 1
 fi
 
-# The APK is installed by the core emulator smoke before this gate. Force-stop
-# guarantees a new app process while keeping package data intact, matching a
-# normal user cold launch rather than an artificial reinstall/first-run setup.
-adb shell am force-stop "$PACKAGE"
-sleep 1
+: > "$SAMPLES_FILE"
 
-START_OUTPUT="$(adb shell am start -W -S -n "$ACTIVITY" 2>&1 | tr -d '\r')"
-printf '%s\n' "$START_OUTPUT"
+# The APK is installed by the core emulator smoke before this gate. Every
+# sample force-stops the package and asks ActivityManager for a new process, so
+# all three timings are genuine cold launches while retaining normal app data.
+# A median keeps the <=3s product requirement strict without allowing a single
+# noisy hosted-runner scheduling spike to decide the release gate.
+sample=1
+while [ "$sample" -le "$SAMPLE_COUNT" ]; do
+  adb shell am force-stop "$PACKAGE"
+  sleep 1
 
-if ! printf '%s\n' "$START_OUTPUT" | grep -Fq 'Status: ok'; then
-  echo 'T0315 cold-start gate: ActivityManager did not report Status: ok' >&2
-  exit 1
-fi
+  START_OUTPUT="$(adb shell am start -W -S -n "$ACTIVITY" 2>&1 | tr -d '\r')"
+  printf '%s\n' "$START_OUTPUT"
 
-TOTAL_TIME_MS="$(printf '%s\n' "$START_OUTPUT" | awk -F': ' '/^TotalTime:/ {print $2; exit}')"
-case "$TOTAL_TIME_MS" in
+  if ! printf '%s\n' "$START_OUTPUT" | grep -Fq 'Status: ok'; then
+    echo "T0315 cold-start gate: sample $sample did not report Status: ok" >&2
+    exit 1
+  fi
+  if ! printf '%s\n' "$START_OUTPUT" | grep -Fq 'LaunchState: COLD'; then
+    echo "T0315 cold-start gate: sample $sample was not a COLD launch" >&2
+    exit 1
+  fi
+
+  TOTAL_TIME_MS="$(printf '%s\n' "$START_OUTPUT" | awk -F': ' '/^TotalTime:/ {print $2; exit}')"
+  case "$TOTAL_TIME_MS" in
+    ''|*[!0-9]*)
+      echo "T0315 cold-start gate: invalid/missing TotalTime in sample $sample: $TOTAL_TIME_MS" >&2
+      exit 1
+      ;;
+  esac
+
+  printf '%s\n' "$TOTAL_TIME_MS" >> "$SAMPLES_FILE"
+  echo "T0315 cold-start sample $sample/$SAMPLE_COUNT: ${TOTAL_TIME_MS}ms"
+  sample=$((sample + 1))
+done
+
+MEDIAN_TIME_MS="$(sort -n "$SAMPLES_FILE" | sed -n '2p')"
+case "$MEDIAN_TIME_MS" in
   ''|*[!0-9]*)
-    echo "T0315 cold-start gate: invalid/missing TotalTime: $TOTAL_TIME_MS" >&2
+    echo "T0315 cold-start gate: could not calculate median: $MEDIAN_TIME_MS" >&2
     exit 1
     ;;
 esac
 
-if [ "$TOTAL_TIME_MS" -gt "$MAX_COLD_START_MS" ]; then
-  echo "T0315 cold-start FAIL: ${TOTAL_TIME_MS}ms > ${MAX_COLD_START_MS}ms" >&2
+if [ "$MEDIAN_TIME_MS" -gt "$MAX_COLD_START_MS" ]; then
+  echo "T0315 cold-start FAIL: median ${MEDIAN_TIME_MS}ms > ${MAX_COLD_START_MS}ms" >&2
+  echo 'Samples:' >&2
+  cat "$SAMPLES_FILE" >&2
   exit 1
 fi
 
-echo "T0315 cold-start PASS: ${TOTAL_TIME_MS}ms <= ${MAX_COLD_START_MS}ms"
+echo "T0315 cold-start PASS: median ${MEDIAN_TIME_MS}ms <= ${MAX_COLD_START_MS}ms"
 
 # A timing number is not sufficient if the app immediately crashes or never
-# becomes foreground-visible after ActivityManager reports launch completion.
+# becomes foreground-visible after the final ActivityManager launch.
 PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
 if [ -z "$PID" ]; then
   echo 'T0315 cold-start gate: app process is not alive after launch' >&2
