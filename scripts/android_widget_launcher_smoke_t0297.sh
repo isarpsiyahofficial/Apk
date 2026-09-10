@@ -48,6 +48,8 @@ for node in root.iter("node"):
             score = 100
         elif clickable and text.lower() == "add":
             score = 95
+        elif clickable and ("add_to_home" in resource or "widget_add_button" in resource or "add_item_button" in resource):
+            score = 90
         elif clickable and "add" in haystack:
             score = 80
     elif mode == "anr-wait":
@@ -91,8 +93,13 @@ if ! printf '%s\n' "$APPWIDGET_DUMP" | grep -Fq "$WIDGET_PROVIDER"; then
   exit 1
 fi
 
+# Hosted Android 35 images can expose Launcher3/Quickstep before its UI tree is
+# actually stable. Warm the real launcher first; this does not weaken any pin,
+# render or tap assertion below.
 adb shell input keyevent KEYCODE_HOME
-sleep 2
+sleep 3
+adb shell uiautomator dump /sdcard/t0297-home-warm.xml >/dev/null 2>&1 || true
+
 adb shell am force-stop "$PACKAGE"
 adb shell am start -n "$WIDGET_PIN_ACTIVITY" | tee /tmp/t0297-pin-start.txt
 grep -F 'Starting: Intent' /tmp/t0297-pin-start.txt >/dev/null
@@ -100,7 +107,7 @@ grep -F 'Starting: Intent' /tmp/t0297-pin-start.txt >/dev/null
 PIN_TARGET=''
 ANR_RECOVERIES=0
 attempt=0
-while [ "$attempt" -lt 40 ]; do
+while [ "$attempt" -lt 45 ]; do
   adb shell uiautomator dump /sdcard/t0297-pin.xml >/dev/null 2>&1 || true
   adb pull /sdcard/t0297-pin.xml /tmp/t0297-pin.xml >/dev/null 2>&1 || true
   if [ -s /tmp/t0297-pin.xml ]; then
@@ -110,11 +117,13 @@ while [ "$attempt" -lt 40 ]; do
     fi
     ANR_TARGET="$(find_target /tmp/t0297-pin.xml anr-wait 2>/tmp/t0297-anr-target.log || true)"
     if [ -n "$ANR_TARGET" ]; then
-      if [ "$ANR_RECOVERIES" -ge 2 ]; then
+      if [ "$ANR_RECOVERIES" -ge 4 ]; then
         echo 'T0297 launcher remained unresponsive after bounded Wait recovery' >&2
+        cat /tmp/t0297-pin.xml >&2 2>/dev/null || true
         exit 1
       fi
       ANR_RECOVERIES=$((ANR_RECOVERIES + 1))
+      echo "T0297 hosted-emulator launcher ANR detected; selecting system Wait recovery ($ANR_RECOVERIES/4)"
       set -- $ANR_TARGET
       adb shell input tap "$1" "$2"
       sleep 3
@@ -127,6 +136,7 @@ done
 if [ -z "$PIN_TARGET" ]; then
   echo 'T0297 launcher pin confirmation control was not found' >&2
   cat /tmp/t0297-pin.xml >&2 2>/dev/null || true
+  adb shell dumpsys activity top >&2 || true
   exit 1
 fi
 cat /tmp/t0297-pin-target.log
@@ -135,7 +145,7 @@ adb shell input tap "$1" "$2"
 
 SMOKE_PREFS=''
 attempt=0
-while [ "$attempt" -lt 20 ]; do
+while [ "$attempt" -lt 30 ]; do
   SMOKE_PREFS="$(adb shell run-as "$PACKAGE" cat shared_prefs/islami_hayat_widget_smoke.xml 2>/dev/null | tr -d '\r' || true)"
   if printf '%s\n' "$SMOKE_PREFS" | grep -Fq '>pinned<'; then
     break
@@ -146,6 +156,7 @@ done
 if ! printf '%s\n' "$SMOKE_PREFS" | grep -Fq '>pinned<'; then
   echo 'T0297 launcher did not deliver a successful pinned-widget callback' >&2
   printf '%s\n' "$SMOKE_PREFS" >&2
+  adb shell dumpsys appwidget >&2 || true
   exit 1
 fi
 if ! printf '%s\n' "$SMOKE_PREFS" | grep -Eq '<int name="widgetId" value="[0-9]+"'; then
@@ -155,14 +166,36 @@ if ! printf '%s\n' "$SMOKE_PREFS" | grep -Eq '<int name="widgetId" value="[0-9]+
 fi
 echo 'T0297 launcher pin callback PASS'
 
+# RemoteViews propagation from AppWidgetService to Launcher3 is asynchronous.
+# Poll the real launcher UI with a hard bound rather than assuming one 2-second
+# frame is enough on hosted/BlueStacks-like Android environments.
 adb shell input keyevent KEYCODE_HOME
-sleep 2
-adb shell uiautomator dump /sdcard/t0297-home.xml >/dev/null
-adb pull /sdcard/t0297-home.xml /tmp/t0297-home.xml >/dev/null
-WIDGET_TARGET="$(find_target /tmp/t0297-home.xml widget 2>/tmp/t0297-widget-target.log || true)"
+WIDGET_TARGET=''
+HOME_ANR_RECOVERIES=0
+attempt=0
+while [ "$attempt" -lt 25 ]; do
+  adb shell uiautomator dump /sdcard/t0297-home.xml >/dev/null 2>&1 || true
+  adb pull /sdcard/t0297-home.xml /tmp/t0297-home.xml >/dev/null 2>&1 || true
+  if [ -s /tmp/t0297-home.xml ]; then
+    WIDGET_TARGET="$(find_target /tmp/t0297-home.xml widget 2>/tmp/t0297-widget-target.log || true)"
+    if [ -n "$WIDGET_TARGET" ]; then
+      break
+    fi
+    ANR_TARGET="$(find_target /tmp/t0297-home.xml anr-wait 2>/tmp/t0297-home-anr-target.log || true)"
+    if [ -n "$ANR_TARGET" ] && [ "$HOME_ANR_RECOVERIES" -lt 2 ]; then
+      HOME_ANR_RECOVERIES=$((HOME_ANR_RECOVERIES + 1))
+      set -- $ANR_TARGET
+      adb shell input tap "$1" "$2" >/dev/null 2>&1 || true
+      sleep 3
+    fi
+  fi
+  attempt=$((attempt + 1))
+  sleep 1
+done
 if [ -z "$WIDGET_TARGET" ]; then
   echo 'T0297 pinned widget did not render its localized RemoteViews empty state on launcher' >&2
-  cat /tmp/t0297-home.xml >&2 || true
+  cat /tmp/t0297-home.xml >&2 2>/dev/null || true
+  adb shell dumpsys appwidget >&2 || true
   exit 1
 fi
 grep -F "$WIDGET_EMPTY_TR" /tmp/t0297-home.xml >/dev/null
@@ -178,7 +211,7 @@ adb shell input tap "$1" "$2"
 
 TAP_ACTIVITY=''
 attempt=0
-while [ "$attempt" -lt 20 ]; do
+while [ "$attempt" -lt 30 ]; do
   TAP_ACTIVITY="$(foreground_main_activity || true)"
   if [ -n "$TAP_ACTIVITY" ]; then
     break
