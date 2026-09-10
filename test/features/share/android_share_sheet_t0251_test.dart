@@ -88,6 +88,13 @@ void main() {
       expect(gateway.lastArguments?['format'], 'whatsappStatus916');
       expect(gateway.lastArguments?['destination'], 'whatsapp');
       expect(gateway.lastArguments?['pngBytes'], isA<Uint8List>());
+      expect(
+        gateway.lastArguments!.keys.toSet(),
+        <String>{'pngBytes', 'format', 'destination'},
+        reason: 'T0307 share channel must expose no text/note payload slot.',
+      );
+      expect(gateway.lastArguments!.containsKey('text'), isFalse);
+      expect(gateway.lastArguments!.containsKey('note'), isFalse);
     });
 
     test('missing target package does not silently fall back to general share', () async {
