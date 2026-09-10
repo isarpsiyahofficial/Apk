@@ -77,6 +77,25 @@ jobs:
           FORBIDDEN='ACCESS_FINE_LOCATION|ACCESS_COARSE_LOCATION|RECORD_AUDIO|CAMERA|READ_CONTACTS|WRITE_CONTACTS|GET_ACCOUNTS'
           if printf '%s\n' "$PERMS" | grep -E "$FORBIDDEN"; then echo "Forbidden sensitive permission found in release APK" >&2; exit 1; fi
           echo "Release APK permission audit PASS"
+      - name: Verify notification reboot restore is packaged in release APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-release.apk"
+          BUILD_TOOLS="$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
+          AAPT2="$ANDROID_HOME/build-tools/$BUILD_TOOLS/aapt2"
+          MANIFEST_FILE="$(mktemp)"
+          trap 'rm -f "$MANIFEST_FILE"' EXIT
+          "$AAPT2" dump xmltree --file AndroidManifest.xml "$APK" > "$MANIFEST_FILE"
+
+          grep -F 'android.permission.RECEIVE_BOOT_COMPLETED' "$MANIFEST_FILE"
+          grep -F 'com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver' "$MANIFEST_FILE"
+          grep -F 'com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver' "$MANIFEST_FILE"
+          grep -F 'android.intent.action.BOOT_COMPLETED' "$MANIFEST_FILE"
+          grep -F 'android.intent.action.MY_PACKAGE_REPLACED' "$MANIFEST_FILE"
+          grep -F 'android.intent.action.QUICKBOOT_POWERON' "$MANIFEST_FILE"
+          grep -F 'com.htc.intent.action.QUICKBOOT_POWERON' "$MANIFEST_FILE"
+          echo "T0295 notification reboot/package-replacement restore packaging audit PASS"
       - name: Verify home widget and secure share provider are packaged in release APK
         shell: bash
         run: |
