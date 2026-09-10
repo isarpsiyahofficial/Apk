@@ -3,20 +3,25 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('T0315 cold-start CI measures an AOT profile APK, not debug/JIT', () {
+  test('T0315 cold-start CI measures the release AOT APK, not debug/profile', () {
     final workflow = File('.github/workflows/android-emulator-smoke.yml')
         .readAsStringSync();
     final script = File('scripts/android_cold_start_t0315.sh').readAsStringSync();
 
     expect(
       workflow,
-      contains('flutter build apk --profile'),
-      reason: 'Cold-start performance must be measured on AOT/profile code.',
+      contains('flutter build apk --release'),
+      reason: 'Cold-start performance must reflect the final release/AOT app.',
     );
     expect(
       workflow,
-      contains('COLD_START_APK=build/app/outputs/flutter-apk/app-profile.apk'),
-      reason: 'The Android 35 gate must explicitly select the profile APK.',
+      contains('COLD_START_APK=build/app/outputs/flutter-apk/app-release.apk'),
+      reason: 'The Android 35 gate must explicitly install the release APK.',
+    );
+    expect(
+      workflow,
+      isNot(contains('flutter build apk --profile')),
+      reason: 'Profile instrumentation must not distort the release gate.',
     );
     expect(
       script,
@@ -37,13 +42,13 @@ void main() {
         .readAsStringSync();
 
     final debugBuild = workflow.indexOf('flutter build apk --debug');
-    final profileBuild = workflow.indexOf('flutter build apk --profile');
+    final releaseBuild = workflow.indexOf('flutter build apk --release');
     final functionalSmoke = workflow.indexOf('android_emulator_smoke_retry.sh');
     final performanceGate = workflow.indexOf('android_cold_start_t0315.sh');
 
     expect(debugBuild, greaterThanOrEqualTo(0));
-    expect(profileBuild, greaterThan(debugBuild));
-    expect(functionalSmoke, greaterThan(profileBuild));
+    expect(releaseBuild, greaterThan(debugBuild));
+    expect(functionalSmoke, greaterThan(releaseBuild));
     expect(performanceGate, greaterThan(functionalSmoke));
   });
 }
