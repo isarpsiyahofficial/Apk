@@ -35,12 +35,12 @@ fi
 
 : > "$SAMPLES_FILE"
 
-# The performance gate must reflect ahead-of-time compiled app behavior rather
-# than Flutter debug/JIT overhead. CI passes the profile APK explicitly. Every
-# sample force-stops the package and asks ActivityManager for a new process, so
-# all three timings are genuine cold launches while retaining normal app data.
-# A median keeps the <=3s product requirement strict without allowing a single
-# noisy hosted-runner scheduling spike to decide the release gate.
+# The performance gate must reflect the final release/AOT app rather than
+# Flutter debug/JIT or profile instrumentation overhead. CI passes the release
+# APK explicitly. Every sample force-stops the package and asks ActivityManager
+# for a new process, so all three timings are genuine cold launches while
+# retaining normal app data. A median keeps the <=3s product requirement strict
+# without allowing one noisy hosted-runner scheduling spike to decide the gate.
 sample=1
 while [ "$sample" -le "$SAMPLE_COUNT" ]; do
   adb shell am force-stop "$PACKAGE"
