@@ -9,6 +9,7 @@ import 'package:islami_hayat/features/notifications/domain/dhikr_reminder_t0293.
 import 'package:islami_hayat/features/notifications/domain/notification_preferences.dart';
 import 'package:islami_hayat/features/notifications/presentation/notification_settings_page.dart';
 import 'package:islami_hayat/features/premium/presentation/premium_value_page.dart';
+import 'package:islami_hayat/features/profile/presentation/privacy_controls_page_t0303_t0304.dart';
 import 'package:islami_hayat/features/profile/presentation/sources_licenses_page.dart';
 import 'package:islami_hayat/features/today/data/daily_verse_repository.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
@@ -22,15 +23,8 @@ class ProfilePage extends StatelessWidget {
   });
 
   final NotificationPreferencesStore? notificationPreferencesStore;
-
-  /// Injectable for widget tests. Production requests Android notification
-  /// permission only after the user explicitly enables a notification category.
   final Future<bool> Function(NotificationCategory category)?
       notificationPermissionRequester;
-
-  /// Injectable scheduling seam. Production wires verified/local notification
-  /// coordinators to the Android scheduler. Isolated widget tests can inject a
-  /// recorder without invoking platform channels.
   final Future<void> Function(
     NotificationPreferences preferences,
     String languageCode,
@@ -48,8 +42,7 @@ class ProfilePage extends StatelessWidget {
     };
     final notificationSubtitle = switch (languageCode) {
       'ar' => 'تحكم بكل فئة بشكل مستقل. جميع الإشعارات اختيارية.',
-      'en' =>
-        'Control each category independently. All notifications are opt-in.',
+      'en' => 'Control each category independently. All notifications are opt-in.',
       _ => 'Her kategoriyi ayrı yönet. Tüm bildirimler isteğe bağlıdır.',
     };
 
@@ -70,9 +63,7 @@ class ProfilePage extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               final store = notificationPreferencesStore ??
-                  SecureNotificationPreferencesStore(
-                    SecurePrivateUserStore(),
-                  );
+                  SecureNotificationPreferencesStore(SecurePrivateUserStore());
               final injectedRequester = notificationPermissionRequester;
               final scheduler = injectedRequester == null
                   ? NotificationRuntimeT0291.instance.scheduler
@@ -84,11 +75,7 @@ class ProfilePage extends StatelessWidget {
                   await injectedSync(preferences, languageCode);
                   return;
                 }
-                if (injectedRequester != null) {
-                  // Isolated widget tests that inject only permission handling
-                  // intentionally avoid production platform channels.
-                  return;
-                }
+                if (injectedRequester != null) return;
 
                 final dailyVerseCoordinator = DailyVerseNotificationCoordinatorT0291(
                   dailyVerseDataSource: DailyVerseRepository(),
@@ -97,10 +84,7 @@ class ProfilePage extends StatelessWidget {
                 );
                 await DailyVerseNotificationOrchestratorT0291(
                   coordinator: dailyVerseCoordinator,
-                ).sync(
-                  languageCode: languageCode,
-                  preferences: preferences,
-                );
+                ).sync(languageCode: languageCode, preferences: preferences);
 
                 final dhikrCoordinator = DhikrReminderCoordinatorT0293(
                   preferencesStore: store,
@@ -108,10 +92,7 @@ class ProfilePage extends StatelessWidget {
                 );
                 await DhikrReminderOrchestratorT0293(
                   coordinator: dhikrCoordinator,
-                ).sync(
-                  languageCode: languageCode,
-                  preferences: preferences,
-                );
+                ).sync(languageCode: languageCode, preferences: preferences);
               }
 
               Navigator.of(context).push(
@@ -121,13 +102,27 @@ class ProfilePage extends StatelessWidget {
                     onEnableRequested: injectedRequester ??
                         (_) => scheduler!.requestUserPermission(),
                     onChanged: (preferences) {
-                      unawaited(syncSchedule(preferences).catchError((Object _) {
-                        // Preferences remain user-controlled. Scheduling is
-                        // fail-closed and will be retried on the next explicit
-                        // preference change/reconciliation pass.
-                      }));
+                      unawaited(syncSchedule(preferences).catchError((Object _) {}));
                     },
                   ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            minVerticalPadding: 16,
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: Text(l10n.privacyTitle),
+            subtitle: Text(l10n.privacySubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const PrivacyControlsPageT0303T0304(),
                 ),
               );
             },
@@ -144,9 +139,7 @@ class ProfilePage extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const PremiumValuePage(),
-                ),
+                MaterialPageRoute<void>(builder: (_) => const PremiumValuePage()),
               );
             },
           ),
