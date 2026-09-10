@@ -8,14 +8,23 @@ import 'package:islami_hayat/features/prophets/data/verified_prophet_family_rela
 
 void main() {
   const qa = ProphetSemanticOwnershipQa();
+  const strongHistoricalSources = <ReligiousSourceClass>{
+    ReligiousSourceClass.quran,
+    ReligiousSourceClass.sahihHasanHadith,
+    ReligiousSourceClass.earlyIslamicHistoryTafsir,
+    ReligiousSourceClass.modernHistoryArchaeology,
+  };
 
-  Set<String> sourceBackedIds(ProphetBiographySectionKey key) =>
+  Set<String> admissibleIds(ProphetBiographySectionKey key) =>
       canonicalProphetBiographyDrafts
-          .where(
-            (draft) =>
-                draft.sections[key]?.status ==
-                ProphetBiographyFieldStatus.sourceBacked,
-          )
+          .where((draft) {
+            final field = draft.sections[key];
+            return field?.status == ProphetBiographyFieldStatus.sourceBacked &&
+                field!.sources.isNotEmpty &&
+                field.sources.every(
+                  (source) => strongHistoricalSources.contains(source.sourceClass),
+                );
+          })
           .map((draft) => draft.identity.canonicalId)
           .toSet();
 
@@ -82,7 +91,7 @@ void main() {
     }
   });
 
-  test('event/chronology/geography bridges admit source-backed fields only', () {
+  test('event/chronology/geography bridges admit strong source-backed fields only', () {
     final cases = <(
       ProphetBiographySectionKey,
       ProphetSemanticDimension,
@@ -106,7 +115,7 @@ void main() {
     ];
 
     for (final entry in cases) {
-      final expectedIds = sourceBackedIds(entry.$1);
+      final expectedIds = admissibleIds(entry.$1);
       final actualIds = entry.$3.map((claim) => claim.biographyProphetId).toSet();
       expect(actualIds, expectedIds, reason: entry.$1.name);
       expect(entry.$3, hasLength(expectedIds.length), reason: entry.$1.name);
@@ -118,12 +127,13 @@ void main() {
         expect(claim.contextReference, isFalse);
         expect(claim.sourceIds, isNotEmpty);
         expect(claim.sourceClasses, isNotEmpty);
+        expect(claim.sourceClasses.difference(strongHistoricalSources), isEmpty);
         expect(claim.claimKey, startsWith('${entry.$2.name}:'));
       }
     }
   });
 
-  test('unknown biography fields never manufacture semantic coverage', () {
+  test('unknown or weak-source biography fields never manufacture coverage', () {
     for (final draft in canonicalProphetBiographyDrafts) {
       final checks = <(
         ProphetBiographySectionKey,
@@ -136,7 +146,13 @@ void main() {
 
       for (final entry in checks) {
         final field = draft.sections[entry.$1]!;
-        if (field.status == ProphetBiographyFieldStatus.unknownPendingResearch) {
+        final admissible =
+            field.status == ProphetBiographyFieldStatus.sourceBacked &&
+                field.sources.isNotEmpty &&
+                field.sources.every(
+                  (source) => strongHistoricalSources.contains(source.sourceClass),
+                );
+        if (!admissible) {
           expect(
             entry.$2.where(
               (claim) => claim.biographyProphetId == draft.identity.canonicalId,
