@@ -90,7 +90,30 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
     final previous = _preferences;
     final next = previous.withCategory(category, enabled);
+    await _persistChange(previous: previous, next: next);
+  }
 
+  Future<void> _pickTime(NotificationCategory category) async {
+    if (_saving) return;
+    final current = _preferences.timeFor(category);
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: current.hour, minute: current.minute),
+    );
+    if (!mounted || picked == null) return;
+
+    final previous = _preferences;
+    final next = previous.withTime(
+      category,
+      NotificationTime(hour: picked.hour, minute: picked.minute),
+    );
+    await _persistChange(previous: previous, next: next);
+  }
+
+  Future<void> _persistChange({
+    required NotificationPreferences previous,
+    required NotificationPreferences next,
+  }) async {
     setState(() {
       _preferences = next;
       _saving = widget.store != null;
@@ -158,41 +181,61 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   ),
                 ],
                 const SizedBox(height: 20),
-                _CategorySwitch(
+                _CategoryControl(
+                  category: NotificationCategory.dailyVerse,
                   icon: Icons.menu_book_outlined,
                   title: strings.dailyVerse,
                   subtitle: strings.dailyVerseSubtitle,
                   value: _preferences.dailyVerse,
+                  time: _preferences.dailyVerseTime,
+                  timeLabel: strings.timeLabel,
                   enabled: !_saving,
                   onChanged: (value) =>
                       _setCategory(NotificationCategory.dailyVerse, value),
+                  onTimePressed: () =>
+                      _pickTime(NotificationCategory.dailyVerse),
                 ),
-                _CategorySwitch(
+                _CategoryControl(
+                  category: NotificationCategory.dailyDua,
                   icon: Icons.volunteer_activism_outlined,
                   title: strings.dailyDua,
                   subtitle: strings.dailyDuaSubtitle,
                   value: _preferences.dailyDua,
+                  time: _preferences.dailyDuaTime,
+                  timeLabel: strings.timeLabel,
                   enabled: !_saving,
                   onChanged: (value) =>
                       _setCategory(NotificationCategory.dailyDua, value),
+                  onTimePressed: () =>
+                      _pickTime(NotificationCategory.dailyDua),
                 ),
-                _CategorySwitch(
+                _CategoryControl(
+                  category: NotificationCategory.dhikrReminder,
                   icon: Icons.touch_app_outlined,
                   title: strings.dhikrReminder,
                   subtitle: strings.dhikrReminderSubtitle,
                   value: _preferences.dhikrReminder,
+                  time: _preferences.dhikrReminderTime,
+                  timeLabel: strings.timeLabel,
                   enabled: !_saving,
                   onChanged: (value) =>
                       _setCategory(NotificationCategory.dhikrReminder, value),
+                  onTimePressed: () =>
+                      _pickTime(NotificationCategory.dhikrReminder),
                 ),
-                _CategorySwitch(
+                _CategoryControl(
+                  category: NotificationCategory.religiousDay,
                   icon: Icons.event_available_outlined,
                   title: strings.religiousDay,
                   subtitle: strings.religiousDaySubtitle,
                   value: _preferences.religiousDay,
+                  time: _preferences.religiousDayTime,
+                  timeLabel: strings.timeLabel,
                   enabled: !_saving,
                   onChanged: (value) =>
                       _setCategory(NotificationCategory.religiousDay, value),
+                  onTimePressed: () =>
+                      _pickTime(NotificationCategory.religiousDay),
                 ),
                 const SizedBox(height: 12),
                 Text(strings.footnote, style: theme.textTheme.bodySmall),
@@ -202,32 +245,60 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   }
 }
 
-class _CategorySwitch extends StatelessWidget {
-  const _CategorySwitch({
+class _CategoryControl extends StatelessWidget {
+  const _CategoryControl({
+    required this.category,
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.value,
+    required this.time,
+    required this.timeLabel,
     required this.enabled,
     required this.onChanged,
+    required this.onTimePressed,
   });
 
+  final NotificationCategory category;
   final IconData icon;
   final String title;
   final String subtitle;
   final bool value;
+  final NotificationTime time;
+  final String timeLabel;
   final bool enabled;
   final ValueChanged<bool> onChanged;
+  final VoidCallback onTimePressed;
 
   @override
   Widget build(BuildContext context) {
-    return SwitchListTile.adaptive(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-      secondary: Icon(icon),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      value: value,
-      onChanged: enabled ? onChanged : null,
+    final formattedTime = MaterialLocalizations.of(context).formatTimeOfDay(
+      TimeOfDay(hour: time.hour, minute: time.minute),
+      alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SwitchListTile.adaptive(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+          secondary: Icon(icon),
+          title: Text(title),
+          subtitle: Text(subtitle),
+          value: value,
+          onChanged: enabled ? onChanged : null,
+        ),
+        if (value)
+          ListTile(
+            key: Key('notification-time-${category.name}'),
+            enabled: enabled,
+            contentPadding: const EdgeInsetsDirectional.only(start: 52, end: 4),
+            leading: const Icon(Icons.schedule_outlined),
+            title: Text(timeLabel),
+            trailing: Text(formattedTime),
+            onTap: enabled ? onTimePressed : null,
+          ),
+      ],
     );
   }
 }
@@ -244,6 +315,7 @@ class _NotificationStrings {
     required this.dhikrReminderSubtitle,
     required this.religiousDay,
     required this.religiousDaySubtitle,
+    required this.timeLabel,
     required this.footnote,
     required this.storageError,
     required this.permissionError,
@@ -259,6 +331,7 @@ class _NotificationStrings {
   final String dhikrReminderSubtitle;
   final String religiousDay;
   final String religiousDaySubtitle;
+  final String timeLabel;
   final String footnote;
   final String storageError;
   final String permissionError;
@@ -278,6 +351,7 @@ class _NotificationStrings {
           religiousDay: 'الأيام الدينية',
           religiousDaySubtitle:
               'يعمل فقط عندما يكون تاريخ اليوم موثّقًا من مصدر موثوق.',
+          timeLabel: 'وقت التذكير',
           footnote:
               'لا توجد إشعارات للأذان أو مواقيت الصلاة في الإصدار الأول.',
           storageError:
@@ -300,6 +374,7 @@ class _NotificationStrings {
           religiousDay: 'Religious days',
           religiousDaySubtitle:
               'Enabled only when the date is backed by a trusted calendar source.',
+          timeLabel: 'Reminder time',
           footnote: 'V1 does not send adhan or prayer-time notifications.',
           storageError:
               'Notification settings could not be saved. Unsaved categories remain off.',
@@ -322,6 +397,7 @@ class _NotificationStrings {
           religiousDay: 'Dini Günler',
           religiousDaySubtitle:
               'Yalnız tarih güvenilir bir takvim kaynağıyla doğrulandığında etkinleştirilir.',
+          timeLabel: 'Hatırlatma saati',
           footnote:
               'V1 içinde ezan veya namaz vakti bildirimi gönderilmez.',
           storageError:
