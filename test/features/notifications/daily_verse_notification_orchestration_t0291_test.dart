@@ -25,8 +25,27 @@ void main() {
     expect(scheduler.requests.single.payload, 'islami-hayat://quran/3/159');
   });
 
-  test('T0291 at/after 09:00 rolls to next civil day instead of stale schedule',
-      () async {
+  test('T0290 user-selected daily verse time drives the actual schedule', () async {
+    final scheduler = _Scheduler();
+    final source = _DailyVerseSource();
+    final orchestrator = _orchestrator(
+      scheduler: scheduler,
+      source: source,
+      now: DateTime(2026, 9, 2, 7, 15),
+    );
+
+    await orchestrator.sync(
+      languageCode: 'tr',
+      preferences: const NotificationPreferences(
+        dailyVerse: true,
+        dailyVerseTime: NotificationTime(hour: 7, minute: 35),
+      ),
+    );
+
+    expect(scheduler.requests.single.scheduledAt, DateTime(2026, 9, 2, 7, 35));
+  });
+
+  test('T0291 at/after selected time rolls to next civil day', () async {
     final scheduler = _Scheduler();
     final source = _DailyVerseSource();
     final orchestrator = _orchestrator(
@@ -63,7 +82,7 @@ void main() {
     expect(scheduler.cancelled, [dailyVerseNotificationIdT0291]);
   });
 
-  test('T0291 rejects invalid delivery hour before touching content', () async {
+  test('T0291 rejects invalid delivery hour override before touching content', () async {
     final scheduler = _Scheduler();
     final source = _DailyVerseSource();
     final coordinator = DailyVerseNotificationCoordinatorT0291(
