@@ -59,7 +59,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: sh scripts/android_emulator_smoke.sh && sh scripts/android_share_sheet_smoke_t0251.sh && sh scripts/android_widget_launcher_smoke_t0297.sh
+          script: sh scripts/android_emulator_smoke_retry.sh && sh scripts/android_share_sheet_smoke_t0251.sh && sh scripts/android_widget_launcher_smoke_t0297.sh
 
   low-memory-emulator-smoke:
     runs-on: ubuntu-latest
