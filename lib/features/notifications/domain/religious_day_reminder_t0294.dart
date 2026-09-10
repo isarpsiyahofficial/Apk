@@ -4,7 +4,6 @@ import 'package:islami_hayat/features/religious_days/data/religious_date_metadat
 import 'package:islami_hayat/features/religious_days/data/religious_day_notification_gate.dart';
 
 const int religiousDayNotificationIdT0294 = 2904;
-const int religiousDayReminderHourT0294 = 9;
 const String religiousDayDeepLinkHostT0294 = 'religious-day';
 
 abstract interface class ReligiousDayObservationSourceT0294 {
@@ -75,11 +74,13 @@ final class ReligiousDayReminderCoordinatorT0294 {
     }
 
     final date = observation.gregorianDate;
+    final selectedTime = preferences.religiousDayTime;
     final scheduledAt = DateTime(
       date.year,
       date.month,
       date.day,
-      religiousDayReminderHourT0294,
+      selectedTime.hour,
+      selectedTime.minute,
     );
     if (!scheduledAt.isAfter(now)) {
       await _scheduler.cancel(religiousDayNotificationIdT0294);
