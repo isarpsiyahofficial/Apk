@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_deep_links.dart';
 import 'package:islami_hayat/features/prophets/presentation/revelation_journey_page.dart';
+import 'package:islami_hayat/l10n/app_localizations.dart';
 
 void main() {
   Future<void> pumpJourney(
@@ -20,8 +21,9 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: locale,
-        supportedLocales: const [Locale('tr'), Locale('en'), Locale('ar')],
+        supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: const [
+          AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
@@ -37,7 +39,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('TR phone surface renders its localized entry without overflow', (
+  testWidgets('TR phone surface renders ARB copy without overflow', (
     tester,
   ) async {
     await pumpJourney(
@@ -47,6 +49,7 @@ void main() {
     );
 
     expect(find.text('Vahiy Yolculuğu'), findsOneWidget);
+    expect(find.textContaining('Yaklaşık ve eğitsel'), findsOneWidget);
     expect(find.byKey(const ValueKey('journey-filter-all')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -155,7 +158,7 @@ void main() {
     expect(find.textContaining('no exact date'), findsOneWidget);
   });
 
-  testWidgets('Arabic surface remains RTL and readable on narrow phone', (
+  testWidgets('Arabic ARB surface remains RTL and readable on narrow phone', (
     tester,
   ) async {
     await pumpJourney(
@@ -167,6 +170,7 @@ void main() {
 
     expect(find.text('رحلة الوحي'), findsOneWidget);
     expect(find.text('كل الفترات'), findsOneWidget);
+    expect(find.textContaining('خط زمني تعليمي تقريبي'), findsOneWidget);
     final titleContext = tester.element(find.text('رحلة الوحي'));
     expect(Directionality.of(titleContext), TextDirection.rtl);
     expect(tester.takeException(), isNull);
