@@ -71,11 +71,24 @@ doğrular. Ek AR testi private-state future'ı bilinçli olarak bekleterek gerç
 
 Bu kanıt T0344 içindeki **Dua + loading/empty/error + kategori localization** alt kapsamını ilerletir. Branch üzerinde `DuaLibraryRepository` ve review gate bulunmasına rağmen production'a bağlanabilecek, kaynak/review kanıtı tamamlanmış canonical Dua dataset dosyası henüz yoktur. Test fixture'ı production dataset yerine kullanılamaz; bu nedenle sırf ekranı görünür kılmak için boş veya sahte veriyle Keşfet route'u bağlanmaz. Gerçek production dataset yayın kapısından geçmeden Dua'nın Keşfet production navigation girişi ve T0340–T0344 PASS değildir.
 
-### 2.3. FREE cold-start offline gate — üç dil fail-closed
+### 2.3. FREE offline kapıları — üç dil fail-closed
 
-`test/app_startup_access_t0262_test.dart` artık FREE cold-start offline engelini TR yanında EN ve AR locale'lerinde de doğrular. Network probe başarısız olduğunda `AppShell` hiç mount edilmez; kullanıcı yalnız locale'e ait offline başlık/gövde/retry metnini görür. AR senaryosu ayrıca root `Directionality.rtl` davranışını kontrol eder.
+`test/app_startup_access_t0262_test.dart` FREE cold-start offline engelini TR, EN ve AR locale'lerinde doğrular. Network probe başarısız olduğunda `AppShell` hiç mount edilmez; kullanıcı yalnız locale'e ait offline başlık/gövde/retry metnini görür. AR senaryosu ayrıca root `Directionality.rtl` davranışını kontrol eder.
 
-Aynı test dosyası doğrulanmış HTTP 204 ile FREE erişimin açıldığını ve cached PRO kullanıcının reachability request göndermeden shell'e girdiğini korumaya devam eder. Bu kanıt T0344 içindeki **Offline gate** alt kapsamını ilerletir; online→offline transition ve diğer monetization state'leri tamamlanmadan localization veya M-grubu PASS değildir.
+`test/features/premium/free_connection_drop_t0263_test.dart` artık aynı gerçek `IslamiHayatApp` ağacında TR/EN/AR için **online → offline → online recovery** geçişini ayrı ayrı doğrular:
+
+- cold-start'ta HTTP 204 ile FREE shell açılır,
+- bağlantı kaybolduğunda yeni Kur’an yüzeyine geçiş fail-closed engellenir ve kullanıcı mevcut ekranda kalır,
+- her locale kendi offline açıklamasını SnackBar üzerinde gösterir,
+- AR akışında RTL korunur,
+- bağlantı geri geldiğinde aynı kullanıcı hareketi Kur’an yüzeyine geçer,
+- her geçişte reachability yeniden kontrol edilir ve exception oluşmaz.
+
+Aynı cold-start testleri cached PRO kullanıcının reachability request göndermeden shell'e girdiğini korumaya devam eder. Bu kanıt T0344 içindeki **Offline gate + online→offline failure/recovery** alt kapsamını ilerletir; diğer monetization state'leri tamamlanmadan localization veya M-grubu topluca PASS değildir.
+
+### 2.4. Premium value surface — mevcut üç dil davranış kanıtı
+
+`test/features/premium/premium_value_page_t0279_test.dart` gerçek `PremiumValuePage` yüzeyinde TR telefon, EN 320px + 1.6× büyük font ve AR 1200×800 RTL senaryolarını doğrular. Test yalnız uygulanmış V1 faydalarının görünmesini, uygulanmamış tema/widget vaatlerinin sızmamasını, dini doğruluğun paywall arkasına konmamasını ve overflow/exception bulunmamasını kontrol eder. Bu kanıt Premium sunum yüzeyini ilerletir; satın alma/restore/pending/revoke ve reklam lifecycle kapılarının yerine geçmez.
 
 ### 3. T0344 full-surface crawl — AÇIK
 
@@ -106,7 +119,6 @@ Aşağıdaki alanların her biri TR/EN/AR için happy path ile birlikte loading 
 - TR/EN modunda Arapça asıl metnin yalnız explicit ürün kararına göre gösterilmesi,
 - rewarded success/cancel/no-fill metinleri,
 - billing success/cancel/pending/restore/revoke metinleri,
-- online→offline transition metinleri,
 - notification/widget/share failure copy,
 - native TR/EN/AR editorial pass.
 
