@@ -4,6 +4,7 @@ import 'package:islami_hayat/features/dua/data/dua_content.dart';
 import 'package:islami_hayat/features/dua/data/dua_library_repository.dart';
 import 'package:islami_hayat/features/dua/data/dua_user_state_repository.dart';
 import 'package:islami_hayat/features/dua/presentation/dua_source_disclosure_view.dart';
+import 'package:islami_hayat/l10n/app_localizations.dart';
 
 /// Device-local dua library surface for SPEC T0126.
 ///
@@ -67,10 +68,10 @@ class _DuaLibraryPageState extends State<DuaLibraryPage> {
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context).languageCode;
-    final labels = _DuaLabels.forLocale(locale);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(labels.title)),
+      appBar: AppBar(title: Text(l10n.duaLibraryTitle)),
       body: SafeArea(
         child: FutureBuilder<DuaUserState>(
           future: _stateFuture,
@@ -82,7 +83,7 @@ class _DuaLibraryPageState extends State<DuaLibraryPage> {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Text(labels.privateStateError),
+                  child: Text(l10n.duaLibraryPrivateStateError),
                 ),
               );
             }
@@ -110,8 +111,8 @@ class _DuaLibraryPageState extends State<DuaLibraryPage> {
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.search),
-                    labelText: labels.search,
-                    hintText: labels.searchHint,
+                    labelText: l10n.duaLibrarySearch,
+                    hintText: l10n.duaLibrarySearchHint,
                   ),
                   onChanged: (_) => setState(() {}),
                 ),
@@ -120,16 +121,16 @@ class _DuaLibraryPageState extends State<DuaLibraryPage> {
                   key: const ValueKey('dua-category-filter'),
                   initialValue: _category,
                   isExpanded: true,
-                  decoration: InputDecoration(labelText: labels.category),
+                  decoration: InputDecoration(labelText: l10n.duaLibraryCategory),
                   items: [
                     DropdownMenuItem<DuaCategory?>(
                       value: null,
-                      child: Text(labels.allCategories),
+                      child: Text(l10n.duaLibraryAllCategories),
                     ),
                     for (final category in DuaCategory.values)
                       DropdownMenuItem<DuaCategory?>(
                         value: category,
-                        child: Text(labels.categoryLabel(category)),
+                        child: Text(_categoryLabel(l10n, category)),
                       ),
                   ],
                   onChanged: (value) => setState(() => _category = value),
@@ -142,17 +143,17 @@ class _DuaLibraryPageState extends State<DuaLibraryPage> {
                   children: [
                     _viewChip(
                       value: _DuaView.all,
-                      label: labels.all,
+                      label: l10n.duaLibraryAll,
                       icon: Icons.menu_book_outlined,
                     ),
                     _viewChip(
                       value: _DuaView.favorites,
-                      label: labels.favorites,
+                      label: l10n.duaLibraryFavorites,
                       icon: Icons.favorite_outline,
                     ),
                     _viewChip(
                       value: _DuaView.history,
-                      label: labels.history,
+                      label: l10n.duaLibraryHistory,
                       icon: Icons.history,
                     ),
                   ],
@@ -161,7 +162,7 @@ class _DuaLibraryPageState extends State<DuaLibraryPage> {
                 if (visible.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 36),
-                    child: Center(child: Text(labels.empty)),
+                    child: Center(child: Text(l10n.duaLibraryEmpty)),
                   )
                 else
                   for (final dua in visible)
@@ -169,8 +170,8 @@ class _DuaLibraryPageState extends State<DuaLibraryPage> {
                       dua: dua,
                       locale: locale,
                       favorite: userState.favoriteIds.contains(dua.id),
-                      favoriteLabel: labels.favorite,
-                      unfavoriteLabel: labels.unfavorite,
+                      favoriteLabel: l10n.duaLibraryFavorite,
+                      unfavoriteLabel: l10n.duaLibraryUnfavorite,
                       onFavorite: () => _toggleFavorite(dua.id),
                       onTap: () => _open(dua),
                     ),
@@ -298,175 +299,31 @@ String _localized(LocalizedReligiousText text, String locale) => switch (locale)
       _ => text.tr,
     };
 
-final class _DuaLabels {
-  const _DuaLabels({
-    required this.title,
-    required this.search,
-    required this.searchHint,
-    required this.category,
-    required this.allCategories,
-    required this.all,
-    required this.favorites,
-    required this.history,
-    required this.empty,
-    required this.favorite,
-    required this.unfavorite,
-    required this.privateStateError,
-    required this.categoryNames,
-  });
-
-  final String title;
-  final String search;
-  final String searchHint;
-  final String category;
-  final String allCategories;
-  final String all;
-  final String favorites;
-  final String history;
-  final String empty;
-  final String favorite;
-  final String unfavorite;
-  final String privateStateError;
-  final Map<DuaCategory, String> categoryNames;
-
-  String categoryLabel(DuaCategory category) => categoryNames[category]!;
-
-  static _DuaLabels forLocale(String locale) => switch (locale) {
-        'ar' => _ar,
-        'en' => _en,
-        _ => _tr,
-      };
-
-  static final _tr = _DuaLabels(
-    title: 'Dualar',
-    search: 'Dualarda ara',
-    searchHint: 'Dua metninde ara',
-    category: 'Kategori',
-    allCategories: 'Tüm kategoriler',
-    all: 'Tümü',
-    favorites: 'Favoriler',
-    history: 'Geçmiş',
-    empty: 'Bu filtrelerde doğrulanmış dua bulunmuyor.',
-    favorite: 'Favorilere ekle',
-    unfavorite: 'Favorilerden çıkar',
-    privateStateError:
-        'Kişisel dua verileri okunamadı. Dini içerik değiştirilmedi.',
-    categoryNames: _trCategories,
-  );
-
-  static final _en = _DuaLabels(
-    title: 'Duas',
-    search: 'Search duas',
-    searchHint: 'Search within dua text',
-    category: 'Category',
-    allCategories: 'All categories',
-    all: 'All',
-    favorites: 'Favorites',
-    history: 'History',
-    empty: 'No verified dua matches these filters.',
-    favorite: 'Add to favorites',
-    unfavorite: 'Remove from favorites',
-    privateStateError:
-        'Private dua data could not be read. Religious content was not changed.',
-    categoryNames: _enCategories,
-  );
-
-  static final _ar = _DuaLabels(
-    title: 'الأدعية',
-    search: 'البحث في الأدعية',
-    searchHint: 'ابحث داخل نص الدعاء',
-    category: 'الفئة',
-    allCategories: 'جميع الفئات',
-    all: 'الكل',
-    favorites: 'المفضلة',
-    history: 'السجل',
-    empty: 'لا يوجد دعاء موثَّق يطابق هذه المرشحات.',
-    favorite: 'إضافة إلى المفضلة',
-    unfavorite: 'إزالة من المفضلة',
-    privateStateError:
-        'تعذّرت قراءة بيانات الأدعية الخاصة. لم يتغير المحتوى الديني.',
-    categoryNames: _arCategories,
-  );
-}
-
-const _trCategories = <DuaCategory, String>{
-  DuaCategory.morning: 'Sabah',
-  DuaCategory.evening: 'Akşam',
-  DuaCategory.night: 'Gece',
-  DuaCategory.distress: 'Sıkıntı',
-  DuaCategory.peace: 'Huzur',
-  DuaCategory.repentance: 'Tövbe',
-  DuaCategory.seekingForgiveness: 'İstiğfar',
-  DuaCategory.gratitude: 'Şükür',
-  DuaCategory.patience: 'Sabır',
-  DuaCategory.provision: 'Rızık',
-  DuaCategory.debt: 'Borç',
-  DuaCategory.blessing: 'Bereket',
-  DuaCategory.family: 'Aile',
-  DuaCategory.spouse: 'Eş',
-  DuaCategory.parents: 'Anne-baba',
-  DuaCategory.children: 'Çocuklar',
-  DuaCategory.spiritualSupportDuringIllness: 'Hastalıkta manevi destek',
-  DuaCategory.fear: 'Korku',
-  DuaCategory.travel: 'Yolculuk',
-  DuaCategory.protection: 'Korunma',
-  DuaCategory.ramadan: 'Ramazan',
-  DuaCategory.friday: 'Cuma',
-  DuaCategory.eid: 'Bayram',
-  DuaCategory.religiousNights: 'Dini geceler',
-};
-
-const _enCategories = <DuaCategory, String>{
-  DuaCategory.morning: 'Morning',
-  DuaCategory.evening: 'Evening',
-  DuaCategory.night: 'Night',
-  DuaCategory.distress: 'Distress',
-  DuaCategory.peace: 'Peace',
-  DuaCategory.repentance: 'Repentance',
-  DuaCategory.seekingForgiveness: 'Seeking forgiveness',
-  DuaCategory.gratitude: 'Gratitude',
-  DuaCategory.patience: 'Patience',
-  DuaCategory.provision: 'Provision',
-  DuaCategory.debt: 'Debt',
-  DuaCategory.blessing: 'Blessing',
-  DuaCategory.family: 'Family',
-  DuaCategory.spouse: 'Spouse',
-  DuaCategory.parents: 'Parents',
-  DuaCategory.children: 'Children',
-  DuaCategory.spiritualSupportDuringIllness:
-      'Spiritual support during illness',
-  DuaCategory.fear: 'Fear',
-  DuaCategory.travel: 'Travel',
-  DuaCategory.protection: 'Protection',
-  DuaCategory.ramadan: 'Ramadan',
-  DuaCategory.friday: 'Friday',
-  DuaCategory.eid: 'Eid',
-  DuaCategory.religiousNights: 'Religious nights',
-};
-
-const _arCategories = <DuaCategory, String>{
-  DuaCategory.morning: 'الصباح',
-  DuaCategory.evening: 'المساء',
-  DuaCategory.night: 'الليل',
-  DuaCategory.distress: 'الكرب',
-  DuaCategory.peace: 'الطمأنينة',
-  DuaCategory.repentance: 'التوبة',
-  DuaCategory.seekingForgiveness: 'الاستغفار',
-  DuaCategory.gratitude: 'الشكر',
-  DuaCategory.patience: 'الصبر',
-  DuaCategory.provision: 'الرزق',
-  DuaCategory.debt: 'الدَّين',
-  DuaCategory.blessing: 'البركة',
-  DuaCategory.family: 'الأسرة',
-  DuaCategory.spouse: 'الزوجان',
-  DuaCategory.parents: 'الوالدان',
-  DuaCategory.children: 'الأبناء',
-  DuaCategory.spiritualSupportDuringIllness: 'الدعم الروحي أثناء المرض',
-  DuaCategory.fear: 'الخوف',
-  DuaCategory.travel: 'السفر',
-  DuaCategory.protection: 'الحفظ',
-  DuaCategory.ramadan: 'رمضان',
-  DuaCategory.friday: 'الجمعة',
-  DuaCategory.eid: 'العيد',
-  DuaCategory.religiousNights: 'الليالي الدينية',
-};
+String _categoryLabel(AppLocalizations l10n, DuaCategory category) =>
+    switch (category) {
+      DuaCategory.morning => l10n.duaCategoryMorning,
+      DuaCategory.evening => l10n.duaCategoryEvening,
+      DuaCategory.night => l10n.duaCategoryNight,
+      DuaCategory.distress => l10n.duaCategoryDistress,
+      DuaCategory.peace => l10n.duaCategoryPeace,
+      DuaCategory.repentance => l10n.duaCategoryRepentance,
+      DuaCategory.seekingForgiveness => l10n.duaCategorySeekingForgiveness,
+      DuaCategory.gratitude => l10n.duaCategoryGratitude,
+      DuaCategory.patience => l10n.duaCategoryPatience,
+      DuaCategory.provision => l10n.duaCategoryProvision,
+      DuaCategory.debt => l10n.duaCategoryDebt,
+      DuaCategory.blessing => l10n.duaCategoryBlessing,
+      DuaCategory.family => l10n.duaCategoryFamily,
+      DuaCategory.spouse => l10n.duaCategorySpouse,
+      DuaCategory.parents => l10n.duaCategoryParents,
+      DuaCategory.children => l10n.duaCategoryChildren,
+      DuaCategory.spiritualSupportDuringIllness =>
+        l10n.duaCategorySpiritualSupportDuringIllness,
+      DuaCategory.fear => l10n.duaCategoryFear,
+      DuaCategory.travel => l10n.duaCategoryTravel,
+      DuaCategory.protection => l10n.duaCategoryProtection,
+      DuaCategory.ramadan => l10n.duaCategoryRamadan,
+      DuaCategory.friday => l10n.duaCategoryFriday,
+      DuaCategory.eid => l10n.duaCategoryEid,
+      DuaCategory.religiousNights => l10n.duaCategoryReligiousNights,
+    };
