@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/app.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_hub_page.dart';
 import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
+import 'package:islami_hayat/features/prophets/presentation/revelation_journey_page.dart';
 import 'package:islami_hayat/features/quran/presentation/quran_hub_page.dart';
 import 'package:islami_hayat/features/shared/presentation/discover_page.dart';
 import 'package:islami_hayat/features/today/presentation/today_page.dart';
@@ -13,16 +14,19 @@ void main() {
       locale: Locale('tr'),
       direction: TextDirection.ltr,
       labels: <String>['Bugün', 'Kur’an', 'Keşfet', 'Zikir', 'Ben'],
+      revelationJourneyTitle: 'Vahiy Yolculuğu',
     ),
     'en': _LocaleCase(
       locale: Locale('en'),
       direction: TextDirection.ltr,
       labels: <String>['Today', 'Qur’an', 'Discover', 'Dhikr', 'Me'],
+      revelationJourneyTitle: 'Revelation Journey',
     ),
     'ar': _LocaleCase(
       locale: Locale('ar'),
       direction: TextDirection.rtl,
       labels: <String>['اليوم', 'القرآن', 'اكتشف', 'الذكر', 'أنا'],
+      revelationJourneyTitle: 'رحلة الوحي',
     ),
   };
 
@@ -71,7 +75,22 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('nav-discover')));
       await tester.pumpAndSettle();
       expect(find.byType(DiscoverPage), findsOneWidget);
+      expect(find.text(localeCase.revelationJourneyTitle), findsOneWidget);
       expect(tester.takeException(), isNull);
+
+      // T0344 deep-surface evidence begins with a real nested route rather
+      // than counting the Discover card as coverage by visibility alone.
+      await tester.tap(find.byKey(const ValueKey('discover-revelation-journey')));
+      await tester.pumpAndSettle();
+      expect(find.byType(RevelationJourneyPage), findsOneWidget);
+      expect(
+        tester.widget<Directionality>(find.byType(Directionality).first).textDirection,
+        localeCase.direction,
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.byType(DiscoverPage), findsOneWidget);
 
       await tester.tap(find.byKey(const ValueKey('nav-dhikr')));
       await tester.pumpAndSettle();
@@ -146,9 +165,11 @@ class _LocaleCase {
     required this.locale,
     required this.direction,
     required this.labels,
+    required this.revelationJourneyTitle,
   });
 
   final Locale locale;
   final TextDirection direction;
   final List<String> labels;
+  final String revelationJourneyTitle;
 }
