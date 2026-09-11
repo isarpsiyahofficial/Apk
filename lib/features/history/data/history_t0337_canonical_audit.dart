@@ -1,4 +1,6 @@
 import '../domain/history_t0337_audit.dart';
+import 'high_medieval_events_t0220.dart';
+import 'high_medieval_seljuq_crusades_mamluks.dart';
 import 'medieval_caliphates_events_t0220.dart';
 import 'medieval_caliphates_regional_dynasties.dart';
 import 'rashidun_first_fitna_events_t0220.dart';
@@ -34,6 +36,19 @@ final medievalT0214T0337SourceIdentities = medievalHistoryT0214Sources
     )
     .toList(growable: false);
 
+/// T0215 follows the same reviewed work-family contract. Keeping a separate
+/// projection makes the T0337 migration explicit per historical track while
+/// preserving the underlying work identity when bibliography aliases or new
+/// locators are introduced later.
+final highMedievalT0215T0337SourceIdentities = highMedievalHistoryT0215Sources
+    .map(
+      (source) => HistoryT0337SourceIdentity(
+        sourceId: source.locator.id,
+        independenceFamily: 'work:${source.workFamilyId}',
+      ),
+    )
+    .toList(growable: false);
+
 /// First real canonical projection wired to the T0337 gate.
 HistoryT0337AuditResult auditEarlyCaliphateT0337() => HistoryT0337Audit.validate(
       events: earlyCaliphateT0220Dataset.events,
@@ -47,6 +62,16 @@ HistoryT0337AuditResult auditEarlyCaliphateT0337() => HistoryT0337Audit.validate
 HistoryT0337AuditResult auditMedievalT0214T0337() => HistoryT0337Audit.validate(
       events: medievalHistoryT0214EventDatasetT0220.events,
       sourceIdentities: medievalT0214T0337SourceIdentities,
+    );
+
+/// Third real projection: the T0215/T0220 Seljuq, Crusades, Ayyubid, Mongol
+/// and Mamluk records. Their source registry already requires two independent
+/// academic work families for every record; T0337 now re-validates that rule
+/// at the shared release-gate layer rather than trusting only the source model.
+HistoryT0337AuditResult auditHighMedievalT0215T0337() =>
+    HistoryT0337Audit.validate(
+      events: highMedievalHistoryT0215EventDatasetT0220.events,
+      sourceIdentities: highMedievalT0215T0337SourceIdentities,
     );
 
 /// T0337 remains incomplete until every event-bearing history track is mapped
