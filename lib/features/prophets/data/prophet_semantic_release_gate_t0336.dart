@@ -38,11 +38,24 @@ ProphetSemanticReleaseGateResultT0336 auditProphetSemanticReleaseGateT0336({
       '${coverageReport.requiredClaimSlots}',
     );
   }
+  if (coverageReport.rows.length != 25) {
+    errors.add(
+      'T0336 coverage report must expose exactly 25 prophet rows; got '
+      '${coverageReport.rows.length}',
+    );
+  }
   if (gapManifest.requiredSlotCount != 200 || gapManifest.slots.length != 200) {
     errors.add(
       'T0336 gap manifest must expose exactly 200 slots; got '
       '${gapManifest.slots.length}/${gapManifest.requiredSlotCount}',
     );
+  }
+
+  final uniqueManifestSlots = gapManifest.slots
+      .map((slot) => '${slot.prophetId}|${slot.dimension.name}')
+      .toSet();
+  if (uniqueManifestSlots.length != gapManifest.slots.length) {
+    errors.add('T0336 gap manifest contains duplicate prophet/dimension slots');
   }
 
   for (final row in coverageReport.rows) {
@@ -52,6 +65,9 @@ ProphetSemanticReleaseGateResultT0336 auditProphetSemanticReleaseGateT0336({
         slot = gapManifest.slotFor(row.prophetId, dimension);
       } on ArgumentError {
         errors.add('${row.prophetId}/${dimension.name}: missing manifest slot');
+        continue;
+      } on StateError {
+        errors.add('${row.prophetId}/${dimension.name}: duplicate manifest slot');
         continue;
       }
 
