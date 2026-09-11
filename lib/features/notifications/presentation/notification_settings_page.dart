@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:islami_hayat/features/notifications/domain/notification_preferences.dart';
+import 'package:islami_hayat/l10n/app_localizations.dart';
 
 class NotificationSettingsPage extends StatefulWidget {
   const NotificationSettingsPage({
@@ -142,24 +143,23 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final strings =
-        _NotificationStrings.forLocale(Localizations.localeOf(context));
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(strings.title)),
+      appBar: AppBar(title: Text(l10n.notificationTitle)),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
               children: [
-                Text(strings.intro, style: theme.textTheme.bodyLarge),
+                Text(l10n.notificationIntro, style: theme.textTheme.bodyLarge),
                 if (_storageError) ...[
                   const SizedBox(height: 12),
                   Semantics(
                     liveRegion: true,
                     child: Text(
-                      strings.storageError,
+                      l10n.notificationStorageError,
                       key: const Key('notification-storage-error'),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.error,
@@ -172,7 +172,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   Semantics(
                     liveRegion: true,
                     child: Text(
-                      strings.permissionError,
+                      l10n.notificationPermissionError,
                       key: const Key('notification-permission-error'),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.error,
@@ -184,11 +184,11 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 _CategoryControl(
                   category: NotificationCategory.dailyVerse,
                   icon: Icons.menu_book_outlined,
-                  title: strings.dailyVerse,
-                  subtitle: strings.dailyVerseSubtitle,
+                  title: l10n.notificationDailyVerse,
+                  subtitle: l10n.notificationDailyVerseSubtitle,
                   value: _preferences.dailyVerse,
                   time: _preferences.dailyVerseTime,
-                  timeLabel: strings.timeLabel,
+                  timeLabel: l10n.notificationTimeLabel,
                   enabled: !_saving,
                   onChanged: (value) =>
                       _setCategory(NotificationCategory.dailyVerse, value),
@@ -198,11 +198,11 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 _CategoryControl(
                   category: NotificationCategory.dailyDua,
                   icon: Icons.volunteer_activism_outlined,
-                  title: strings.dailyDua,
-                  subtitle: strings.dailyDuaSubtitle,
+                  title: l10n.notificationDailyDua,
+                  subtitle: l10n.notificationDailyDuaSubtitle,
                   value: _preferences.dailyDua,
                   time: _preferences.dailyDuaTime,
-                  timeLabel: strings.timeLabel,
+                  timeLabel: l10n.notificationTimeLabel,
                   enabled: !_saving,
                   onChanged: (value) =>
                       _setCategory(NotificationCategory.dailyDua, value),
@@ -212,11 +212,11 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 _CategoryControl(
                   category: NotificationCategory.dhikrReminder,
                   icon: Icons.touch_app_outlined,
-                  title: strings.dhikrReminder,
-                  subtitle: strings.dhikrReminderSubtitle,
+                  title: l10n.notificationDhikrReminder,
+                  subtitle: l10n.notificationDhikrReminderSubtitle,
                   value: _preferences.dhikrReminder,
                   time: _preferences.dhikrReminderTime,
-                  timeLabel: strings.timeLabel,
+                  timeLabel: l10n.notificationTimeLabel,
                   enabled: !_saving,
                   onChanged: (value) =>
                       _setCategory(NotificationCategory.dhikrReminder, value),
@@ -226,11 +226,11 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 _CategoryControl(
                   category: NotificationCategory.religiousDay,
                   icon: Icons.event_available_outlined,
-                  title: strings.religiousDay,
-                  subtitle: strings.religiousDaySubtitle,
+                  title: l10n.notificationReligiousDay,
+                  subtitle: l10n.notificationReligiousDaySubtitle,
                   value: _preferences.religiousDay,
                   time: _preferences.religiousDayTime,
-                  timeLabel: strings.timeLabel,
+                  timeLabel: l10n.notificationTimeLabel,
                   enabled: !_saving,
                   onChanged: (value) =>
                       _setCategory(NotificationCategory.religiousDay, value),
@@ -238,7 +238,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                       _pickTime(NotificationCategory.religiousDay),
                 ),
                 const SizedBox(height: 12),
-                Text(strings.footnote, style: theme.textTheme.bodySmall),
+                Text(l10n.notificationFootnote, style: theme.textTheme.bodySmall),
               ],
             ),
     );
@@ -300,111 +300,5 @@ class _CategoryControl extends StatelessWidget {
           ),
       ],
     );
-  }
-}
-
-class _NotificationStrings {
-  const _NotificationStrings({
-    required this.title,
-    required this.intro,
-    required this.dailyVerse,
-    required this.dailyVerseSubtitle,
-    required this.dailyDua,
-    required this.dailyDuaSubtitle,
-    required this.dhikrReminder,
-    required this.dhikrReminderSubtitle,
-    required this.religiousDay,
-    required this.religiousDaySubtitle,
-    required this.timeLabel,
-    required this.footnote,
-    required this.storageError,
-    required this.permissionError,
-  });
-
-  final String title;
-  final String intro;
-  final String dailyVerse;
-  final String dailyVerseSubtitle;
-  final String dailyDua;
-  final String dailyDuaSubtitle;
-  final String dhikrReminder;
-  final String dhikrReminderSubtitle;
-  final String religiousDay;
-  final String religiousDaySubtitle;
-  final String timeLabel;
-  final String footnote;
-  final String storageError;
-  final String permissionError;
-
-  static _NotificationStrings forLocale(Locale locale) {
-    return switch (locale.languageCode) {
-      'ar' => const _NotificationStrings(
-          title: 'الإشعارات',
-          intro:
-              'الإشعارات اختيارية بالكامل. فعّل فقط الفئات التي تريدها، ويمكنك إيقاف كل فئة بشكل مستقل.',
-          dailyVerse: 'آية اليوم',
-          dailyVerseSubtitle: 'تذكير محلي اختياري بآية اليوم.',
-          dailyDua: 'دعاء اليوم',
-          dailyDuaSubtitle: 'تذكير محلي اختياري بدعاء اليوم.',
-          dhikrReminder: 'تذكير الذكر',
-          dhikrReminderSubtitle: 'ذكّرني بالذكر دون ضغط أو مقارنة.',
-          religiousDay: 'الأيام الدينية',
-          religiousDaySubtitle:
-              'يعمل فقط عندما يكون تاريخ اليوم موثّقًا من مصدر موثوق.',
-          timeLabel: 'وقت التذكير',
-          footnote:
-              'لا توجد إشعارات للأذان أو مواقيت الصلاة في الإصدار الأول.',
-          storageError:
-              'تعذّر حفظ إعدادات الإشعارات. بقيت الفئات غير المحفوظة مغلقة.',
-          permissionError:
-              'لم يتم منح إذن الإشعارات. بقي هذا النوع من التذكيرات مغلقًا.',
-        ),
-      'en' => const _NotificationStrings(
-          title: 'Notifications',
-          intro:
-              'Notifications are fully opt-in. Enable only the categories you want, and turn each category off independently at any time.',
-          dailyVerse: 'Verse of the day',
-          dailyVerseSubtitle:
-              'Optional local reminder for the verse of the day.',
-          dailyDua: 'Dua of the day',
-          dailyDuaSubtitle: 'Optional local reminder for the dua of the day.',
-          dhikrReminder: 'Dhikr reminder',
-          dhikrReminderSubtitle:
-              'A personal reminder without pressure or comparison.',
-          religiousDay: 'Religious days',
-          religiousDaySubtitle:
-              'Enabled only when the date is backed by a trusted calendar source.',
-          timeLabel: 'Reminder time',
-          footnote: 'V1 does not send adhan or prayer-time notifications.',
-          storageError:
-              'Notification settings could not be saved. Unsaved categories remain off.',
-          permissionError:
-              'Notification permission was not granted. This reminder stayed off.',
-        ),
-      _ => const _NotificationStrings(
-          title: 'Bildirimler',
-          intro:
-              'Bildirimlerin tamamı isteğe bağlıdır. Yalnız istediğin kategorileri açabilir, her birini ayrı ayrı kapatabilirsin.',
-          dailyVerse: 'Günün Ayeti',
-          dailyVerseSubtitle:
-              'Günün ayeti için isteğe bağlı yerel hatırlatma.',
-          dailyDua: 'Günün Duası',
-          dailyDuaSubtitle:
-              'Günün duası için isteğe bağlı yerel hatırlatma.',
-          dhikrReminder: 'Zikir Hatırlatması',
-          dhikrReminderSubtitle:
-              'Baskı veya karşılaştırma olmadan kişisel hatırlatma.',
-          religiousDay: 'Dini Günler',
-          religiousDaySubtitle:
-              'Yalnız tarih güvenilir bir takvim kaynağıyla doğrulandığında etkinleştirilir.',
-          timeLabel: 'Hatırlatma saati',
-          footnote:
-              'V1 içinde ezan veya namaz vakti bildirimi gönderilmez.',
-          storageError:
-              'Bildirim ayarları kaydedilemedi. Kaydedilemeyen kategoriler kapalı kaldı.',
-          permissionError:
-              'Bildirim izni verilmedi. Bu hatırlatma kapalı kaldı.',
-        ),
-    };
   }
 }
