@@ -7,6 +7,7 @@ import 'medieval_caliphates_events_t0220.dart';
 import 'medieval_caliphates_regional_dynasties.dart';
 import 'modern_global_events_t0220.dart';
 import 'modern_global_islamic_history.dart';
+import 'muhammad_period_events_t0220.dart';
 import 'rashidun_first_fitna_events_t0220.dart';
 import 'regional_events_t0220.dart';
 import 'regional_islamic_histories.dart';
@@ -29,6 +30,44 @@ const earlyCaliphateT0337SourceIdentities = <HistoryT0337SourceIdentity>[
     independenceFamily: 'work:hinds-studies-in-early-islamic-history',
   ),
 ];
+
+/// Muhammad-period events are not blanket-promoted into the double-source
+/// audit. Only the canonical records that already cite two genuinely distinct
+/// primary source families are projected here. The remaining seerah records
+/// stay explicit T0337 gaps until a second independent source is actually
+/// reviewed and attached to that exact claim.
+const muhammadPartialT0337SourceIdentities = <HistoryT0337SourceIdentity>[
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-3-seerah-first-revelation',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'quran-96-1-5-seerah',
+    independenceFamily: 'primary:quran',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'quran-17-1-seerah',
+    independenceFamily: 'primary:quran',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-3887-seerah-miraj',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'quran-9-40-seerah',
+    independenceFamily: 'primary:quran',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-4663-seerah-cave',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+];
+
+const muhammadPartialT0337EventIds = <String>{
+  'history:muhammad-first-revelation',
+  'history:muhammad-isra-miraj',
+  'history:muhammad-hijrah-cave',
+};
 
 HistoryT0337SourceIdentity _sourceIdentity(
   String sourceId,
@@ -80,6 +119,17 @@ final modernGlobalT0218T0337SourceIdentities = modernGlobalHistoryT0218Sources
 HistoryT0337AuditResult auditEarlyCaliphateT0337() => HistoryT0337Audit.validate(
       events: earlyCaliphateT0220Dataset.events,
       sourceIdentities: earlyCaliphateT0337SourceIdentities,
+    );
+
+/// Conservative Muhammad-period projection. This intentionally audits only
+/// events whose current canonical record itself already carries two independent
+/// primary source families. No second source is synthesized from chronology,
+/// biography links, or general seerah knowledge.
+HistoryT0337AuditResult auditMuhammadPartialT0337() => HistoryT0337Audit.validate(
+      events: muhammadPeriodEventsT0220.events
+          .where((event) => muhammadPartialT0337EventIds.contains(event.id))
+          .toList(growable: false),
+      sourceIdentities: muhammadPartialT0337SourceIdentities,
     );
 
 /// Second real projection: the T0214/T0220 Umayyad, Abbasid, al-Andalus,
