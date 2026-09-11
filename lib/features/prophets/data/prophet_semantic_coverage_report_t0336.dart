@@ -1,5 +1,7 @@
 import 'canonical_prophets.dart';
 import 'prophet_biography_qa.dart';
+import 'prophet_biography_t0194_dataset.dart';
+import 'prophet_exact_date_claim_audit_t0207.dart';
 import 'prophet_semantic_evidence_t0336.dart';
 import 'prophet_semantic_ownership_qa.dart';
 
@@ -57,11 +59,26 @@ ProphetSemanticCoverageReportT0336 buildCanonicalProphetCoverageReportT0336({
   // biography graph. This independently validates source provenance,
   // genealogy direction/cycles and chronology-band consistency before any
   // 25×8 slot can contribute to release readiness.
-  final biographyAudit = const ProphetBiographyQaAudit().auditCanonicalResearchDataset();
+  final biographyAudit =
+      const ProphetBiographyQaAudit().auditCanonicalResearchDataset();
   if (!biographyAudit.isValid) {
     throw StateError(
       'T0336 canonical biography genealogy/chronology audit failed: '
       '${biographyAudit.errors.join(' | ')}',
+    );
+  }
+
+  // Calendar-year prose is a separate high-risk surface. It is intentionally
+  // re-audited here so a future T0194 supplement cannot gain T0336 semantic
+  // coverage while carrying an unsupported exact/overstated civil date.
+  // Unknown dates stay unknown; this gate never invents a date to fill a slot.
+  final calendarYearErrors = const ProphetExactDateClaimAuditT0207().audit(
+    canonicalProphetBiographyT0194Dataset,
+  );
+  if (calendarYearErrors.isNotEmpty) {
+    throw StateError(
+      'T0336 canonical biography calendar-date audit failed: '
+      '${calendarYearErrors.join(' | ')}',
     );
   }
 
