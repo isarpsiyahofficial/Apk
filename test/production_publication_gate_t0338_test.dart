@@ -16,7 +16,7 @@ void main() {
     required String id,
     ContentReviewStatus status = ContentReviewStatus.published,
     ReligiousSourceClass sourceStatus = ReligiousSourceClass.quran,
-    List<SourceReference> sources = const [source],
+    List<SourceReference>? sources,
     LocalizedReligiousText text = const LocalizedReligiousText(
       tr: 'Türkçe',
       en: 'English',
@@ -31,7 +31,7 @@ void main() {
         reviewStatus: status,
         certainty: CertaintyLevel.explicitSource,
         text: text,
-        sources: sources,
+        sources: sources ?? const [source],
         lastReviewedAt: DateTime.utc(2026, 9, 11),
         reviewer: 'reviewer:t0338',
       );
