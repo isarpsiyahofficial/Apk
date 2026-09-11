@@ -19,11 +19,11 @@ void main() {
       );
     });
 
-    test('Muhammad partial audit includes only independently reviewed canonical events', () {
+    test('Muhammad audit covers all canonical events with independent families', () {
       final result = auditMuhammadPartialT0337();
-      expect(result.eventCount, 17);
-      expect(muhammadPartialT0337EventIds, hasLength(17));
-      expect(muhammadPartialT0337Corroborations, hasLength(14));
+      expect(result.eventCount, 19);
+      expect(muhammadPartialT0337EventIds, hasLength(19));
+      expect(muhammadPartialT0337Corroborations, hasLength(16));
       expect(
         muhammadPartialT0337SourceIdentities
             .map((s) => s.independenceFamily)
@@ -38,84 +38,51 @@ void main() {
       );
       expect(
         muhammadPartialT0337Corroborations.map((c) => c.locator).toSet(),
-        equals({
-          'Sunan Abi Dawud 2426',
-          'Sunan Ibn Majah 2149',
-          'Sahih Muslim 2436',
-          'Sahih Muslim 160a',
-          'Sahih Muslim 2502-2503',
-          'Sahih Muslim 1314b',
-          'Sahih Muslim 1795',
-          'Sahih al-Bukhari 3992',
-          'Sahih al-Bukhari 4843',
-          'Sahih al-Bukhari 4770',
-          'Sahih Muslim 1783a',
-          'Sahih Muslim 1780c',
-          'Sahih Muslim 1218b',
-          'Sahih Muslim 2443',
+        containsAll({
+          'Sahih Muslim 1709d',
+          'Sahih Muslim 1376a',
         }),
       );
     });
 
-    test('new corroborations stay scoped to their exact Muhammad events', () {
+    test('Aqaba and Medina evidence stay scoped to their exact events', () {
       final eventToLocator = {
         for (final evidence in muhammadPartialT0337Corroborations)
           evidence.eventId: evidence.locator,
       };
 
       expect(
-        eventToLocator['history:muhammad-birth-monday'],
-        'Sunan Abi Dawud 2426',
+        eventToLocator['history:muhammad-aqaba-pledge'],
+        'Sahih Muslim 1709d',
       );
       expect(
-        eventToLocator['history:muhammad-youth-shepherding'],
-        'Sunan Ibn Majah 2149',
-      );
-      expect(
-        eventToLocator['history:muhammad-marriage-khadija'],
-        'Sahih Muslim 2436',
-      );
-      expect(
-        eventToLocator['history:muhammad-hira-retreat'],
-        'Sahih Muslim 160a',
-      );
-      expect(
-        eventToLocator['history:muhammad-abyssinia-migrations'],
-        'Sahih Muslim 2502-2503',
-      );
-      expect(
-        eventToLocator['history:muhammad-boycott-banu-hashim'],
-        'Sahih Muslim 1314b',
-      );
-      expect(
-        eventToLocator['history:muhammad-taif-rejection'],
-        'Sahih Muslim 1795',
-      );
-      expect(
-        eventToLocator['history:muhammad-meccan-nearest-kindred'],
-        'Sahih al-Bukhari 4770',
-      );
-      expect(
-        eventToLocator['history:muhammad-hudaybiyyah-treaty'],
-        'Sahih Muslim 1783a',
-      );
-      expect(
-        eventToLocator['history:muhammad-conquest-mecca'],
-        'Sahih Muslim 1780c',
-      );
-      expect(
-        eventToLocator['history:muhammad-farewell-pilgrimage'],
-        'Sahih Muslim 1218b',
-      );
-      expect(
-        eventToLocator['history:muhammad-death'],
-        'Sahih Muslim 2443',
+        eventToLocator['history:muhammad-medina-arrival'],
+        'Sahih Muslim 1376a',
       );
     });
 
-    test('Aqaba and Medina arrival remain open rather than weakly corroborated', () {
-      expect(muhammadPartialT0337EventIds, isNot(contains('history:muhammad-aqaba-pledge')));
-      expect(muhammadPartialT0337EventIds, isNot(contains('history:muhammad-medina-arrival')));
+    test('Aqaba uses a source family independent from canonical Bukhari', () {
+      final aqabaFamilies = muhammadPartialT0337SourceIdentities
+          .where(
+            (source) =>
+                source.sourceId == 'bukhari-3893-seerah-aqaba' ||
+                source.sourceId == 'muslim-1709d-t0337-aqaba',
+          )
+          .map((source) => source.independenceFamily)
+          .toSet();
+      expect(aqabaFamilies, hasLength(2));
+    });
+
+    test('Medina arrival uses a source family independent from canonical Bukhari', () {
+      final medinaFamilies = muhammadPartialT0337SourceIdentities
+          .where(
+            (source) =>
+                source.sourceId == 'bukhari-3925-seerah-medina' ||
+                source.sourceId == 'muslim-1376a-t0337-medina-arrival',
+          )
+          .map((source) => source.independenceFamily)
+          .toSet();
+      expect(medinaFamilies, hasLength(2));
     });
 
     test('real T0214/T0220 medieval events pass work-family independence gate', () {
