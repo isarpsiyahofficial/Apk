@@ -53,12 +53,15 @@ kanıtlarını üretir. Bu nested-route kanıtı T0340–T0344 kapsamını ilerl
 
 ### 2.2. Dua deep-surface state coverage — otomatik kapı
 
+`DuaLibraryPage` kullanıcı arayüzündeki başlık, arama, filtre, favori/geçmiş, empty/error ve 24 kategori adı artık yalnız `AppLocalizations` üzerinden TR/EN/AR ARB anahtarlarından gelir. Önceki `_DuaLabels` locale-switch yapısı ve üç ayrı hard-coded kategori map'i kaldırılmıştır. Bu değişiklik yalnız UI copy katmanını etkiler; doğrulanmış `LocalizedReligiousText` dua metni kaynak verisi değiştirilmez.
+
 `test/localization_dua_surface_t0344_test.dart` Dua kütüphanesini doğrudan gerçek widget yüzeyi olarak TR/EN/AR locale'lerinde açar. Test fixture dini içeriği yalnız `published` durumunda ve typed `Quran` source reference ile üretir; test herhangi bir üretim dini metnini değiştirmez.
 
 Kapı üç locale için:
 
 - doğru LTR/RTL yönünü,
 - locale'e ait başlık ve arama metnini,
+- locale'e ait tüm-kategoriler ve `morning` kategori metnini gerçek dropdown üzerinden,
 - locale'e ait doğrulanmış fixture metnini,
 - arama sonucu bulunmadığında locale'e ait `empty` durumunu,
 - private user-state okuması hata verdiğinde locale'e ait güvenli `error` metnini,
@@ -66,7 +69,7 @@ Kapı üç locale için:
 
 doğrular. Ek AR testi private-state future'ı bilinçli olarak bekleterek gerçek `loading` durumunun RTL kalmasını ve içerik hazır olmadan arama yüzeyinin sızmamasını kontrol eder.
 
-Bu kanıt T0344 içindeki **Dua + loading/empty/error** alt kapsamını ilerletir. Dua'nın Keşfet içindeki production navigation girişi ve diğer T0344 yüzeyleri tamamlanmadan T0340–T0344 PASS değildir.
+Bu kanıt T0344 içindeki **Dua + loading/empty/error + kategori localization** alt kapsamını ilerletir. Branch üzerinde `DuaLibraryRepository` ve review gate bulunmasına rağmen production'a bağlanabilecek, kaynak/review kanıtı tamamlanmış canonical Dua dataset dosyası henüz yoktur. Test fixture'ı production dataset yerine kullanılamaz; bu nedenle sırf ekranı görünür kılmak için boş veya sahte veriyle Keşfet route'u bağlanmaz. Gerçek production dataset yayın kapısından geçmeden Dua'nın Keşfet production navigation girişi ve T0340–T0344 PASS değildir.
 
 ### 2.3. FREE cold-start offline gate — üç dil fail-closed
 
