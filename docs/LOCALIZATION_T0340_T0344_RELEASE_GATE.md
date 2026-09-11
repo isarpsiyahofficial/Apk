@@ -68,6 +68,12 @@ doğrular. Ek AR testi private-state future'ı bilinçli olarak bekleterek gerç
 
 Bu kanıt T0344 içindeki **Dua + loading/empty/error** alt kapsamını ilerletir. Dua'nın Keşfet içindeki production navigation girişi ve diğer T0344 yüzeyleri tamamlanmadan T0340–T0344 PASS değildir.
 
+### 2.3. FREE cold-start offline gate — üç dil fail-closed
+
+`test/app_startup_access_t0262_test.dart` artık FREE cold-start offline engelini TR yanında EN ve AR locale'lerinde de doğrular. Network probe başarısız olduğunda `AppShell` hiç mount edilmez; kullanıcı yalnız locale'e ait offline başlık/gövde/retry metnini görür. AR senaryosu ayrıca root `Directionality.rtl` davranışını kontrol eder.
+
+Aynı test dosyası doğrulanmış HTTP 204 ile FREE erişimin açıldığını ve cached PRO kullanıcının reachability request göndermeden shell'e girdiğini korumaya devam eder. Bu kanıt T0344 içindeki **Offline gate** alt kapsamını ilerletir; online→offline transition ve diğer monetization state'leri tamamlanmadan localization veya M-grubu PASS değildir.
+
 ### 3. T0344 full-surface crawl — AÇIK
 
 Aşağıdaki alanların her biri TR/EN/AR için happy path ile birlikte loading / empty / error / permission / offline / monetization failure state'leri üzerinde gerçek widget/integration kanıtı olmadan T0340–T0344 final PASS değildir:
@@ -97,7 +103,7 @@ Aşağıdaki alanların her biri TR/EN/AR için happy path ile birlikte loading 
 - TR/EN modunda Arapça asıl metnin yalnız explicit ürün kararına göre gösterilmesi,
 - rewarded success/cancel/no-fill metinleri,
 - billing success/cancel/pending/restore/revoke metinleri,
-- offline cold-start ve online→offline transition metinleri,
+- online→offline transition metinleri,
 - notification/widget/share failure copy,
 - native TR/EN/AR editorial pass.
 
