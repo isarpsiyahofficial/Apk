@@ -1,4 +1,5 @@
 import 'canonical_prophets.dart';
+import 'prophet_biography_qa.dart';
 import 'prophet_semantic_evidence_t0336.dart';
 import 'prophet_semantic_ownership_qa.dart';
 
@@ -52,6 +53,18 @@ final class ProphetSemanticCoverageReportT0336 {
 ProphetSemanticCoverageReportT0336 buildCanonicalProphetCoverageReportT0336({
   Iterable<ProphetSemanticClaim>? claims,
 }) {
+  // T0336 must not count semantic coverage on top of a contradictory canonical
+  // biography graph. This independently validates source provenance,
+  // genealogy direction/cycles and chronology-band consistency before any
+  // 25×8 slot can contribute to release readiness.
+  final biographyAudit = const ProphetBiographyQaAudit().auditCanonicalResearchDataset();
+  if (!biographyAudit.isValid) {
+    throw StateError(
+      'T0336 canonical biography genealogy/chronology audit failed: '
+      '${biographyAudit.errors.join(' | ')}',
+    );
+  }
+
   final claimList = List<ProphetSemanticClaim>.unmodifiable(
     claims ?? canonicalProphetSemanticEvidenceT0336,
   );
