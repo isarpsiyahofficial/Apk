@@ -42,6 +42,13 @@ jobs:
       - name: Analyze
         run: flutter analyze --fatal-infos --fatal-warnings
 
+      - name: Test localization contract failure paths
+        working-directory: scripts
+        run: python3 -m unittest -v test_audit_localization_contract_t0340.py
+
+      - name: Audit TR EN AR localization contract
+        run: python3 scripts/audit_localization_contract_t0340.py
+
       - name: Test Quran dataset validator
         working-directory: scripts
         run: python3 -m unittest -v test_validate_quran_dataset.py
