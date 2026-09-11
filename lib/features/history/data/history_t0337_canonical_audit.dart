@@ -33,10 +33,8 @@ const earlyCaliphateT0337SourceIdentities = <HistoryT0337SourceIdentity>[
 
 /// Muhammad-period events are not blanket-promoted into the double-source
 /// audit. Only records with two independently reviewed primary source families
-/// are projected here. For Badr and the pledge under the tree, the canonical
-/// Quran source is paired with an event-scoped Sahih al-Bukhari corroboration
-/// whose exact locator was separately reviewed; the base T0220 record is not
-/// rewritten merely to satisfy T0337.
+/// are projected here. Event-scoped corroborations retain exact locators and do
+/// not rewrite the base T0220 record merely to satisfy T0337.
 const muhammadPartialT0337SourceIdentities = <HistoryT0337SourceIdentity>[
   HistoryT0337SourceIdentity(
     sourceId: 'bukhari-3-seerah-first-revelation',
@@ -78,6 +76,38 @@ const muhammadPartialT0337SourceIdentities = <HistoryT0337SourceIdentity>[
     sourceId: 'bukhari-4843-t0337-pledge-under-tree',
     independenceFamily: 'primary:sahih-al-bukhari',
   ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'quran-26-214-seerah',
+    independenceFamily: 'primary:quran',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-4770-t0337-nearest-kindred',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-2711-2712-seerah-hudaybiyyah',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'muslim-1783a-t0337-hudaybiyyah',
+    independenceFamily: 'primary:sahih-muslim',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-4280-seerah-conquest',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'muslim-1780c-t0337-conquest',
+    independenceFamily: 'primary:sahih-muslim',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-1739-seerah-farewell',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'muslim-1218b-t0337-farewell',
+    independenceFamily: 'primary:sahih-muslim',
+  ),
 ];
 
 const muhammadPartialT0337EventIds = <String>{
@@ -86,6 +116,10 @@ const muhammadPartialT0337EventIds = <String>{
   'history:muhammad-hijrah-cave',
   'history:muhammad-badr',
   'history:muhammad-pledge-under-tree',
+  'history:muhammad-meccan-nearest-kindred',
+  'history:muhammad-hudaybiyyah-treaty',
+  'history:muhammad-conquest-mecca',
+  'history:muhammad-farewell-pilgrimage',
 };
 
 /// Exact reviewed supplemental references. These are QA evidence only: they do
@@ -100,6 +134,26 @@ const muhammadPartialT0337Corroborations = <HistoryT0337Corroboration>[
     eventId: 'history:muhammad-pledge-under-tree',
     sourceId: 'bukhari-4843-t0337-pledge-under-tree',
     locator: 'Sahih al-Bukhari 4843',
+  ),
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-meccan-nearest-kindred',
+    sourceId: 'bukhari-4770-t0337-nearest-kindred',
+    locator: 'Sahih al-Bukhari 4770',
+  ),
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-hudaybiyyah-treaty',
+    sourceId: 'muslim-1783a-t0337-hudaybiyyah',
+    locator: 'Sahih Muslim 1783a',
+  ),
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-conquest-mecca',
+    sourceId: 'muslim-1780c-t0337-conquest',
+    locator: 'Sahih Muslim 1780c',
+  ),
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-farewell-pilgrimage',
+    sourceId: 'muslim-1218b-t0337-farewell',
+    locator: 'Sahih Muslim 1218b',
   ),
 ];
 
