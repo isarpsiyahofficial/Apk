@@ -105,7 +105,9 @@ void main() {
 
     expect(result.isValid, isFalse);
     expect(
-      result.errors.any((error) => error.contains('duplicate prophet/dimension slots')),
+      result.errors.any(
+        (error) => error.contains('duplicate prophet/dimension slots'),
+      ),
       isTrue,
     );
   });
