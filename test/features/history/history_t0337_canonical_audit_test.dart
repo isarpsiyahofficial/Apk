@@ -21,9 +21,9 @@ void main() {
 
     test('Muhammad partial audit includes only independently reviewed canonical events', () {
       final result = auditMuhammadPartialT0337();
-      expect(result.eventCount, 9);
-      expect(muhammadPartialT0337EventIds, hasLength(9));
-      expect(muhammadPartialT0337Corroborations, hasLength(6));
+      expect(result.eventCount, 17);
+      expect(muhammadPartialT0337EventIds, hasLength(17));
+      expect(muhammadPartialT0337Corroborations, hasLength(14));
       expect(
         muhammadPartialT0337SourceIdentities
             .map((s) => s.independenceFamily)
@@ -32,17 +32,27 @@ void main() {
           'primary:quran',
           'primary:sahih-al-bukhari',
           'primary:sahih-muslim',
+          'primary:sunan-abi-dawud',
+          'primary:sunan-ibn-majah',
         }),
       );
       expect(
         muhammadPartialT0337Corroborations.map((c) => c.locator).toSet(),
         equals({
+          'Sunan Abi Dawud 2426',
+          'Sunan Ibn Majah 2149',
+          'Sahih Muslim 2436',
+          'Sahih Muslim 160a',
+          'Sahih Muslim 2502-2503',
+          'Sahih Muslim 1314b',
+          'Sahih Muslim 1795',
           'Sahih al-Bukhari 3992',
           'Sahih al-Bukhari 4843',
           'Sahih al-Bukhari 4770',
           'Sahih Muslim 1783a',
           'Sahih Muslim 1780c',
           'Sahih Muslim 1218b',
+          'Sahih Muslim 2443',
         }),
       );
     });
@@ -53,6 +63,34 @@ void main() {
           evidence.eventId: evidence.locator,
       };
 
+      expect(
+        eventToLocator['history:muhammad-birth-monday'],
+        'Sunan Abi Dawud 2426',
+      );
+      expect(
+        eventToLocator['history:muhammad-youth-shepherding'],
+        'Sunan Ibn Majah 2149',
+      );
+      expect(
+        eventToLocator['history:muhammad-marriage-khadija'],
+        'Sahih Muslim 2436',
+      );
+      expect(
+        eventToLocator['history:muhammad-hira-retreat'],
+        'Sahih Muslim 160a',
+      );
+      expect(
+        eventToLocator['history:muhammad-abyssinia-migrations'],
+        'Sahih Muslim 2502-2503',
+      );
+      expect(
+        eventToLocator['history:muhammad-boycott-banu-hashim'],
+        'Sahih Muslim 1314b',
+      );
+      expect(
+        eventToLocator['history:muhammad-taif-rejection'],
+        'Sahih Muslim 1795',
+      );
       expect(
         eventToLocator['history:muhammad-meccan-nearest-kindred'],
         'Sahih al-Bukhari 4770',
@@ -69,6 +107,15 @@ void main() {
         eventToLocator['history:muhammad-farewell-pilgrimage'],
         'Sahih Muslim 1218b',
       );
+      expect(
+        eventToLocator['history:muhammad-death'],
+        'Sahih Muslim 2443',
+      );
+    });
+
+    test('Aqaba and Medina arrival remain open rather than weakly corroborated', () {
+      expect(muhammadPartialT0337EventIds, isNot(contains('history:muhammad-aqaba-pledge')));
+      expect(muhammadPartialT0337EventIds, isNot(contains('history:muhammad-medina-arrival')));
     });
 
     test('real T0214/T0220 medieval events pass work-family independence gate', () {
