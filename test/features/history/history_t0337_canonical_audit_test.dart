@@ -70,8 +70,46 @@ void main() {
             .toSet(),
         hasLength(earlyModernT0216T0337SourceIdentities.length),
       );
+    });
+
+    test('real T0217/T0220 regional events pass work-family independence gate', () {
+      final result = auditRegionalT0217T0337();
+
+      expect(result.eventCount, 5);
+    });
+
+    test('T0217 keeps source IDs unique while allowing deliberate work-family reuse', () {
       expect(
-        earlyModernT0216T0337SourceIdentities.every(
+        regionalT0217T0337SourceIdentities
+            .map((source) => source.sourceId)
+            .toSet(),
+        hasLength(regionalT0217T0337SourceIdentities.length),
+      );
+      expect(
+        regionalT0217T0337SourceIdentities
+                .map((source) => source.independenceFamily)
+                .toSet()
+                .length <
+            regionalT0217T0337SourceIdentities.length,
+        isTrue,
+      );
+    });
+
+    test('real T0218/T0220 modern-global events pass work-family independence gate', () {
+      final result = auditModernGlobalT0218T0337();
+
+      expect(result.eventCount, 4);
+    });
+
+    test('T0218 registry preserves every reviewed source identity', () {
+      expect(
+        modernGlobalT0218T0337SourceIdentities
+            .map((source) => source.sourceId)
+            .toSet(),
+        hasLength(modernGlobalT0218T0337SourceIdentities.length),
+      );
+      expect(
+        modernGlobalT0218T0337SourceIdentities.every(
           (source) => source.independenceFamily.startsWith('work:'),
         ),
         isTrue,
