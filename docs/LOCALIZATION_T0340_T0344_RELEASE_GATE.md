@@ -37,6 +37,20 @@ Kapı her locale için:
 
 AR ayrıca 1024×768 tablet `NavigationRail` üzerinde tekrar dolaştırılır. Bu, RTL'in yalnız compact telefonda görünür olmasına dayanan sahte PASS'i engeller.
 
+### 2.1. Nested Vahiy Yolculuğu route'u — ARB bağlı
+
+Keşfet içindeki `RevelationJourneyPage` için kullanıcıya görünen başlık, açıklama, filtreler, yaklaşık-tarih uyarısı, semantics metinleri, Kur’an referans başlığı, güvenli-açma hata metni ve dönem adları artık yalnız TR/EN/AR ARB anahtarlarından gelir. Önceki `_JourneyCopy` locale-switch yapısı kaldırılmıştır.
+
+`test/features/prophets/revelation_journey_page_test.dart`:
+
+- TR telefonda ARB başlık + açıklama,
+- EN geniş görünümde dönem filtresi + paralel dönem etiketi + yaklaşık tarih uyarısı,
+- AR 320×800 RTL görünümde ARB başlık + filtre + açıklama,
+- Kur’an referans bottom-sheet başlığı ve failure-path davranışı,
+- geniş landscape overflow kontrolü
+
+kanıtlarını üretir. Bu nested-route kanıtı T0340–T0344 kapsamını ilerletir ancak full-surface crawl tamamlanmadan satırları tek başına PASS yapmaz.
+
 ### 3. T0344 full-surface crawl — AÇIK
 
 Aşağıdaki alanların her biri TR/EN/AR için happy path ile birlikte loading / empty / error / permission / offline / monetization failure state'leri üzerinde gerçek widget/integration kanıtı olmadan T0340–T0344 final PASS değildir:
