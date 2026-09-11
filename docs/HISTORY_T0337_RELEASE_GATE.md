@@ -41,16 +41,26 @@ Bu hatlarda bağımsızlık source-ID sayısından değil explicit temel eser/so
 
 Canonical siyer kaydında zaten Kur’an + Sahih al-Bukhari iki ayrı primary family taşıyan üç olay korunur: ilk vahiy, İsrâ/Mi‘rac ve Hicret/mağara.
 
-Exact-event corroboration ile doğrulanan altı ek olay şunlardır:
+Event-scoped corroboration ile doğrulanan on dört ek olay/kanıt kaydı şunlardır:
 
+- `history:muhammad-birth-monday` → canonical Sahih Muslim 1162e + **Sunan Abi Dawud 2426**,
+- `history:muhammad-youth-shepherding` → canonical Sahih al-Bukhari 2262 + **Sunan Ibn Majah 2149**,
+- `history:muhammad-marriage-khadija` → canonical Sahih al-Bukhari 3817 + **Sahih Muslim 2436**,
+- `history:muhammad-hira-retreat` → canonical Sahih al-Bukhari 3 + **Sahih Muslim 160a**,
+- `history:muhammad-abyssinia-migrations` → canonical Sahih al-Bukhari 3876 + **Sahih Muslim 2502–2503**,
+- `history:muhammad-boycott-banu-hashim` → canonical Sahih al-Bukhari 3058 + **Sahih Muslim 1314b**,
+- `history:muhammad-taif-rejection` → canonical Sahih al-Bukhari 3231 + **Sahih Muslim 1795**,
 - `history:muhammad-badr` → canonical Kur’an 3:123 + **Sahih al-Bukhari 3992**,
 - `history:muhammad-pledge-under-tree` → canonical Kur’an 48:18 + **Sahih al-Bukhari 4843**,
 - `history:muhammad-meccan-nearest-kindred` → canonical Kur’an 26:214 + **Sahih al-Bukhari 4770**,
 - `history:muhammad-hudaybiyyah-treaty` → canonical Sahih al-Bukhari 2711–2712 + **Sahih Muslim 1783a**,
 - `history:muhammad-conquest-mecca` → canonical Sahih al-Bukhari 4280 + **Sahih Muslim 1780c**,
-- `history:muhammad-farewell-pilgrimage` → canonical Sahih al-Bukhari 1739 + **Sahih Muslim 1218b**.
+- `history:muhammad-farewell-pilgrimage` → canonical Sahih al-Bukhari 1739 + **Sahih Muslim 1218b**,
+- `history:muhammad-death` → canonical Sahih al-Bukhari 4449 + **Sahih Muslim 2443**.
 
-Bu hadislerin üçüncü taraf çeviri metinleri uygulamaya kopyalanmaz; T0337 yalnız bibliyografik locator ve bağımsız source-family kanıtını kullanır. Kaynakta bulunmayan tarih veya ayrıntı üretilmez.
+Bu hadislerin üçüncü taraf çeviri metinleri uygulamaya kopyalanmaz; T0337 yalnız bibliyografik locator ve bağımsız source/work-family kanıtını kullanır. `Sunan Abi Dawud 2426` ve `Sunan Ibn Majah 2149` için QA yalnız ilgili bibliyografik kaydın açıkça sahih derecelendirilmiş locator'ını kullanır; tercüme metni asset değildir. Kaynakta bulunmayan tarih veya ayrıntı üretilmez.
+
+Akabe biatı ve Medine’ye varış kayıtları özellikle açık bırakılmıştır. Mevcut taramada olayla birebir eşleşen ve mevcut canonical kaynak ailesinden bağımsız olduğu yeterince güvenli kanıtlanmayan kayıtlar sırf matrisi kapatmak için eklenmez.
 
 ## Aggregate coverage kapısı
 
@@ -62,8 +72,8 @@ Bu hadislerin üçüncü taraf çeviri metinleri uygulamaya kopyalanmaz; T0337 y
 - canonical event audit dışı kalırsa açık `missingEventIds` olarak raporlanır,
 - `requireComplete()` yalnız missing set boş olduğunda geçer.
 
-Mevcut durumda yedi audited projection toplam **37 canonical olayı** bağımsız kaynak ailesi kapısından geçirir. Muhammed dönemi alt kümesi 9 olaya çıkarılmıştır; geri kalan Muhammed dönemi olayları exact ikinci bağımsız kaynak doğrulanmadan açık kalır.
+Mevcut durumda yedi audited projection toplam **45 canonical olayı** bağımsız kaynak ailesi kapısından geçirir. Muhammed dönemi alt kümesi **17/19 olaya** çıkarılmıştır. Açık `missingEventIds` tam olarak `history:muhammad-aqaba-pledge` ve `history:muhammad-medina-arrival` olmalıdır; regression testi bu fail-closed durumu pinler.
 
 ## Final durumu
 
-T0337/D12 henüz PASS değildir. Kalan Muhammed dönemi event'leri iki bağımsız kaynak ailesi standardına kaynakları bozmayacak şekilde bağlanmalı; ardından aggregate `missingEventIds` boş olmalı ve `requireComplete()` geçmelidir. Bu gerçekleşmeden `TODO.md` T0337 ve `TEST_MATRIX.md` D12 açık kalmalıdır.
+T0337/D12 henüz PASS değildir. Akabe biatı ve Medine’ye varış için exact-event düzeyinde ikinci bağımsız kaynak ailesi güvenilir biçimde doğrulanmalı; ardından aggregate `missingEventIds` boş olmalı ve `requireComplete()` geçmelidir. Bu gerçekleşmeden `TODO.md` T0337 ve `TEST_MATRIX.md` D12 açık kalmalıdır.
