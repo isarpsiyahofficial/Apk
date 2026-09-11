@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:islami_hayat/features/prophets/data/prophet_semantic_coverage_report_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_gap_manifest_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_qa.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_release_gate_t0336.dart';
