@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:islami_hayat/l10n/app_localizations.dart';
 
 import 'revelation_journey_page.dart';
 
@@ -12,29 +13,15 @@ class DiscoverProphetsEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final language = Localizations.localeOf(context).languageCode;
-    final copy = switch (language) {
-      'ar' => const (
-          title: 'رحلة الوحي',
-          subtitle: 'استكشف التسلسل التقريبي للأنبياء والفترات المتوازية دون اختلاق تواريخ دقيقة.',
-        ),
-      'en' => const (
-          title: 'Revelation Journey',
-          subtitle: 'Explore the approximate prophetic chronology and parallel periods without invented exact dates.',
-        ),
-      _ => const (
-          title: 'Vahiy Yolculuğu',
-          subtitle: 'Peygamberlerin yaklaşık kronolojisini ve paralel dönemleri kesin tarih uydurmadan keşfet.',
-        ),
-    };
+    final l10n = AppLocalizations.of(context);
 
     return Card(
       margin: EdgeInsets.zero,
       child: ListTile(
         key: const ValueKey('discover-revelation-journey'),
         leading: const Icon(Icons.timeline_outlined),
-        title: Text(copy.title),
-        subtitle: Text(copy.subtitle),
+        title: Text(l10n.revelationJourneyTitle),
+        subtitle: Text(l10n.revelationJourneySubtitle),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
