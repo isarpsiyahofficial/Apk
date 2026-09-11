@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophets.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_coverage_report_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_evidence_t0336.dart';
@@ -73,7 +74,6 @@ void main() {
         dimension: ProphetSemanticDimension.event,
         claimKey: 'event:adam:context-musa',
         sourceIds: ['tanzil-uthmani-v1.1'],
-        sourceClasses: {},
         contextReference: true,
         evidenceState: ProphetSemanticEvidenceState.pendingReview,
       ),
@@ -97,7 +97,25 @@ void main() {
             dimension: ProphetSemanticDimension.event,
             claimKey: 'event:adam:bad-owner',
             sourceIds: ['tanzil-uthmani-v1.1'],
-            sourceClasses: {},
+            sourceClasses: {ReligiousSourceClass.quran},
+          ),
+        ],
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('wrong prophet event ownership fails before it can inflate coverage', () {
+    expect(
+      () => buildCanonicalProphetCoverageReportT0336(
+        claims: const [
+          ProphetSemanticClaim(
+            biographyProphetId: 'muhammad',
+            subjectProphetId: 'yusuf',
+            dimension: ProphetSemanticDimension.event,
+            claimKey: 'yusuf_well_and_egypt',
+            sourceIds: ['tanzil-uthmani-v1.1'],
+            sourceClasses: {ReligiousSourceClass.quran},
           ),
         ],
       ),
