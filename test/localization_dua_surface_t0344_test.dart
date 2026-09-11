@@ -129,6 +129,8 @@ void main() {
       direction: TextDirection.ltr,
       title: 'Dualar',
       searchLabel: 'Dualarda ara',
+      allCategories: 'Tüm kategoriler',
+      morningCategory: 'Sabah',
       empty: 'Bu filtrelerde doğrulanmış dua bulunmuyor.',
       error:
           'Kişisel dua verileri okunamadı. Dini içerik değiştirilmedi.',
@@ -139,6 +141,8 @@ void main() {
       direction: TextDirection.ltr,
       title: 'Duas',
       searchLabel: 'Search duas',
+      allCategories: 'All categories',
+      morningCategory: 'Morning',
       empty: 'No verified dua matches these filters.',
       error:
           'Private dua data could not be read. Religious content was not changed.',
@@ -149,6 +153,8 @@ void main() {
       direction: TextDirection.rtl,
       title: 'الأدعية',
       searchLabel: 'البحث في الأدعية',
+      allCategories: 'جميع الفئات',
+      morningCategory: 'الصباح',
       empty: 'لا يوجد دعاء موثَّق يطابق هذه المرشحات.',
       error:
           'تعذّرت قراءة بيانات الأدعية الخاصة. لم يتغير المحتوى الديني.',
@@ -171,11 +177,22 @@ void main() {
       expect(find.byType(DuaLibraryPage), findsOneWidget);
       expect(find.text(localeCase.title), findsOneWidget);
       expect(find.text(localeCase.searchLabel), findsOneWidget);
+      expect(find.text(localeCase.allCategories), findsOneWidget);
       expect(find.text(localeCase.fixtureText), findsOneWidget);
       expect(
         Directionality.of(tester.element(find.byType(DuaLibraryPage))),
         localeCase.direction,
       );
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.byKey(const ValueKey('dua-category-filter')));
+      await tester.pumpAndSettle();
+      expect(find.text(localeCase.morningCategory), findsWidgets);
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text(localeCase.morningCategory).last);
+      await tester.pumpAndSettle();
+      expect(find.text(localeCase.fixtureText), findsOneWidget);
       expect(tester.takeException(), isNull);
 
       await tester.enterText(
@@ -241,6 +258,8 @@ final class _LocaleCase {
     required this.direction,
     required this.title,
     required this.searchLabel,
+    required this.allCategories,
+    required this.morningCategory,
     required this.empty,
     required this.error,
     required this.fixtureText,
@@ -250,6 +269,8 @@ final class _LocaleCase {
   final TextDirection direction;
   final String title;
   final String searchLabel;
+  final String allCategories;
+  final String morningCategory;
   final String empty;
   final String error;
   final String fixtureText;
