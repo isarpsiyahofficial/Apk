@@ -100,6 +100,70 @@ void main() {
     );
   });
 
+  test('reviewed event-scoped corroboration may provide a second family', () {
+    final result = HistoryT0337Audit.validate(
+      events: [_event(sourceIds: const ['source-a'])],
+      sourceIdentities: _independentSources,
+      corroborations: const [
+        HistoryT0337Corroboration(
+          eventId: 'event-1',
+          sourceId: 'source-b',
+          locator: 'Exact reviewed locator',
+        ),
+      ],
+    );
+
+    expect(result.eventCount, 1);
+  });
+
+  test('corroboration cannot target an event outside the current audit', () {
+    expect(
+      () => HistoryT0337Audit.validate(
+        events: [_event(sourceIds: const ['source-a'])],
+        sourceIdentities: _independentSources,
+        corroborations: const [
+          HistoryT0337Corroboration(
+            eventId: 'different-event',
+            sourceId: 'source-b',
+            locator: 'Exact reviewed locator',
+          ),
+        ],
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('corroboration requires a mapped distinct source and exact locator', () {
+    expect(
+      () => HistoryT0337Audit.validate(
+        events: [_event(sourceIds: const ['source-a'])],
+        sourceIdentities: _independentSources,
+        corroborations: const [
+          HistoryT0337Corroboration(
+            eventId: 'event-1',
+            sourceId: 'source-a',
+            locator: 'Same source cannot be counted twice',
+          ),
+        ],
+      ),
+      throwsStateError,
+    );
+    expect(
+      () => HistoryT0337Audit.validate(
+        events: [_event(sourceIds: const ['source-a'])],
+        sourceIdentities: _independentSources,
+        corroborations: const [
+          HistoryT0337Corroboration(
+            eventId: 'event-1',
+            sourceId: 'source-b',
+            locator: ' ',
+          ),
+        ],
+      ),
+      throwsStateError,
+    );
+  });
+
   test('contested event stays explicitly contested and disclosed', () {
     final result = HistoryT0337Audit.validate(
       events: [

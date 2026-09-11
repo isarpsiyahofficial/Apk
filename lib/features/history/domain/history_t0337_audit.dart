@@ -15,6 +15,24 @@ class HistoryT0337SourceIdentity {
   final String independenceFamily;
 }
 
+/// Reviewed source evidence that corroborates one exact canonical event without
+/// mutating the underlying T0220 record merely to satisfy the release gate.
+///
+/// This is intentionally event-scoped. A hadith or academic work reviewed for
+/// one event cannot silently become support for every event in the same period.
+/// The locator is retained so QA can inspect the exact bibliographic reference.
+class HistoryT0337Corroboration {
+  const HistoryT0337Corroboration({
+    required this.eventId,
+    required this.sourceId,
+    required this.locator,
+  });
+
+  final String eventId;
+  final String sourceId;
+  final String locator;
+}
+
 class HistoryT0337AuditResult {
   const HistoryT0337AuditResult({
     required this.eventCount,
@@ -33,6 +51,12 @@ class HistoryT0337AuditResult {
 /// This prevents aliases, editions, mirrors, or duplicated bibliography rows
 /// from satisfying the two-source requirement.
 ///
+/// A reviewed event-scoped corroboration may supply an additional source when
+/// the canonical T0220 record predates the review. Corroboration never rewrites
+/// user-facing historical text or dates: it only adds an exact reviewed source
+/// locator for this QA gate, and it must itself map to the explicit source-family
+/// registry.
+///
 /// A contested event must additionally keep its uncertainty disclosure in all
 /// three release languages. The base event contract already prevents unknown
 /// dates from being promoted to production; this audit preserves that behavior
@@ -43,6 +67,7 @@ class HistoryT0337Audit {
   static HistoryT0337AuditResult validate({
     required List<HistoryEventRecord> events,
     required List<HistoryT0337SourceIdentity> sourceIdentities,
+    List<HistoryT0337Corroboration> corroborations = const [],
   }) {
     if (events.isEmpty) {
       throw StateError('T0337 history audit requires at least one event.');
@@ -64,6 +89,35 @@ class HistoryT0337Audit {
       sourceFamilies[sourceId] = family;
     }
 
+    final canonicalEventIds = events.map((event) => event.id).toSet();
+    final corroborationsByEvent = <String, List<String>>{};
+    final corroborationKeys = <String>{};
+    for (final corroboration in corroborations) {
+      final eventId = corroboration.eventId.trim();
+      final sourceId = corroboration.sourceId.trim();
+      final locator = corroboration.locator.trim();
+      if (eventId.isEmpty || sourceId.isEmpty || locator.isEmpty) {
+        throw StateError('T0337 corroboration fields must be non-empty.');
+      }
+      if (!canonicalEventIds.contains(eventId)) {
+        throw StateError(
+          'T0337 corroboration targets an event outside this audit: $eventId',
+        );
+      }
+      if (!sourceFamilies.containsKey(sourceId)) {
+        throw StateError(
+          'T0337 corroboration cites an unmapped source: $sourceId',
+        );
+      }
+      final key = '$eventId::$sourceId';
+      if (!corroborationKeys.add(key)) {
+        throw StateError(
+          'T0337 duplicate corroboration for event/source: $key',
+        );
+      }
+      corroborationsByEvent.putIfAbsent(eventId, () => <String>[]).add(sourceId);
+    }
+
     var contestedEventCount = 0;
     final eventIds = <String>{};
     for (final event in events) {
@@ -71,14 +125,21 @@ class HistoryT0337Audit {
         throw StateError('T0337 event IDs must be unique: ${event.id}');
       }
 
-      if (event.sourceIds.length < 2) {
+      final supplementalIds = corroborationsByEvent[event.id] ?? const <String>[];
+      if (supplementalIds.any(event.sourceIds.contains)) {
+        throw StateError(
+          'T0337 corroboration must add a distinct source to ${event.id}.',
+        );
+      }
+      final effectiveSourceIds = <String>[...event.sourceIds, ...supplementalIds];
+      if (effectiveSourceIds.length < 2) {
         throw StateError(
           'T0337 event ${event.id} requires at least two cited sources.',
         );
       }
 
       final independentFamilies = <String>{};
-      for (final sourceId in event.sourceIds) {
+      for (final sourceId in effectiveSourceIds) {
         final family = sourceFamilies[sourceId];
         if (family == null) {
           throw StateError(

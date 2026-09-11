@@ -14,13 +14,18 @@ void main() {
       expect(earlyCaliphateT0337SourceIdentities.map((s) => s.independenceFamily).toSet(), hasLength(3));
     });
 
-    test('Muhammad partial audit includes only already double-sourced canonical events', () {
+    test('Muhammad partial audit includes only independently reviewed canonical events', () {
       final result = auditMuhammadPartialT0337();
-      expect(result.eventCount, 3);
-      expect(muhammadPartialT0337EventIds, hasLength(3));
+      expect(result.eventCount, 5);
+      expect(muhammadPartialT0337EventIds, hasLength(5));
+      expect(muhammadPartialT0337Corroborations, hasLength(2));
       expect(
         muhammadPartialT0337SourceIdentities.map((s) => s.independenceFamily).toSet(),
         equals({'primary:quran', 'primary:sahih-al-bukhari'}),
+      );
+      expect(
+        muhammadPartialT0337Corroborations.map((c) => c.locator).toSet(),
+        equals({'Sahih al-Bukhari 3992', 'Sahih al-Bukhari 4843'}),
       );
     });
 

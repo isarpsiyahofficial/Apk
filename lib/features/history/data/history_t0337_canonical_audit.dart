@@ -32,10 +32,11 @@ const earlyCaliphateT0337SourceIdentities = <HistoryT0337SourceIdentity>[
 ];
 
 /// Muhammad-period events are not blanket-promoted into the double-source
-/// audit. Only the canonical records that already cite two genuinely distinct
-/// primary source families are projected here. The remaining seerah records
-/// stay explicit T0337 gaps until a second independent source is actually
-/// reviewed and attached to that exact claim.
+/// audit. Only records with two independently reviewed primary source families
+/// are projected here. For Badr and the pledge under the tree, the canonical
+/// Quran source is paired with an event-scoped Sahih al-Bukhari corroboration
+/// whose exact locator was separately reviewed; the base T0220 record is not
+/// rewritten merely to satisfy T0337.
 const muhammadPartialT0337SourceIdentities = <HistoryT0337SourceIdentity>[
   HistoryT0337SourceIdentity(
     sourceId: 'bukhari-3-seerah-first-revelation',
@@ -61,13 +62,46 @@ const muhammadPartialT0337SourceIdentities = <HistoryT0337SourceIdentity>[
     sourceId: 'bukhari-4663-seerah-cave',
     independenceFamily: 'primary:sahih-al-bukhari',
   ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'quran-3-123-seerah',
+    independenceFamily: 'primary:quran',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-3992-t0337-badr',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'quran-48-18-seerah',
+    independenceFamily: 'primary:quran',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-4843-t0337-pledge-under-tree',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
 ];
 
 const muhammadPartialT0337EventIds = <String>{
   'history:muhammad-first-revelation',
   'history:muhammad-isra-miraj',
   'history:muhammad-hijrah-cave',
+  'history:muhammad-badr',
+  'history:muhammad-pledge-under-tree',
 };
+
+/// Exact reviewed supplemental references. These are QA evidence only: they do
+/// not copy third-party translations into the app and they do not invent dates.
+const muhammadPartialT0337Corroborations = <HistoryT0337Corroboration>[
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-badr',
+    sourceId: 'bukhari-3992-t0337-badr',
+    locator: 'Sahih al-Bukhari 3992',
+  ),
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-pledge-under-tree',
+    sourceId: 'bukhari-4843-t0337-pledge-under-tree',
+    locator: 'Sahih al-Bukhari 4843',
+  ),
+];
 
 HistoryT0337SourceIdentity _sourceIdentity(
   String sourceId,
@@ -121,15 +155,16 @@ HistoryT0337AuditResult auditEarlyCaliphateT0337() => HistoryT0337Audit.validate
       sourceIdentities: earlyCaliphateT0337SourceIdentities,
     );
 
-/// Conservative Muhammad-period projection. This intentionally audits only
-/// events whose current canonical record itself already carries two independent
-/// primary source families. No second source is synthesized from chronology,
-/// biography links, or general seerah knowledge.
+/// Conservative Muhammad-period projection. Events enter this audit only when
+/// two independent primary source families are explicitly reviewed for that
+/// exact claim. No second source is synthesized from chronology, biography
+/// links, or general seerah knowledge.
 HistoryT0337AuditResult auditMuhammadPartialT0337() => HistoryT0337Audit.validate(
       events: muhammadPeriodEventsT0220.events
           .where((event) => muhammadPartialT0337EventIds.contains(event.id))
           .toList(growable: false),
       sourceIdentities: muhammadPartialT0337SourceIdentities,
+      corroborations: muhammadPartialT0337Corroborations,
     );
 
 /// Second real projection: the T0214/T0220 Umayyad, Abbasid, al-Andalus,

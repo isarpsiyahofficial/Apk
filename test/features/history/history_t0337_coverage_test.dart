@@ -10,7 +10,7 @@ void main() {
       final report = buildHistoryT0337CoverageReport();
 
       expect(report.auditedTrackCount, 7);
-      expect(report.auditedEventCount, 31);
+      expect(report.auditedEventCount, 33);
       expect(report.canonicalEventCount, historyT0220Inventory.events.length);
       expect(
         report.auditedEventIds.length + report.missingEventIds.length,
@@ -19,7 +19,7 @@ void main() {
       expect(report.isComplete, isFalse);
     });
 
-    test('only double-sourced Muhammad events are removed from the open gap', () {
+    test('only independently reviewed Muhammad events are removed from the open gap', () {
       final report = buildHistoryT0337CoverageReport();
       final muhammadIds =
           muhammadPeriodEventsT0220.events.map((event) => event.id).toSet();
