@@ -49,6 +49,51 @@ void main() {
       expect(find.byType(AppShell), findsNothing);
     });
 
+    for (final localeCase in const <_OfflineLocaleCase>[
+      _OfflineLocaleCase(
+        locale: Locale('en'),
+        title: 'Internet connection required',
+        body:
+            'Free mode needs internet access. Connect to the internet and try again.',
+        retry: 'Try again',
+        direction: TextDirection.ltr,
+      ),
+      _OfflineLocaleCase(
+        locale: Locale('ar'),
+        title: 'يلزم الاتصال بالإنترنت',
+        body:
+            'يتطلب الوضع المجاني اتصالًا بالإنترنت. اتصل بالإنترنت ثم أعد المحاولة.',
+        retry: 'إعادة المحاولة',
+        direction: TextDirection.rtl,
+      ),
+    ]) {
+      testWidgets(
+          '${localeCase.locale.languageCode} offline FREE gate is localized and fail-closed',
+          (tester) async {
+        final client = _AppProbeClientT0262(null);
+
+        await tester.pumpWidget(
+          IslamiHayatApp(
+            locale: localeCase.locale,
+            startupAccessVerifier: verifier(client),
+            initialEntitlement: const EntitlementState.free(),
+          ),
+        );
+        await tester.pump();
+
+        expect(client.calls, 1);
+        expect(find.text(localeCase.title), findsOneWidget);
+        expect(find.text(localeCase.body), findsOneWidget);
+        expect(find.text(localeCase.retry), findsOneWidget);
+        expect(find.byType(AppShell), findsNothing);
+        expect(
+          tester.widget<Directionality>(find.byType(Directionality).first).textDirection,
+          localeCase.direction,
+        );
+        expect(tester.takeException(), isNull);
+      });
+    }
+
     testWidgets('verified online FREE mounts AppShell only after HTTP 204',
         (tester) async {
       final client = _AppProbeClientT0262(204);
@@ -85,4 +130,20 @@ void main() {
       expect(find.byType(AppShell), findsOneWidget);
     });
   });
+}
+
+final class _OfflineLocaleCase {
+  const _OfflineLocaleCase({
+    required this.locale,
+    required this.title,
+    required this.body,
+    required this.retry,
+    required this.direction,
+  });
+
+  final Locale locale;
+  final String title;
+  final String body;
+  final String retry;
+  final TextDirection direction;
 }
