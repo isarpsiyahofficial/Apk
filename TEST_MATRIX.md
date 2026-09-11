@@ -70,28 +70,28 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 
 ## D. FREE / PRO / reklam / billing
 
-| ID | Senaryo | Durum |
-|---|---|---|
-| M01 | FREE online kullanım | TODO |
-| M02 | FREE cold-start offline block | TODO |
-| M03 | FREE online -> bağlantıyı kes -> gate | TODO |
-| M04 | PRO online | TODO |
-| M05 | PRO offline core erişim | TODO |
-| M06 | PRO zero ad UI | TODO |
-| M07 | PRO zero ad network request | TODO |
-| M08 | FREE reklam kutsal metni bölmüyor | TODO |
-| M09 | Rewarded success | TODO |
-| M10 | Rewarded cancel | TODO |
-| M11 | Rewarded fail/no-fill | TODO |
-| M12 | Reward yalnız tamamlanınca | TODO |
-| M13 | Purchase success | TODO |
-| M14 | Purchase cancel | TODO |
-| M15 | Purchase pending | TODO |
-| M16 | Restore | TODO |
-| M17 | Reinstall restore | TODO |
-| M18 | Offline cached entitlement | TODO |
-| M19 | Refund/revoke online refresh | TODO |
-| M20 | PRO geçişinde loaded ad dispose | TODO |
+| ID | Senaryo | Durum | Kanıt |
+|---|---|---|---|
+| M01 | FREE online kullanım | TODO | |
+| M02 | FREE cold-start offline block | PASS | `app_startup_access_t0262_test.dart`: TR/EN/AR offline FREE durumda `AppShell` mount edilmez; locale copy + AR RTL; online 204 pozitif kontrol |
+| M03 | FREE online -> bağlantıyı kes -> gate | PASS | `free_connection_drop_t0263_test.dart`: TR/EN/AR online→offline transition, route fail-closed, localized SnackBar, recovery ve yeniden reachability kontrolü |
+| M04 | PRO online | TODO | |
+| M05 | PRO offline core erişim | TODO | policy + cached startup kanıtı var; tüm core yüzeylerde app-level navigation crawl henüz tamamlanmadı |
+| M06 | PRO zero ad UI | PASS | `pro_zero_ad_network_ui_t0280_test.dart`: verified + cached PRO banner/ad widget render etmez |
+| M07 | PRO zero ad network request | PASS | `pro_zero_ad_network_ui_t0280_test.dart`: verified + cached PRO SDK init ve tüm ad-format/surface network dispatch çağrılarını sıfırda tutar |
+| M08 | FREE reklam kutsal metni bölmüyor | TODO | |
+| M09 | Rewarded success | TODO | |
+| M10 | Rewarded cancel | TODO | |
+| M11 | Rewarded fail/no-fill | TODO | |
+| M12 | Reward yalnız tamamlanınca | TODO | |
+| M13 | Purchase success | TODO | |
+| M14 | Purchase cancel | TODO | |
+| M15 | Purchase pending | TODO | |
+| M16 | Restore | TODO | |
+| M17 | Reinstall restore | TODO | |
+| M18 | Offline cached entitlement | TODO | |
+| M19 | Refund/revoke online refresh | TODO | |
+| M20 | PRO geçişinde loaded ad dispose | PASS | `pro_zero_ad_network_ui_t0280_test.dart`: FREE→PRO geçişi banner/interstitial/rewarded handle'larını dispose eder; geç gelen rewarded da anında dispose edilir |
 
 ## E. 100 Canva görsel / paylaşım
 
