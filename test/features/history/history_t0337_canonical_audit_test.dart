@@ -7,7 +7,7 @@ void main() {
       final result = auditEarlyCaliphateT0337();
 
       expect(result.eventCount, 5);
-      expect(result.contestedEventCount, 1);
+      expect(result.contestedEventCount, 2);
     });
 
     test('early-caliphate registry records three explicit underlying works', () {
@@ -33,6 +33,29 @@ void main() {
             .map((source) => source.independenceFamily)
             .toSet(),
         hasLength(10),
+      );
+    });
+
+    test('real T0215/T0220 high-medieval events pass work-family independence gate', () {
+      final result = auditHighMedievalT0215T0337();
+
+      expect(result.eventCount, 5);
+    });
+
+    test('T0215 registry preserves every reviewed work family', () {
+      expect(
+        highMedievalT0215T0337SourceIdentities.length,
+        highMedievalT0215T0337SourceIdentities
+            .map((source) => source.sourceId)
+            .toSet()
+            .length,
+      );
+      expect(
+        highMedievalT0215T0337SourceIdentities.length,
+        highMedievalT0215T0337SourceIdentities
+            .map((source) => source.independenceFamily)
+            .toSet()
+            .length,
       );
     });
   });
