@@ -52,6 +52,18 @@ final class ProphetSemanticCoverageReportT0336 {
 ProphetSemanticCoverageReportT0336 buildCanonicalProphetCoverageReportT0336({
   Iterable<ProphetSemanticClaim> claims = canonicalProphetSemanticEvidenceT0336,
 }) {
+  final claimList = List<ProphetSemanticClaim>.unmodifiable(claims);
+  final semanticAudit = const ProphetSemanticOwnershipQa().audit(
+    claims: claimList,
+    requireFull25Coverage: false,
+  );
+  if (!semanticAudit.isValid) {
+    throw StateError(
+      'T0336 coverage received invalid semantic evidence: '
+      '${semanticAudit.errors.join(' | ')}',
+    );
+  }
+
   final canonicalIds = canonicalQuranNamedProphets
       .map((identity) => identity.canonicalId)
       .toSet();
@@ -65,15 +77,7 @@ ProphetSemanticCoverageReportT0336 buildCanonicalProphetCoverageReportT0336({
     for (final id in canonicalIds) id: <ProphetSemanticDimension>{},
   };
 
-  for (final claim in claims) {
-    if (!canonicalIds.contains(claim.biographyProphetId) ||
-        !canonicalIds.contains(claim.subjectProphetId)) {
-      throw StateError(
-        'T0336 coverage received non-canonical semantic ownership: '
-        '${claim.biographyProphetId}/${claim.subjectProphetId}',
-      );
-    }
-
+  for (final claim in claimList) {
     if (claim.evidenceState != ProphetSemanticEvidenceState.verified ||
         claim.contextReference ||
         claim.subjectProphetId != claim.biographyProphetId) {
