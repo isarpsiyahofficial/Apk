@@ -13,9 +13,7 @@ import 'regional_events_t0220.dart';
 import 'regional_islamic_histories.dart';
 
 /// Explicit work-level source identities for the T0213/T0220 early-caliphate
-/// dataset. These values are deliberately not derived from source IDs at
-/// runtime: an alias/reprint/mirror added later must be reviewed and assigned
-/// to the same underlying work family before it can count toward T0337.
+/// dataset. Alias/reprint/mirror rows must keep the same underlying family.
 const earlyCaliphateT0337SourceIdentities = <HistoryT0337SourceIdentity>[
   HistoryT0337SourceIdentity(
     sourceId: 'lapidus_caliphate_to_750',
@@ -31,11 +29,42 @@ const earlyCaliphateT0337SourceIdentities = <HistoryT0337SourceIdentity>[
   ),
 ];
 
-/// Muhammad-period events are not blanket-promoted into the double-source
-/// audit. Only records with two independently reviewed primary source families
-/// are projected here. Event-scoped corroborations retain exact locators and do
-/// not rewrite the base T0220 record merely to satisfy T0337.
+/// Muhammad-period events are admitted only when the exact event has two
+/// reviewed source/work families. Canonical records stay unchanged; later
+/// corroboration is event-scoped and locator-pinned.
 const muhammadPartialT0337SourceIdentities = <HistoryT0337SourceIdentity>[
+  HistoryT0337SourceIdentity(
+    sourceId: 'muslim-1162e-seerah-birth',
+    independenceFamily: 'primary:sahih-muslim',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'abudawud-2426-t0337-birth',
+    independenceFamily: 'primary:sunan-abi-dawud',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-2262-seerah-youth',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'ibnmajah-2149-t0337-youth',
+    independenceFamily: 'primary:sunan-ibn-majah',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-3817-seerah-marriage',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'muslim-2436-t0337-marriage-khadija',
+    independenceFamily: 'primary:sahih-muslim',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-3-seerah-hira',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'muslim-160a-t0337-hira',
+    independenceFamily: 'primary:sahih-muslim',
+  ),
   HistoryT0337SourceIdentity(
     sourceId: 'bukhari-3-seerah-first-revelation',
     independenceFamily: 'primary:sahih-al-bukhari',
@@ -43,6 +72,38 @@ const muhammadPartialT0337SourceIdentities = <HistoryT0337SourceIdentity>[
   HistoryT0337SourceIdentity(
     sourceId: 'quran-96-1-5-seerah',
     independenceFamily: 'primary:quran',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'quran-26-214-seerah',
+    independenceFamily: 'primary:quran',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-4770-t0337-nearest-kindred',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-3876-seerah-abyssinia',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'muslim-2502-2503-t0337-abyssinia',
+    independenceFamily: 'primary:sahih-muslim',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-3058-seerah-boycott',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'muslim-1314b-t0337-boycott',
+    independenceFamily: 'primary:sahih-muslim',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-3231-seerah-taif',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'muslim-1795-t0337-taif',
+    independenceFamily: 'primary:sahih-muslim',
   ),
   HistoryT0337SourceIdentity(
     sourceId: 'quran-17-1-seerah',
@@ -77,14 +138,6 @@ const muhammadPartialT0337SourceIdentities = <HistoryT0337SourceIdentity>[
     independenceFamily: 'primary:sahih-al-bukhari',
   ),
   HistoryT0337SourceIdentity(
-    sourceId: 'quran-26-214-seerah',
-    independenceFamily: 'primary:quran',
-  ),
-  HistoryT0337SourceIdentity(
-    sourceId: 'bukhari-4770-t0337-nearest-kindred',
-    independenceFamily: 'primary:sahih-al-bukhari',
-  ),
-  HistoryT0337SourceIdentity(
     sourceId: 'bukhari-2711-2712-seerah-hudaybiyyah',
     independenceFamily: 'primary:sahih-al-bukhari',
   ),
@@ -108,23 +161,74 @@ const muhammadPartialT0337SourceIdentities = <HistoryT0337SourceIdentity>[
     sourceId: 'muslim-1218b-t0337-farewell',
     independenceFamily: 'primary:sahih-muslim',
   ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'bukhari-4449-seerah-death',
+    independenceFamily: 'primary:sahih-al-bukhari',
+  ),
+  HistoryT0337SourceIdentity(
+    sourceId: 'muslim-2443-t0337-death',
+    independenceFamily: 'primary:sahih-muslim',
+  ),
 ];
 
 const muhammadPartialT0337EventIds = <String>{
+  'history:muhammad-birth-monday',
+  'history:muhammad-youth-shepherding',
+  'history:muhammad-marriage-khadija',
+  'history:muhammad-hira-retreat',
   'history:muhammad-first-revelation',
+  'history:muhammad-meccan-nearest-kindred',
+  'history:muhammad-abyssinia-migrations',
+  'history:muhammad-boycott-banu-hashim',
+  'history:muhammad-taif-rejection',
   'history:muhammad-isra-miraj',
   'history:muhammad-hijrah-cave',
   'history:muhammad-badr',
   'history:muhammad-pledge-under-tree',
-  'history:muhammad-meccan-nearest-kindred',
   'history:muhammad-hudaybiyyah-treaty',
   'history:muhammad-conquest-mecca',
   'history:muhammad-farewell-pilgrimage',
+  'history:muhammad-death',
 };
 
-/// Exact reviewed supplemental references. These are QA evidence only: they do
-/// not copy third-party translations into the app and they do not invent dates.
+/// Reviewed supplemental references. Translation text is not bundled; only the
+/// bibliographic locator is used by this QA gate.
 const muhammadPartialT0337Corroborations = <HistoryT0337Corroboration>[
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-birth-monday',
+    sourceId: 'abudawud-2426-t0337-birth',
+    locator: 'Sunan Abi Dawud 2426',
+  ),
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-youth-shepherding',
+    sourceId: 'ibnmajah-2149-t0337-youth',
+    locator: 'Sunan Ibn Majah 2149',
+  ),
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-marriage-khadija',
+    sourceId: 'muslim-2436-t0337-marriage-khadija',
+    locator: 'Sahih Muslim 2436',
+  ),
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-hira-retreat',
+    sourceId: 'muslim-160a-t0337-hira',
+    locator: 'Sahih Muslim 160a',
+  ),
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-abyssinia-migrations',
+    sourceId: 'muslim-2502-2503-t0337-abyssinia',
+    locator: 'Sahih Muslim 2502-2503',
+  ),
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-boycott-banu-hashim',
+    sourceId: 'muslim-1314b-t0337-boycott',
+    locator: 'Sahih Muslim 1314b',
+  ),
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-taif-rejection',
+    sourceId: 'muslim-1795-t0337-taif',
+    locator: 'Sahih Muslim 1795',
+  ),
   HistoryT0337Corroboration(
     eventId: 'history:muhammad-badr',
     sourceId: 'bukhari-3992-t0337-badr',
@@ -155,6 +259,11 @@ const muhammadPartialT0337Corroborations = <HistoryT0337Corroboration>[
     sourceId: 'muslim-1218b-t0337-farewell',
     locator: 'Sahih Muslim 1218b',
   ),
+  HistoryT0337Corroboration(
+    eventId: 'history:muhammad-death',
+    sourceId: 'muslim-2443-t0337-death',
+    locator: 'Sahih Muslim 2443',
+  ),
 ];
 
 HistoryT0337SourceIdentity _sourceIdentity(
@@ -166,53 +275,31 @@ HistoryT0337SourceIdentity _sourceIdentity(
       independenceFamily: 'work:$workFamilyId',
     );
 
-/// T0214 already stores an explicit `workFamilyId` beside every academic
-/// locator. Reuse that reviewed metadata rather than inferring independence
-/// from citation text, publisher, URL, or source ID spelling.
 final medievalT0214T0337SourceIdentities = medievalHistoryT0214Sources
     .map((source) => _sourceIdentity(source.locator.id, source.workFamilyId))
     .toList(growable: false);
 
-/// T0215 follows the same reviewed work-family contract. Keeping a separate
-/// projection makes the T0337 migration explicit per historical track while
-/// preserving the underlying work identity when bibliography aliases or new
-/// locators are introduced later.
 final highMedievalT0215T0337SourceIdentities = highMedievalHistoryT0215Sources
     .map((source) => _sourceIdentity(source.locator.id, source.workFamilyId))
     .toList(growable: false);
 
-/// T0216 likewise owns explicit work-family metadata for the Ottoman, Safavid
-/// and Mughal research tracks. Do not infer independence from different
-/// citation strings; project only the reviewed work-family IDs.
 final earlyModernT0216T0337SourceIdentities = earlyModernEmpiresT0216Sources
     .map((source) => _sourceIdentity(source.locator.id, source.workFamilyId))
     .toList(growable: false);
 
-/// T0217 regional history intentionally reuses some underlying works across
-/// different regions. The work-family ID, not the bibliography-row count,
-/// remains the independence unit so repeated chapters from one book cannot be
-/// miscounted as separate corroborating works.
 final regionalT0217T0337SourceIdentities = regionalIslamicHistoriesT0217Sources
     .map((source) => _sourceIdentity(source.locator.id, source.workFamilyId))
     .toList(growable: false);
 
-/// T0218 modern/global history is mapped through the same explicit work-family
-/// contract. This prevents different chapters or locators from a single work
-/// family from accidentally satisfying the two-source requirement.
 final modernGlobalT0218T0337SourceIdentities = modernGlobalHistoryT0218Sources
     .map((source) => _sourceIdentity(source.locator.id, source.workFamilyId))
     .toList(growable: false);
 
-/// First real canonical projection wired to the T0337 gate.
 HistoryT0337AuditResult auditEarlyCaliphateT0337() => HistoryT0337Audit.validate(
       events: earlyCaliphateT0220Dataset.events,
       sourceIdentities: earlyCaliphateT0337SourceIdentities,
     );
 
-/// Conservative Muhammad-period projection. Events enter this audit only when
-/// two independent primary source families are explicitly reviewed for that
-/// exact claim. No second source is synthesized from chronology, biography
-/// links, or general seerah knowledge.
 HistoryT0337AuditResult auditMuhammadPartialT0337() => HistoryT0337Audit.validate(
       events: muhammadPeriodEventsT0220.events
           .where((event) => muhammadPartialT0337EventIds.contains(event.id))
@@ -221,39 +308,28 @@ HistoryT0337AuditResult auditMuhammadPartialT0337() => HistoryT0337Audit.validat
       corroborations: muhammadPartialT0337Corroborations,
     );
 
-/// Second real projection: the T0214/T0220 Umayyad, Abbasid, al-Andalus,
-/// Fatimid and regional-dynasty records. Their work-family metadata is already
-/// part of the canonical dataset contract, so aliases cannot silently create a
-/// second source family.
 HistoryT0337AuditResult auditMedievalT0214T0337() => HistoryT0337Audit.validate(
       events: medievalHistoryT0214EventDatasetT0220.events,
       sourceIdentities: medievalT0214T0337SourceIdentities,
     );
 
-/// Third real projection: the T0215/T0220 Seljuq, Crusades, Ayyubid, Mongol
-/// and Mamluk records.
 HistoryT0337AuditResult auditHighMedievalT0215T0337() =>
     HistoryT0337Audit.validate(
       events: highMedievalHistoryT0215EventDatasetT0220.events,
       sourceIdentities: highMedievalT0215T0337SourceIdentities,
     );
 
-/// Fourth real projection: the T0216/T0220 Ottoman, Safavid and Mughal records.
 HistoryT0337AuditResult auditEarlyModernT0216T0337() =>
     HistoryT0337Audit.validate(
       events: earlyModernEventsT0220.events,
       sourceIdentities: earlyModernT0216T0337SourceIdentities,
     );
 
-/// Fifth real projection: the T0217/T0220 Africa, Central Asia, Southeast Asia,
-/// Indian subcontinent and Europe regional-history records.
 HistoryT0337AuditResult auditRegionalT0217T0337() => HistoryT0337Audit.validate(
       events: regionalEventsT0220.events,
       sourceIdentities: regionalT0217T0337SourceIdentities,
     );
 
-/// Sixth real projection: T0218/T0220 colonial, decolonization, twentieth-
-/// century and contemporary-global history records.
 HistoryT0337AuditResult auditModernGlobalT0218T0337() =>
     HistoryT0337Audit.validate(
       events: modernGlobalEventsT0220.events,
@@ -261,6 +337,4 @@ HistoryT0337AuditResult auditModernGlobalT0218T0337() =>
     );
 
 /// T0337 remains incomplete until every event-bearing history track is mapped
-/// to an explicit work-level registry and the aggregate inventory is audited.
-/// Keeping per-track gates visible prevents a partial migration from being
-/// mistaken for a release PASS.
+/// and aggregate coverage has no missing canonical event IDs.
