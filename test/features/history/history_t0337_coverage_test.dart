@@ -10,7 +10,7 @@ void main() {
       final report = buildHistoryT0337CoverageReport();
 
       expect(report.auditedTrackCount, 7);
-      expect(report.auditedEventCount, 37);
+      expect(report.auditedEventCount, 45);
       expect(report.canonicalEventCount, historyT0220Inventory.events.length);
       expect(
         report.auditedEventIds.length + report.missingEventIds.length,
@@ -25,9 +25,16 @@ void main() {
           muhammadPeriodEventsT0220.events.map((event) => event.id).toSet();
       final expectedMissing = muhammadIds.difference(muhammadPartialT0337EventIds);
 
-      expect(muhammadPartialT0337EventIds, hasLength(9));
+      expect(muhammadPartialT0337EventIds, hasLength(17));
+      expect(
+        expectedMissing,
+        equals({
+          'history:muhammad-aqaba-pledge',
+          'history:muhammad-medina-arrival',
+        }),
+      );
       expect(report.missingEventIds, equals(expectedMissing));
-      expect(report.missingEventIds, isNotEmpty);
+      expect(report.missingEventIds, hasLength(2));
       expect(report.auditedEventIds, containsAll(muhammadPartialT0337EventIds));
       expect(() => report.requireComplete(), throwsStateError);
     });
