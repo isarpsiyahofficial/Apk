@@ -41,12 +41,16 @@ Bu hatlarda bağımsızlık source-ID sayısından değil explicit temel eser/so
 
 Canonical siyer kaydında zaten Kur’an + Sahih al-Bukhari iki ayrı primary family taşıyan üç olay korunur: ilk vahiy, İsrâ/Mi‘rac ve Hicret/mağara.
 
-Bu turda iki ek exact-event corroboration güvenilir bibliyografik locator ile doğrulandı:
+Exact-event corroboration ile doğrulanan altı ek olay şunlardır:
 
 - `history:muhammad-badr` → canonical Kur’an 3:123 + **Sahih al-Bukhari 3992**,
-- `history:muhammad-pledge-under-tree` → canonical Kur’an 48:18 + **Sahih al-Bukhari 4843**.
+- `history:muhammad-pledge-under-tree` → canonical Kur’an 48:18 + **Sahih al-Bukhari 4843**,
+- `history:muhammad-meccan-nearest-kindred` → canonical Kur’an 26:214 + **Sahih al-Bukhari 4770**,
+- `history:muhammad-hudaybiyyah-treaty` → canonical Sahih al-Bukhari 2711–2712 + **Sahih Muslim 1783a**,
+- `history:muhammad-conquest-mecca` → canonical Sahih al-Bukhari 4280 + **Sahih Muslim 1780c**,
+- `history:muhammad-farewell-pilgrimage` → canonical Sahih al-Bukhari 1739 + **Sahih Muslim 1218b**.
 
-Bu iki hadisin üçüncü taraf çeviri metni uygulamaya kopyalanmaz; T0337 yalnız bibliyografik locator ve bağımsız source-family kanıtını kullanır. Kaynakta bulunmayan tarih veya ayrıntı üretilmez.
+Bu hadislerin üçüncü taraf çeviri metinleri uygulamaya kopyalanmaz; T0337 yalnız bibliyografik locator ve bağımsız source-family kanıtını kullanır. Kaynakta bulunmayan tarih veya ayrıntı üretilmez.
 
 ## Aggregate coverage kapısı
 
@@ -58,7 +62,7 @@ Bu iki hadisin üçüncü taraf çeviri metni uygulamaya kopyalanmaz; T0337 yaln
 - canonical event audit dışı kalırsa açık `missingEventIds` olarak raporlanır,
 - `requireComplete()` yalnız missing set boş olduğunda geçer.
 
-Mevcut durumda yedi audited projection toplam **33 canonical olayı** bağımsız kaynak ailesi kapısından geçirir. Muhammed dönemi alt kümesi 3 olaydan 5 olaya çıkarılmıştır; geri kalan Muhammed dönemi olayları exact ikinci bağımsız kaynak doğrulanmadan açık kalır.
+Mevcut durumda yedi audited projection toplam **37 canonical olayı** bağımsız kaynak ailesi kapısından geçirir. Muhammed dönemi alt kümesi 9 olaya çıkarılmıştır; geri kalan Muhammed dönemi olayları exact ikinci bağımsız kaynak doğrulanmadan açık kalır.
 
 ## Final durumu
 
