@@ -40,6 +40,15 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> pumpNavigationFrame(WidgetTester tester) async {
+    // Some production surfaces intentionally keep animating (for example
+    // progress/loading affordances). A global pumpAndSettle would therefore
+    // wait for an idle frame that never arrives. Navigation QA only needs a
+    // bounded transition frame plus one follow-up layout frame.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+  }
+
   Finder navigationLabel(String label) => find.descendant(
         of: find.byType(NavigationBar),
         matching: find.text(label),
@@ -68,12 +77,12 @@ void main() {
       expect(tester.takeException(), isNull);
 
       await tester.tap(find.byKey(const ValueKey('nav-quran')));
-      await tester.pumpAndSettle();
+      await pumpNavigationFrame(tester);
       expect(find.byType(QuranHubPage), findsOneWidget);
       expect(tester.takeException(), isNull);
 
       await tester.tap(find.byKey(const ValueKey('nav-discover')));
-      await tester.pumpAndSettle();
+      await pumpNavigationFrame(tester);
       expect(find.byType(DiscoverPage), findsOneWidget);
       expect(find.text(localeCase.revelationJourneyTitle), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -81,7 +90,7 @@ void main() {
       // T0344 deep-surface evidence begins with a real nested route rather
       // than counting the Discover card as coverage by visibility alone.
       await tester.tap(find.byKey(const ValueKey('discover-revelation-journey')));
-      await tester.pumpAndSettle();
+      await pumpNavigationFrame(tester);
       expect(find.byType(RevelationJourneyPage), findsOneWidget);
       expect(
         tester.widget<Directionality>(find.byType(Directionality).first).textDirection,
@@ -89,16 +98,16 @@ void main() {
       );
       expect(tester.takeException(), isNull);
       await tester.pageBack();
-      await tester.pumpAndSettle();
+      await pumpNavigationFrame(tester);
       expect(find.byType(DiscoverPage), findsOneWidget);
 
       await tester.tap(find.byKey(const ValueKey('nav-dhikr')));
-      await tester.pumpAndSettle();
+      await pumpNavigationFrame(tester);
       expect(find.byType(DhikrHubPage), findsOneWidget);
       expect(tester.takeException(), isNull);
 
       await tester.tap(find.byKey(const ValueKey('nav-profile')));
-      await tester.pumpAndSettle();
+      await pumpNavigationFrame(tester);
       expect(find.byType(ProfilePage), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
@@ -154,7 +163,7 @@ void main() {
       'today',
     ]) {
       await tester.tap(find.byKey(ValueKey('nav-$destination')).first);
-      await tester.pumpAndSettle();
+      await pumpNavigationFrame(tester);
       expect(tester.takeException(), isNull);
     }
   });
