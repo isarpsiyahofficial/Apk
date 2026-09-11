@@ -10,7 +10,7 @@ void main() {
       final report = buildHistoryT0337CoverageReport();
 
       expect(report.auditedTrackCount, 7);
-      expect(report.auditedEventCount, 33);
+      expect(report.auditedEventCount, 37);
       expect(report.canonicalEventCount, historyT0220Inventory.events.length);
       expect(
         report.auditedEventIds.length + report.missingEventIds.length,
@@ -25,6 +25,7 @@ void main() {
           muhammadPeriodEventsT0220.events.map((event) => event.id).toSet();
       final expectedMissing = muhammadIds.difference(muhammadPartialT0337EventIds);
 
+      expect(muhammadPartialT0337EventIds, hasLength(9));
       expect(report.missingEventIds, equals(expectedMissing));
       expect(report.missingEventIds, isNotEmpty);
       expect(report.auditedEventIds, containsAll(muhammadPartialT0337EventIds));
