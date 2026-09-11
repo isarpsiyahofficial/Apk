@@ -50,9 +50,11 @@ final class ProphetSemanticCoverageReportT0336 {
 }
 
 ProphetSemanticCoverageReportT0336 buildCanonicalProphetCoverageReportT0336({
-  Iterable<ProphetSemanticClaim> claims = canonicalProphetSemanticEvidenceT0336,
+  Iterable<ProphetSemanticClaim>? claims,
 }) {
-  final claimList = List<ProphetSemanticClaim>.unmodifiable(claims);
+  final claimList = List<ProphetSemanticClaim>.unmodifiable(
+    claims ?? canonicalProphetSemanticEvidenceT0336,
+  );
   final semanticAudit = const ProphetSemanticOwnershipQa().audit(
     claims: claimList,
     requireFull25Coverage: false,
