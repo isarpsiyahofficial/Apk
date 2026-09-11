@@ -97,9 +97,14 @@ void main() {
         localeCase.direction,
       );
       expect(tester.takeException(), isNull);
-      await tester.pageBack();
+
+      // Pop the exact Material route that was just opened. WidgetTester.pageBack
+      // asserts a framework-specific back-button implementation before it pops,
+      // which can create a false negative even though this route is active.
+      Navigator.of(tester.element(find.byType(RevelationJourneyPage))).pop();
       await pumpNavigationFrame(tester);
       expect(find.byType(DiscoverPage), findsOneWidget);
+      expect(find.byType(RevelationJourneyPage), findsNothing);
 
       await tester.tap(find.byKey(const ValueKey('nav-dhikr')));
       await pumpNavigationFrame(tester);
