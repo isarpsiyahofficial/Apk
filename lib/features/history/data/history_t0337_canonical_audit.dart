@@ -5,7 +5,11 @@ import 'high_medieval_events_t0220.dart';
 import 'high_medieval_seljuq_crusades_mamluks.dart';
 import 'medieval_caliphates_events_t0220.dart';
 import 'medieval_caliphates_regional_dynasties.dart';
+import 'modern_global_events_t0220.dart';
+import 'modern_global_islamic_history.dart';
 import 'rashidun_first_fitna_events_t0220.dart';
+import 'regional_events_t0220.dart';
+import 'regional_islamic_histories.dart';
 
 /// Explicit work-level source identities for the T0213/T0220 early-caliphate
 /// dataset. These values are deliberately not derived from source IDs at
@@ -26,16 +30,20 @@ const earlyCaliphateT0337SourceIdentities = <HistoryT0337SourceIdentity>[
   ),
 ];
 
+HistoryT0337SourceIdentity _sourceIdentity(
+  String sourceId,
+  String workFamilyId,
+) =>
+    HistoryT0337SourceIdentity(
+      sourceId: sourceId,
+      independenceFamily: 'work:$workFamilyId',
+    );
+
 /// T0214 already stores an explicit `workFamilyId` beside every academic
 /// locator. Reuse that reviewed metadata rather than inferring independence
 /// from citation text, publisher, URL, or source ID spelling.
 final medievalT0214T0337SourceIdentities = medievalHistoryT0214Sources
-    .map(
-      (source) => HistoryT0337SourceIdentity(
-        sourceId: source.locator.id,
-        independenceFamily: 'work:${source.workFamilyId}',
-      ),
-    )
+    .map((source) => _sourceIdentity(source.locator.id, source.workFamilyId))
     .toList(growable: false);
 
 /// T0215 follows the same reviewed work-family contract. Keeping a separate
@@ -43,24 +51,29 @@ final medievalT0214T0337SourceIdentities = medievalHistoryT0214Sources
 /// preserving the underlying work identity when bibliography aliases or new
 /// locators are introduced later.
 final highMedievalT0215T0337SourceIdentities = highMedievalHistoryT0215Sources
-    .map(
-      (source) => HistoryT0337SourceIdentity(
-        sourceId: source.locator.id,
-        independenceFamily: 'work:${source.workFamilyId}',
-      ),
-    )
+    .map((source) => _sourceIdentity(source.locator.id, source.workFamilyId))
     .toList(growable: false);
 
 /// T0216 likewise owns explicit work-family metadata for the Ottoman, Safavid
 /// and Mughal research tracks. Do not infer independence from different
 /// citation strings; project only the reviewed work-family IDs.
 final earlyModernT0216T0337SourceIdentities = earlyModernEmpiresT0216Sources
-    .map(
-      (source) => HistoryT0337SourceIdentity(
-        sourceId: source.locator.id,
-        independenceFamily: 'work:${source.workFamilyId}',
-      ),
-    )
+    .map((source) => _sourceIdentity(source.locator.id, source.workFamilyId))
+    .toList(growable: false);
+
+/// T0217 regional history intentionally reuses some underlying works across
+/// different regions. The work-family ID, not the bibliography-row count,
+/// remains the independence unit so repeated chapters from one book cannot be
+/// miscounted as separate corroborating works.
+final regionalT0217T0337SourceIdentities = regionalIslamicHistoriesT0217Sources
+    .map((source) => _sourceIdentity(source.locator.id, source.workFamilyId))
+    .toList(growable: false);
+
+/// T0218 modern/global history is mapped through the same explicit work-family
+/// contract. This prevents different chapters or locators from a single work
+/// family from accidentally satisfying the two-source requirement.
+final modernGlobalT0218T0337SourceIdentities = modernGlobalHistoryT0218Sources
+    .map((source) => _sourceIdentity(source.locator.id, source.workFamilyId))
     .toList(growable: false);
 
 /// First real canonical projection wired to the T0337 gate.
@@ -79,9 +92,7 @@ HistoryT0337AuditResult auditMedievalT0214T0337() => HistoryT0337Audit.validate(
     );
 
 /// Third real projection: the T0215/T0220 Seljuq, Crusades, Ayyubid, Mongol
-/// and Mamluk records. Their source registry already requires two independent
-/// academic work families for every record; T0337 now re-validates that rule
-/// at the shared release-gate layer rather than trusting only the source model.
+/// and Mamluk records.
 HistoryT0337AuditResult auditHighMedievalT0215T0337() =>
     HistoryT0337Audit.validate(
       events: highMedievalHistoryT0215EventDatasetT0220.events,
@@ -89,13 +100,25 @@ HistoryT0337AuditResult auditHighMedievalT0215T0337() =>
     );
 
 /// Fourth real projection: the T0216/T0220 Ottoman, Safavid and Mughal records.
-/// This keeps the same work-family independence rule active across a further
-/// period boundary and prevents edition/alias duplication from satisfying the
-/// two-source release requirement.
 HistoryT0337AuditResult auditEarlyModernT0216T0337() =>
     HistoryT0337Audit.validate(
       events: earlyModernEventsT0220.events,
       sourceIdentities: earlyModernT0216T0337SourceIdentities,
+    );
+
+/// Fifth real projection: the T0217/T0220 Africa, Central Asia, Southeast Asia,
+/// Indian subcontinent and Europe regional-history records.
+HistoryT0337AuditResult auditRegionalT0217T0337() => HistoryT0337Audit.validate(
+      events: regionalEventsT0220.events,
+      sourceIdentities: regionalT0217T0337SourceIdentities,
+    );
+
+/// Sixth real projection: T0218/T0220 colonial, decolonization, twentieth-
+/// century and contemporary-global history records.
+HistoryT0337AuditResult auditModernGlobalT0218T0337() =>
+    HistoryT0337Audit.validate(
+      events: modernGlobalEventsT0220.events,
+      sourceIdentities: modernGlobalT0218T0337SourceIdentities,
     );
 
 /// T0337 remains incomplete until every event-bearing history track is mapped
