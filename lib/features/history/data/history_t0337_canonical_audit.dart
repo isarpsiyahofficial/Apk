@@ -1,4 +1,6 @@
 import '../domain/history_t0337_audit.dart';
+import 'early_modern_events_t0220.dart';
+import 'early_modern_ottoman_safavid_mughal.dart';
 import 'high_medieval_events_t0220.dart';
 import 'high_medieval_seljuq_crusades_mamluks.dart';
 import 'medieval_caliphates_events_t0220.dart';
@@ -49,6 +51,18 @@ final highMedievalT0215T0337SourceIdentities = highMedievalHistoryT0215Sources
     )
     .toList(growable: false);
 
+/// T0216 likewise owns explicit work-family metadata for the Ottoman, Safavid
+/// and Mughal research tracks. Do not infer independence from different
+/// citation strings; project only the reviewed work-family IDs.
+final earlyModernT0216T0337SourceIdentities = earlyModernEmpiresT0216Sources
+    .map(
+      (source) => HistoryT0337SourceIdentity(
+        sourceId: source.locator.id,
+        independenceFamily: 'work:${source.workFamilyId}',
+      ),
+    )
+    .toList(growable: false);
+
 /// First real canonical projection wired to the T0337 gate.
 HistoryT0337AuditResult auditEarlyCaliphateT0337() => HistoryT0337Audit.validate(
       events: earlyCaliphateT0220Dataset.events,
@@ -72,6 +86,16 @@ HistoryT0337AuditResult auditHighMedievalT0215T0337() =>
     HistoryT0337Audit.validate(
       events: highMedievalHistoryT0215EventDatasetT0220.events,
       sourceIdentities: highMedievalT0215T0337SourceIdentities,
+    );
+
+/// Fourth real projection: the T0216/T0220 Ottoman, Safavid and Mughal records.
+/// This keeps the same work-family independence rule active across a further
+/// period boundary and prevents edition/alias duplication from satisfying the
+/// two-source release requirement.
+HistoryT0337AuditResult auditEarlyModernT0216T0337() =>
+    HistoryT0337Audit.validate(
+      events: earlyModernEventsT0220.events,
+      sourceIdentities: earlyModernT0216T0337SourceIdentities,
     );
 
 /// T0337 remains incomplete until every event-bearing history track is mapped
