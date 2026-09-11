@@ -6,37 +6,27 @@ import 'package:islami_hayat/features/history/data/muhammad_period_events_t0220.
 
 void main() {
   group('T0337 aggregate canonical coverage', () {
-    test('audited tracks are measured against the exact T0220 inventory', () {
+    test('audited tracks cover the exact T0220 inventory', () {
       final report = buildHistoryT0337CoverageReport();
 
       expect(report.auditedTrackCount, 7);
-      expect(report.auditedEventCount, 45);
+      expect(report.auditedEventCount, 47);
       expect(report.canonicalEventCount, historyT0220Inventory.events.length);
-      expect(
-        report.auditedEventIds.length + report.missingEventIds.length,
-        report.canonicalEventCount,
-      );
-      expect(report.isComplete, isFalse);
+      expect(report.auditedEventCount, report.canonicalEventCount);
+      expect(report.missingEventIds, isEmpty);
+      expect(report.isComplete, isTrue);
+      expect(report.requireComplete, returnsNormally);
     });
 
-    test('only independently reviewed Muhammad events are removed from the open gap', () {
+    test('all Muhammad events are independently reviewed', () {
       final report = buildHistoryT0337CoverageReport();
       final muhammadIds =
           muhammadPeriodEventsT0220.events.map((event) => event.id).toSet();
-      final expectedMissing = muhammadIds.difference(muhammadPartialT0337EventIds);
 
-      expect(muhammadPartialT0337EventIds, hasLength(17));
-      expect(
-        expectedMissing,
-        equals({
-          'history:muhammad-aqaba-pledge',
-          'history:muhammad-medina-arrival',
-        }),
-      );
-      expect(report.missingEventIds, equals(expectedMissing));
-      expect(report.missingEventIds, hasLength(2));
-      expect(report.auditedEventIds, containsAll(muhammadPartialT0337EventIds));
-      expect(() => report.requireComplete(), throwsStateError);
+      expect(muhammadPartialT0337EventIds, hasLength(19));
+      expect(muhammadPartialT0337EventIds, equals(muhammadIds));
+      expect(report.missingEventIds, isEmpty);
+      expect(report.auditedEventIds, containsAll(muhammadIds));
     });
 
     test('duplicate coverage across audited tracks fails closed', () {
@@ -64,18 +54,17 @@ void main() {
       );
     });
 
-    test('complete exact coverage can pass the generic release assertion', () {
+    test('incomplete exact coverage still fails the release assertion', () {
       final report = HistoryT0337CoverageReport.validated(
         canonicalEventIds: const ['a', 'b'],
         auditedTrackEventIds: const [
           ['a'],
-          ['b'],
         ],
       );
 
-      expect(report.isComplete, isTrue);
-      expect(report.missingEventIds, isEmpty);
-      expect(report.requireComplete, returnsNormally);
+      expect(report.isComplete, isFalse);
+      expect(report.missingEventIds, equals({'b'}));
+      expect(() => report.requireComplete(), throwsStateError);
     });
   });
 }
