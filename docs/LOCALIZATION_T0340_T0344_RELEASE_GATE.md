@@ -90,6 +90,20 @@ Aynı cold-start testleri cached PRO kullanıcının reachability request gönde
 
 `test/features/premium/premium_value_page_t0279_test.dart` gerçek `PremiumValuePage` yüzeyinde TR telefon, EN 320px + 1.6× büyük font ve AR 1200×800 RTL senaryolarını doğrular. Test yalnız uygulanmış V1 faydalarının görünmesini, uygulanmamış tema/widget vaatlerinin sızmamasını, dini doğruluğun paywall arkasına konmamasını ve overflow/exception bulunmamasını kontrol eder. Bu kanıt Premium sunum yüzeyini ilerletir; satın alma/restore/pending/revoke ve reklam lifecycle kapılarının yerine geçmez.
 
+### 2.5. Notification settings — ARB + fail-closed state coverage
+
+`NotificationSettingsPage` kullanıcıya görünen başlık, açıklama, dört kategori adı/açıklaması, saat etiketi, V1 dipnotu, storage hata metni ve runtime permission hata metnini artık yalnız `AppLocalizations` üzerinden TR/EN/AR ARB anahtarlarından alır. Önceki `_NotificationStrings.forLocale` manuel locale-switch katmanı kaldırılmıştır.
+
+`test/features/notifications/notification_settings_page_t0290_test.dart` mevcut T0290/T0291 davranış kapılarına ek olarak T0344 için:
+
+- TR/EN/AR gerçek loading durumunda doğru başlık ve LTR/RTL yönünü,
+- TR/EN/AR storage load failure durumunda locale'e ait error copy ile dört kategorinin fail-closed OFF kalmasını,
+- TR/EN/AR runtime permission denial durumunda locale'e ait permission error copy, sıfır persist ve ilgili switch'in OFF kalmasını,
+- AR telefon RTL davranışını,
+- EN 320×640 + 1.6× büyük fontta scroll/overflow güvenliğini
+
+doğrular. Böylece Notification yüzeyinin localization + loading/storage/permission failure-state alt kapsamı otomatik kanıtlıdır. Bu kanıt notification scheduling/reboot/deep-link fonksiyon testlerinin yerine geçmez; onlar kendi T0290–T0296 kapılarında ayrıca korunur.
+
 ### 3. T0344 full-surface crawl — AÇIK
 
 Aşağıdaki alanların her biri TR/EN/AR için happy path ile birlikte loading / empty / error / permission / offline / monetization failure state'leri üzerinde gerçek widget/integration kanıtı olmadan T0340–T0344 final PASS değildir:
@@ -119,7 +133,7 @@ Aşağıdaki alanların her biri TR/EN/AR için happy path ile birlikte loading 
 - TR/EN modunda Arapça asıl metnin yalnız explicit ürün kararına göre gösterilmesi,
 - rewarded success/cancel/no-fill metinleri,
 - billing success/cancel/pending/restore/revoke metinleri,
-- notification/widget/share failure copy,
+- widget/share failure copy,
 - native TR/EN/AR editorial pass.
 
 ## PASS kuralı
