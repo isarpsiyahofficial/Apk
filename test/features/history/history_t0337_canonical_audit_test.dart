@@ -11,21 +11,63 @@ void main() {
 
     test('early-caliphate registry records three explicit underlying works', () {
       expect(earlyCaliphateT0337SourceIdentities, hasLength(3));
-      expect(earlyCaliphateT0337SourceIdentities.map((s) => s.independenceFamily).toSet(), hasLength(3));
+      expect(
+        earlyCaliphateT0337SourceIdentities
+            .map((s) => s.independenceFamily)
+            .toSet(),
+        hasLength(3),
+      );
     });
 
     test('Muhammad partial audit includes only independently reviewed canonical events', () {
       final result = auditMuhammadPartialT0337();
-      expect(result.eventCount, 5);
-      expect(muhammadPartialT0337EventIds, hasLength(5));
-      expect(muhammadPartialT0337Corroborations, hasLength(2));
+      expect(result.eventCount, 9);
+      expect(muhammadPartialT0337EventIds, hasLength(9));
+      expect(muhammadPartialT0337Corroborations, hasLength(6));
       expect(
-        muhammadPartialT0337SourceIdentities.map((s) => s.independenceFamily).toSet(),
-        equals({'primary:quran', 'primary:sahih-al-bukhari'}),
+        muhammadPartialT0337SourceIdentities
+            .map((s) => s.independenceFamily)
+            .toSet(),
+        equals({
+          'primary:quran',
+          'primary:sahih-al-bukhari',
+          'primary:sahih-muslim',
+        }),
       );
       expect(
         muhammadPartialT0337Corroborations.map((c) => c.locator).toSet(),
-        equals({'Sahih al-Bukhari 3992', 'Sahih al-Bukhari 4843'}),
+        equals({
+          'Sahih al-Bukhari 3992',
+          'Sahih al-Bukhari 4843',
+          'Sahih al-Bukhari 4770',
+          'Sahih Muslim 1783a',
+          'Sahih Muslim 1780c',
+          'Sahih Muslim 1218b',
+        }),
+      );
+    });
+
+    test('new corroborations stay scoped to their exact Muhammad events', () {
+      final eventToLocator = {
+        for (final evidence in muhammadPartialT0337Corroborations)
+          evidence.eventId: evidence.locator,
+      };
+
+      expect(
+        eventToLocator['history:muhammad-meccan-nearest-kindred'],
+        'Sahih al-Bukhari 4770',
+      );
+      expect(
+        eventToLocator['history:muhammad-hudaybiyyah-treaty'],
+        'Sahih Muslim 1783a',
+      );
+      expect(
+        eventToLocator['history:muhammad-conquest-mecca'],
+        'Sahih Muslim 1780c',
+      );
+      expect(
+        eventToLocator['history:muhammad-farewell-pilgrimage'],
+        'Sahih Muslim 1218b',
       );
     });
 
@@ -35,7 +77,10 @@ void main() {
 
     test('T0214 registry preserves every reviewed source identity', () {
       expect(medievalT0214T0337SourceIdentities, hasLength(10));
-      expect(medievalT0214T0337SourceIdentities.map((s) => s.sourceId).toSet(), hasLength(medievalT0214T0337SourceIdentities.length));
+      expect(
+        medievalT0214T0337SourceIdentities.map((s) => s.sourceId).toSet(),
+        hasLength(medievalT0214T0337SourceIdentities.length),
+      );
     });
 
     test('real T0215/T0220 high-medieval events pass work-family independence gate', () {
@@ -51,8 +96,18 @@ void main() {
     });
 
     test('T0217 keeps source IDs unique while allowing work-family reuse', () {
-      expect(regionalT0217T0337SourceIdentities.map((s) => s.sourceId).toSet(), hasLength(regionalT0217T0337SourceIdentities.length));
-      expect(regionalT0217T0337SourceIdentities.map((s) => s.independenceFamily).toSet().length < regionalT0217T0337SourceIdentities.length, isTrue);
+      expect(
+        regionalT0217T0337SourceIdentities.map((s) => s.sourceId).toSet(),
+        hasLength(regionalT0217T0337SourceIdentities.length),
+      );
+      expect(
+        regionalT0217T0337SourceIdentities
+                .map((s) => s.independenceFamily)
+                .toSet()
+                .length <
+            regionalT0217T0337SourceIdentities.length,
+        isTrue,
+      );
     });
 
     test('real T0218/T0220 modern-global events pass work-family independence gate', () {
