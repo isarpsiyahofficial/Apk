@@ -21,8 +21,29 @@ Bu belge `SPECIFICATION.md` 583–584/608 ve `TODO.md` T0337 için uygulanan fai
 - duplicate event ID,
 - contested event'in ayrı olarak sayılması ve üç dil caveat sözleşmesini koruması.
 
-İlk gerçek canonical bağlantı, T0213/T0220 erken hilafet ve İlk Fitne datasetidir. Lapidus, Madelung ve Hinds bibliyografya kayıtları ayrı temel eser aileleri olarak açıkça tanımlanır; beş gerçek olay audit'ten geçer ve İlk Fitne contested kayıt olarak kalır.
+Gerçek canonical bağlantılar artık şu altı tarih hattını kapsar:
+
+- T0213/T0220 erken hilafet + İlk Fitne,
+- T0214/T0220 medieval caliphates/regional dynasties,
+- T0215/T0220 high-medieval Seljuq/Crusades/Ayyubid/Mongol/Mamluk,
+- T0216/T0220 Ottoman/Safavid/Mughal,
+- T0217/T0220 regional Islamic histories,
+- T0218/T0220 modern/global Islamic history.
+
+Bu hatlarda bağımsızlık source-ID sayısından değil explicit temel eser/work-family kimliğinden hesaplanır. Aynı eserin farklı bölüm veya locator kayıtları ikinci bağımsız kaynak olarak sayılamaz.
+
+## Aggregate coverage kapısı
+
+`HistoryT0337CoverageReport` altı gerçek track audit'ini önce çalıştırır, ardından audit edilmiş event ID birleşimini exact `historyT0220Inventory` ile karşılaştırır.
+
+- canonical envanter dışında sentetik event coverage'a girerse FAIL,
+- bir event iki track tarafından coverage'a sayılırsa FAIL,
+- per-track audit event count ile gerçek canonical event projection ayrışırsa FAIL,
+- canonical event audit dışı kalırsa açık `missingEventIds` olarak raporlanır,
+- `requireComplete()` yalnız missing set boş olduğunda geçer.
+
+Mevcut canonical durumda altı audited track toplam **28 olayı** work-family bağımsızlık kapısından geçirir. Aggregate test, geri kalan canonical açığın tam olarak `muhammadPeriodEventsT0220` olayları olduğunu doğrular. Bu olaylar yalnız kapıyı yeşile çevirmek için yapay ikinci akademik kaynakla veya kaynakta bulunmayan takvim tarihiyle zenginleştirilmeyecektir.
 
 ## Final durumu
 
-Bu belge veya ilk canonical bağlantı T0337/D12'yi tek başına PASS yapmaz. Muhammed dönemi, sonraki hilafetler, yüksek ortaçağ, erken modern, bölgesel ve modern-global event track'lerinin tamamı aynı bağımsızlık registry'sine açık biçimde bağlanmadan `TODO.md` T0337 ve `TEST_MATRIX.md` D12 açık kalmalıdır.
+T0337/D12 henüz PASS değildir. Muhammed dönemi event track'i iki bağımsız kaynak ailesi standardına kaynakları bozmayacak şekilde bağlanmalı; ardından aggregate `missingEventIds` boş olmalı ve `requireComplete()` geçmelidir. Bu gerçekleşmeden `TODO.md` T0337 ve `TEST_MATRIX.md` D12 açık kalmalıdır.
