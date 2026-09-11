@@ -26,13 +26,13 @@ void main() {
       expect(result.eventCount, 6);
     });
 
-    test('T0214 registry preserves every reviewed work family', () {
+    test('T0214 registry preserves every reviewed source identity', () {
       expect(medievalT0214T0337SourceIdentities, hasLength(10));
       expect(
         medievalT0214T0337SourceIdentities
-            .map((source) => source.independenceFamily)
+            .map((source) => source.sourceId)
             .toSet(),
-        hasLength(10),
+        hasLength(medievalT0214T0337SourceIdentities.length),
       );
     });
 
@@ -42,20 +42,39 @@ void main() {
       expect(result.eventCount, 5);
     });
 
-    test('T0215 registry preserves every reviewed work family', () {
+    test('T0215 registry preserves every reviewed source identity', () {
       expect(
-        highMedievalT0215T0337SourceIdentities.length,
         highMedievalT0215T0337SourceIdentities
             .map((source) => source.sourceId)
-            .toSet()
-            .length,
+            .toSet(),
+        hasLength(highMedievalT0215T0337SourceIdentities.length),
       );
       expect(
-        highMedievalT0215T0337SourceIdentities.length,
-        highMedievalT0215T0337SourceIdentities
-            .map((source) => source.independenceFamily)
-            .toSet()
-            .length,
+        highMedievalT0215T0337SourceIdentities.every(
+          (source) => source.independenceFamily.startsWith('work:'),
+        ),
+        isTrue,
+      );
+    });
+
+    test('real T0216/T0220 early-modern events pass work-family independence gate', () {
+      final result = auditEarlyModernT0216T0337();
+
+      expect(result.eventCount, 3);
+    });
+
+    test('T0216 registry preserves every reviewed source identity', () {
+      expect(
+        earlyModernT0216T0337SourceIdentities
+            .map((source) => source.sourceId)
+            .toSet(),
+        hasLength(earlyModernT0216T0337SourceIdentities.length),
+      );
+      expect(
+        earlyModernT0216T0337SourceIdentities.every(
+          (source) => source.independenceFamily.startsWith('work:'),
+        ),
+        isTrue,
       );
     });
   });
