@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/features/notifications/domain/notification_preferences.dart';
@@ -28,6 +30,16 @@ final class _FakeStore implements NotificationPreferencesStore {
     if (failSave) throw StateError('save failed');
     value = preferences;
   }
+}
+
+final class _DelayedStore implements NotificationPreferencesStore {
+  final completer = Completer<NotificationPreferences>();
+
+  @override
+  Future<NotificationPreferences> load() => completer.future;
+
+  @override
+  Future<void> save(NotificationPreferences preferences) async {}
 }
 
 Widget _app({
@@ -255,5 +267,112 @@ void main() {
 
     expect(footnote, findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('T0344 loading state is localized and preserves RTL/LTR', (
+    tester,
+  ) async {
+    final cases = <(Locale, String, TextDirection)>[
+      (const Locale('tr'), 'Bildirimler', TextDirection.ltr),
+      (const Locale('en'), 'Notifications', TextDirection.ltr),
+      (const Locale('ar'), 'الإشعارات', TextDirection.rtl),
+    ];
+
+    for (final entry in cases) {
+      final store = _DelayedStore();
+      await tester.pumpWidget(_app(locale: entry.$1, store: store));
+      await tester.pump();
+
+      expect(find.text(entry.$2), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(
+        Directionality.of(tester.element(find.text(entry.$2))),
+        entry.$3,
+      );
+      expect(tester.takeException(), isNull);
+
+      store.completer.complete(const NotificationPreferences());
+      await tester.pumpAndSettle();
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+    }
+  });
+
+  testWidgets('T0344 storage failure copy is localized in TR EN AR', (
+    tester,
+  ) async {
+    final cases = <(Locale, String)>[
+      (
+        const Locale('tr'),
+        'Bildirim ayarları kaydedilemedi. Kaydedilemeyen kategoriler kapalı kaldı.',
+      ),
+      (
+        const Locale('en'),
+        'Notification settings could not be saved. Unsaved categories remain off.',
+      ),
+      (
+        const Locale('ar'),
+        'تعذّر حفظ إعدادات الإشعارات. بقيت الفئات غير المحفوظة مغلقة.',
+      ),
+    ];
+
+    for (final entry in cases) {
+      await tester.pumpWidget(
+        _app(locale: entry.$1, store: _FakeStore(failLoad: true)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(entry.$2), findsOneWidget);
+      final values = tester
+          .widgetList<SwitchListTile>(find.byType(SwitchListTile))
+          .map((tile) => tile.value)
+          .toList();
+      expect(values, [false, false, false, false]);
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets('T0344 permission denial copy is localized in TR EN AR', (
+    tester,
+  ) async {
+    final cases = <(Locale, String, String)>[
+      (
+        const Locale('tr'),
+        'Günün Ayeti',
+        'Bildirim izni verilmedi. Bu hatırlatma kapalı kaldı.',
+      ),
+      (
+        const Locale('en'),
+        'Verse of the day',
+        'Notification permission was not granted. This reminder stayed off.',
+      ),
+      (
+        const Locale('ar'),
+        'آية اليوم',
+        'لم يتم منح إذن الإشعارات. بقي هذا النوع من التذكيرات مغلقًا.',
+      ),
+    ];
+
+    for (final entry in cases) {
+      final store = _FakeStore();
+      await tester.pumpWidget(
+        _app(
+          locale: entry.$1,
+          store: store,
+          onEnableRequested: (_) async => false,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(entry.$2));
+      await tester.pumpAndSettle();
+
+      expect(find.text(entry.$3), findsOneWidget);
+      expect(store.saveCount, 0);
+      expect(
+        tester.widget<SwitchListTile>(find.byType(SwitchListTile).first).value,
+        isFalse,
+      );
+      expect(tester.takeException(), isNull);
+    }
   });
 }
