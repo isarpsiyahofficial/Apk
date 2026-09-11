@@ -91,4 +91,22 @@ void main() {
       isTrue,
     );
   });
+
+  test('duplicate prophet/dimension slot fails closed', () {
+    final canonical = canonicalProphetSemanticGapManifestT0336;
+    final duplicated = <ProphetSemanticGapSlotT0336>[
+      ...canonical.slots,
+      canonical.slotFor('adam', ProphetSemanticDimension.identity),
+    ];
+
+    final result = auditProphetSemanticReleaseGateT0336(
+      manifest: ProphetSemanticGapManifestT0336(slots: duplicated),
+    );
+
+    expect(result.isValid, isFalse);
+    expect(
+      result.errors.any((error) => error.contains('duplicate prophet/dimension slots')),
+      isTrue,
+    );
+  });
 }
