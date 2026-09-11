@@ -4,6 +4,7 @@ import 'history_t0220_inventory.dart';
 import 'history_t0337_canonical_audit.dart';
 import 'medieval_caliphates_events_t0220.dart';
 import 'modern_global_events_t0220.dart';
+import 'muhammad_period_events_t0220.dart';
 import 'rashidun_first_fitna_events_t0220.dart';
 import 'regional_events_t0220.dart';
 
@@ -81,15 +82,10 @@ class HistoryT0337CoverageReport {
   }
 }
 
-/// Aggregate T0337 coverage over the canonical T0220 event inventory.
-///
-/// Every track included here is first executed through its real work-family
-/// independence audit. The report then compares the union of audited event IDs
-/// with the exact canonical inventory. Missing events remain explicit and keep
-/// D12/T0337 open; they are never silently treated as covered.
 HistoryT0337CoverageReport buildHistoryT0337CoverageReport() {
   final auditedResults = [
     auditEarlyCaliphateT0337(),
+    auditMuhammadPartialT0337(),
     auditMedievalT0214T0337(),
     auditHighMedievalT0215T0337(),
     auditEarlyModernT0216T0337(),
@@ -99,6 +95,9 @@ HistoryT0337CoverageReport buildHistoryT0337CoverageReport() {
 
   final auditedTracks = <Iterable<String>>[
     earlyCaliphateT0220Dataset.events.map((event) => event.id),
+    muhammadPeriodEventsT0220.events
+        .where((event) => muhammadPartialT0337EventIds.contains(event.id))
+        .map((event) => event.id),
     medievalHistoryT0214EventDatasetT0220.events.map((event) => event.id),
     highMedievalHistoryT0215EventDatasetT0220.events.map((event) => event.id),
     earlyModernEventsT0220.events.map((event) => event.id),
