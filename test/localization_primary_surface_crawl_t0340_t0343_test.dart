@@ -36,6 +36,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Finder navigationLabel(String label) => find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text(label),
+      );
+
   for (final entry in localeCases.entries) {
     testWidgets('${entry.key} primary five-surface crawl is localized and safe',
         (tester) async {
@@ -48,8 +53,11 @@ void main() {
       expect(directionality.textDirection, localeCase.direction);
       expect(find.byType(NavigationBar), findsOneWidget);
 
+      // Scope navigation-copy assertions to the NavigationBar. Some localized
+      // labels (for example Discover/Dhikr) legitimately appear again as
+      // Today-page quick actions and must not be treated as duplicate leaks.
       for (final label in localeCase.labels) {
-        expect(find.text(label), findsOneWidget);
+        expect(navigationLabel(label), findsOneWidget);
       }
 
       expect(find.byType(TodayPage), findsOneWidget);
@@ -83,7 +91,7 @@ void main() {
       await pumpPhone(tester, active.value.locale);
 
       for (final expected in active.value.labels) {
-        expect(find.text(expected), findsOneWidget);
+        expect(navigationLabel(expected), findsOneWidget);
       }
 
       for (final other in localeCases.entries) {
@@ -91,7 +99,7 @@ void main() {
         for (final forbidden in other.value.labels) {
           if (active.value.labels.contains(forbidden)) continue;
           expect(
-            find.text(forbidden),
+            navigationLabel(forbidden),
             findsNothing,
             reason:
                 '${active.key} navigation leaked ${other.key} label: $forbidden',
