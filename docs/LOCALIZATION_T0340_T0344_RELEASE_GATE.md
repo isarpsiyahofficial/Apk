@@ -51,6 +51,23 @@ Keşfet içindeki `RevelationJourneyPage` için kullanıcıya görünen başlık
 
 kanıtlarını üretir. Bu nested-route kanıtı T0340–T0344 kapsamını ilerletir ancak full-surface crawl tamamlanmadan satırları tek başına PASS yapmaz.
 
+### 2.2. Dua deep-surface state coverage — otomatik kapı
+
+`test/localization_dua_surface_t0344_test.dart` Dua kütüphanesini doğrudan gerçek widget yüzeyi olarak TR/EN/AR locale'lerinde açar. Test fixture dini içeriği yalnız `published` durumunda ve typed `Quran` source reference ile üretir; test herhangi bir üretim dini metnini değiştirmez.
+
+Kapı üç locale için:
+
+- doğru LTR/RTL yönünü,
+- locale'e ait başlık ve arama metnini,
+- locale'e ait doğrulanmış fixture metnini,
+- arama sonucu bulunmadığında locale'e ait `empty` durumunu,
+- private user-state okuması hata verdiğinde locale'e ait güvenli `error` metnini,
+- exception/overflow bulunmamasını
+
+doğrular. Ek AR testi private-state future'ı bilinçli olarak bekleterek gerçek `loading` durumunun RTL kalmasını ve içerik hazır olmadan arama yüzeyinin sızmamasını kontrol eder.
+
+Bu kanıt T0344 içindeki **Dua + loading/empty/error** alt kapsamını ilerletir. Dua'nın Keşfet içindeki production navigation girişi ve diğer T0344 yüzeyleri tamamlanmadan T0340–T0344 PASS değildir.
+
 ### 3. T0344 full-surface crawl — AÇIK
 
 Aşağıdaki alanların her biri TR/EN/AR için happy path ile birlikte loading / empty / error / permission / offline / monetization failure state'leri üzerinde gerçek widget/integration kanıtı olmadan T0340–T0344 final PASS değildir:
