@@ -50,6 +50,9 @@ Widget _app({
   Future<bool> Function(NotificationCategory category)? onEnableRequested,
 }) {
   return MaterialApp(
+    key: ValueKey<(String, NotificationPreferencesStore?)>(
+      (locale.languageCode, store),
+    ),
     locale: locale,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
