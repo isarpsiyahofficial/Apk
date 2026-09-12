@@ -50,9 +50,10 @@ Widget _app({
   Future<bool> Function(NotificationCategory category)? onEnableRequested,
 }) {
   return MaterialApp(
-    key: ValueKey<(String, NotificationPreferencesStore?)>(
-      (locale.languageCode, store),
-    ),
+    // Every pump in this test suite represents a fresh app/page mount. Using a
+    // fresh key prevents StatefulElement reuse from leaking a previous locale,
+    // store or loading/error state into the next TR/EN/AR failure-path case.
+    key: UniqueKey(),
     locale: locale,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
