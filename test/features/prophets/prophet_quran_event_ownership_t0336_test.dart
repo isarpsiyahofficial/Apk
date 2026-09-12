@@ -6,14 +6,29 @@ import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_q
 void main() {
   const qa = ProphetSemanticOwnershipQa();
 
-  test('Quran-explicit event anchors preserve owner + exact source locator', () {
+  test('Quran-explicit event anchors preserve owner + exact source locators', () {
     expect(canonicalProphetQuranEventEvidenceT0336, hasLength(4));
 
-    final expected = <String, (String, String)>{
-      'yusuf_well_and_egypt': ('yusuf', 'tanzil-uthmani-v1.1:q12:15'),
-      'ibrahim_fire_trial': ('ibrahim', 'tanzil-uthmani-v1.1:q21:68-69'),
-      'musa_exodus_pharaoh': ('musa', 'tanzil-uthmani-v1.1:q26:63'),
-      'yunus_fish_episode': ('yunus', 'tanzil-uthmani-v1.1:q37:142'),
+    final expected = <String, (String, List<String>)>{
+      'yusuf_well_and_egypt': (
+        'yusuf',
+        [
+          'tanzil-uthmani-v1.1:q12:15',
+          'tanzil-uthmani-v1.1:q12:21',
+        ],
+      ),
+      'ibrahim_fire_trial': (
+        'ibrahim',
+        ['tanzil-uthmani-v1.1:q21:68-69'],
+      ),
+      'musa_exodus_pharaoh': (
+        'musa',
+        ['tanzil-uthmani-v1.1:q26:60-66'],
+      ),
+      'yunus_fish_episode': (
+        'yunus',
+        ['tanzil-uthmani-v1.1:q37:139-142'],
+      ),
     };
 
     for (final claim in canonicalProphetQuranEventEvidenceT0336) {
@@ -25,7 +40,7 @@ void main() {
       expect(claim.dimension, ProphetSemanticDimension.event);
       expect(claim.contextReference, isFalse);
       expect(claim.evidenceState, ProphetSemanticEvidenceState.verified);
-      expect(claim.sourceIds, [expectedPair.$2]);
+      expect(claim.sourceIds, expectedPair.$2);
       expect(claim.sourceClasses, {ReligiousSourceClass.quran});
     }
 
