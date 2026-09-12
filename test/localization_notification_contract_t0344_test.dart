@@ -12,12 +12,30 @@ void main() {
     expect(en.notificationTitle, 'Notifications');
     expect(ar.notificationTitle, 'الإشعارات');
 
-    expect(tr.notificationStorageError, contains('kapalı kaldı'));
-    expect(en.notificationStorageError, contains('remain off'));
-    expect(ar.notificationStorageError, contains('مغلقة'));
+    expect(
+      tr.notificationStorageError,
+      'Bildirim ayarları kaydedilemedi. Kaydedilemeyen kategoriler kapalı kaldı.',
+    );
+    expect(
+      en.notificationStorageError,
+      'Notification settings could not be saved. Unsaved categories remain off.',
+    );
+    expect(
+      ar.notificationStorageError,
+      'تعذّر حفظ إعدادات الإشعارات. بقيت الفئات غير المحفوظة مغلقة.',
+    );
 
-    expect(tr.notificationPermissionError, contains('izin verilmedi'));
-    expect(en.notificationPermissionError, contains('was not granted'));
-    expect(ar.notificationPermissionError, contains('إذن الإشعارات'));
+    expect(
+      tr.notificationPermissionError,
+      'Bildirim izni verilmedi. Bu hatırlatma kapalı kaldı.',
+    );
+    expect(
+      en.notificationPermissionError,
+      'Notification permission was not granted. This reminder stayed off.',
+    );
+    expect(
+      ar.notificationPermissionError,
+      'لم يتم منح إذن الإشعارات. بقي هذا النوع من التذكيرات مغلقًا.',
+    );
   });
 }
