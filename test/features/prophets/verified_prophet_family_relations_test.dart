@@ -8,7 +8,7 @@ void main() {
     test('seed graph is valid and every source is explicit Quran evidence', () {
       expect(verifiedProphetFamilyGraphIsValid, isTrue);
       expect(verifiedProphetFamilyChronologyIsConsistent, isTrue);
-      expect(verifiedProphetKinshipFacts, isNotEmpty);
+      expect(verifiedProphetKinshipFacts, hasLength(7));
 
       for (final fact in verifiedProphetKinshipFacts) {
         expect(fact.isValid, isTrue);
@@ -61,9 +61,38 @@ void main() {
       expect(ismail, hasLength(1));
       expect(ismail.single.relatedPersonId, 'ibrahim');
       expect(ismail.single.type, ProphetRelationType.parent);
-      expect(ishaq, hasLength(1));
-      expect(ishaq.single.relatedPersonId, 'ibrahim');
-      expect(ishaq.single.type, ProphetRelationType.parent);
+
+      expect(ishaq, hasLength(2));
+      expect(
+        ishaq.map((relation) => relation.relatedPersonId).toSet(),
+        {'ibrahim', 'yakub'},
+      );
+      expect(
+        ishaq.singleWhere((relation) => relation.relatedPersonId == 'ibrahim').type,
+        ProphetRelationType.parent,
+      );
+      expect(
+        ishaq.singleWhere((relation) => relation.relatedPersonId == 'yakub').type,
+        ProphetRelationType.child,
+      );
+    });
+
+    test('Ishaq to Yakub to Yusuf chain stays directional and reciprocal', () {
+      final yakub = verifiedFamilyRelationsFor('yakub');
+      final yusuf = verifiedFamilyRelationsFor('yusuf');
+
+      expect(yakub, hasLength(2));
+      expect(
+        yakub.singleWhere((relation) => relation.relatedPersonId == 'ishaq').type,
+        ProphetRelationType.parent,
+      );
+      expect(
+        yakub.singleWhere((relation) => relation.relatedPersonId == 'yusuf').type,
+        ProphetRelationType.child,
+      );
+      expect(yusuf, hasLength(1));
+      expect(yusuf.single.relatedPersonId, 'yakub');
+      expect(yusuf.single.type, ProphetRelationType.parent);
     });
 
     test('Dawud and Sulayman project as reciprocal parent-child relations', () {
@@ -78,13 +107,17 @@ void main() {
       expect(sulayman.single.type, ProphetRelationType.parent);
     });
 
-    test('shared or traditional genealogy is never inferred automatically', () {
+    test('reviewed direct relations do not manufacture transitive ancestry', () {
       expect(
-        verifiedFamilyRelationsFor('ishaq')
+        verifiedFamilyRelationsFor('ibrahim')
             .where((relation) => relation.relatedPersonId == 'yakub'),
         isEmpty,
       );
-      expect(verifiedFamilyRelationsFor('yakub'), isEmpty);
+      expect(
+        verifiedFamilyRelationsFor('ishaq')
+            .where((relation) => relation.relatedPersonId == 'yusuf'),
+        isEmpty,
+      );
     });
 
     test('unknown prophet id fails closed instead of returning guessed data', () {
