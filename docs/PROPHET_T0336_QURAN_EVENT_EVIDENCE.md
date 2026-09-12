@@ -6,10 +6,10 @@ Bu kayıtlar yalnız ilgili olayın hangi peygambere ait olduğunu doğrular. **
 
 | Event key | Biyografi/özne | Kur’an referansı | Canonical source locator | Semantik sınır |
 |---|---|---|---|---|
-| `yusuf_well_and_egypt` | Yûsuf | Yûsuf 12:15 | `tanzil-uthmani-v1.1:q12:15` | Kuyu olayı Yûsuf’a aittir; Mısır kronolojisi/tarihi bu satırdan çıkarılmaz. |
+| `yusuf_well_and_egypt` | Yûsuf | Yûsuf 12:15 ve 12:21 | `tanzil-uthmani-v1.1:q12:15` + `tanzil-uthmani-v1.1:q12:21` | 12:15 kuyu olayını, 12:21 Mısır bağlamını sabitler; bundan dönem veya kesin tarih çıkarılmaz. |
 | `ibrahim_fire_trial` | İbrâhim | Enbiyâ 21:68–69 | `tanzil-uthmani-v1.1:q21:68-69` | Ateş olayı İbrâhim’e aittir; yer/tarih infer edilmez. |
-| `musa_exodus_pharaoh` | Mûsâ | Şuarâ 26:63 | `tanzil-uthmani-v1.1:q26:63` | Denizin yarılması olayında özne Mûsâ’dır; exact civil date infer edilmez. |
-| `yunus_fish_episode` | Yûnus | Sâffât 37:139–142, event locator 37:142 | `tanzil-uthmani-v1.1:q37:142` | Balık tarafından yutulma Yûnus’a aittir; süre/coğrafya gibi ayrıntılar bu satırdan çıkarılmaz. |
+| `musa_exodus_pharaoh` | Mûsâ | Şuarâ 26:60–66 | `tanzil-uthmani-v1.1:q26:60-66` | Firavun takibi ile denizin yarılması aynı bağlamda tutulur; exact civil date infer edilmez. |
+| `yunus_fish_episode` | Yûnus | Sâffât 37:139–142 | `tanzil-uthmani-v1.1:q37:139-142` | İsimlendirilmiş Yûnus pasajı ile balık olayı birlikte tutulur; süre/coğrafya gibi ayrıntılar bu satırdan çıkarılmaz. |
 
 ## Fail-closed davranışı
 
