@@ -62,11 +62,13 @@ final class ProphetSemanticOwnershipQa {
 
   static const Map<String, String> _exclusiveEventOwners = {
     'adam_tree_and_descent': 'adam',
+    'idris_raised_to_high_station': 'idris',
     'nuh_ark_and_flood': 'nuh',
     'hud_aad_warning_and_judgment': 'hud',
     'salih_she_camel_trial': 'salih',
     'ibrahim_fire_trial': 'ibrahim',
     'lut_people_warning_and_rescue': 'lut',
+    'ismail_prayer_and_zakat_instruction': 'ismail',
     'yusuf_well_and_egypt': 'yusuf',
     'ayyub_affliction_and_relief': 'ayyub',
     'shuayb_madyan_measure_weight': 'shuayb',
@@ -76,6 +78,7 @@ final class ProphetSemanticOwnershipQa {
     'ilyas_baal_warning': 'ilyas',
     'yunus_fish_episode': 'yunus',
     'zakariya_prayer_yahya_sign': 'zakariya',
+    'yahya_named_and_given_wisdom': 'yahya',
     'isa_infant_speech': 'isa',
     'muhammad_hijra_to_medina': 'muhammad',
     'muhammad_first_revelation_hira': 'muhammad',
