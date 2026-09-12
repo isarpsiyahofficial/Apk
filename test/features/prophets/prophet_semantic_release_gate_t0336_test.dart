@@ -70,6 +70,36 @@ void main() {
     );
   });
 
+  test('silent historical date gap fails closed', () {
+    final canonical = canonicalProphetSemanticGapManifestT0336;
+    final tamperedSlots = canonical.slots.map((slot) {
+      if (slot.prophetId == 'adam' &&
+          slot.dimension == ProphetSemanticDimension.historicalDate) {
+        return const ProphetSemanticGapSlotT0336(
+          prophetId: 'adam',
+          dimension: ProphetSemanticDimension.historicalDate,
+          state: ProphetSemanticSlotStateT0336.missingVerifiedEvidence,
+          verifiedClaimKeys: [],
+          sourceIds: [],
+        );
+      }
+      return slot;
+    }).toList(growable: false);
+
+    final result = auditProphetSemanticReleaseGateT0336(
+      manifest: ProphetSemanticGapManifestT0336(slots: tamperedSlots),
+    );
+
+    expect(result.isValid, isFalse);
+    expect(
+      result.errors.any(
+        (error) => error.contains('adam/historicalDate') &&
+            error.contains('explicitly unknown or pendingReview'),
+      ),
+      isTrue,
+    );
+  });
+
   test('missing manifest slot fails closed instead of shrinking the matrix', () {
     final canonical = canonicalProphetSemanticGapManifestT0336;
     final shortened = canonical.slots
