@@ -66,8 +66,8 @@ void main() {
   test('T0336 lineage slice is derived only from reviewed genealogy facts', () {
     expect(verifiedProphetFamilyGraphIsValid, isTrue);
     expect(verifiedProphetFamilyChronologyIsConsistent, isTrue);
-    expect(verifiedProphetKinshipFacts, hasLength(5));
-    expect(canonicalProphetFamilyLineageEvidenceT0336, hasLength(10));
+    expect(verifiedProphetKinshipFacts, hasLength(7));
+    expect(canonicalProphetFamilyLineageEvidenceT0336, hasLength(14));
 
     final coveredProphets = canonicalProphetFamilyLineageEvidenceT0336
         .map((claim) => claim.biographyProphetId)
@@ -80,6 +80,8 @@ void main() {
       'ibrahim',
       'ismail',
       'ishaq',
+      'yakub',
+      'yusuf',
       'dawud',
       'sulayman',
     });
@@ -215,7 +217,7 @@ void main() {
   });
 
   test('current canonical T0336 evidence is internally valid', () {
-    expect(canonicalProphetSemanticEvidenceT0336.length, greaterThan(54));
+    expect(canonicalProphetSemanticEvidenceT0336.length, greaterThan(58));
 
     final result = qa.audit(
       claims: canonicalProphetSemanticEvidenceT0336,
@@ -278,6 +280,8 @@ void main() {
       'ibrahim',
       'ismail',
       'ishaq',
+      'yakub',
+      'yusuf',
       'dawud',
       'sulayman',
     ]) {
