@@ -46,21 +46,45 @@ final List<ProphetSemanticClaim> canonicalProphetIdentityVerseEvidenceT0336 =
 
 /// Quran-explicit event ownership anchors for the mandatory semantic gate.
 ///
-/// These four events are also the canonical cross-biography failure-path keys in
-/// [ProphetSemanticOwnershipQa]. Their owner is explicit in the Quranic event
-/// context and therefore does not depend on prose name matching or later
-/// historical inference:
-/// - Yusuf: the well episode (12:15) and his establishment in Egypt (12:21);
-/// - Ibrahim: the fire is ordered cool/safe for him (21:68-69);
-/// - Musa: Pharaoh's pursuit and the sea episode are kept in one context
-///   (26:60-66);
-/// - Yunus: the named messenger-to-fish sequence is kept together (37:139-142).
-///
-/// The application ships the pinned Tanzil Uthmani source; these claims only
-/// establish event ownership and never synthesize chronology, geography or an
-/// exact historical date from the verses.
+/// These events have an explicit owner in their Quranic context and therefore
+/// do not depend on prose name matching or later historical inference. The
+/// application ships the pinned Tanzil Uthmani source; these claims establish
+/// event ownership only and never synthesize chronology, geography or an exact
+/// historical date from the verses.
 final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     List<ProphetSemanticClaim>.unmodifiable(const [
+  ProphetSemanticClaim(
+    biographyProphetId: 'nuh',
+    subjectProphetId: 'nuh',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'nuh_ark_and_flood',
+    sourceIds: ['tanzil-uthmani-v1.1:q11:36-44'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'hud',
+    subjectProphetId: 'hud',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'hud_aad_warning_and_judgment',
+    sourceIds: ['tanzil-uthmani-v1.1:q11:50-60'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'salih',
+    subjectProphetId: 'salih',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'salih_she_camel_trial',
+    sourceIds: ['tanzil-uthmani-v1.1:q11:61-68'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'ibrahim',
+    subjectProphetId: 'ibrahim',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'ibrahim_fire_trial',
+    sourceIds: ['tanzil-uthmani-v1.1:q21:68-69'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
   ProphetSemanticClaim(
     biographyProphetId: 'yusuf',
     subjectProphetId: 'yusuf',
@@ -73,19 +97,19 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
-    biographyProphetId: 'ibrahim',
-    subjectProphetId: 'ibrahim',
-    dimension: ProphetSemanticDimension.event,
-    claimKey: 'ibrahim_fire_trial',
-    sourceIds: ['tanzil-uthmani-v1.1:q21:68-69'],
-    sourceClasses: {ReligiousSourceClass.quran},
-  ),
-  ProphetSemanticClaim(
     biographyProphetId: 'musa',
     subjectProphetId: 'musa',
     dimension: ProphetSemanticDimension.event,
     claimKey: 'musa_exodus_pharaoh',
     sourceIds: ['tanzil-uthmani-v1.1:q26:60-66'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'sulayman',
+    subjectProphetId: 'sulayman',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'sulayman_ant_valley',
+    sourceIds: ['tanzil-uthmani-v1.1:q27:17-19'],
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
@@ -192,35 +216,24 @@ List<ProphetSemanticClaim> _sourceBackedSectionEvidence({
   return List<ProphetSemanticClaim>.unmodifiable(claims);
 }
 
-/// A source-backed `keyEvents` field with strong provenance is the canonical
-/// biography's reviewed event summary. Unknown or weak-source event fields
-/// never enter this list.
 final List<ProphetSemanticClaim> canonicalProphetEventEvidenceT0336 =
     _sourceBackedSectionEvidence(
   section: ProphetBiographySectionKey.keyEvents,
   dimension: ProphetSemanticDimension.event,
 );
 
-/// A source-backed `period` field contributes chronology only; it does not
-/// automatically become an exact historical date.
 final List<ProphetSemanticClaim> canonicalProphetChronologyEvidenceT0336 =
     _sourceBackedSectionEvidence(
   section: ProphetBiographySectionKey.period,
   dimension: ProphetSemanticDimension.chronology,
 );
 
-/// Geography coverage is admitted only when the T0194 geography field itself
-/// is source-backed with strong provenance.
 final List<ProphetSemanticClaim> canonicalProphetGeographyEvidenceT0336 =
     _sourceBackedSectionEvidence(
   section: ProphetBiographySectionKey.geography,
   dimension: ProphetSemanticDimension.geography,
 );
 
-/// Hadith coverage is narrower than general source-backed coverage: each claim
-/// is tied to one exact sahih/hasan reference already admitted by T0194's
-/// fail-closed provenance registry. Quran/history sources cannot be relabelled
-/// as hadith evidence.
 final List<ProphetSemanticClaim> canonicalProphetHadithEvidenceT0336 =
     List<ProphetSemanticClaim>.unmodifiable(
   _t0336BiographyDrafts.expand((draft) sync* {
@@ -245,11 +258,6 @@ final List<ProphetSemanticClaim> canonicalProphetHadithEvidenceT0336 =
   }),
 );
 
-/// Exact civil/historical dates must never be synthesized from approximate
-/// periods, lineage order, Quran narrative order or modern estimates. Until a
-/// prophet has independently reviewed exact-date evidence, the date slot is
-/// explicitly `unknown`. This creates one auditable record per canonical
-/// prophet while deliberately contributing zero verified coverage.
 final List<ProphetSemanticClaim> canonicalProphetHistoricalDateUnknownT0336 =
     List<ProphetSemanticClaim>.unmodifiable(
   canonicalQuranNamedProphets.map(
@@ -264,11 +272,6 @@ final List<ProphetSemanticClaim> canonicalProphetHistoricalDateUnknownT0336 =
   ),
 );
 
-/// Current canonical T0336 evidence surface. Full release coverage intentionally
-/// remains false until every prophet has all eight independently verified
-/// dimensions. `historicalDate` is deliberately represented as explicit
-/// unknown rather than being synthesized from period, Quran, hadith, lineage or
-/// approximate modern-history evidence.
 final List<ProphetSemanticClaim> canonicalProphetSemanticEvidenceT0336 =
     List<ProphetSemanticClaim>.unmodifiable([
   ...canonicalProphetIdentityVerseEvidenceT0336,
