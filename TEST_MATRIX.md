@@ -72,14 +72,14 @@ Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile bir
 
 | ID | Senaryo | Durum | Kanıt |
 |---|---|---|---|
-| M01 | FREE online kullanım | TODO | |
+| M01 | FREE online kullanım | PASS | `app_startup_access_t0262_test.dart`: TR/EN/AR verified online FREE, HTTP 204 doğrulanmadan `AppShell` açılmaz; doğrulama sonrası açılır; Flutter CI + Android Release CI exact implementation HEAD üzerinde SUCCESS |
 | M02 | FREE cold-start offline block | PASS | `app_startup_access_t0262_test.dart`: TR/EN/AR offline FREE durumda `AppShell` mount edilmez; locale copy + AR RTL; online 204 pozitif kontrol |
 | M03 | FREE online -> bağlantıyı kes -> gate | PASS | `free_connection_drop_t0263_test.dart`: TR/EN/AR online→offline transition, route fail-closed, localized SnackBar, recovery ve yeniden reachability kontrolü |
-| M04 | PRO online | TODO | |
+| M04 | PRO online | PASS | `app_startup_access_t0262_test.dart`: TR/EN/AR verified PRO doğrudan `AppShell` açar ve startup reachability request sayısı `0`; Flutter CI + Android Release CI exact implementation HEAD üzerinde SUCCESS |
 | M05 | PRO offline core erişim | TODO | policy + cached startup kanıtı var; tüm core yüzeylerde app-level navigation crawl henüz tamamlanmadı |
 | M06 | PRO zero ad UI | PASS | `pro_zero_ad_network_ui_t0280_test.dart`: verified + cached PRO banner/ad widget render etmez |
 | M07 | PRO zero ad network request | PASS | `pro_zero_ad_network_ui_t0280_test.dart`: verified + cached PRO SDK init ve tüm ad-format/surface network dispatch çağrılarını sıfırda tutar |
-| M08 | FREE reklam kutsal metni bölmüyor | TODO | |
+| M08 | FREE reklam kutsal metni bölmüyor | PASS | `free_sacred_content_ad_gate_test.dart`: Quran reader/search, daily verse, dua reader ve aktif zikir yüzeyleri FREE/PRO için tüm ad formatlarını reddeder; FREE allow-list yalnız home banner + share rewarded; kutsal feature köklerinde doğrudan ad SDK bypass taraması PASS |
 | M09 | Rewarded success | TODO | |
 | M10 | Rewarded cancel | TODO | |
 | M11 | Rewarded fail/no-fill | TODO | |
