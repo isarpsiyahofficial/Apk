@@ -132,6 +132,22 @@ const _ibrahimIsmailIshaqParentSource = SourceReference(
   locator: 'Quran 14:39',
 );
 
+const _ishaqYakubParentSource = SourceReference(
+  id: 'tanzil-uthmani-v1.1-q21-72',
+  title: 'Tanzil Project — Uthmani Quran Text v1.1',
+  sourceClass: ReligiousSourceClass.quran,
+  licenseId: 'CC-BY-3.0',
+  locator: 'Quran 21:72',
+);
+
+const _yakubYusufParentSource = SourceReference(
+  id: 'tanzil-uthmani-v1.1-q12-4-6',
+  title: 'Tanzil Project — Uthmani Quran Text v1.1',
+  sourceClass: ReligiousSourceClass.quran,
+  licenseId: 'CC-BY-3.0',
+  locator: 'Quran 12:4-6',
+);
+
 const _dawudSulaymanParentSource = SourceReference(
   id: 'tanzil-uthmani-v1.1-q38-30',
   title: 'Tanzil Project — Uthmani Quran Text v1.1',
@@ -144,10 +160,13 @@ const _dawudSulaymanParentSource = SourceReference(
 ///
 /// Quran 20:30 explicitly identifies Harun as Musa's brother; Quran 19:7
 /// gives Zakariya glad tidings of a son named Yahya; Quran 14:39 records
-/// Ibrahim thanking Allah for granting him Ismail and Ishaq; and Quran 38:30
-/// states that Sulayman was granted to Dawud. The latter parent/child reading
-/// is independently cross-checked against Diyanet Kur'an Yolu tafsir before
-/// entering this reviewed graph. Other commonly repeated genealogies remain
+/// Ibrahim thanking Allah for granting him Ismail and Ishaq; Quran 21:72 is
+/// cross-checked with Diyanet Kur'an Yolu's explanation that Yakub is Ishaq's
+/// son; Quran 12:4-6 explicitly frames Yusuf speaking to his father and is
+/// cross-checked with the same tafsir's Yusuf -> Yakub -> Ishaq -> Ibrahim
+/// genealogy; and Quran 38:30 states that Sulayman was granted to Dawud. The
+/// latter parent/child reading is also independently cross-checked against
+/// Diyanet Kur'an Yolu tafsir. Other commonly repeated genealogies remain
 /// outside this graph until their exact relationship and source class are
 /// independently reviewed.
 const verifiedProphetKinshipFacts = <VerifiedProphetKinshipFact>[
@@ -182,6 +201,22 @@ const verifiedProphetKinshipFacts = <VerifiedProphetKinshipFact>[
     kind: VerifiedProphetKinshipKind.parentChild,
     certainty: CertaintyLevel.explicitSource,
     sources: [_ibrahimIsmailIshaqParentSource],
+  ),
+  VerifiedProphetKinshipFact(
+    id: 'ishaq-yakub-parent-child-q21-72',
+    firstProphetId: 'ishaq',
+    secondProphetId: 'yakub',
+    kind: VerifiedProphetKinshipKind.parentChild,
+    certainty: CertaintyLevel.explicitSource,
+    sources: [_ishaqYakubParentSource],
+  ),
+  VerifiedProphetKinshipFact(
+    id: 'yakub-yusuf-parent-child-q12-4-6',
+    firstProphetId: 'yakub',
+    secondProphetId: 'yusuf',
+    kind: VerifiedProphetKinshipKind.parentChild,
+    certainty: CertaintyLevel.explicitSource,
+    sources: [_yakubYusufParentSource],
   ),
   VerifiedProphetKinshipFact(
     id: 'dawud-sulayman-parent-child-q38-30',
@@ -338,6 +373,16 @@ bool _isReviewedFamilyClaim(VerifiedProphetKinshipFact fact) {
           fact.secondProphetId == 'ishaq' &&
           fact.kind == VerifiedProphetKinshipKind.parentChild &&
           _sameSource(fact.sources.single, _ibrahimIsmailIshaqParentSource),
+    'ishaq-yakub-parent-child-q21-72' =>
+      fact.firstProphetId == 'ishaq' &&
+          fact.secondProphetId == 'yakub' &&
+          fact.kind == VerifiedProphetKinshipKind.parentChild &&
+          _sameSource(fact.sources.single, _ishaqYakubParentSource),
+    'yakub-yusuf-parent-child-q12-4-6' =>
+      fact.firstProphetId == 'yakub' &&
+          fact.secondProphetId == 'yusuf' &&
+          fact.kind == VerifiedProphetKinshipKind.parentChild &&
+          _sameSource(fact.sources.single, _yakubYusufParentSource),
     'dawud-sulayman-parent-child-q38-30' =>
       fact.firstProphetId == 'dawud' &&
           fact.secondProphetId == 'sulayman' &&
