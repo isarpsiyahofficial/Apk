@@ -50,10 +50,11 @@ final List<ProphetSemanticClaim> canonicalProphetIdentityVerseEvidenceT0336 =
 /// [ProphetSemanticOwnershipQa]. Their owner is explicit in the Quranic event
 /// context and therefore does not depend on prose name matching or later
 /// historical inference:
-/// - Yusuf: brothers resolve to put him in the well (12:15);
+/// - Yusuf: the well episode (12:15) and his establishment in Egypt (12:21);
 /// - Ibrahim: the fire is ordered cool/safe for him (21:68-69);
-/// - Musa: he is ordered to strike the sea and it parts (26:63);
-/// - Yunus: the fish swallows him (37:142).
+/// - Musa: Pharaoh's pursuit and the sea episode are kept in one context
+///   (26:60-66);
+/// - Yunus: the named messenger-to-fish sequence is kept together (37:139-142).
 ///
 /// The application ships the pinned Tanzil Uthmani source; these claims only
 /// establish event ownership and never synthesize chronology, geography or an
@@ -65,7 +66,10 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     subjectProphetId: 'yusuf',
     dimension: ProphetSemanticDimension.event,
     claimKey: 'yusuf_well_and_egypt',
-    sourceIds: ['tanzil-uthmani-v1.1:q12:15'],
+    sourceIds: [
+      'tanzil-uthmani-v1.1:q12:15',
+      'tanzil-uthmani-v1.1:q12:21',
+    ],
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
@@ -81,7 +85,7 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     subjectProphetId: 'musa',
     dimension: ProphetSemanticDimension.event,
     claimKey: 'musa_exodus_pharaoh',
-    sourceIds: ['tanzil-uthmani-v1.1:q26:63'],
+    sourceIds: ['tanzil-uthmani-v1.1:q26:60-66'],
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
@@ -89,7 +93,7 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     subjectProphetId: 'yunus',
     dimension: ProphetSemanticDimension.event,
     claimKey: 'yunus_fish_episode',
-    sourceIds: ['tanzil-uthmani-v1.1:q37:142'],
+    sourceIds: ['tanzil-uthmani-v1.1:q37:139-142'],
     sourceClasses: {ReligiousSourceClass.quran},
   ),
 ]);
