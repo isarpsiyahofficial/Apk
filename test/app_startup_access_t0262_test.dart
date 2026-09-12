@@ -31,7 +31,7 @@ void main() {
     );
   }
 
-  group('T0262 app-level FREE cold-start gate integration', () {
+  group('T0262 app-level FREE/PRO startup access integration', () {
     testWidgets('offline FREE never mounts AppShell', (tester) async {
       final client = _AppProbeClientT0262(null);
 
@@ -94,24 +94,65 @@ void main() {
       });
     }
 
-    testWidgets('verified online FREE mounts AppShell only after HTTP 204',
+    for (final localeCase in const <_StartupLocaleCase>[
+      _StartupLocaleCase(locale: Locale('tr'), direction: TextDirection.ltr),
+      _StartupLocaleCase(locale: Locale('en'), direction: TextDirection.ltr),
+      _StartupLocaleCase(locale: Locale('ar'), direction: TextDirection.rtl),
+    ]) {
+      testWidgets(
+        '${localeCase.locale.languageCode} verified online FREE mounts AppShell only after HTTP 204',
         (tester) async {
-      final client = _AppProbeClientT0262(204);
+          final client = _AppProbeClientT0262(204);
 
-      await tester.pumpWidget(
-        IslamiHayatApp(
-          locale: const Locale('tr'),
-          startupAccessVerifier: verifier(client),
-          initialEntitlement: const EntitlementState.free(),
-        ),
+          await tester.pumpWidget(
+            IslamiHayatApp(
+              locale: localeCase.locale,
+              startupAccessVerifier: verifier(client),
+              initialEntitlement: const EntitlementState.free(),
+            ),
+          );
+          expect(find.byType(AppShell), findsNothing);
+
+          await tester.pump();
+
+          expect(client.calls, 1);
+          expect(find.byType(AppShell), findsOneWidget);
+          expect(
+            tester
+                .widget<Directionality>(find.byType(Directionality).first)
+                .textDirection,
+            localeCase.direction,
+          );
+          expect(tester.takeException(), isNull);
+        },
       );
-      expect(find.byType(AppShell), findsNothing);
 
-      await tester.pump();
+      testWidgets(
+        '${localeCase.locale.languageCode} verified PRO mounts AppShell without startup reachability gate',
+        (tester) async {
+          final client = _AppProbeClientT0262(204);
 
-      expect(client.calls, 1);
-      expect(find.byType(AppShell), findsOneWidget);
-    });
+          await tester.pumpWidget(
+            IslamiHayatApp(
+              locale: localeCase.locale,
+              startupAccessVerifier: verifier(client),
+              initialEntitlement: const EntitlementState.verifiedPro(),
+            ),
+          );
+          await tester.pump();
+
+          expect(client.calls, 0);
+          expect(find.byType(AppShell), findsOneWidget);
+          expect(
+            tester
+                .widget<Directionality>(find.byType(Directionality).first)
+                .textDirection,
+            localeCase.direction,
+          );
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
 
     testWidgets('cached PRO mounts AppShell without any reachability request',
         (tester) async {
@@ -145,5 +186,15 @@ final class _OfflineLocaleCase {
   final String title;
   final String body;
   final String retry;
+  final TextDirection direction;
+}
+
+final class _StartupLocaleCase {
+  const _StartupLocaleCase({
+    required this.locale,
+    required this.direction,
+  });
+
+  final Locale locale;
   final TextDirection direction;
 }
