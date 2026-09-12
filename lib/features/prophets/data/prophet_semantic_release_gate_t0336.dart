@@ -1,6 +1,7 @@
 import 'prophet_semantic_coverage_report_t0336.dart';
 import 'prophet_semantic_gap_manifest_t0336.dart';
 import 'prophet_semantic_ownership_qa.dart';
+import 'verified_prophet_family_relations.dart';
 
 final class ProphetSemanticReleaseGateResultT0336 {
   const ProphetSemanticReleaseGateResultT0336({
@@ -17,20 +18,37 @@ final class ProphetSemanticReleaseGateResultT0336 {
   bool get isReleaseComplete => isValid && missingSlots == 0;
 }
 
-/// Cross-validates the two independently useful T0336 views:
+/// Cross-validates the independently useful T0336 views:
 /// - the compact per-prophet coverage report;
-/// - the explicit 200-slot editorial gap manifest.
+/// - the explicit 200-slot editorial gap manifest;
+/// - the reviewed genealogy graph and its approximate chronology consistency.
 ///
-/// A release may never pass if they disagree. This prevents a future refactor
-/// from accidentally hiding a missing dimension in one representation while
-/// the other still reports it.
+/// A release may never pass if these views disagree. In particular, filling all
+/// 200 semantic slots is insufficient when the separately reviewed family graph
+/// is invalid or a parent/ancestor relation contradicts the governed chronology.
+/// This keeps family/date claims fail-closed instead of allowing coverage counts
+/// to hide a semantic genealogy regression.
 ProphetSemanticReleaseGateResultT0336 auditProphetSemanticReleaseGateT0336({
   ProphetSemanticCoverageReportT0336? coverage,
   ProphetSemanticGapManifestT0336? manifest,
+  bool? familyGraphValid,
+  bool? familyChronologyConsistent,
 }) {
   final coverageReport = coverage ?? canonicalProphetCoverageReportT0336;
   final gapManifest = manifest ?? canonicalProphetSemanticGapManifestT0336;
+  final genealogyValid = familyGraphValid ?? verifiedProphetFamilyGraphIsValid;
+  final chronologyConsistent = familyChronologyConsistent ??
+      verifiedProphetFamilyChronologyIsConsistent;
   final errors = <String>[];
+
+  if (!genealogyValid) {
+    errors.add('T0336 reviewed prophet genealogy graph is invalid');
+  }
+  if (!chronologyConsistent) {
+    errors.add(
+      'T0336 reviewed prophet genealogy contradicts approximate chronology',
+    );
+  }
 
   if (coverageReport.requiredClaimSlots != 200) {
     errors.add(
