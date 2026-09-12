@@ -65,13 +65,24 @@ void main() {
 
   test('T0336 lineage slice is derived only from reviewed genealogy facts', () {
     expect(verifiedProphetFamilyGraphIsValid, isTrue);
-    expect(verifiedProphetKinshipFacts, hasLength(2));
-    expect(canonicalProphetFamilyLineageEvidenceT0336, hasLength(4));
+    expect(verifiedProphetFamilyChronologyIsConsistent, isTrue);
+    expect(verifiedProphetKinshipFacts, hasLength(5));
+    expect(canonicalProphetFamilyLineageEvidenceT0336, hasLength(10));
 
     final coveredProphets = canonicalProphetFamilyLineageEvidenceT0336
         .map((claim) => claim.biographyProphetId)
         .toSet();
-    expect(coveredProphets, {'musa', 'harun', 'zakariya', 'yahya'});
+    expect(coveredProphets, {
+      'musa',
+      'harun',
+      'zakariya',
+      'yahya',
+      'ibrahim',
+      'ismail',
+      'ishaq',
+      'dawud',
+      'sulayman',
+    });
 
     for (final claim in canonicalProphetFamilyLineageEvidenceT0336) {
       expect(claim.subjectProphetId, claim.biographyProphetId);
@@ -257,12 +268,24 @@ void main() {
     );
     expect(adamError, contains('familyLineage'));
 
-    // Prophets covered by the conservative graph no longer report that one
-    // dimension, while unresolved dimensions remain fail-closed.
-    final musaError = result.errors.singleWhere(
-      (error) => error.startsWith('musa: semantic cross-check coverage missing'),
-    );
-    expect(musaError, isNot(contains('familyLineage')));
-    expect(musaError, contains('historicalDate'));
+    // Prophets covered by the reviewed graph no longer report that dimension,
+    // while unresolved dimensions remain fail-closed.
+    for (final prophetId in const [
+      'musa',
+      'harun',
+      'zakariya',
+      'yahya',
+      'ibrahim',
+      'ismail',
+      'ishaq',
+      'dawud',
+      'sulayman',
+    ]) {
+      final error = result.errors.singleWhere(
+        (entry) => entry.startsWith('$prophetId: semantic cross-check coverage missing'),
+      );
+      expect(error, isNot(contains('familyLineage')), reason: prophetId);
+      expect(error, contains('historicalDate'), reason: prophetId);
+    }
   });
 }
