@@ -60,11 +60,13 @@ Bu yüzeylerden biri eksik slotu gizlerken diğeri eksik gösterirse release gat
 - Zekeriyyâ → Yahyâ — baba/oğul, Kur'an 19:7;
 - İbrâhim → İsmâil — baba/oğul, Kur'an 14:39;
 - İbrâhim → İshak — baba/oğul, Kur'an 14:39;
+- İshak → Ya‘kūb — baba/oğul, Kur'an 21:72; oğulluk okuması Diyanet Kur'an Yolu tefsiriyle ayrıca çapraz kontrol edilmiştir;
+- Ya‘kūb → Yûsuf — baba/oğul, Kur'an 12:4–6; soy zinciri Diyanet Kur'an Yolu tefsiriyle ayrıca çapraz kontrol edilmiştir;
 - Dâvûd → Süleyman — baba/oğul, Kur'an 38:30; oğulluk okuması Diyanet Kur'an Yolu tefsiriyle ayrıca çapraz kontrol edilmiştir.
 
-Bu beş relation fact T0336 içinde 10 `familyLineage` claim üretir ve **9 farklı canonical peygamberin** family-lineage slotuna verified evidence sağlar; İbrâhim iki ayrı çocuk ilişkisi nedeniyle iki claim taşır. Bu ilerleme 25/25 soy coverage anlamına gelmez.
+Bu yedi relation fact T0336 içinde 14 `familyLineage` claim üretir ve **11 farklı canonical peygamberin** family-lineage slotuna verified evidence sağlar. Bir peygamber birden fazla exact relation taşıyabildiği için claim sayısı coverage-slot sayısından büyüktür. Bu ilerleme 25/25 soy coverage anlamına gelmez.
 
-Ayrıca `verifiedProphetFamilyChronologyIsConsistent` aynı reviewed relation setini bağımsız `mainApproximateProphetChronology` katmanıyla karşılaştırır. Parent/ancestor claim'i child/descendant bandından önce gelmelidir; sibling claim'i aynı chronology bandında olmalıdır. Bu audit yaklaşık chronology bilgisini exact tarihe yükseltmez. İshak → Ya'kūb gibi yaygın ama bu graph için exact reviewed relation olarak henüz pinlenmemiş bağlar otomatik türetilmez ve coverage üretmez.
+Ayrıca `verifiedProphetFamilyChronologyIsConsistent` aynı reviewed relation setini bağımsız `mainApproximateProphetChronology` katmanıyla karşılaştırır. Parent/ancestor claim'i child/descendant bandından önce gelmelidir; sibling claim'i aynı chronology bandında olmalıdır. Bu audit yaklaşık chronology bilgisini exact tarihe yükseltmez. Doğrudan review edilmiş zincirler dahi transitive yeni relation üretmez: örneğin İbrâhim → İshak ve İshak → Ya‘kūb kayıtları İbrâhim → Ya‘kūb için otomatik ayrı coverage üretmez.
 
 ## Tarih / kronoloji çapraz kontrolü
 
