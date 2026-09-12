@@ -16,7 +16,8 @@ import 'verified_prophet_family_relations.dart';
 /// the provenance-checked T0194 working biography dataset for
 /// event/period/geography/hadith and the verified genealogy graph for
 /// family-lineage. Unknown/pending biography fields are intentionally ignored
-/// and therefore remain release gaps.
+/// for verified coverage, but may be carried as explicit unresolved evidence so
+/// editorial uncertainty remains machine-readable instead of being guessed.
 final List<ProphetSemanticClaim> canonicalProphetIdentityVerseEvidenceT0336 =
     List<ProphetSemanticClaim>.unmodifiable(
   canonicalQuranNamedProphets.expand((identity) {
@@ -190,10 +191,30 @@ final List<ProphetSemanticClaim> canonicalProphetHadithEvidenceT0336 =
   }),
 );
 
+/// Exact civil/historical dates must never be synthesized from approximate
+/// periods, lineage order, Quran narrative order or modern estimates. Until a
+/// prophet has independently reviewed exact-date evidence, the date slot is
+/// explicitly `unknown`. This creates one auditable record per canonical
+/// prophet while deliberately contributing zero verified coverage.
+final List<ProphetSemanticClaim> canonicalProphetHistoricalDateUnknownT0336 =
+    List<ProphetSemanticClaim>.unmodifiable(
+  canonicalQuranNamedProphets.map(
+    (identity) => ProphetSemanticClaim(
+      biographyProphetId: identity.canonicalId,
+      subjectProphetId: identity.canonicalId,
+      dimension: ProphetSemanticDimension.historicalDate,
+      claimKey: 'historicalDate:${identity.canonicalId}:unknown',
+      sourceIds: const <String>[],
+      evidenceState: ProphetSemanticEvidenceState.unknown,
+    ),
+  ),
+);
+
 /// Current canonical T0336 evidence surface. Full release coverage intentionally
 /// remains false until every prophet has all eight independently verified
-/// dimensions. `historicalDate` is deliberately not synthesized from period,
-/// Quran, hadith, or approximate modern-history evidence.
+/// dimensions. `historicalDate` is deliberately represented as explicit
+/// unknown rather than being synthesized from period, Quran, hadith, lineage or
+/// approximate modern-history evidence.
 final List<ProphetSemanticClaim> canonicalProphetSemanticEvidenceT0336 =
     List<ProphetSemanticClaim>.unmodifiable([
   ...canonicalProphetIdentityVerseEvidenceT0336,
@@ -202,4 +223,5 @@ final List<ProphetSemanticClaim> canonicalProphetSemanticEvidenceT0336 =
   ...canonicalProphetChronologyEvidenceT0336,
   ...canonicalProphetGeographyEvidenceT0336,
   ...canonicalProphetHadithEvidenceT0336,
+  ...canonicalProphetHistoricalDateUnknownT0336,
 ]);
