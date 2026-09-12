@@ -53,23 +53,6 @@ final class ProphetSemanticOwnershipQaResult {
 }
 
 /// Extra fail-closed release gate for semantic biography ownership.
-///
-/// This gate does not try to infer theology/history from words. Editorial data
-/// must provide typed subject ownership and sources for each verified semantic
-/// claim. Explicit unknown/pending records are allowed so editors never need to
-/// invent a date, lineage or location merely to fill the matrix, but those
-/// records never satisfy release coverage.
-///
-/// Every non-exclusive claim key is namespaced by its semantic dimension
-/// (`identity:...`, `quranVerse:...`, etc.). This prevents an editor from making
-/// an event satisfy the date/hadith/geography coverage merely by changing the
-/// enum value while reusing the same evidence key. Known exclusive events keep
-/// stable historical keys and are separately forced to the `event` dimension.
-///
-/// A source id alone is also insufficient for `verified` coverage. Each claim
-/// must declare source classes appropriate to its semantic dimension so, for
-/// example, a Quran citation cannot be relabelled as hadith evidence and a
-/// later/disputed tradition cannot silently satisfy a verified historical date.
 final class ProphetSemanticOwnershipQa {
   const ProphetSemanticOwnershipQa();
 
@@ -78,10 +61,14 @@ final class ProphetSemanticOwnershipQa {
       .toSet();
 
   static const Map<String, String> _exclusiveEventOwners = {
+    'nuh_ark_and_flood': 'nuh',
+    'hud_aad_warning_and_judgment': 'hud',
+    'salih_she_camel_trial': 'salih',
     'yusuf_well_and_egypt': 'yusuf',
     'muhammad_hijra_to_medina': 'muhammad',
     'muhammad_first_revelation_hira': 'muhammad',
     'musa_exodus_pharaoh': 'musa',
+    'sulayman_ant_valley': 'sulayman',
     'yunus_fish_episode': 'yunus',
     'ibrahim_fire_trial': 'ibrahim',
   };
