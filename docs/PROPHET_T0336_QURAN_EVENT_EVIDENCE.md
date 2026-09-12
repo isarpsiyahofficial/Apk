@@ -2,7 +2,7 @@
 
 Bu belge `SPECIFICATION_V1_2_DELTA.md` içindeki 25 peygamber × 8 semantik çapraz doğrulama kapısının **event ownership** boyutunda eklenen doğrudan Kur’an kanıtlarını kaydeder.
 
-Bu kayıtlar yalnız ilgili olayın hangi peygambere ait olduğunu doğrular. **Kronoloji, coğrafya, hadis, aile/soy veya kesin tarih üretmez.** Bir ayetin olay sahipliğini kanıtlaması, diğer semantik boyutları otomatik olarak PASS yapmaz.
+Bu kayıtlar yalnız ilgili olayın/durumun hangi peygambere ait olduğunu doğrular. **Kronoloji, coğrafya, hadis, aile/soy veya kesin tarih üretmez.** Bir ayetin olay sahipliğini kanıtlaması, diğer semantik boyutları otomatik olarak PASS yapmaz. Kur’an’ın ayrıntılı kıssa vermediği Elyesa‘ ve Zülkifl gibi isimlerde yalnız ayetin açıkça bildirdiği durum kayda alınır; sonradan olay uydurulmaz.
 
 | Event key | Biyografi/özne | Kur’an referansı | Canonical source locator | Semantik sınır |
 |---|---|---|---|---|
@@ -14,22 +14,28 @@ Bu kayıtlar yalnız ilgili olayın hangi peygambere ait olduğunu doğrular. **
 | `ibrahim_fire_trial` | İbrâhim | Enbiyâ 21:68–69 | `tanzil-uthmani-v1.1:q21:68-69` | Ateş olayı İbrâhim’e aittir; yer/tarih infer edilmez. |
 | `lut_people_warning_and_rescue` | Lût | A‘râf 7:80–84 | `tanzil-uthmani-v1.1:q7:80-84` | Kavmine uyarı, ailesinin kurtarılması ve sonucu Lût bağlamına sabitler; modern yer/tarih bu kayıttan üretilmez. |
 | `ismail_prayer_and_zakat_instruction` | İsmâil | Meryem 19:54–55 | `tanzil-uthmani-v1.1:q19:54-55` | İsmâil’in ailesine/halkına namaz ve zekâtı emretmesi bağlamını sabitler; bundan kronoloji veya soy ayrıntısı türetilmez. |
+| `ishaq_prophethood_glad_tidings` | İshak | Sâffât 37:112–113 | `tanzil-uthmani-v1.1:q37:112-113` | İshak’ın salih bir peygamber olarak müjdelenmesini ve bereket bağlamını sabitler; doğum tarihi veya yaş bilgisi çıkarılmaz. |
+| `yakub_final_counsel_to_sons` | Ya‘kūb | Bakara 2:132–133 | `tanzil-uthmani-v1.1:q2:132-133` | Ya‘kūb’un oğullarına din üzere kalma vasiyetini ve ölüm anındaki sorusunu sabitler; ölüm tarihi çıkarılmaz. |
 | `yusuf_well_and_egypt` | Yûsuf | Yûsuf 12:15 ve 12:21 | `tanzil-uthmani-v1.1:q12:15` + `tanzil-uthmani-v1.1:q12:21` | 12:15 kuyu olayını, 12:21 Mısır bağlamını sabitler; bundan dönem veya kesin tarih çıkarılmaz. |
 | `ayyub_affliction_and_relief` | Eyyûb | Enbiyâ 21:83–84 | `tanzil-uthmani-v1.1:q21:83-84` | Sıkıntı duası ve giderilmesi Eyyûb’a sabitlenir; rahatsızlığın tıbbi türü/süresi veya tarih çıkarılmaz. |
 | `shuayb_madyan_measure_weight` | Şuayb | A‘râf 7:85–93 | `tanzil-uthmani-v1.1:q7:85-93` | Medyen’e tebliğ ve ölçü-tartı uyarısını Şuayb’a sabitler; modern koordinat veya dönem üretmez. |
 | `musa_exodus_pharaoh` | Mûsâ | Şuarâ 26:60–66 | `tanzil-uthmani-v1.1:q26:60-66` | Firavun takibi ile denizin yarılması aynı bağlamda tutulur; exact civil date infer edilmez. |
+| `harun_rescue_and_book_with_musa` | Hârûn | Sâffât 37:114–122 | `tanzil-uthmani-v1.1:q37:114-122` | Mûsâ ve Hârûn’a lütuf, kavimleriyle kurtuluş ve Kitap verilmesi ortak bağlamında Hârûn’un sahipliğini sabitler; bundan bağımsız tarih üretilmez. |
 | `dawud_defeats_jalut` | Dâvûd | Bakara 2:251 | `tanzil-uthmani-v1.1:q2:251` | Câlût’un Dâvûd tarafından öldürülmesini sabitler; savaşın modern tarihi veya yeri bu kanıttan çıkarılmaz. |
 | `sulayman_ant_valley` | Süleyman | Neml 27:17–19 | `tanzil-uthmani-v1.1:q27:17-19` | Ordu/karınca vadisi olayı Süleyman’a sabitlenir; vadinin modern konumu bu kanıttan çıkarılmaz. |
 | `ilyas_baal_warning` | İlyâs | Sâffât 37:123–132 | `tanzil-uthmani-v1.1:q37:123-132` | İlyâs’ın kavmine Baal konusunda yaptığı uyarıyı sabitler; tefsirden exact dönem/tarih otomatik taşınmaz. |
+| `alyasa_named_among_the_good` | Elyesa‘ | Sâd 38:48 | `tanzil-uthmani-v1.1:q38:48` | Kur’an’ın Elyesa‘ hakkında bu pasajda verdiği açık sınır olan “iyilerden” oluşunu sabitler; ayrıntılı hayat olayı uydurulmaz. |
 | `yunus_fish_episode` | Yûnus | Sâffât 37:139–142 | `tanzil-uthmani-v1.1:q37:139-142` | İsimlendirilmiş Yûnus pasajı ile balık olayı birlikte tutulur; süre/coğrafya gibi ayrıntılar bu satırdan çıkarılmaz. |
 | `zakariya_prayer_yahya_sign` | Zekeriyyâ | Âl-i İmrân 3:38–41 | `tanzil-uthmani-v1.1:q3:38-41` | Zekeriyyâ’nın evlat duası, Yahyâ müjdesi ve işaret bağlamını sabitler; soyun diğer ayrıntıları veya tarih türetilmez. |
 | `yahya_named_and_given_wisdom` | Yahyâ | Meryem 19:7–15 | `tanzil-uthmani-v1.1:q19:7-15` | Yahyâ’nın isimlendirilmesi ve çocukken hikmet verilmesi bağlamını sabitler; doğum tarihi veya sonraki hayat kronolojisi çıkarılmaz. |
 | `isa_infant_speech` | Îsâ | Meryem 19:29–33 | `tanzil-uthmani-v1.1:q19:29-33` | Meryem’in işaret ettiği çocuğun konuşma bağlamını Îsâ’ya sabitler; sonraki hayat kronolojisi veya tarih üretmez. |
+| `muhammad_messenger_with_believers` | Muhammed | Fetih 48:29 | `tanzil-uthmani-v1.1:q48:29` | Muhammed’in Allah’ın elçisi oluşunu ve beraberindeki müminler bağlamını açık isimle sabitler; Hicret/Medine tarihi bu ayetten türetilmez. |
+| `dhul_kifl_patience_and_mercy` | Zülkifl | Enbiyâ 21:85–86 | `tanzil-uthmani-v1.1:q21:85-86` | Zülkifl’in sabredenlerden ve rahmete alınan salihlerden oluşunu sabitler; ihtilaflı biyografi ayrıntıları veya tarih eklenmez. |
 
 ## Fail-closed davranışı
 
-- Bu on dokuz key `ProphetSemanticOwnershipQa` içinde exclusive event ownership ile korunur.
-- On dokuz olayın her biri başka peygamber biyografisine sahiplik verilerek taşınırsa data-driven QA FAIL verir.
+- Bu yirmi beş key `ProphetSemanticOwnershipQa` içinde exclusive event ownership ile korunur.
+- 25/25 olay/durum kaydının her biri başka peygamber biyografisine sahiplik verilerek taşınırsa data-driven QA FAIL verir.
 - Olayın typed `subjectProphetId` alanı, `contextReference=true` verilerek bile başka peygambere çevrilirse QA FAIL verir.
 - Olay key’lerinden biri `chronology`, `historicalDate`, `geography`, `hadith`, `familyLineage` veya başka boyuta yeniden etiketlenirse QA FAIL verir.
 - Başka peygamberin adı doğal bağlam/cross-reference içinde geçebilir; `contextReference=true` bu kullanımı hata saydırmaz ve **coverage üretmez**.
@@ -39,8 +45,8 @@ Bu kayıtlar yalnız ilgili olayın hangi peygambere ait olduğunu doğrular. **
 
 Uygulamadaki canonical Arapça Kur’an kaynağı `tanzil-uthmani-v1.1` olarak pinlenmiştir ve mevcut Quran Source Verify/release integrity kapılarıyla hash doğrulamasından geçmektedir. Bu event locator’ları aynı canonical kaynağa bağlanır. Harici insan-readable çapraz kontrolde Diyanet İşleri Başkanlığı Kur’an portalı kullanılır; production metni web’den kopyalanmaz.
 
-Bu genişlemede Meryem 19:56–57 (İdrîs), Meryem 19:54–55 (İsmâil) ve Meryem 19:7–15 (Yahyâ) Diyanet Kur’an Yolu sayfalarıyla ayrıca çapraz kontrol edildi. Tefsirde geçen ek soy, dönem, meslek veya tarih rivayetleri bu event kanıtına taşınmaz; her semantik boyut kendi bağımsız source-class kanıtını gerektirir.
+Son 25/25 tamamlama adımında Sâffât 37:112–113 (İshak), Bakara 2:132–133 (Ya‘kūb), Sâffât 37:114–122 (Hârûn), Sâd 38:48 (Elyesa‘), Fetih 48:29 (Muhammed) ve Enbiyâ 21:85–86 (Zülkifl) Diyanet Kur’an/tefsir görünümüyle çapraz kontrol edildi. Tefsirde geçen ek soy, dönem, meslek, coğrafya veya tarih rivayetleri event kanıtına taşınmaz; her semantik boyut kendi bağımsız source-class kanıtını gerektirir.
 
 ## Release durumu
 
-Bu çalışma D10/D11’i **tamamlamaz**. 25 peygamber × 8 boyutun tamamı verified ve uygun source-class evidence ile kapanana kadar peygamber biyografileri final kabul edilmez. Exact historical date için kaynak yoksa `unknown`/`pendingReview` açıkça tutulur; başka boyutlardan tarih türetilmez.
+**Event ownership alt boyutu 25/25 canonical kimlik için verified Quran evidence ile kapsanmıştır.** Bu yine de D10/D11’i tamamlamaz. 25 peygamber × 8 boyutun tamamı verified ve uygun source-class evidence ile kapanana kadar peygamber biyografileri final kabul edilmez. Exact historical date için kaynak yoksa `unknown`/`pendingReview` açıkça tutulur; başka boyutlardan tarih türetilmez.
