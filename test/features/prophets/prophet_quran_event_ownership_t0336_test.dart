@@ -7,7 +7,7 @@ void main() {
   const qa = ProphetSemanticOwnershipQa();
 
   test('Quran-explicit event anchors preserve owner + exact source locators', () {
-    expect(canonicalProphetQuranEventEvidenceT0336, hasLength(19));
+    expect(canonicalProphetQuranEventEvidenceT0336, hasLength(25));
 
     final expected = <String, (String, List<String>)>{
       'adam_tree_and_descent': (
@@ -42,6 +42,14 @@ void main() {
         'ismail',
         ['tanzil-uthmani-v1.1:q19:54-55'],
       ),
+      'ishaq_prophethood_glad_tidings': (
+        'ishaq',
+        ['tanzil-uthmani-v1.1:q37:112-113'],
+      ),
+      'yakub_final_counsel_to_sons': (
+        'yakub',
+        ['tanzil-uthmani-v1.1:q2:132-133'],
+      ),
       'yusuf_well_and_egypt': (
         'yusuf',
         [
@@ -61,6 +69,10 @@ void main() {
         'musa',
         ['tanzil-uthmani-v1.1:q26:60-66'],
       ),
+      'harun_rescue_and_book_with_musa': (
+        'harun',
+        ['tanzil-uthmani-v1.1:q37:114-122'],
+      ),
       'dawud_defeats_jalut': (
         'dawud',
         ['tanzil-uthmani-v1.1:q2:251'],
@@ -72,6 +84,10 @@ void main() {
       'ilyas_baal_warning': (
         'ilyas',
         ['tanzil-uthmani-v1.1:q37:123-132'],
+      ),
+      'alyasa_named_among_the_good': (
+        'alyasa',
+        ['tanzil-uthmani-v1.1:q38:48'],
       ),
       'yunus_fish_episode': (
         'yunus',
@@ -88,6 +104,14 @@ void main() {
       'isa_infant_speech': (
         'isa',
         ['tanzil-uthmani-v1.1:q19:29-33'],
+      ),
+      'muhammad_messenger_with_believers': (
+        'muhammad',
+        ['tanzil-uthmani-v1.1:q48:29'],
+      ),
+      'dhul_kifl_patience_and_mercy': (
+        'dhul_kifl',
+        ['tanzil-uthmani-v1.1:q21:85-86'],
       ),
     };
 
@@ -107,6 +131,12 @@ void main() {
     expect(
       expected.keys.toSet(),
       canonicalProphetQuranEventEvidenceT0336.map((e) => e.claimKey).toSet(),
+    );
+    expect(
+      canonicalProphetQuranEventEvidenceT0336
+          .map((claim) => claim.biographyProphetId)
+          .toSet(),
+      hasLength(25),
     );
 
     final result = qa.audit(
