@@ -54,14 +54,27 @@ void main() {
     final releaseBuild = workflow.indexOf('flutter build apk --release');
     final namedGate = workflow.indexOf('scripts/android_api35_release_gate.sh');
 
-    final functionalSmoke = gate.indexOf('android_emulator_smoke_retry.sh');
-    final shareSmoke = gate.indexOf('android_share_sheet_smoke_t0251.sh');
-    final performanceGate = gate.indexOf('android_cold_start_t0315.sh');
-    final debugRestore = gate.indexOf(
-      'adb install -r build/app/outputs/flutter-apk/app-debug.apk',
+    // Order must be measured from the actual run_gate invocations, not helper
+    // function bodies. Helper definitions can mention the same script names
+    // before execution starts and would make an indexOf-based contract lie.
+    final functionalSmoke = gate.indexOf(
+      "run_gate T0314 'functional app launch smoke'",
     );
-    final matrixGate = gate.indexOf('android_device_matrix_t0319.sh');
-    final widgetSmoke = gate.indexOf('android_widget_launcher_smoke_t0297.sh');
+    final shareSmoke = gate.indexOf(
+      "run_gate T0251 'Android share-sheet smoke'",
+    );
+    final performanceGate = gate.indexOf(
+      "run_gate T0315 'release cold-start performance gate'",
+    );
+    final debugRestore = gate.indexOf(
+      "run_gate T0315D 'restore debug APK after release performance gate'",
+    );
+    final matrixGate = gate.indexOf(
+      "run_gate T0319 'phone/tablet/orientation viewport matrix'",
+    );
+    final widgetSmoke = gate.indexOf(
+      "run_gate T0297 'real launcher widget pin/render/tap smoke'",
+    );
 
     expect(debugBuild, greaterThanOrEqualTo(0));
     expect(releaseBuild, greaterThan(debugBuild));
@@ -80,11 +93,6 @@ void main() {
     );
     expect(matrixGate, greaterThan(debugRestore));
     expect(widgetSmoke, greaterThan(matrixGate));
-    expect(
-      gate,
-      contains("run_gate T0315 'release cold-start performance gate'"),
-      reason: 'Release timing must remain an independently named fail-closed gate.',
-    );
   });
 
   test('named Android 35 wrapper preserves a failing child gate exit status', () {
