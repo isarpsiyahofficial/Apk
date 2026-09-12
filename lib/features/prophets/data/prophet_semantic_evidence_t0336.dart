@@ -54,6 +54,14 @@ final List<ProphetSemanticClaim> canonicalProphetIdentityVerseEvidenceT0336 =
 final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     List<ProphetSemanticClaim>.unmodifiable(const [
   ProphetSemanticClaim(
+    biographyProphetId: 'adam',
+    subjectProphetId: 'adam',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'adam_tree_and_descent',
+    sourceIds: ['tanzil-uthmani-v1.1:q2:35-36'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
     biographyProphetId: 'nuh',
     subjectProphetId: 'nuh',
     dimension: ProphetSemanticDimension.event,
@@ -86,6 +94,14 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
+    biographyProphetId: 'lut',
+    subjectProphetId: 'lut',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'lut_people_warning_and_rescue',
+    sourceIds: ['tanzil-uthmani-v1.1:q7:80-84'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
     biographyProphetId: 'yusuf',
     subjectProphetId: 'yusuf',
     dimension: ProphetSemanticDimension.event,
@@ -97,11 +113,35 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
+    biographyProphetId: 'ayyub',
+    subjectProphetId: 'ayyub',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'ayyub_affliction_and_relief',
+    sourceIds: ['tanzil-uthmani-v1.1:q21:83-84'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'shuayb',
+    subjectProphetId: 'shuayb',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'shuayb_madyan_measure_weight',
+    sourceIds: ['tanzil-uthmani-v1.1:q7:85-93'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
     biographyProphetId: 'musa',
     subjectProphetId: 'musa',
     dimension: ProphetSemanticDimension.event,
     claimKey: 'musa_exodus_pharaoh',
     sourceIds: ['tanzil-uthmani-v1.1:q26:60-66'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'dawud',
+    subjectProphetId: 'dawud',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'dawud_defeats_jalut',
+    sourceIds: ['tanzil-uthmani-v1.1:q2:251'],
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
@@ -113,11 +153,35 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
+    biographyProphetId: 'ilyas',
+    subjectProphetId: 'ilyas',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'ilyas_baal_warning',
+    sourceIds: ['tanzil-uthmani-v1.1:q37:123-132'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
     biographyProphetId: 'yunus',
     subjectProphetId: 'yunus',
     dimension: ProphetSemanticDimension.event,
     claimKey: 'yunus_fish_episode',
     sourceIds: ['tanzil-uthmani-v1.1:q37:139-142'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'zakariya',
+    subjectProphetId: 'zakariya',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'zakariya_prayer_yahya_sign',
+    sourceIds: ['tanzil-uthmani-v1.1:q3:38-41'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'isa',
+    subjectProphetId: 'isa',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'isa_infant_speech',
+    sourceIds: ['tanzil-uthmani-v1.1:q19:29-33'],
     sourceClasses: {ReligiousSourceClass.quran},
   ),
 ]);
