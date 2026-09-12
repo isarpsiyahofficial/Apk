@@ -52,6 +52,20 @@ Metinde başka bir peygamberin adının doğal biçimde geçmesi hata değildir.
 
 Bu yüzeylerden biri eksik slotu gizlerken diğeri eksik gösterirse release gate FAIL olur.
 
+## Aile/soy + kronoloji çapraz kontrolü
+
+`verified_prophet_family_relations.dart` yalnız exact source metadata ile önceden review edilmiş ilişki iddialarını kabul eder. Quran source class etiketi tek başına yeterli değildir; claim id, iki canonical kimlik, ilişki yönü, locator, lisans ve source id birlikte pinlenir. Şu anda Kur'an-explicit ve ayrıca gözden geçirilmiş ilişkiler şunlardır:
+
+- Mûsâ ↔ Hârûn — kardeşlik, Kur'an 20:30;
+- Zekeriyyâ → Yahyâ — baba/oğul, Kur'an 19:7;
+- İbrâhim → İsmâil — baba/oğul, Kur'an 14:39;
+- İbrâhim → İshak — baba/oğul, Kur'an 14:39;
+- Dâvûd → Süleyman — baba/oğul, Kur'an 38:30; oğulluk okuması Diyanet Kur'an Yolu tefsiriyle ayrıca çapraz kontrol edilmiştir.
+
+Bu beş relation fact T0336 içinde 10 `familyLineage` claim üretir ve **9 farklı canonical peygamberin** family-lineage slotuna verified evidence sağlar; İbrâhim iki ayrı çocuk ilişkisi nedeniyle iki claim taşır. Bu ilerleme 25/25 soy coverage anlamına gelmez.
+
+Ayrıca `verifiedProphetFamilyChronologyIsConsistent` aynı reviewed relation setini bağımsız `mainApproximateProphetChronology` katmanıyla karşılaştırır. Parent/ancestor claim'i child/descendant bandından önce gelmelidir; sibling claim'i aynı chronology bandında olmalıdır. Bu audit yaklaşık chronology bilgisini exact tarihe yükseltmez. İshak → Ya'kūb gibi yaygın ama bu graph için exact reviewed relation olarak henüz pinlenmemiş bağlar otomatik türetilmez ve coverage üretmez.
+
 ## Tarih / kronoloji çapraz kontrolü
 
 `chronology` coverage tek başına `historicalDate` coverage üretmez. Canonical T0194 datasetindeki takvim yılı içeren biyografi metni ayrıca T0207 exact-date auditinden geçer. Kaynaksız takvim yılı, modern-history provenance olmadan verilen civil tarih veya yaklaşık kaynak bilgisini kesin tarihe yükselten ifade FAIL olur. Bu kontrol coverage hesaplanmadan önce çalışır; böylece semantik slot sayısı geçersiz tarih metnini maskeleyemez.
