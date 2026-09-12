@@ -53,7 +53,7 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Install, verify sharing, measure release cold start, restore debug smoke, run device matrix, then pin/render/tap widget on Android 35
+      - name: Run named Android 35 release/device gates
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -61,7 +61,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: sh scripts/android_emulator_smoke_retry.sh && sh scripts/android_share_sheet_smoke_t0251.sh && COLD_START_APK=build/app/outputs/flutter-apk/app-release.apk sh scripts/android_cold_start_t0315.sh && adb install -r build/app/outputs/flutter-apk/app-debug.apk >/dev/null && sh scripts/android_device_matrix_t0319.sh && sh scripts/android_widget_launcher_smoke_t0297.sh
+          script: sh scripts/android_api35_release_gate.sh
 
   low-memory-emulator-smoke:
     runs-on: ubuntu-latest
