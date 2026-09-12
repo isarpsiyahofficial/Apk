@@ -62,6 +62,14 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
+    biographyProphetId: 'idris',
+    subjectProphetId: 'idris',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'idris_raised_to_high_station',
+    sourceIds: ['tanzil-uthmani-v1.1:q19:56-57'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
     biographyProphetId: 'nuh',
     subjectProphetId: 'nuh',
     dimension: ProphetSemanticDimension.event,
@@ -99,6 +107,14 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     dimension: ProphetSemanticDimension.event,
     claimKey: 'lut_people_warning_and_rescue',
     sourceIds: ['tanzil-uthmani-v1.1:q7:80-84'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'ismail',
+    subjectProphetId: 'ismail',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'ismail_prayer_and_zakat_instruction',
+    sourceIds: ['tanzil-uthmani-v1.1:q19:54-55'],
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
@@ -174,6 +190,14 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     dimension: ProphetSemanticDimension.event,
     claimKey: 'zakariya_prayer_yahya_sign',
     sourceIds: ['tanzil-uthmani-v1.1:q3:38-41'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'yahya',
+    subjectProphetId: 'yahya',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'yahya_named_and_given_wisdom',
+    sourceIds: ['tanzil-uthmani-v1.1:q19:7-15'],
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
