@@ -19,12 +19,13 @@ void main() {
     for (final claim in canonicalProphetQuranEventEvidenceT0336) {
       final pair = expected[claim.claimKey];
       expect(pair, isNotNull, reason: claim.claimKey);
-      expect(claim.biographyProphetId, pair!.$1, reason: claim.claimKey);
-      expect(claim.subjectProphetId, pair.$1, reason: claim.claimKey);
+      final expectedPair = pair!;
+      expect(claim.biographyProphetId, expectedPair.$1, reason: claim.claimKey);
+      expect(claim.subjectProphetId, expectedPair.$1, reason: claim.claimKey);
       expect(claim.dimension, ProphetSemanticDimension.event);
       expect(claim.contextReference, isFalse);
       expect(claim.evidenceState, ProphetSemanticEvidenceState.verified);
-      expect(claim.sourceIds, [pair.$2]);
+      expect(claim.sourceIds, [expectedPair.$2]);
       expect(claim.sourceClasses, {ReligiousSourceClass.quran});
     }
 
