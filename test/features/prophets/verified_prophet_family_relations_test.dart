@@ -7,6 +7,7 @@ void main() {
   group('T0198 verified prophet family graph', () {
     test('seed graph is valid and every source is explicit Quran evidence', () {
       expect(verifiedProphetFamilyGraphIsValid, isTrue);
+      expect(verifiedProphetFamilyChronologyIsConsistent, isTrue);
       expect(verifiedProphetKinshipFacts, isNotEmpty);
 
       for (final fact in verifiedProphetKinshipFacts) {
@@ -45,9 +46,44 @@ void main() {
       expect(yahya.single.type, ProphetRelationType.parent);
     });
 
+    test('Ibrahim to Ismail and Ishaq relations require exact reviewed Quran evidence', () {
+      final ibrahim = verifiedFamilyRelationsFor('ibrahim');
+      final ismail = verifiedFamilyRelationsFor('ismail');
+      final ishaq = verifiedFamilyRelationsFor('ishaq');
+
+      expect(ibrahim, hasLength(2));
+      expect(
+        ibrahim.map((relation) => relation.relatedPersonId).toSet(),
+        {'ismail', 'ishaq'},
+      );
+      expect(ibrahim.every((relation) => relation.type == ProphetRelationType.child), isTrue);
+
+      expect(ismail, hasLength(1));
+      expect(ismail.single.relatedPersonId, 'ibrahim');
+      expect(ismail.single.type, ProphetRelationType.parent);
+      expect(ishaq, hasLength(1));
+      expect(ishaq.single.relatedPersonId, 'ibrahim');
+      expect(ishaq.single.type, ProphetRelationType.parent);
+    });
+
+    test('Dawud and Sulayman project as reciprocal parent-child relations', () {
+      final dawud = verifiedFamilyRelationsFor('dawud');
+      final sulayman = verifiedFamilyRelationsFor('sulayman');
+
+      expect(dawud, hasLength(1));
+      expect(dawud.single.relatedPersonId, 'sulayman');
+      expect(dawud.single.type, ProphetRelationType.child);
+      expect(sulayman, hasLength(1));
+      expect(sulayman.single.relatedPersonId, 'dawud');
+      expect(sulayman.single.type, ProphetRelationType.parent);
+    });
+
     test('shared or traditional genealogy is never inferred automatically', () {
-      expect(verifiedFamilyRelationsFor('ismail'), isEmpty);
-      expect(verifiedFamilyRelationsFor('ishaq'), isEmpty);
+      expect(
+        verifiedFamilyRelationsFor('ishaq')
+            .where((relation) => relation.relatedPersonId == 'yakub'),
+        isEmpty,
+      );
       expect(verifiedFamilyRelationsFor('yakub'), isEmpty);
     });
 
