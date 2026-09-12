@@ -43,6 +43,31 @@ void main() {
           NotificationContentExposureT0296.teaserReferenceOnly);
     });
 
+    test('TR EN AR snapshots use the reviewed text for the requested locale', () async {
+      final coordinator = _coordinator(_publishedDua());
+      final expected = <String, String>{
+        'tr': 'Türkçe dua',
+        'en': 'English dua',
+        'ar': 'دعاء عربي',
+      };
+
+      for (final entry in expected.entries) {
+        final snapshot = await coordinator.buildSnapshot(
+          civilDate: DateTime(2030, 1, 2),
+          languageCode: entry.key,
+          hasLifetimePro: false,
+        );
+
+        expect(snapshot.duaText, entry.value, reason: entry.key);
+        expect(snapshot.verse.arabic, 'نص الآية', reason: entry.key);
+        expect(
+          snapshot.contentExposure,
+          NotificationContentExposureT0296.teaserReferenceOnly,
+          reason: entry.key,
+        );
+      }
+    });
+
     test('AR uses reviewed Arabic dua and preserves Quran Arabic', () async {
       final snapshot = await _coordinator(_publishedDua()).buildSnapshot(
         civilDate: DateTime(2030, 1, 2), languageCode: 'ar', hasLifetimePro: false,
