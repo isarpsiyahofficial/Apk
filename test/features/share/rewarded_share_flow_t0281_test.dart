@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/features/share/domain/rewarded_share_flow_t0281.dart';
 import 'package:islami_hayat/features/share/domain/rewarded_share_unlock_t0269.dart';
@@ -21,10 +23,26 @@ final class _Presenter implements RewardedAdPresenterT0281 {
   }
 }
 
+final class _DeferredPresenter implements RewardedAdPresenterT0281 {
+  final Completer<RewardedAdResultT0269> completer =
+      Completer<RewardedAdResultT0269>();
+  int calls = 0;
+  final List<String> designIds = <String>[];
+
+  @override
+  Future<RewardedAdResultT0269> showForShareUnlock({
+    required String designId,
+  }) {
+    calls += 1;
+    designIds.add(designId);
+    return completer.future;
+  }
+}
+
 RewardedShareFlowT0281 _flow({
   required String designId,
   required bool isPro,
-  required _Presenter presenter,
+  required RewardedAdPresenterT0281 presenter,
 }) {
   return RewardedShareFlowT0281(
     unlock: RewardedShareUnlockT0269(designId: designId, isPro: isPro),
@@ -130,6 +148,34 @@ void main() {
           ShareUnlockDecisionT0269.allowedSingleRewardedShare);
       expect(presenter.calls, 1);
       expect(flow.consumeShareRight(), isTrue);
+    });
+
+    test('concurrent taps share one in-flight rewarded request', () async {
+      final presenter = _DeferredPresenter();
+      final flow = _flow(
+        designId: 'Canva-042',
+        isPro: false,
+        presenter: presenter,
+      );
+
+      final first = flow.requestUnlock();
+      final second = flow.requestUnlock();
+      final third = flow.requestUnlock();
+
+      expect(presenter.calls, 1);
+      expect(presenter.designIds, <String>['Canva-042']);
+
+      presenter.completer.complete(RewardedAdResultT0269.completed);
+
+      expect(await first,
+          ShareUnlockDecisionT0269.allowedSingleRewardedShare);
+      expect(await second,
+          ShareUnlockDecisionT0269.allowedSingleRewardedShare);
+      expect(await third,
+          ShareUnlockDecisionT0269.allowedSingleRewardedShare);
+      expect(presenter.calls, 1);
+      expect(flow.consumeShareRight(), isTrue);
+      expect(flow.consumeShareRight(), isFalse);
     });
   });
 }
