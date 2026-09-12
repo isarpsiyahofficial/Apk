@@ -79,6 +79,21 @@ ProphetSemanticReleaseGateResultT0336 auditProphetSemanticReleaseGateT0336({
         );
       }
 
+      if (slot.unresolvedClaimKeys.length !=
+          slot.unresolvedClaimKeys.toSet().length) {
+        errors.add(
+          '${row.prophetId}/${dimension.name}: duplicate unresolved claim keys',
+        );
+      }
+      if (slot.unresolvedEvidenceStates.any(
+        (state) => state == ProphetSemanticEvidenceState.verified,
+      )) {
+        errors.add(
+          '${row.prophetId}/${dimension.name}: unresolved metadata cannot carry '
+          'verified evidence state',
+        );
+      }
+
       if (slot.isVerified &&
           (slot.verifiedClaimKeys.isEmpty || slot.sourceIds.isEmpty)) {
         errors.add(
@@ -91,6 +106,19 @@ ProphetSemanticReleaseGateResultT0336 auditProphetSemanticReleaseGateT0336({
         errors.add(
           '${row.prophetId}/${dimension.name}: missing slot carries verified '
           'claim/source evidence',
+        );
+      }
+
+      // Exact historical dates are particularly high-risk. If exact verified
+      // evidence does not exist, the gap must be explicit rather than silently
+      // absent. This keeps uncertainty visible and prevents future code from
+      // filling a date from chronology/order/lineage inference.
+      if (dimension == ProphetSemanticDimension.historicalDate &&
+          !slot.isVerified &&
+          !slot.hasExplicitUnresolvedEvidence) {
+        errors.add(
+          '${row.prophetId}/historicalDate: missing exact-date evidence must be '
+          'explicitly unknown or pendingReview',
         );
       }
     }
