@@ -7,9 +7,13 @@ void main() {
   const qa = ProphetSemanticOwnershipQa();
 
   test('Quran-explicit event anchors preserve owner + exact source locators', () {
-    expect(canonicalProphetQuranEventEvidenceT0336, hasLength(8));
+    expect(canonicalProphetQuranEventEvidenceT0336, hasLength(16));
 
     final expected = <String, (String, List<String>)>{
+      'adam_tree_and_descent': (
+        'adam',
+        ['tanzil-uthmani-v1.1:q2:35-36'],
+      ),
       'nuh_ark_and_flood': (
         'nuh',
         ['tanzil-uthmani-v1.1:q11:36-44'],
@@ -26,6 +30,10 @@ void main() {
         'ibrahim',
         ['tanzil-uthmani-v1.1:q21:68-69'],
       ),
+      'lut_people_warning_and_rescue': (
+        'lut',
+        ['tanzil-uthmani-v1.1:q7:80-84'],
+      ),
       'yusuf_well_and_egypt': (
         'yusuf',
         [
@@ -33,17 +41,41 @@ void main() {
           'tanzil-uthmani-v1.1:q12:21',
         ],
       ),
+      'ayyub_affliction_and_relief': (
+        'ayyub',
+        ['tanzil-uthmani-v1.1:q21:83-84'],
+      ),
+      'shuayb_madyan_measure_weight': (
+        'shuayb',
+        ['tanzil-uthmani-v1.1:q7:85-93'],
+      ),
       'musa_exodus_pharaoh': (
         'musa',
         ['tanzil-uthmani-v1.1:q26:60-66'],
+      ),
+      'dawud_defeats_jalut': (
+        'dawud',
+        ['tanzil-uthmani-v1.1:q2:251'],
       ),
       'sulayman_ant_valley': (
         'sulayman',
         ['tanzil-uthmani-v1.1:q27:17-19'],
       ),
+      'ilyas_baal_warning': (
+        'ilyas',
+        ['tanzil-uthmani-v1.1:q37:123-132'],
+      ),
       'yunus_fish_episode': (
         'yunus',
         ['tanzil-uthmani-v1.1:q37:139-142'],
+      ),
+      'zakariya_prayer_yahya_sign': (
+        'zakariya',
+        ['tanzil-uthmani-v1.1:q3:38-41'],
+      ),
+      'isa_infant_speech': (
+        'isa',
+        ['tanzil-uthmani-v1.1:q19:29-33'],
       ),
     };
 
@@ -59,6 +91,8 @@ void main() {
       expect(claim.sourceIds, expectedPair.$2);
       expect(claim.sourceClasses, {ReligiousSourceClass.quran});
     }
+
+    expect(expected.keys.toSet(), canonicalProphetQuranEventEvidenceT0336.map((e) => e.claimKey).toSet());
 
     final result = qa.audit(
       claims: canonicalProphetQuranEventEvidenceT0336,
@@ -101,6 +135,39 @@ void main() {
     }
   });
 
+  test('every Quran event fails closed when subject ownership is forged', () {
+    for (final original in canonicalProphetQuranEventEvidenceT0336) {
+      final wrongSubject = original.subjectProphetId == 'muhammad'
+          ? 'yusuf'
+          : 'muhammad';
+      final tampered = ProphetSemanticClaim(
+        biographyProphetId: original.biographyProphetId,
+        subjectProphetId: wrongSubject,
+        dimension: original.dimension,
+        claimKey: original.claimKey,
+        sourceIds: original.sourceIds,
+        sourceClasses: original.sourceClasses,
+        contextReference: true,
+      );
+
+      final result = qa.audit(
+        claims: [tampered],
+        requireFull25Coverage: false,
+      );
+
+      expect(result.isValid, isFalse, reason: original.claimKey);
+      expect(
+        result.errors.any(
+          (error) => error.contains(
+            'exclusive event subject must be ${original.subjectProphetId}',
+          ),
+        ),
+        isTrue,
+        reason: original.claimKey,
+      );
+    }
+  });
+
   test('natural cross-reference does not transfer event coverage', () {
     final original = canonicalProphetQuranEventEvidenceT0336.singleWhere(
       (claim) => claim.claimKey == 'yusuf_well_and_egypt',
@@ -124,28 +191,36 @@ void main() {
 
   test('exclusive event cannot be relabelled as chronology or date evidence', () {
     for (final original in canonicalProphetQuranEventEvidenceT0336) {
-      final tampered = ProphetSemanticClaim(
-        biographyProphetId: original.biographyProphetId,
-        subjectProphetId: original.subjectProphetId,
-        dimension: ProphetSemanticDimension.historicalDate,
-        claimKey: original.claimKey,
-        sourceIds: original.sourceIds,
-        sourceClasses: original.sourceClasses,
-      );
+      for (final wrongDimension in const [
+        ProphetSemanticDimension.chronology,
+        ProphetSemanticDimension.historicalDate,
+        ProphetSemanticDimension.geography,
+        ProphetSemanticDimension.hadith,
+        ProphetSemanticDimension.familyLineage,
+      ]) {
+        final tampered = ProphetSemanticClaim(
+          biographyProphetId: original.biographyProphetId,
+          subjectProphetId: original.subjectProphetId,
+          dimension: wrongDimension,
+          claimKey: original.claimKey,
+          sourceIds: original.sourceIds,
+          sourceClasses: original.sourceClasses,
+        );
 
-      final result = qa.audit(
-        claims: [tampered],
-        requireFull25Coverage: false,
-      );
+        final result = qa.audit(
+          claims: [tampered],
+          requireFull25Coverage: false,
+        );
 
-      expect(result.isValid, isFalse, reason: original.claimKey);
-      expect(
-        result.errors.any(
-          (error) => error.contains('exclusive event must use the event dimension'),
-        ),
-        isTrue,
-        reason: original.claimKey,
-      );
+        expect(result.isValid, isFalse, reason: '${original.claimKey}/${wrongDimension.name}');
+        expect(
+          result.errors.any(
+            (error) => error.contains('exclusive event must use the event dimension'),
+          ),
+          isTrue,
+          reason: '${original.claimKey}/${wrongDimension.name}',
+        );
+      }
     }
   });
 }
