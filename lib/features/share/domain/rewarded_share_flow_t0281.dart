@@ -19,6 +19,8 @@ abstract interface class RewardedAdPresenterT0281 {
 /// - cancellation, no-fill, explicit failure and presenter exceptions grant
 ///   nothing and keep the design locked.
 /// - an already-earned one-share right is never replaced by another ad request.
+/// - concurrent unlock taps share one in-flight rewarded presentation, so one
+///   user action cannot fan out into multiple rewarded SDK requests.
 final class RewardedShareFlowT0281 {
   RewardedShareFlowT0281({
     required RewardedShareUnlockT0269 unlock,
@@ -29,23 +31,41 @@ final class RewardedShareFlowT0281 {
   final RewardedShareUnlockT0269 _unlock;
   final RewardedAdPresenterT0281 _presenter;
 
+  Future<ShareUnlockDecisionT0269>? _unlockInFlight;
+
   ShareUnlockDecisionT0269 get decision => _unlock.currentDecision();
 
   bool get shouldOfferRewarded => _unlock.shouldOfferRewarded;
 
-  Future<ShareUnlockDecisionT0269> requestUnlock() async {
+  Future<ShareUnlockDecisionT0269> requestUnlock() {
     final current = _unlock.currentDecision();
 
     if (current == ShareUnlockDecisionT0269.allowedFree ||
         current == ShareUnlockDecisionT0269.allowedPro ||
         current == ShareUnlockDecisionT0269.allowedSingleRewardedShare) {
-      return current;
+      return Future<ShareUnlockDecisionT0269>.value(current);
     }
 
     if (!_unlock.shouldOfferRewarded) {
-      return ShareUnlockDecisionT0269.denied;
+      return Future<ShareUnlockDecisionT0269>.value(
+        ShareUnlockDecisionT0269.denied,
+      );
     }
 
+    final existing = _unlockInFlight;
+    if (existing != null) return existing;
+
+    final request = _requestRewardedUnlock();
+    _unlockInFlight = request;
+    request.whenComplete(() {
+      if (identical(_unlockInFlight, request)) {
+        _unlockInFlight = null;
+      }
+    });
+    return request;
+  }
+
+  Future<ShareUnlockDecisionT0269> _requestRewardedUnlock() async {
     RewardedAdResultT0269 result;
     try {
       result = await _presenter.showForShareUnlock(
