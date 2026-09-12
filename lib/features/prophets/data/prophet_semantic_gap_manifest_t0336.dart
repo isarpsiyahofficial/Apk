@@ -16,6 +16,8 @@ final class ProphetSemanticGapSlotT0336 {
     required this.state,
     required this.verifiedClaimKeys,
     required this.sourceIds,
+    this.unresolvedClaimKeys = const <String>[],
+    this.unresolvedEvidenceStates = const <ProphetSemanticEvidenceState>[],
   });
 
   final String prophetId;
@@ -24,12 +26,25 @@ final class ProphetSemanticGapSlotT0336 {
   final List<String> verifiedClaimKeys;
   final List<String> sourceIds;
 
-  bool get isVerified => state == ProphetSemanticSlotStateT0336.verified;
+  /// Explicit unknown/pending editorial records for this slot. These are kept
+  /// visible so missing history is not silently inferred or invented merely to
+  /// complete the 25×8 matrix. They never count as verified release coverage.
+  final List<String> unresolvedClaimKeys;
+  final List<ProphetSemanticEvidenceState> unresolvedEvidenceStates;
 
-  String get gapReason => isVerified
-      ? ''
-      : 'No biography-owned, verified, source-class-valid evidence is admitted '
-          'for ${dimension.name}.';
+  bool get isVerified => state == ProphetSemanticSlotStateT0336.verified;
+  bool get hasExplicitUnresolvedEvidence => unresolvedClaimKeys.isNotEmpty;
+
+  String get gapReason {
+    if (isVerified) return '';
+    if (hasExplicitUnresolvedEvidence) {
+      final states = unresolvedEvidenceStates.map((state) => state.name).toSet();
+      return 'No verified biography-owned evidence is admitted for '
+          '${dimension.name}; explicit editorial state: ${states.join(',')}.';
+    }
+    return 'No biography-owned, verified, source-class-valid evidence is admitted '
+        'for ${dimension.name}.';
+  }
 }
 
 final class ProphetSemanticGapManifestT0336 {
@@ -100,11 +115,24 @@ ProphetSemanticGapManifestT0336 buildProphetSemanticGapManifestT0336({
         !claim.contextReference &&
         claim.biographyProphetId == claim.subjectProphetId,
   );
+  final unresolvedClaims = claimList.where(
+    (claim) =>
+        claim.evidenceState != ProphetSemanticEvidenceState.verified &&
+        !claim.contextReference &&
+        claim.biographyProphetId == claim.subjectProphetId,
+  );
 
   final slots = <ProphetSemanticGapSlotT0336>[];
   for (final identity in canonicalQuranNamedProphets) {
     for (final dimension in ProphetSemanticDimension.values) {
       final evidence = usableClaims
+          .where(
+            (claim) =>
+                claim.biographyProphetId == identity.canonicalId &&
+                claim.dimension == dimension,
+          )
+          .toList(growable: false);
+      final unresolved = unresolvedClaims
           .where(
             (claim) =>
                 claim.biographyProphetId == identity.canonicalId &&
@@ -121,6 +149,13 @@ ProphetSemanticGapManifestT0336 buildProphetSemanticGapManifestT0336({
           .toSet()
           .toList()
         ..sort();
+      final unresolvedClaimKeys =
+          unresolved.map((claim) => claim.claimKey).toSet().toList()..sort();
+      final unresolvedEvidenceStates = unresolved
+          .map((claim) => claim.evidenceState)
+          .toSet()
+          .toList()
+        ..sort((a, b) => a.index.compareTo(b.index));
 
       slots.add(
         ProphetSemanticGapSlotT0336(
@@ -131,6 +166,12 @@ ProphetSemanticGapManifestT0336 buildProphetSemanticGapManifestT0336({
               : ProphetSemanticSlotStateT0336.verified,
           verifiedClaimKeys: List<String>.unmodifiable(claimKeys),
           sourceIds: List<String>.unmodifiable(sourceIds),
+          unresolvedClaimKeys:
+              List<String>.unmodifiable(unresolvedClaimKeys),
+          unresolvedEvidenceStates:
+              List<ProphetSemanticEvidenceState>.unmodifiable(
+            unresolvedEvidenceStates,
+          ),
         ),
       );
     }
