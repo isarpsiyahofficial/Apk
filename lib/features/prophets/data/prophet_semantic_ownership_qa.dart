@@ -61,16 +61,24 @@ final class ProphetSemanticOwnershipQa {
       .toSet();
 
   static const Map<String, String> _exclusiveEventOwners = {
+    'adam_tree_and_descent': 'adam',
     'nuh_ark_and_flood': 'nuh',
     'hud_aad_warning_and_judgment': 'hud',
     'salih_she_camel_trial': 'salih',
+    'ibrahim_fire_trial': 'ibrahim',
+    'lut_people_warning_and_rescue': 'lut',
     'yusuf_well_and_egypt': 'yusuf',
+    'ayyub_affliction_and_relief': 'ayyub',
+    'shuayb_madyan_measure_weight': 'shuayb',
+    'musa_exodus_pharaoh': 'musa',
+    'dawud_defeats_jalut': 'dawud',
+    'sulayman_ant_valley': 'sulayman',
+    'ilyas_baal_warning': 'ilyas',
+    'yunus_fish_episode': 'yunus',
+    'zakariya_prayer_yahya_sign': 'zakariya',
+    'isa_infant_speech': 'isa',
     'muhammad_hijra_to_medina': 'muhammad',
     'muhammad_first_revelation_hira': 'muhammad',
-    'musa_exodus_pharaoh': 'musa',
-    'sulayman_ant_valley': 'sulayman',
-    'yunus_fish_episode': 'yunus',
-    'ibrahim_fire_trial': 'ibrahim',
   };
 
   static const Set<ReligiousSourceClass> _strongHistoricalSources = {
