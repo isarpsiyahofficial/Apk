@@ -33,7 +33,7 @@ void main() {
     }
   });
 
-  test('only four prophets currently receive conservative reviewed lineage coverage', () {
+  test('reviewed lineage preserves ten claims across nine unique coverage slots', () {
     final report = canonicalProphetCoverageReportT0336;
     final lineageCovered = report.rows
         .where(
@@ -42,7 +42,31 @@ void main() {
         .map((row) => row.prophetId)
         .toSet();
 
-    expect(lineageCovered, {'musa', 'harun', 'zakariya', 'yahya'});
+    expect(canonicalProphetFamilyLineageEvidenceT0336, hasLength(10));
+    expect(lineageCovered, hasLength(9));
+    expect(lineageCovered, {
+      'musa',
+      'harun',
+      'zakariya',
+      'yahya',
+      'ibrahim',
+      'ismail',
+      'ishaq',
+      'dawud',
+      'sulayman',
+    });
+
+    final ibrahimClaims = canonicalProphetFamilyLineageEvidenceT0336
+        .where((claim) => claim.biographyProphetId == 'ibrahim')
+        .toList(growable: false);
+    expect(ibrahimClaims, hasLength(2));
+    expect(
+      ibrahimClaims.map((claim) => claim.claimKey).toSet(),
+      {
+        'familyLineage:ibrahim:ibrahim-ismail-parent-child-q14-39',
+        'familyLineage:ibrahim:ibrahim-ishaq-parent-child-q14-39',
+      },
+    );
   });
 
   test('identity and Quran verse are covered for every canonical prophet', () {
