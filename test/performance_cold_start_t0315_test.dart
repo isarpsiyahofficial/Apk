@@ -87,6 +87,22 @@ void main() {
     );
   });
 
+  test('named Android 35 wrapper preserves a failing child gate exit status', () {
+    final gate =
+        File('scripts/android_api35_release_gate.sh').readAsStringSync();
+
+    expect(gate, startsWith('#!/bin/sh\nset -eu'));
+    expect(gate, contains('if "\$@"; then'));
+    expect(gate, contains('status=\$?'));
+    expect(gate, contains('return "\$status"'));
+    expect(gate, isNot(contains('|| true')));
+    expect(gate, contains("run_gate T0314 'functional app launch smoke'"));
+    expect(gate, contains("run_gate T0251 'Android share-sheet smoke'"));
+    expect(gate, contains("run_gate T0315 'release cold-start performance gate'"));
+    expect(gate, contains("run_gate T0319 'phone/tablet/orientation viewport matrix'"));
+    expect(gate, contains("run_gate T0297 'real launcher widget pin/render/tap smoke'"));
+  });
+
   test('T0319 matrix stops app before resize and confirms viewport override', () {
     final script = File('scripts/android_device_matrix_t0319.sh')
         .readAsStringSync();
