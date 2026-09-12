@@ -34,13 +34,14 @@ void main() {
     expect(adamIdentity.isVerified, isTrue);
     expect(adamIdentity.verifiedClaimKeys, contains('identity:adam'));
     expect(adamIdentity.sourceIds, contains('tanzil-uthmani-v1.1'));
+    expect(adamIdentity.unresolvedClaimKeys, isEmpty);
     expect(adamIdentity.gapReason, isEmpty);
 
     expect(adamVerse.isVerified, isTrue);
     expect(adamVerse.sourceIds, contains('tanzil-uthmani-v1.1'));
   });
 
-  test('missing historical dates remain explicit gaps instead of inferred facts', () {
+  test('all 25 historical dates are explicit unknown gaps, never inferred facts', () {
     final manifest = canonicalProphetSemanticGapManifestT0336;
 
     for (final identity in canonicalQuranNamedProphets) {
@@ -51,11 +52,23 @@ void main() {
       expect(date.isVerified, isFalse, reason: identity.canonicalId);
       expect(date.verifiedClaimKeys, isEmpty, reason: identity.canonicalId);
       expect(date.sourceIds, isEmpty, reason: identity.canonicalId);
-      expect(date.gapReason, contains('No biography-owned'));
+      expect(date.hasExplicitUnresolvedEvidence, isTrue,
+          reason: identity.canonicalId);
+      expect(
+        date.unresolvedClaimKeys,
+        contains('historicalDate:${identity.canonicalId}:unknown'),
+        reason: identity.canonicalId,
+      );
+      expect(
+        date.unresolvedEvidenceStates,
+        contains(ProphetSemanticEvidenceState.unknown),
+        reason: identity.canonicalId,
+      );
+      expect(date.gapReason, contains('explicit editorial state: unknown'));
     }
   });
 
-  test('pending or unknown evidence never converts a gap to verified', () {
+  test('pending or unknown evidence remains visible but never becomes verified', () {
     const unresolved = [
       ProphetSemanticClaim(
         biographyProphetId: 'adam',
@@ -76,14 +89,22 @@ void main() {
     ];
 
     final manifest = buildProphetSemanticGapManifestT0336(claims: unresolved);
+    final date =
+        manifest.slotFor('adam', ProphetSemanticDimension.historicalDate);
+    final lineage =
+        manifest.slotFor('adam', ProphetSemanticDimension.familyLineage);
 
+    expect(date.isVerified, isFalse);
+    expect(date.unresolvedClaimKeys, contains('historicalDate:adam:unknown'));
     expect(
-      manifest.slotFor('adam', ProphetSemanticDimension.historicalDate).isVerified,
-      isFalse,
+      date.unresolvedEvidenceStates,
+      contains(ProphetSemanticEvidenceState.unknown),
     );
+    expect(lineage.isVerified, isFalse);
+    expect(lineage.unresolvedClaimKeys, contains('familyLineage:adam:pending'));
     expect(
-      manifest.slotFor('adam', ProphetSemanticDimension.familyLineage).isVerified,
-      isFalse,
+      lineage.unresolvedEvidenceStates,
+      contains(ProphetSemanticEvidenceState.pendingReview),
     );
   });
 
