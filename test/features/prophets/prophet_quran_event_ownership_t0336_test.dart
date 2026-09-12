@@ -7,9 +7,25 @@ void main() {
   const qa = ProphetSemanticOwnershipQa();
 
   test('Quran-explicit event anchors preserve owner + exact source locators', () {
-    expect(canonicalProphetQuranEventEvidenceT0336, hasLength(4));
+    expect(canonicalProphetQuranEventEvidenceT0336, hasLength(8));
 
     final expected = <String, (String, List<String>)>{
+      'nuh_ark_and_flood': (
+        'nuh',
+        ['tanzil-uthmani-v1.1:q11:36-44'],
+      ),
+      'hud_aad_warning_and_judgment': (
+        'hud',
+        ['tanzil-uthmani-v1.1:q11:50-60'],
+      ),
+      'salih_she_camel_trial': (
+        'salih',
+        ['tanzil-uthmani-v1.1:q11:61-68'],
+      ),
+      'ibrahim_fire_trial': (
+        'ibrahim',
+        ['tanzil-uthmani-v1.1:q21:68-69'],
+      ),
       'yusuf_well_and_egypt': (
         'yusuf',
         [
@@ -17,13 +33,13 @@ void main() {
           'tanzil-uthmani-v1.1:q12:21',
         ],
       ),
-      'ibrahim_fire_trial': (
-        'ibrahim',
-        ['tanzil-uthmani-v1.1:q21:68-69'],
-      ),
       'musa_exodus_pharaoh': (
         'musa',
         ['tanzil-uthmani-v1.1:q26:60-66'],
+      ),
+      'sulayman_ant_valley': (
+        'sulayman',
+        ['tanzil-uthmani-v1.1:q27:17-19'],
       ),
       'yunus_fish_episode': (
         'yunus',
@@ -51,59 +67,85 @@ void main() {
     expect(result.isValid, isTrue, reason: result.errors.join('\n'));
   });
 
-  test('Yusuf well event assigned to Muhammad biography fails closed', () {
+  test('every Quran event fails closed when assigned to another biography', () {
+    for (final original in canonicalProphetQuranEventEvidenceT0336) {
+      final wrongBiography = original.biographyProphetId == 'muhammad'
+          ? 'yusuf'
+          : 'muhammad';
+      final tampered = ProphetSemanticClaim(
+        biographyProphetId: wrongBiography,
+        subjectProphetId: original.subjectProphetId,
+        dimension: original.dimension,
+        claimKey: original.claimKey,
+        sourceIds: original.sourceIds,
+        sourceClasses: original.sourceClasses,
+      );
+
+      final result = qa.audit(
+        claims: [tampered],
+        requireFull25Coverage: false,
+      );
+
+      expect(result.isValid, isFalse, reason: original.claimKey);
+      expect(
+        result.errors.any(
+          (error) =>
+              error.contains('fact belongs to ${original.subjectProphetId}') ||
+              error.contains(
+                'exclusive event belongs to ${original.subjectProphetId}',
+              ),
+        ),
+        isTrue,
+        reason: original.claimKey,
+      );
+    }
+  });
+
+  test('natural cross-reference does not transfer event coverage', () {
     final original = canonicalProphetQuranEventEvidenceT0336.singleWhere(
       (claim) => claim.claimKey == 'yusuf_well_and_egypt',
     );
-    final tampered = ProphetSemanticClaim(
+    final contextual = ProphetSemanticClaim(
       biographyProphetId: 'muhammad',
       subjectProphetId: original.subjectProphetId,
       dimension: original.dimension,
       claimKey: original.claimKey,
       sourceIds: original.sourceIds,
       sourceClasses: original.sourceClasses,
+      contextReference: true,
     );
 
     final result = qa.audit(
-      claims: [tampered],
+      claims: [contextual],
       requireFull25Coverage: false,
     );
-
-    expect(result.isValid, isFalse);
-    expect(
-      result.errors.any(
-        (error) =>
-            error.contains('fact belongs to yusuf') ||
-            error.contains('exclusive event belongs to yusuf'),
-      ),
-      isTrue,
-    );
+    expect(result.isValid, isTrue, reason: result.errors.join('\n'));
   });
 
   test('exclusive event cannot be relabelled as chronology or date evidence', () {
-    final original = canonicalProphetQuranEventEvidenceT0336.singleWhere(
-      (claim) => claim.claimKey == 'musa_exodus_pharaoh',
-    );
-    final tampered = ProphetSemanticClaim(
-      biographyProphetId: original.biographyProphetId,
-      subjectProphetId: original.subjectProphetId,
-      dimension: ProphetSemanticDimension.historicalDate,
-      claimKey: original.claimKey,
-      sourceIds: original.sourceIds,
-      sourceClasses: original.sourceClasses,
-    );
+    for (final original in canonicalProphetQuranEventEvidenceT0336) {
+      final tampered = ProphetSemanticClaim(
+        biographyProphetId: original.biographyProphetId,
+        subjectProphetId: original.subjectProphetId,
+        dimension: ProphetSemanticDimension.historicalDate,
+        claimKey: original.claimKey,
+        sourceIds: original.sourceIds,
+        sourceClasses: original.sourceClasses,
+      );
 
-    final result = qa.audit(
-      claims: [tampered],
-      requireFull25Coverage: false,
-    );
+      final result = qa.audit(
+        claims: [tampered],
+        requireFull25Coverage: false,
+      );
 
-    expect(result.isValid, isFalse);
-    expect(
-      result.errors.any(
-        (error) => error.contains('exclusive event must use the event dimension'),
-      ),
-      isTrue,
-    );
+      expect(result.isValid, isFalse, reason: original.claimKey);
+      expect(
+        result.errors.any(
+          (error) => error.contains('exclusive event must use the event dimension'),
+        ),
+        isTrue,
+        reason: original.claimKey,
+      );
+    }
   });
 }
