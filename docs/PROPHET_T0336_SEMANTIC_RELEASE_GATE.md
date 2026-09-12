@@ -44,11 +44,11 @@ Metinde başka bir peygamberin adının doğal biçimde geçmesi hata değildir.
 
 ## Makine-okunur kanıt yüzeyleri
 
-- `prophet_semantic_evidence_t0336.dart`: canonical veri katmanlarından kabul edilen semantik claim'leri üretir.
+- `prophet_semantic_evidence_t0336.dart`: canonical veri katmanlarından kabul edilen semantik claim'leri üretir. Exact historical date kanıtı bulunmayan 25 canonical peygamber için ayrıca explicit `unknown` claim üretir; bu kayıtlar coverage artırmaz.
 - `prophet_semantic_coverage_report_t0336.dart`: peygamber bazında covered/missing boyutları özetler.
-- `prophet_semantic_gap_manifest_t0336.dart`: 200 slotun her birini claim key/source id ile açıkça gösterir; eksikleri görünür bırakır.
+- `prophet_semantic_gap_manifest_t0336.dart`: 200 slotun her birini verified claim key/source id ile açıkça gösterir; ayrıca `unknown`/`pendingReview` claim key ve state'lerini ayrı tutarak eksikliği makine-okunur bırakır.
 - `prophet_semantic_release_gate_t0336.dart`: coverage report ile gap manifestin birebir aynı sonucu verdiğini çapraz doğrular.
-- `prophet_exact_date_claim_audit_t0207.dart`: T0194 biyografi metnindeki takvim yılı iddialarını ayrı fail-closed kapıdan geçirir. T0336 coverage hesabı artık bu denetimi doğrudan çalıştırır; desteklenmeyen veya kesinliği abartılmış takvim tarihi içeren bir canonical biyografi varken hiçbir 25×8 coverage sonucu release kanıtı sayılamaz.
+- `prophet_exact_date_claim_audit_t0207.dart`: T0194 biyografi metnindeki takvim yılı iddialarını ayrı fail-closed kapıdan geçirir. T0336 coverage hesabı bu denetimi doğrudan çalıştırır; desteklenmeyen veya kesinliği abartılmış takvim tarihi içeren bir canonical biyografi varken hiçbir 25×8 coverage sonucu release kanıtı sayılamaz.
 
 Bu yüzeylerden biri eksik slotu gizlerken diğeri eksik gösterirse release gate FAIL olur.
 
@@ -56,10 +56,12 @@ Bu yüzeylerden biri eksik slotu gizlerken diğeri eksik gösterirse release gat
 
 `chronology` coverage tek başına `historicalDate` coverage üretmez. Canonical T0194 datasetindeki takvim yılı içeren biyografi metni ayrıca T0207 exact-date auditinden geçer. Kaynaksız takvim yılı, modern-history provenance olmadan verilen civil tarih veya yaklaşık kaynak bilgisini kesin tarihe yükselten ifade FAIL olur. Bu kontrol coverage hesaplanmadan önce çalışır; böylece semantik slot sayısı geçersiz tarih metnini maskeleyemez.
 
+Canonical T0336 registry'de 25 peygamberin `historicalDate` slotu şu an explicit `unknown` olarak kayıtlıdır. Bu, tarih bulunmadığını saklamaz ve hiçbir slotu PASS'e yükseltmez. İleride exact-date evidence eklenirse ilgili unknown kayıt kaldırılmalı; verified claim bağımsız kaynak/provenance ve T0207 tarih kesinliği kontrollerinden geçmelidir.
+
 ## Bilinmeyen tarih/soy kuralı
 
 Eksik `historicalDate`, soy veya coğrafya bilgisi sırf 200 slotu doldurmak için tahmin edilemez. Güvenilir, izlenebilir ve ilgili semantik boyutu gerçekten destekleyen kaynak bulunmadıkça slot açık kalır. Tarihsel tarih iddiasında belirsizlik/approximation gerekiyorsa içerikte de korunur.
 
 ## Final koşulu
 
-D10/D11 yalnızca canonical 200 slotun tamamı doğrulanmış evidence ile kapandığında ve ownership + provenance + genealogy + chronology + calendar-date QA birlikte yeşil olduğunda PASS yapılabilir. Bu koşul sağlanmadan peygamber hayatları final kabul edilmez.
+D10/D11 yalnızca canonical 200 slotun tamamı doğrulanmış evidence ile kapandığında ve ownership + provenance + genealogy + chronology + calendar-date QA birlikte yeşil olduğunda PASS yapılabilir. Explicit `unknown`/`pendingReview` kayıtları araştırma durumunu kanıtlar fakat release coverage sayılmaz. Bu koşul sağlanmadan peygamber hayatları final kabul edilmez.
