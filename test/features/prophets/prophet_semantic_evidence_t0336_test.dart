@@ -216,12 +216,31 @@ void main() {
   });
 
   test('reviewed bridges cannot falsely complete 25x8 release gate', () {
+    final historicalDateClaims = canonicalProphetSemanticEvidenceT0336
+        .where(
+          (claim) => claim.dimension == ProphetSemanticDimension.historicalDate,
+        )
+        .toList(growable: false);
+
+    expect(historicalDateClaims, hasLength(25));
     expect(
-      canonicalProphetSemanticEvidenceT0336.where(
-        (claim) => claim.dimension == ProphetSemanticDimension.historicalDate,
+      historicalDateClaims.where(
+        (claim) => claim.evidenceState == ProphetSemanticEvidenceState.verified,
       ),
       isEmpty,
       reason: 'period/approximation evidence must not be promoted to exact dates',
+    );
+    expect(
+      historicalDateClaims.every(
+        (claim) =>
+            claim.evidenceState == ProphetSemanticEvidenceState.unknown &&
+            claim.sourceIds.isEmpty &&
+            claim.sourceClasses.isEmpty &&
+            claim.claimKey ==
+                'historicalDate:${claim.biographyProphetId}:unknown',
+      ),
+      isTrue,
+      reason: 'all 25 exact-date gaps must remain explicit unknown records',
     );
 
     final result = qa.audit(claims: canonicalProphetSemanticEvidenceT0336);
