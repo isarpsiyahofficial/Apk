@@ -1,6 +1,7 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophets.dart';
 import 'prophet_content.dart';
+import 'prophet_timeline.dart';
 
 /// T0198 — fail-closed prophet family/genealogy graph.
 ///
@@ -123,12 +124,32 @@ const _zakariyaYahyaParentSource = SourceReference(
   locator: 'Quran 19:7',
 );
 
-/// Intentionally conservative seed facts.
+const _ibrahimIsmailIshaqParentSource = SourceReference(
+  id: 'tanzil-uthmani-v1.1-q14-39',
+  title: 'Tanzil Project — Uthmani Quran Text v1.1',
+  sourceClass: ReligiousSourceClass.quran,
+  licenseId: 'CC-BY-3.0',
+  locator: 'Quran 14:39',
+);
+
+const _dawudSulaymanParentSource = SourceReference(
+  id: 'tanzil-uthmani-v1.1-q38-30',
+  title: 'Tanzil Project — Uthmani Quran Text v1.1',
+  sourceClass: ReligiousSourceClass.quran,
+  licenseId: 'CC-BY-3.0',
+  locator: 'Quran 38:30',
+);
+
+/// Intentionally conservative reviewed facts.
 ///
-/// Quran 20:30 explicitly identifies Harun as Musa's brother. Quran 19:7
-/// explicitly gives Zakariya the glad tidings of a son named Yahya. Other
-/// commonly repeated genealogies remain outside this graph until their exact
-/// relation claim and source class are independently reviewed.
+/// Quran 20:30 explicitly identifies Harun as Musa's brother; Quran 19:7
+/// gives Zakariya glad tidings of a son named Yahya; Quran 14:39 records
+/// Ibrahim thanking Allah for granting him Ismail and Ishaq; and Quran 38:30
+/// states that Sulayman was granted to Dawud. The latter parent/child reading
+/// is independently cross-checked against Diyanet Kur'an Yolu tafsir before
+/// entering this reviewed graph. Other commonly repeated genealogies remain
+/// outside this graph until their exact relationship and source class are
+/// independently reviewed.
 const verifiedProphetKinshipFacts = <VerifiedProphetKinshipFact>[
   VerifiedProphetKinshipFact(
     id: 'musa-harun-siblings-q20-30',
@@ -145,6 +166,30 @@ const verifiedProphetKinshipFacts = <VerifiedProphetKinshipFact>[
     kind: VerifiedProphetKinshipKind.parentChild,
     certainty: CertaintyLevel.explicitSource,
     sources: [_zakariyaYahyaParentSource],
+  ),
+  VerifiedProphetKinshipFact(
+    id: 'ibrahim-ismail-parent-child-q14-39',
+    firstProphetId: 'ibrahim',
+    secondProphetId: 'ismail',
+    kind: VerifiedProphetKinshipKind.parentChild,
+    certainty: CertaintyLevel.explicitSource,
+    sources: [_ibrahimIsmailIshaqParentSource],
+  ),
+  VerifiedProphetKinshipFact(
+    id: 'ibrahim-ishaq-parent-child-q14-39',
+    firstProphetId: 'ibrahim',
+    secondProphetId: 'ishaq',
+    kind: VerifiedProphetKinshipKind.parentChild,
+    certainty: CertaintyLevel.explicitSource,
+    sources: [_ibrahimIsmailIshaqParentSource],
+  ),
+  VerifiedProphetKinshipFact(
+    id: 'dawud-sulayman-parent-child-q38-30',
+    firstProphetId: 'dawud',
+    secondProphetId: 'sulayman',
+    kind: VerifiedProphetKinshipKind.parentChild,
+    certainty: CertaintyLevel.explicitSource,
+    sources: [_dawudSulaymanParentSource],
   ),
 ];
 
@@ -170,6 +215,41 @@ List<ProphetFamilyRelation> verifiedFamilyRelationsFor(String canonicalId) {
 
 bool get verifiedProphetFamilyGraphIsValid =>
     verifiedProphetFamilyGraphIsValidFor(verifiedProphetKinshipFacts);
+
+/// Cross-checks reviewed family direction against the separately governed
+/// approximate chronology bands without promoting those bands to exact dates.
+/// Parent/ancestor must precede child/descendant; siblings may share a band.
+bool get verifiedProphetFamilyChronologyIsConsistent =>
+    verifiedProphetFamilyChronologyIsConsistentFor(verifiedProphetKinshipFacts);
+
+bool verifiedProphetFamilyChronologyIsConsistentFor(
+  Iterable<VerifiedProphetKinshipFact> facts,
+) {
+  if (!mainApproximateProphetChronologyIsValid) return false;
+
+  final orderByProphet = <String, int>{};
+  for (final band in mainApproximateProphetChronology) {
+    for (final prophetId in band.prophetIds) {
+      orderByProphet[prophetId] = band.order;
+    }
+  }
+
+  for (final fact in facts) {
+    if (!fact.isValid) return false;
+    final firstOrder = orderByProphet[fact.firstProphetId];
+    final secondOrder = orderByProphet[fact.secondProphetId];
+    if (firstOrder == null || secondOrder == null) return false;
+
+    switch (fact.kind) {
+      case VerifiedProphetKinshipKind.parentChild:
+      case VerifiedProphetKinshipKind.ancestorDescendant:
+        if (firstOrder >= secondOrder) return false;
+      case VerifiedProphetKinshipKind.siblings:
+        if (firstOrder != secondOrder) return false;
+    }
+  }
+  return true;
+}
 
 /// Audits a complete candidate graph rather than only validating facts in
 /// isolation. This prevents individually plausible records from forming a
@@ -248,6 +328,21 @@ bool _isReviewedFamilyClaim(VerifiedProphetKinshipFact fact) {
           fact.secondProphetId == 'yahya' &&
           fact.kind == VerifiedProphetKinshipKind.parentChild &&
           _sameSource(fact.sources.single, _zakariyaYahyaParentSource),
+    'ibrahim-ismail-parent-child-q14-39' =>
+      fact.firstProphetId == 'ibrahim' &&
+          fact.secondProphetId == 'ismail' &&
+          fact.kind == VerifiedProphetKinshipKind.parentChild &&
+          _sameSource(fact.sources.single, _ibrahimIsmailIshaqParentSource),
+    'ibrahim-ishaq-parent-child-q14-39' =>
+      fact.firstProphetId == 'ibrahim' &&
+          fact.secondProphetId == 'ishaq' &&
+          fact.kind == VerifiedProphetKinshipKind.parentChild &&
+          _sameSource(fact.sources.single, _ibrahimIsmailIshaqParentSource),
+    'dawud-sulayman-parent-child-q38-30' =>
+      fact.firstProphetId == 'dawud' &&
+          fact.secondProphetId == 'sulayman' &&
+          fact.kind == VerifiedProphetKinshipKind.parentChild &&
+          _sameSource(fact.sources.single, _dawudSulaymanParentSource),
     _ => false,
   };
 }
