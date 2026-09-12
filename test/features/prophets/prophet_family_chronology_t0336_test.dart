@@ -20,6 +20,27 @@ void main() {
       expect(relations, hasLength(2));
     });
 
+    test('Ishaq to Yakub to Yusuf chain is reviewed and chronology-consistent', () {
+      final ishaq = verifiedFamilyRelationsFor('ishaq');
+      final yakub = verifiedFamilyRelationsFor('yakub');
+      final yusuf = verifiedFamilyRelationsFor('yusuf');
+
+      expect(
+        ishaq.singleWhere((relation) => relation.relatedPersonId == 'yakub').type,
+        ProphetRelationType.child,
+      );
+      expect(
+        yakub.singleWhere((relation) => relation.relatedPersonId == 'ishaq').type,
+        ProphetRelationType.parent,
+      );
+      expect(
+        yakub.singleWhere((relation) => relation.relatedPersonId == 'yusuf').type,
+        ProphetRelationType.child,
+      );
+      expect(yusuf.single.relatedPersonId, 'yakub');
+      expect(yusuf.single.type, ProphetRelationType.parent);
+    });
+
     test('Dawud and Sulayman project reciprocal parent-child relation', () {
       final dawud = verifiedFamilyRelationsFor('dawud');
       final sulayman = verifiedFamilyRelationsFor('sulayman');
@@ -32,16 +53,15 @@ void main() {
       expect(sulayman.single.type, ProphetRelationType.parent);
     });
 
-    test('unreviewed Ishaq to Yakub relation is not inferred', () {
-      final ishaq = verifiedFamilyRelationsFor('ishaq');
-      final yakub = verifiedFamilyRelationsFor('yakub');
-
+    test('direct evidence never manufactures transitive ancestry', () {
       expect(
-        ishaq.where((relation) => relation.relatedPersonId == 'yakub'),
+        verifiedFamilyRelationsFor('ibrahim')
+            .where((relation) => relation.relatedPersonId == 'yakub'),
         isEmpty,
       );
       expect(
-        yakub.where((relation) => relation.relatedPersonId == 'ishaq'),
+        verifiedFamilyRelationsFor('ishaq')
+            .where((relation) => relation.relatedPersonId == 'yusuf'),
         isEmpty,
       );
     });
@@ -58,6 +78,14 @@ void main() {
       expect(
         byId['ibrahim-ishaq-parent-child-q14-39']!.sources.single.locator,
         'Quran 14:39',
+      );
+      expect(
+        byId['ishaq-yakub-parent-child-q21-72']!.sources.single.locator,
+        'Quran 21:72',
+      );
+      expect(
+        byId['yakub-yusuf-parent-child-q12-4-6']!.sources.single.locator,
+        'Quran 12:4-6',
       );
       expect(
         byId['dawud-sulayman-parent-child-q38-30']!.sources.single.locator,
