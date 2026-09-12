@@ -12,12 +12,12 @@ run_gate() {
     echo "${gate_id} PASS: ${gate_name}"
     echo '::endgroup::'
     return 0
+  else
+    status=$?
+    echo "${gate_id} FAIL (${status}): ${gate_name}" >&2
+    echo '::endgroup::'
+    return "$status"
   fi
-
-  status=$?
-  echo "${gate_id} FAIL (${status}): ${gate_name}" >&2
-  echo '::endgroup::'
-  return "$status"
 }
 
 run_cold_start_gate() {
