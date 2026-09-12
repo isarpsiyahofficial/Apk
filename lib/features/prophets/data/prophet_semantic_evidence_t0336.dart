@@ -44,13 +44,14 @@ final List<ProphetSemanticClaim> canonicalProphetIdentityVerseEvidenceT0336 =
   }),
 );
 
-/// Quran-explicit event ownership anchors for the mandatory semantic gate.
+/// Quran-explicit event/state ownership anchors for the mandatory semantic gate.
 ///
-/// These events have an explicit owner in their Quranic context and therefore
-/// do not depend on prose name matching or later historical inference. The
-/// application ships the pinned Tanzil Uthmani source; these claims establish
-/// event ownership only and never synthesize chronology, geography or an exact
-/// historical date from the verses.
+/// These anchors have an explicit owner in their Quranic context and therefore
+/// do not depend on prose name matching or later historical inference. For
+/// prophets whose Quran passages give no extended narrative (notably Elyesa'
+/// and Zulkifl), the anchor is deliberately limited to the explicit state the
+/// verse supplies rather than inventing a biography event. These claims never
+/// synthesize chronology, geography, genealogy or an exact historical date.
 final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     List<ProphetSemanticClaim>.unmodifiable(const [
   ProphetSemanticClaim(
@@ -118,6 +119,22 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
+    biographyProphetId: 'ishaq',
+    subjectProphetId: 'ishaq',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'ishaq_prophethood_glad_tidings',
+    sourceIds: ['tanzil-uthmani-v1.1:q37:112-113'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'yakub',
+    subjectProphetId: 'yakub',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'yakub_final_counsel_to_sons',
+    sourceIds: ['tanzil-uthmani-v1.1:q2:132-133'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
     biographyProphetId: 'yusuf',
     subjectProphetId: 'yusuf',
     dimension: ProphetSemanticDimension.event,
@@ -153,6 +170,14 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
+    biographyProphetId: 'harun',
+    subjectProphetId: 'harun',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'harun_rescue_and_book_with_musa',
+    sourceIds: ['tanzil-uthmani-v1.1:q37:114-122'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
     biographyProphetId: 'dawud',
     subjectProphetId: 'dawud',
     dimension: ProphetSemanticDimension.event,
@@ -174,6 +199,14 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     dimension: ProphetSemanticDimension.event,
     claimKey: 'ilyas_baal_warning',
     sourceIds: ['tanzil-uthmani-v1.1:q37:123-132'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'alyasa',
+    subjectProphetId: 'alyasa',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'alyasa_named_among_the_good',
+    sourceIds: ['tanzil-uthmani-v1.1:q38:48'],
     sourceClasses: {ReligiousSourceClass.quran},
   ),
   ProphetSemanticClaim(
@@ -206,6 +239,22 @@ final List<ProphetSemanticClaim> canonicalProphetQuranEventEvidenceT0336 =
     dimension: ProphetSemanticDimension.event,
     claimKey: 'isa_infant_speech',
     sourceIds: ['tanzil-uthmani-v1.1:q19:29-33'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'muhammad',
+    subjectProphetId: 'muhammad',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'muhammad_messenger_with_believers',
+    sourceIds: ['tanzil-uthmani-v1.1:q48:29'],
+    sourceClasses: {ReligiousSourceClass.quran},
+  ),
+  ProphetSemanticClaim(
+    biographyProphetId: 'dhul_kifl',
+    subjectProphetId: 'dhul_kifl',
+    dimension: ProphetSemanticDimension.event,
+    claimKey: 'dhul_kifl_patience_and_mercy',
+    sourceIds: ['tanzil-uthmani-v1.1:q21:85-86'],
     sourceClasses: {ReligiousSourceClass.quran},
   ),
 ]);
