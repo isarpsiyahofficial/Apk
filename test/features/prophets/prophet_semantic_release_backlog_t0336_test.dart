@@ -49,6 +49,27 @@ void main() {
     }
   });
 
+  test('hadith backlog locks the exact nine source-reviewed owners', () {
+    final entry = canonicalProphetSemanticReleaseBacklogT0336.singleWhere(
+      (item) => item.dimension == ProphetSemanticDimension.hadith,
+    );
+
+    expect(entry.verifiedCount, 9);
+    expect(entry.unresolvedCount, 16);
+    expect(entry.isComplete, isFalse);
+    expect(entry.verifiedProphetIds, <String>[
+      'adam',
+      'ayyub',
+      'ibrahim',
+      'isa',
+      'muhammad',
+      'musa',
+      'nuh',
+      'sulayman',
+      'yusuf',
+    ]);
+  });
+
   test('historical-date backlog remains 25 explicit unresolved records', () {
     final entry = canonicalProphetSemanticReleaseBacklogT0336.singleWhere(
       (item) => item.dimension == ProphetSemanticDimension.historicalDate,
