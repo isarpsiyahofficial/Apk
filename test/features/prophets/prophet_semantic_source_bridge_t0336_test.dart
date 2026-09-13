@@ -8,6 +8,8 @@ import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_q
 void main() {
   test('Quran-reviewed geography reaches T0336 with exact ownership', () {
     const expected = <String, String>{
+      'salih': 'tanzil-uthmani-v1.1-salih-q7-73-74-q89-9-thamud-settlement-geography',
+      'lut': 'tanzil-uthmani-v1.1-lut-q21-74-q15-76-town-road-geography',
       'hud': 'tanzil-uthmani-v1.1-hud-q11-50-q46-21-ahqaf-geography',
       'harun': 'tanzil-uthmani-v1.1-harun-q23-45-46-q43-51-egypt-geography',
       'nuh': 'tanzil-uthmani-v1.1-nuh-q11-44-al-judi-geography',
@@ -73,6 +75,14 @@ void main() {
           dimension: ProphetSemanticDimension.geography,
           claimKey: 'geography:salih:ahqaf',
           sourceIds: ['tanzil-uthmani-v1.1-hud-q11-50-q46-21-ahqaf-geography'],
+          sourceClasses: {ReligiousSourceClass.quran},
+        ),
+        ProphetSemanticClaim(
+          biographyProphetId: 'yusuf',
+          subjectProphetId: 'lut',
+          dimension: ProphetSemanticDimension.geography,
+          claimKey: 'geography:yusuf:lut-town-road',
+          sourceIds: ['tanzil-uthmani-v1.1-lut-q21-74-q15-76-town-road-geography'],
           sourceClasses: {ReligiousSourceClass.quran},
         ),
       ],
