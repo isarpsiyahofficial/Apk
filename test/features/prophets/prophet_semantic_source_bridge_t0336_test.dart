@@ -8,6 +8,8 @@ import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_q
 void main() {
   test('Quran-reviewed geography reaches T0336 with exact ownership', () {
     const expected = <String, String>{
+      'hud': 'tanzil-uthmani-v1.1-hud-q11-50-q46-21-ahqaf-geography',
+      'harun': 'tanzil-uthmani-v1.1-harun-q23-45-46-q43-51-egypt-geography',
       'nuh': 'tanzil-uthmani-v1.1-nuh-q11-44-al-judi-geography',
       'ibrahim': 'tanzil-uthmani-v1.1-ibrahim-q2-127-kaaba-geography',
       'ismail': 'tanzil-uthmani-v1.1-ismail-q2-127-kaaba-geography',
@@ -52,6 +54,25 @@ void main() {
           dimension: ProphetSemanticDimension.geography,
           claimKey: 'geography:muhammad:egypt',
           sourceIds: ['tanzil-uthmani-v1.1-yusuf-q12-21-egypt-geography'],
+          sourceClasses: {ReligiousSourceClass.quran},
+        ),
+      ],
+    );
+
+    expect(result.isValid, isFalse);
+  });
+
+  test('cross-reference geography cannot be reassigned to another owner', () {
+    const qa = ProphetSemanticOwnershipQa();
+    final result = qa.audit(
+      requireFull25Coverage: false,
+      claims: const [
+        ProphetSemanticClaim(
+          biographyProphetId: 'salih',
+          subjectProphetId: 'hud',
+          dimension: ProphetSemanticDimension.geography,
+          claimKey: 'geography:salih:ahqaf',
+          sourceIds: ['tanzil-uthmani-v1.1-hud-q11-50-q46-21-ahqaf-geography'],
           sourceClasses: {ReligiousSourceClass.quran},
         ),
       ],
