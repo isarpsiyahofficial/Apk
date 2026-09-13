@@ -34,6 +34,7 @@ final class ProphetSemanticClaim {
     this.sourceClasses = const <ReligiousSourceClass>{},
     this.contextReference = false,
     this.evidenceState = ProphetSemanticEvidenceState.verified,
+    this.explicitExactDateEvidence = false,
   });
 
   final String biographyProphetId;
@@ -44,6 +45,14 @@ final class ProphetSemanticClaim {
   final Set<ReligiousSourceClass> sourceClasses;
   final bool contextReference;
   final ProphetSemanticEvidenceState evidenceState;
+
+  /// Deliberate, fail-closed opt-in for a verified exact historical date.
+  ///
+  /// Strong source classes are also valid for approximate chronology, so source
+  /// class alone must never promote a period/order claim into an exact date.
+  /// This flag is legal only for a verified [historicalDate] claim and must be
+  /// backed by exact-source review before a future dataset sets it to true.
+  final bool explicitExactDateEvidence;
 }
 
 final class ProphetSemanticOwnershipQaResult {
@@ -177,6 +186,19 @@ final class ProphetSemanticOwnershipQa {
             '$biographyId/$claimKey: source class ${invalidClasses.map((e) => e.stableId).join(',')} cannot verify ${claim.dimension.name}',
           );
         }
+      }
+
+      if (claim.explicitExactDateEvidence) {
+        if (!isVerified || claim.dimension != ProphetSemanticDimension.historicalDate) {
+          errors.add(
+            '$biographyId/$claimKey: explicit exact-date evidence is valid only for a verified historicalDate claim',
+          );
+        }
+      } else if (isVerified &&
+          claim.dimension == ProphetSemanticDimension.historicalDate) {
+        errors.add(
+          '$biographyId/$claimKey: verified historicalDate requires explicit exact-date evidence',
+        );
       }
 
       final exclusiveOwner = _exclusiveEventOwners[claimKey];
