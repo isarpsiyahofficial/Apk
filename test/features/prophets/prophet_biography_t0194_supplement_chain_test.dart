@@ -4,7 +4,7 @@ import 'package:islami_hayat/features/prophets/data/canonical_prophet_biographie
 import 'package:islami_hayat/features/prophets/data/prophet_biography_t0194_dataset.dart';
 
 void main() {
-  test('T0194 nested supplement chain preserves reviewed geography for every owner', () {
+  test('T0194 reviewed geography remains pinned to exact owner and source', () {
     const expected = <String, ({String sourceId, String locator, String verse})>{
       'salih': (
         sourceId: 'tanzil-uthmani-v1.1-salih-q7-73-74-q89-9-thamud-settlement-geography',
@@ -56,6 +56,11 @@ void main() {
         locator: 'Quran 28:22-23',
         verse: '28:22',
       ),
+      'isa': (
+        sourceId: 'tanzil-uthmani-v1.1-isa-q23-50-geography',
+        locator: 'Quran 23:50',
+        verse: '23:50',
+      ),
       'muhammad': (
         sourceId: 'tanzil-uthmani-v1.1-muhammad-q17-1-isra-geography',
         locator: 'Quran 17:1',
@@ -72,7 +77,7 @@ void main() {
       expect(
         geography.status,
         ProphetBiographyFieldStatus.sourceBacked,
-        reason: '${entry.key} geography must survive nested supplement composition',
+        reason: '${entry.key} geography must remain source-backed',
       );
       expect(geography.sources, hasLength(1));
       expect(geography.sources.single.id, entry.value.sourceId);
