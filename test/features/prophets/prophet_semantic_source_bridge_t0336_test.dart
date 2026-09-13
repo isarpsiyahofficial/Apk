@@ -110,17 +110,24 @@ void main() {
     expect(result.isValid, isFalse);
   });
 
-  test('T0336 hadith evidence remains pinned to admitted T0194 reports and owner', () {
+  test('T0336 hadith evidence remains pinned to admitted T0194 reports and owners', () {
     final claims = canonicalProphetHadithEvidenceT0336;
     final sourceIds = claims.expand((claim) => claim.sourceIds).toSet();
     expect(sourceIds, {
+      'sahih-muslim-854b-adam-friday',
       'sahih-muslim-1162e-muhammad-birth',
       'sahih-bukhari-4449-muhammad-death',
     });
-    expect(claims, hasLength(2));
+    expect(claims, hasLength(3));
+
+    final adamClaim = claims.singleWhere(
+      (claim) => claim.sourceIds.contains('sahih-muslim-854b-adam-friday'),
+    );
+    expect(adamClaim.biographyProphetId, 'adam');
+    expect(adamClaim.subjectProphetId, 'adam');
+
     for (final claim in claims) {
-      expect(claim.biographyProphetId, 'muhammad');
-      expect(claim.subjectProphetId, 'muhammad');
+      expect(claim.biographyProphetId, claim.subjectProphetId);
       expect(claim.dimension, ProphetSemanticDimension.hadith);
       expect(claim.evidenceState, ProphetSemanticEvidenceState.verified);
       expect(claim.contextReference, isFalse);
