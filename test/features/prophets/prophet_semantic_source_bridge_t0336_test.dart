@@ -20,7 +20,7 @@ void main() {
       'musa': 'tanzil-uthmani-v1.1-musa-q28-22-23-madyan-geography',
       'isa': 'tanzil-uthmani-v1.1-isa-q23-50-geography',
       'muhammad': 'tanzil-uthmani-v1.1-muhammad-q17-1-isra-geography',
-      'yaqub': 'tanzil-uthmani-v1.1-yaqub-q12-99-egypt-geography',
+      'yakub': 'tanzil-uthmani-v1.1-yakub-q12-99-egypt-geography',
       'yunus': 'tanzil-uthmani-v1.1-yunus-q37-145-open-shore-geography',
       'ayyub': 'tanzil-uthmani-v1.1-ayyub-q38-42-water-geography',
       'sulayman': 'tanzil-uthmani-v1.1-sulayman-q27-18-valley-of-ants-geography',
