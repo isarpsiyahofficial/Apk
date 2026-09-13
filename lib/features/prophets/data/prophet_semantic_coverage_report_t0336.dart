@@ -5,6 +5,7 @@ import 'prophet_exact_date_claim_audit_t0207.dart';
 import 'prophet_hadith_evidence_t0336_batch32.dart';
 import 'prophet_hadith_evidence_t0336_batch33.dart';
 import 'prophet_hadith_evidence_t0336_batch34.dart';
+import 'prophet_hadith_evidence_t0336_batch35.dart';
 import 'prophet_semantic_evidence_t0336.dart';
 import 'prophet_semantic_ownership_qa.dart';
 
@@ -58,10 +59,6 @@ final class ProphetSemanticCoverageReportT0336 {
 ProphetSemanticCoverageReportT0336 buildCanonicalProphetCoverageReportT0336({
   Iterable<ProphetSemanticClaim>? claims,
 }) {
-  // T0336 must not count semantic coverage on top of a contradictory canonical
-  // biography graph. This independently validates source provenance,
-  // genealogy direction/cycles and chronology-band consistency before any
-  // 25×8 slot can contribute to release readiness.
   final biographyAudit =
       const ProphetBiographyQaAudit().auditCanonicalResearchDataset();
   if (!biographyAudit.isValid) {
@@ -71,10 +68,6 @@ ProphetSemanticCoverageReportT0336 buildCanonicalProphetCoverageReportT0336({
     );
   }
 
-  // Calendar-year prose is a separate high-risk surface. It is intentionally
-  // re-audited here so a future T0194 supplement cannot gain T0336 semantic
-  // coverage while carrying an unsupported exact/overstated civil date.
-  // Unknown dates stay unknown; this gate never invents a date to fill a slot.
   final calendarYearErrors = const ProphetExactDateClaimAuditT0207().audit(
     canonicalProphetBiographyT0194Dataset,
   );
@@ -91,6 +84,7 @@ ProphetSemanticCoverageReportT0336 buildCanonicalProphetCoverageReportT0336({
       ...prophetHadithEvidenceT0336Batch32,
       ...prophetHadithEvidenceT0336Batch33,
       ...prophetHadithEvidenceT0336Batch34,
+      ...prophetHadithEvidenceT0336Batch35,
     ],
   );
   final semanticAudit = const ProphetSemanticOwnershipQa().audit(
