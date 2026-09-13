@@ -98,6 +98,33 @@ void main() {
     }
   });
 
+  test('Quran event ownership contributes verified event coverage for all 25', () {
+    final report = canonicalProphetCoverageReportT0336;
+    final canonicalIds = canonicalQuranNamedProphets
+        .map((identity) => identity.canonicalId)
+        .toSet();
+    final eventEvidenceIds = canonicalProphetQuranEventEvidenceT0336
+        .where(
+          (claim) =>
+              claim.dimension == ProphetSemanticDimension.event &&
+              claim.evidenceState == ProphetSemanticEvidenceState.verified &&
+              !claim.contextReference &&
+              claim.subjectProphetId == claim.biographyProphetId,
+        )
+        .map((claim) => claim.biographyProphetId)
+        .toSet();
+
+    expect(canonicalProphetQuranEventEvidenceT0336, hasLength(25));
+    expect(eventEvidenceIds, canonicalIds);
+    for (final row in report.rows) {
+      expect(
+        row.covered,
+        contains(ProphetSemanticDimension.event),
+        reason: row.prophetId,
+      );
+    }
+  });
+
   test('unknown and contextual claims cannot inflate release coverage', () {
     final adamBase = canonicalProphetSemanticEvidenceT0336
         .where((claim) => claim.biographyProphetId == 'adam')
