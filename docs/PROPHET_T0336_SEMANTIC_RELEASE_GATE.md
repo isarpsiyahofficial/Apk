@@ -31,6 +31,8 @@ Bir slot yalnızca aşağıdaki şartların tamamı sağlanırsa `verified` say�
 
 `unknown` ve `pendingReview` kayıtları araştırmanın belirsizliğini korumak için tutulabilir fakat release coverage'a **asla sayılmaz**.
 
+`historicalDate` için güçlü kaynak sınıfı tek başına yeterli değildir. Verified exact-date claim ayrıca `explicitExactDateEvidence=true` taşımak zorundadır. Bu opt-in başka bir boyutta veya unresolved claim üzerinde kullanılırsa QA FAIL olur. Böylece yaklaşık chronology/period kaynağı yalnız source-class eşleşmesiyle kesin tarihe yükseltilemez.
+
 ## Yanlış sahiplik koruması
 
 Metinde başka bir peygamberin adının doğal biçimde geçmesi hata değildir. Hata, olayın/iddianın öznesinin yanlış biyografiye sahiplik olarak atanmasıdır.
@@ -40,7 +42,7 @@ Metinde başka bir peygamberin adının doğal biçimde geçmesi hata değildir.
 - Yûsuf'a ait kuyu/Mısır olayının Muhammed biyografisine aitmiş gibi atanması;
 - Muhammed'e ait Hicret/Medine olayının Yûsuf biyografisine aitmiş gibi atanması;
 - Kur'an kaynağının hadis evidence sınıfı gibi yeniden etiketlenmesi;
-- period/chronology bilgisinden bağımsız kaynak olmadan kesin `historicalDate` üretilmesi.
+- period/chronology bilgisinden bağımsız exact-date review olmadan kesin `historicalDate` üretilmesi.
 
 ## Makine-okunur kanıt yüzeyleri
 
@@ -49,6 +51,7 @@ Metinde başka bir peygamberin adının doğal biçimde geçmesi hata değildir.
 - `prophet_semantic_gap_manifest_t0336.dart`: 200 slotun her birini verified claim key/source id ile açıkça gösterir; ayrıca `unknown`/`pendingReview` claim key ve state'lerini ayrı tutarak eksikliği makine-okunur bırakır.
 - `prophet_semantic_release_gate_t0336.dart`: coverage report ile gap manifestin birebir aynı sonucu verdiğini çapraz doğrular.
 - `prophet_exact_date_claim_audit_t0207.dart`: T0194 biyografi metnindeki takvim yılı iddialarını ayrı fail-closed kapıdan geçirir. T0336 coverage hesabı bu denetimi doğrudan çalıştırır; desteklenmeyen veya kesinliği abartılmış takvim tarihi içeren bir canonical biyografi varken hiçbir 25×8 coverage sonucu release kanıtı sayılamaz.
+- `prophet_timeline.dart`: yalnız yaklaşık dönem/sıra katmanıdır. `canonicalProphetTimelineChronologyEvidenceT0336` bu katmandan 25 canonical peygamberin her biri için ayrı biography-owned `chronology` claim üretir; hiçbir şekilde exact tarih claim'i üretmez.
 
 Bu yüzeylerden biri eksik slotu gizlerken diğeri eksik gösterirse release gate FAIL olur.
 
@@ -70,9 +73,11 @@ Ayrıca `verifiedProphetFamilyChronologyIsConsistent` aynı reviewed relation se
 
 ## Tarih / kronoloji çapraz kontrolü
 
-`chronology` coverage tek başına `historicalDate` coverage üretmez. Canonical T0194 datasetindeki takvim yılı içeren biyografi metni ayrıca T0207 exact-date auditinden geçer. Kaynaksız takvim yılı, modern-history provenance olmadan verilen civil tarih veya yaklaşık kaynak bilgisini kesin tarihe yükselten ifade FAIL olur. Bu kontrol coverage hesaplanmadan önce çalışır; böylece semantik slot sayısı geçersiz tarih metnini maskeleyemez.
+`mainApproximateProphetChronology` 22 reviewed band içinde 25 canonical peygamberin tamamını tam bir kez kapsar. Bandlar yalnız `approximate` certainty taşır; Kur'an 4:163 ve TDV İslâm Ansiklopedisi peygamber biyografi referans ailesi kaynak metadata'sıyla governed edilir. T0336 bu doğrulanmış timeline'dan **25/25 `chronology` slotu** için biography-owned claim üretir. Paralel bandlar (ör. İbrâhim/Lût, İsmâil/İshak, Mûsâ/Hârûn) aynı bandı paylaşır fakat birbirlerinin chronology sahipliğini devralmaz.
 
-Canonical T0336 registry'de 25 peygamberin `historicalDate` slotu şu an explicit `unknown` olarak kayıtlıdır. Bu, tarih bulunmadığını saklamaz ve hiçbir slotu PASS'e yükseltmez. İleride exact-date evidence eklenirse ilgili unknown kayıt kaldırılmalı; verified claim bağımsız kaynak/provenance ve T0207 tarih kesinliği kontrollerinden geçmelidir.
+`chronology` coverage tek başına `historicalDate` coverage üretmez. Canonical T0194 datasetindeki takvim yılı içeren biyografi metni ayrıca T0207 exact-date auditinden geçer. Kaynaksız takvim yılı, modern-history provenance olmadan verilen civil tarih veya yaklaşık kaynak bilgisini kesin tarihe yükselten ifade FAIL olur. Buna ek olarak semantik ownership QA, verified `historicalDate` claim'inde açık exact-date opt-in yoksa claim'i reddeder. Bu kontroller coverage hesaplanmadan önce çalışır; böylece semantik slot sayısı geçersiz tarih metnini maskeleyemez.
+
+Canonical T0336 registry'de 25 peygamberin `historicalDate` slotu şu an explicit `unknown` olarak kayıtlıdır. Bu, tarih bulunmadığını saklamaz ve hiçbir slotu PASS'e yükseltmez. İleride exact-date evidence eklenirse ilgili unknown kayıt kaldırılmalı; verified claim bağımsız kaynak/provenance, açık exact-date evidence ve T0207 tarih kesinliği kontrollerinden geçmelidir.
 
 ## Bilinmeyen tarih/soy kuralı
 
@@ -80,4 +85,4 @@ Eksik `historicalDate`, soy veya coğrafya bilgisi sırf 200 slotu doldurmak iç
 
 ## Final koşulu
 
-D10/D11 yalnızca canonical 200 slotun tamamı doğrulanmış evidence ile kapandığında ve ownership + provenance + genealogy + chronology + calendar-date QA birlikte yeşil olduğunda PASS yapılabilir. Explicit `unknown`/`pendingReview` kayıtları araştırma durumunu kanıtlar fakat release coverage sayılmaz. Bu koşul sağlanmadan peygamber hayatları final kabul edilmez.
+D10/D11 yalnızca canonical 200 slotun tamamı doğrulanmış evidence ile kapandığında ve ownership + provenance + genealogy + chronology + calendar-date QA birlikte yeşil olduğunda PASS yapılabilir. `identity`, `event`, `quranVerse` ve artık `chronology` boyutları 25/25 coverage'a sahip olsa da `hadith`, `familyLineage`, `geography` ve exact `historicalDate` boşlukları devam ettiği sürece final değildir. Explicit `unknown`/`pendingReview` kayıtları araştırma durumunu kanıtlar fakat release coverage sayılmaz. Bu koşul sağlanmadan peygamber hayatları final kabul edilmez.
