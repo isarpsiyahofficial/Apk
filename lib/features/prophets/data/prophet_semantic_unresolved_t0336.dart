@@ -1,4 +1,5 @@
 import 'canonical_prophets.dart';
+import 'prophet_hadith_evidence_t0336_batch32.dart';
 import 'prophet_semantic_evidence_t0336.dart';
 import 'prophet_semantic_ownership_qa.dart';
 
@@ -15,7 +16,10 @@ List<ProphetSemanticClaim> buildProphetSemanticEvidenceWithUnresolvedT0336({
   Iterable<ProphetSemanticClaim>? claims,
 }) {
   final base = List<ProphetSemanticClaim>.unmodifiable(
-    claims ?? canonicalProphetSemanticEvidenceT0336,
+    claims ?? <ProphetSemanticClaim>[
+      ...canonicalProphetSemanticEvidenceT0336,
+      ...prophetHadithEvidenceT0336Batch32,
+    ],
   );
   final output = <ProphetSemanticClaim>[...base];
 
