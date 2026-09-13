@@ -28,14 +28,14 @@ ProphetBiographyField _quranGeographyField({
 /// or exact historical dates from the cited verses.
 final t0194ProphetBiographySupplements30 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
-  'yaqub': <ProphetBiographySectionKey, ProphetBiographyField>{
+  'yakub': <ProphetBiographySectionKey, ProphetBiographyField>{
     ProphetBiographySectionKey.geography: _quranGeographyField(
       text: const LocalizedReligiousText(
         tr: 'Kur’an, Yûsuf’un anne ve babasını yanına aldığını ve ailesine güven içinde Mısır’a girmelerini söylediğini bildirir. Bu alan Ya‘kûb için yalnız bu açık Mısır bağlamını kaydeder; yol, şehir, sınır veya kesin tarih eklemez.',
         en: 'The Quran states that Joseph received his parents and told his family to enter Egypt in safety. For Jacob, this field records only that explicit Egypt context and adds no route, city, boundary, or exact date.',
         ar: 'يذكر القرآن أن يوسف آوى إليه أبويه وقال لأهله ادخلوا مصر إن شاء الله آمنين. ويسجل هذا الحقل ليعقوب سياق مصر الصريح فقط، من غير إضافة طريق أو مدينة أو حدود أو تاريخ دقيق.',
       ),
-      stableId: 'yaqub-q12-99-egypt-geography',
+      stableId: 'yakub-q12-99-egypt-geography',
       locator: 'Quran 12:99',
     ),
   },
@@ -97,7 +97,7 @@ final t0194ProphetBiographySupplements30 =
 };
 
 final t0194ProphetSupplementReferences30 = <String, List<ProphetVerseReference>>{
-  'yaqub': const <ProphetVerseReference>[
+  'yakub': const <ProphetVerseReference>[
     ProphetVerseReference(surah: 12, ayah: 99),
   ],
   'yunus': const <ProphetVerseReference>[
