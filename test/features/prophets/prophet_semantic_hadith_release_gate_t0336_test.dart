@@ -3,6 +3,7 @@ import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/prophets/data/canonical_prophets.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch32.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch33.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch34.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_evidence_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_gap_manifest_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_qa.dart';
@@ -22,14 +23,16 @@ void main() {
         ..remove('ibrahim')
         ..remove('nuh')
         ..remove('yusuf')
+        ..remove('musa')
+        ..remove('isa')
         ..remove('muhammad');
 
-      expect(hadith.verifiedCount, 5);
+      expect(hadith.verifiedCount, 7);
       expect(
         hadith.verifiedProphetIds.toSet(),
-        {'adam', 'ibrahim', 'nuh', 'yusuf', 'muhammad'},
+        {'adam', 'ibrahim', 'nuh', 'yusuf', 'musa', 'isa', 'muhammad'},
       );
-      expect(hadith.unresolvedCount, 20);
+      expect(hadith.unresolvedCount, 18);
       expect(hadith.unresolvedProphetIds.toSet(), expectedUnresolved);
       expect(hadith.isComplete, isFalse);
 
@@ -51,8 +54,9 @@ void main() {
         ...canonicalProphetHadithEvidenceT0336,
         ...prophetHadithEvidenceT0336Batch32,
         ...prophetHadithEvidenceT0336Batch33,
+        ...prophetHadithEvidenceT0336Batch34,
       ];
-      expect(claims, hasLength(6));
+      expect(claims, hasLength(8));
       expect(
         claims.expand((claim) => claim.sourceIds).toSet(),
         {
@@ -60,6 +64,8 @@ void main() {
           'sahih-bukhari-3356-ibrahim-circumcision',
           'sahih-bukhari-3339-nuh-message-witness',
           'sahih-bukhari-3390-yusuf-prophetic-lineage',
+          'sahih-bukhari-3410-musa-community',
+          'sahih-bukhari-3442-isa-prophetic-succession',
           'sahih-muslim-1162e-muhammad-birth',
           'sahih-bukhari-4449-muhammad-death',
         },
@@ -70,6 +76,8 @@ void main() {
         'sahih-bukhari-3356-ibrahim-circumcision': 'ibrahim',
         'sahih-bukhari-3339-nuh-message-witness': 'nuh',
         'sahih-bukhari-3390-yusuf-prophetic-lineage': 'yusuf',
+        'sahih-bukhari-3410-musa-community': 'musa',
+        'sahih-bukhari-3442-isa-prophetic-succession': 'isa',
         'sahih-muslim-1162e-muhammad-birth': 'muhammad',
         'sahih-bukhari-4449-muhammad-death': 'muhammad',
       };
@@ -133,10 +141,61 @@ void main() {
             sourceIds: ['sahih-bukhari-3390-yusuf-prophetic-lineage'],
             sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
           ),
+          ProphetSemanticClaim(
+            biographyProphetId: 'muhammad',
+            subjectProphetId: 'musa',
+            dimension: ProphetSemanticDimension.hadith,
+            claimKey: 'hadith:muhammad:borrowed-musa-report',
+            sourceIds: ['sahih-bukhari-3410-musa-community'],
+            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
+          ),
+          ProphetSemanticClaim(
+            biographyProphetId: 'muhammad',
+            subjectProphetId: 'isa',
+            dimension: ProphetSemanticDimension.hadith,
+            claimKey: 'hadith:muhammad:borrowed-isa-report',
+            sourceIds: ['sahih-bukhari-3442-isa-prophetic-succession'],
+            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
+          ),
         ],
       );
 
       expect(result.isValid, isFalse);
+    });
+
+    test('batch-34 builders reject owner and source metadata tampering', () {
+      expect(
+        () => buildMusaHadithEvidenceT0336(biographyProphetId: 'harun'),
+        throwsStateError,
+      );
+      expect(
+        () => buildIsaHadithEvidenceT0336(subjectProphetId: 'muhammad'),
+        throwsStateError,
+      );
+      expect(
+        () => buildMusaHadithEvidenceT0336(
+          source: const SourceReference(
+            id: 'sahih-bukhari-3410-musa-community',
+            title: 'Sahih al-Bukhari',
+            sourceClass: ReligiousSourceClass.sahihHasanHadith,
+            licenseId: 'REFERENCE-ONLY',
+            locator: 'Sahih al-Bukhari 3411',
+          ),
+        ),
+        throwsStateError,
+      );
+      expect(
+        () => buildIsaHadithEvidenceT0336(
+          source: const SourceReference(
+            id: 'sahih-bukhari-3442-isa-prophetic-succession',
+            title: 'Sahih al-Bukhari',
+            sourceClass: ReligiousSourceClass.sahihHasanHadith,
+            licenseId: 'REFERENCE-ONLY',
+            locator: 'Sahih al-Bukhari 3443',
+          ),
+        ),
+        throwsStateError,
+      );
     });
   });
 }
