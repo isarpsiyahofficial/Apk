@@ -1,0 +1,79 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/core/content/content_governance.dart';
+import 'package:islami_hayat/features/prophets/data/canonical_prophet_biographies.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_biography_t0194_dataset.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_semantic_evidence_t0336.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_qa.dart';
+
+void main() {
+  test('Quran-reviewed Musa and Muhammad geography reaches T0336 with exact ownership', () {
+    const expected = <String, String>{
+      'musa': 'tanzil-uthmani-v1.1-musa-q28-22-23-madyan-geography',
+      'muhammad': 'tanzil-uthmani-v1.1-muhammad-q17-1-isra-geography',
+    };
+
+    for (final entry in expected.entries) {
+      final draft = canonicalProphetBiographyT0194Dataset.singleWhere(
+        (item) => item.identity.canonicalId == entry.key,
+      );
+      final field = draft.sections[ProphetBiographySectionKey.geography]!;
+      expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+      expect(field.sources, hasLength(1));
+      expect(field.sources.single.id, entry.value);
+      expect(field.sources.single.sourceClass, ReligiousSourceClass.quran);
+      expect(prophetBiographyT0194DraftHasTraceableProvenance(draft), isTrue);
+
+      final claim = canonicalProphetGeographyEvidenceT0336.singleWhere(
+        (item) =>
+            item.biographyProphetId == entry.key &&
+            item.sourceIds.contains(entry.value),
+      );
+      expect(claim.subjectProphetId, entry.key);
+      expect(claim.dimension, ProphetSemanticDimension.geography);
+      expect(claim.evidenceState, ProphetSemanticEvidenceState.verified);
+      expect(claim.contextReference, isFalse);
+      expect(claim.sourceClasses, {ReligiousSourceClass.quran});
+    }
+  });
+
+  test('geography evidence cannot migrate between Musa and Muhammad biographies', () {
+    const qa = ProphetSemanticOwnershipQa();
+    final result = qa.audit(
+      requireFull25Coverage: false,
+      claims: const [
+        ProphetSemanticClaim(
+          biographyProphetId: 'muhammad',
+          subjectProphetId: 'musa',
+          dimension: ProphetSemanticDimension.geography,
+          claimKey: 'geography:muhammad:madyan',
+          sourceIds: ['tanzil-uthmani-v1.1-musa-q28-22-23-madyan-geography'],
+          sourceClasses: {ReligiousSourceClass.quran},
+        ),
+      ],
+    );
+
+    expect(result.isValid, isFalse);
+  });
+
+  test('T0336 hadith evidence remains pinned to admitted T0194 reports and owner', () {
+    final claims = canonicalProphetHadithEvidenceT0336;
+    final sourceIds = claims.expand((claim) => claim.sourceIds).toSet();
+
+    expect(
+      sourceIds,
+      {
+        'sahih-muslim-1162e-muhammad-birth',
+        'sahih-bukhari-4449-muhammad-death',
+      },
+    );
+    expect(claims, hasLength(2));
+    for (final claim in claims) {
+      expect(claim.biographyProphetId, 'muhammad');
+      expect(claim.subjectProphetId, 'muhammad');
+      expect(claim.dimension, ProphetSemanticDimension.hadith);
+      expect(claim.evidenceState, ProphetSemanticEvidenceState.verified);
+      expect(claim.contextReference, isFalse);
+      expect(claim.sourceClasses, {ReligiousSourceClass.sahihHasanHadith});
+    }
+  });
+}
