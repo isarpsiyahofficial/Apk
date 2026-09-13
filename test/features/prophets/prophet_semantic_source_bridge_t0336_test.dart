@@ -8,6 +8,7 @@ import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_q
 void main() {
   test('Quran-reviewed geography reaches T0336 with exact ownership', () {
     const expected = <String, String>{
+      'nuh': 'tanzil-uthmani-v1.1-nuh-q11-44-al-judi-geography',
       'ibrahim': 'tanzil-uthmani-v1.1-ibrahim-q2-127-kaaba-geography',
       'ismail': 'tanzil-uthmani-v1.1-ismail-q2-127-kaaba-geography',
       'yusuf': 'tanzil-uthmani-v1.1-yusuf-q12-21-egypt-geography',
