@@ -3,19 +3,41 @@ import 'package:islami_hayat/core/content/content_governance.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_gap_manifest_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_qa.dart';
 
+ReligiousSourceClass _validSourceClassFor(
+  ProphetSemanticDimension dimension,
+) {
+  switch (dimension) {
+    case ProphetSemanticDimension.identity:
+    case ProphetSemanticDimension.event:
+    case ProphetSemanticDimension.quranVerse:
+    case ProphetSemanticDimension.familyLineage:
+      return ReligiousSourceClass.quran;
+    case ProphetSemanticDimension.hadith:
+      return ReligiousSourceClass.sahihHasanHadith;
+    case ProphetSemanticDimension.chronology:
+      return ReligiousSourceClass.earlyIslamicHistoryTafsir;
+    case ProphetSemanticDimension.geography:
+    case ProphetSemanticDimension.historicalDate:
+      return ReligiousSourceClass.modernHistoryArchaeology;
+  }
+}
+
 void main() {
   test(
     'T0336 contextual mentions cannot satisfy any of the eight semantic dimensions',
     () {
       for (final dimension in ProphetSemanticDimension.values) {
+        final sourceClass = _validSourceClassFor(dimension);
         final claim = ProphetSemanticClaim(
           biographyProphetId: 'muhammad',
           subjectProphetId: 'yusuf',
           dimension: dimension,
           claimKey: '${dimension.name}:context:muhammad_mentions_yusuf',
-          sourceIds: const ['tanzil-uthmani-v1.1'],
-          sourceClasses: const {ReligiousSourceClass.quran},
+          sourceIds: ['context-source:${dimension.name}:${sourceClass.name}'],
+          sourceClasses: {sourceClass},
           contextReference: true,
+          explicitExactDateEvidence:
+              dimension == ProphetSemanticDimension.historicalDate,
         );
 
         final manifest = buildProphetSemanticGapManifestT0336(
