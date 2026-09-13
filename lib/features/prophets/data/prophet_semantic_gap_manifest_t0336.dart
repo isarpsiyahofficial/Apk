@@ -1,6 +1,7 @@
 import 'canonical_prophets.dart';
 import 'prophet_semantic_evidence_t0336.dart';
 import 'prophet_semantic_ownership_qa.dart';
+import 'prophet_semantic_unresolved_t0336.dart';
 
 enum ProphetSemanticSlotStateT0336 {
   verified,
@@ -59,6 +60,16 @@ final class ProphetSemanticGapManifestT0336 {
 
   int get missingSlotCount => requiredSlotCount - verifiedSlotCount;
 
+  int get explicitlyUnresolvedSlotCount => slots
+      .where((slot) => !slot.isVerified && slot.hasExplicitUnresolvedEvidence)
+      .length;
+
+  int get silentlyMissingSlotCount => slots
+      .where((slot) => !slot.isVerified && !slot.hasExplicitUnresolvedEvidence)
+      .length;
+
+  /// Final factual coverage remains strict: unresolved records are visible but
+  /// never promoted to verified evidence.
   bool get isReleaseComplete =>
       slots.length == requiredSlotCount && missingSlotCount == 0;
 
@@ -86,7 +97,7 @@ ProphetSemanticGapManifestT0336 buildProphetSemanticGapManifestT0336({
   Iterable<ProphetSemanticClaim>? claims,
 }) {
   final claimList = List<ProphetSemanticClaim>.unmodifiable(
-    claims ?? canonicalProphetSemanticEvidenceT0336,
+    claims ?? canonicalProphetSemanticEvidenceWithUnresolvedT0336,
   );
 
   final audit = const ProphetSemanticOwnershipQa().audit(
