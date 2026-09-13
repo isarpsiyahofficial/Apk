@@ -126,6 +126,25 @@ void main() {
     expect(field.text.ar, contains('ولا يضاف إلى ذلك'));
   });
 
+  test('T0194 Zakariya geography stays inside Quran 3:38-39 sanctuary evidence', () {
+    final field = zakariya.sections[ProphetBiographySectionKey.geography]!;
+
+    expect(field.status, ProphetBiographyFieldStatus.sourceBacked);
+    expect(field.sources, hasLength(1));
+    expect(
+      field.sources.single.id,
+      'tanzil-uthmani-v1.1-zakariya-q3-38-39-sanctuary-geography',
+    );
+    expect(field.sources.single.locator, 'Quran 3:38-39');
+    expect(field.sources.single.licenseId, 'CC-BY-3.0');
+    expect(field.text.tr, contains('mihrap/ibadet yeri'));
+    expect(field.text.tr, contains('şehir veya modern konum çıkarımı yapmaz'));
+    expect(field.text.en, contains('sanctuary context'));
+    expect(field.text.en, contains('no city or modern location'));
+    expect(field.text.ar, contains('سياق المحراب'));
+    expect(field.text.ar, contains('من غير استنتاج مدينة أو موقع حديث'));
+  });
+
   test('T0194 Zakariya Quran evidence references remain deduplicated', () {
     for (final expected in <({int surah, int ayah})>[
       (surah: 3, ayah: 37),
@@ -158,7 +177,6 @@ void main() {
 
   test('T0194 Zakariya unsupported historical details stay pending research', () {
     for (final key in <ProphetBiographySectionKey>[
-      ProphetBiographySectionKey.geography,
       ProphetBiographySectionKey.birth,
       ProphetBiographySectionKey.childhoodYouth,
       ProphetBiographySectionKey.death,
