@@ -20,10 +20,16 @@ void main() {
       'musa': 'tanzil-uthmani-v1.1-musa-q28-22-23-madyan-geography',
       'isa': 'tanzil-uthmani-v1.1-isa-q23-50-geography',
       'muhammad': 'tanzil-uthmani-v1.1-muhammad-q17-1-isra-geography',
+      'yaqub': 'tanzil-uthmani-v1.1-yaqub-q12-99-egypt-geography',
+      'yunus': 'tanzil-uthmani-v1.1-yunus-q37-145-open-shore-geography',
+      'ayyub': 'tanzil-uthmani-v1.1-ayyub-q38-42-water-geography',
+      'sulayman': 'tanzil-uthmani-v1.1-sulayman-q27-18-valley-of-ants-geography',
+      'zakariya': 'tanzil-uthmani-v1.1-zakariya-q3-38-39-sanctuary-geography',
+      'dawud': 'tanzil-uthmani-v1.1-dawud-q34-10-mountains-geography',
     };
 
-    expect(expected, hasLength(12));
-    expect(canonicalProphetGeographyEvidenceT0336, hasLength(12));
+    expect(expected, hasLength(18));
+    expect(canonicalProphetGeographyEvidenceT0336, hasLength(18));
     expect(
       canonicalProphetGeographyEvidenceT0336.map((item) => item.biographyProphetId).toSet(),
       expected.keys.toSet(),
@@ -42,9 +48,7 @@ void main() {
       expect(prophetBiographyT0194DraftHasTraceableProvenance(draft), isTrue);
 
       final claim = canonicalProphetGeographyEvidenceT0336.singleWhere(
-        (item) =>
-            item.biographyProphetId == entry.key &&
-            item.sourceIds.contains(entry.value),
+        (item) => item.biographyProphetId == entry.key && item.sourceIds.contains(entry.value),
       );
       expect(claim.subjectProphetId, entry.key);
       expect(claim.dimension, ProphetSemanticDimension.geography);
@@ -67,9 +71,16 @@ void main() {
           sourceIds: ['tanzil-uthmani-v1.1-yusuf-q12-21-egypt-geography'],
           sourceClasses: {ReligiousSourceClass.quran},
         ),
+        ProphetSemanticClaim(
+          biographyProphetId: 'yunus',
+          subjectProphetId: 'sulayman',
+          dimension: ProphetSemanticDimension.geography,
+          claimKey: 'geography:yunus:valley-of-ants',
+          sourceIds: ['tanzil-uthmani-v1.1-sulayman-q27-18-valley-of-ants-geography'],
+          sourceClasses: {ReligiousSourceClass.quran},
+        ),
       ],
     );
-
     expect(result.isValid, isFalse);
   });
 
@@ -96,21 +107,16 @@ void main() {
         ),
       ],
     );
-
     expect(result.isValid, isFalse);
   });
 
   test('T0336 hadith evidence remains pinned to admitted T0194 reports and owner', () {
     final claims = canonicalProphetHadithEvidenceT0336;
     final sourceIds = claims.expand((claim) => claim.sourceIds).toSet();
-
-    expect(
-      sourceIds,
-      {
-        'sahih-muslim-1162e-muhammad-birth',
-        'sahih-bukhari-4449-muhammad-death',
-      },
-    );
+    expect(sourceIds, {
+      'sahih-muslim-1162e-muhammad-birth',
+      'sahih-bukhari-4449-muhammad-death',
+    });
     expect(claims, hasLength(2));
     for (final claim in claims) {
       expect(claim.biographyProphetId, 'muhammad');
