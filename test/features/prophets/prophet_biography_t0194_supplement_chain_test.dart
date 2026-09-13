@@ -18,7 +18,7 @@ void main() {
       'musa': (sourceId: 'tanzil-uthmani-v1.1-musa-q28-22-23-madyan-geography', locator: 'Quran 28:22-23', verse: '28:22'),
       'isa': (sourceId: 'tanzil-uthmani-v1.1-isa-q23-50-geography', locator: 'Quran 23:50', verse: '23:50'),
       'muhammad': (sourceId: 'tanzil-uthmani-v1.1-muhammad-q17-1-isra-geography', locator: 'Quran 17:1', verse: '17:1'),
-      'yaqub': (sourceId: 'tanzil-uthmani-v1.1-yaqub-q12-99-egypt-geography', locator: 'Quran 12:99', verse: '12:99'),
+      'yakub': (sourceId: 'tanzil-uthmani-v1.1-yakub-q12-99-egypt-geography', locator: 'Quran 12:99', verse: '12:99'),
       'yunus': (sourceId: 'tanzil-uthmani-v1.1-yunus-q37-145-open-shore-geography', locator: 'Quran 37:145', verse: '37:145'),
       'ayyub': (sourceId: 'tanzil-uthmani-v1.1-ayyub-q38-42-water-geography', locator: 'Quran 38:42', verse: '38:42'),
       'sulayman': (sourceId: 'tanzil-uthmani-v1.1-sulayman-q27-18-valley-of-ants-geography', locator: 'Quran 27:18', verse: '27:18'),
@@ -55,6 +55,7 @@ void main() {
     expect(byId['hud']!.quranReferences.map((item) => item.stableId).toSet(), containsAll(<String>['11:50', '46:21']));
     expect(byId['harun']!.quranReferences.map((item) => item.stableId).toSet(), containsAll(<String>['23:45', '23:46', '43:51']));
     expect(byId['zakariya']!.quranReferences.map((item) => item.stableId).toSet(), containsAll(<String>['3:38', '3:39']));
+    expect(byId['yakub']!.quranReferences.map((item) => item.stableId).toSet(), contains('12:99'));
   });
 
   test('T0194 Muhammad merge keeps earlier reviewed 48:24 reference', () {
