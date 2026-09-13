@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_supplements_31.dart';
 import 'prophet_content.dart';
 
 SourceReference _quranSource(String stableId, String locator) => SourceReference(
@@ -25,9 +26,12 @@ ProphetBiographyField _quranGeographyField({
 ///
 /// Adds only spatial contexts stated directly by the Quran. These records do
 /// not infer modern borders, coordinates, routes, archaeological identities,
-/// or exact historical dates from the cited verses.
+/// or exact historical dates from the cited verses. The thirty-first reviewed
+/// hadith batch is composed here so it remains in the same fail-closed T0194
+/// provenance chain.
 final t0194ProphetBiographySupplements30 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
+  ...t0194ProphetBiographySupplements31,
   'yakub': <ProphetBiographySectionKey, ProphetBiographyField>{
     ProphetBiographySectionKey.geography: _quranGeographyField(
       text: const LocalizedReligiousText(
