@@ -22,9 +22,12 @@ void main() {
   });
 
   test('T0194 Muhammad Quran batch keeps exact reviewed locators auditable', () {
+    // The latest reviewed geography field is the explicit Isra endpoint pair
+    // in Quran 17:1. Quran 48:24 remains preserved in quranReferences from the
+    // earlier reviewed batch instead of being silently discarded.
     expect(
       muhammad.sections[ProphetBiographySectionKey.geography]!.sources.single.locator,
-      'Quran 48:24',
+      'Quran 17:1',
     );
     expect(
       muhammad
@@ -45,8 +48,11 @@ void main() {
     expect(prophetBiographyT0194DraftHasTraceableProvenance(muhammad), isTrue);
   });
 
-  test('T0194 Muhammad Quran-reference index contains the reviewed verses', () {
+  test('T0194 Muhammad Quran-reference index retains old and new reviewed verses', () {
     final references = muhammad.quranReferences.map((ref) => ref.stableId).toSet();
-    expect(references, containsAll(<String>['25:4', '25:5', '48:24', '93:6']));
+    expect(
+      references,
+      containsAll(<String>['17:1', '25:4', '25:5', '48:24', '93:6']),
+    );
   });
 }
