@@ -2,6 +2,7 @@ import 'canonical_prophets.dart';
 import 'prophet_biography_qa.dart';
 import 'prophet_biography_t0194_dataset.dart';
 import 'prophet_exact_date_claim_audit_t0207.dart';
+import 'prophet_hadith_evidence_t0336_batch32.dart';
 import 'prophet_semantic_evidence_t0336.dart';
 import 'prophet_semantic_ownership_qa.dart';
 
@@ -83,7 +84,10 @@ ProphetSemanticCoverageReportT0336 buildCanonicalProphetCoverageReportT0336({
   }
 
   final claimList = List<ProphetSemanticClaim>.unmodifiable(
-    claims ?? canonicalProphetSemanticEvidenceT0336,
+    claims ?? <ProphetSemanticClaim>[
+      ...canonicalProphetSemanticEvidenceT0336,
+      ...prophetHadithEvidenceT0336Batch32,
+    ],
   );
   final semanticAudit = const ProphetSemanticOwnershipQa().audit(
     claims: claimList,
