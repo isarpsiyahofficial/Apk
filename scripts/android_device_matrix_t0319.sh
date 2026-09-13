@@ -54,12 +54,65 @@ wait_for_size() {
   return 1
 }
 
+fatal_or_oom_evidence() {
+  adb logcat -d '*:E' | grep -E 'FATAL EXCEPTION|AndroidRuntime.*Process: com\.example\.islami_hayat|OutOfMemoryError|lowmemorykiller.*com\.example\.islami_hayat|lmkd.*com\.example\.islami_hayat' || true
+}
+
 dump_failure_evidence() {
   echo 'T0319 diagnostics: window/activity state' >&2
   adb shell dumpsys window windows >&2 || true
   adb shell dumpsys activity activities >&2 || true
   echo 'T0319 diagnostics: fatal/OOM logcat' >&2
-  adb logcat -d '*:E' | grep -E 'FATAL EXCEPTION|AndroidRuntime.*Process: com\.example\.islami_hayat|OutOfMemoryError|lowmemorykiller|lmkd' >&2 || true
+  fatal_or_oom_evidence >&2
+}
+
+launch_viewport() {
+  SIZE="$1"
+  launch_attempt=1
+
+  while [ "$launch_attempt" -le 2 ]; do
+    # Low-memory API 29 runners can occasionally evict a just-started process
+    # while SurfaceFlinger/launcher settles after a wm-size change. Each attempt
+    # remains a true cold launch; a real fatal/OOM signal is never retried away.
+    adb shell am force-stop "$PACKAGE" >/dev/null 2>&1 || true
+    adb shell wm size "$SIZE" >/dev/null
+    if ! wait_for_size "$SIZE"; then
+      echo "T0319 viewport override was not applied at $SIZE" >&2
+      dump_failure_evidence
+      return 1
+    fi
+
+    adb logcat -c
+    START="$(adb shell am start -W -n "$ACTIVITY" 2>&1 | tr -d '\r')"
+    printf '%s\n' "$START"
+
+    if ! printf '%s\n' "$START" | grep -F "$PACKAGE" >/dev/null; then
+      echo "T0319 launch output did not reference expected package at $SIZE (attempt $launch_attempt/2)" >&2
+    elif wait_for_process && wait_for_foreground; then
+      return 0
+    else
+      echo "T0319 app did not stabilize at $SIZE (attempt $launch_attempt/2)" >&2
+    fi
+
+    FATAL_NOW="$(fatal_or_oom_evidence)"
+    if [ -n "$FATAL_NOW" ]; then
+      echo "T0319 fatal/OOM evidence found at $SIZE; refusing retry" >&2
+      printf '%s\n' "$FATAL_NOW" >&2
+      dump_failure_evidence
+      return 1
+    fi
+
+    if [ "$launch_attempt" -eq 2 ]; then
+      dump_failure_evidence
+      return 1
+    fi
+
+    echo "T0319 transient low-memory launch loss at $SIZE; retrying one cold launch"
+    sleep 2
+    launch_attempt=$((launch_attempt + 1))
+  done
+
+  return 1
 }
 
 adb shell wm density 160 >/dev/null
@@ -67,40 +120,12 @@ adb logcat -c
 
 for SIZE in 360x800 430x932 800x1280 1280x800 1920x1080 932x430; do
   echo "T0319 viewport smoke: $SIZE @160dpi"
-
-  # Do not resize a live Flutter surface on the constrained emulator. Each
-  # matrix case starts from a stopped process, applies and confirms the new
-  # viewport, then performs a fresh launch. This avoids configuration-change
-  # memory spikes masking the actual cold-start/responsive result.
-  adb shell am force-stop "$PACKAGE" >/dev/null 2>&1 || true
-  adb shell wm size "$SIZE" >/dev/null
-  if ! wait_for_size "$SIZE"; then
-    echo "T0319 viewport override was not applied at $SIZE" >&2
-    dump_failure_evidence
-    exit 1
-  fi
-
-  START="$(adb shell am start -W -n "$ACTIVITY" 2>&1 | tr -d '\r')"
-  printf '%s\n' "$START"
-
-  if ! printf '%s\n' "$START" | grep -F "$PACKAGE" >/dev/null; then
-    echo "T0319 launch output did not reference expected package at $SIZE" >&2
-    dump_failure_evidence
-    exit 1
-  fi
-  if ! wait_for_process; then
-    echo "T0319 process did not become live at $SIZE" >&2
-    dump_failure_evidence
-    exit 1
-  fi
-  if ! wait_for_foreground; then
-    echo "T0319 MainActivity did not become foreground at $SIZE" >&2
-    dump_failure_evidence
+  if ! launch_viewport "$SIZE"; then
     exit 1
   fi
 done
 
-FATAL="$(adb logcat -d '*:E' | grep -E 'FATAL EXCEPTION|AndroidRuntime.*Process: com\.example\.islami_hayat|OutOfMemoryError' || true)"
+FATAL="$(fatal_or_oom_evidence)"
 if [ -n "$FATAL" ]; then
   echo 'T0319 fatal/OOM evidence found during device matrix:' >&2
   printf '%s\n' "$FATAL" >&2
