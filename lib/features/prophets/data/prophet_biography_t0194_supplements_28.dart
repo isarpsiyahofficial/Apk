@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_supplements_29.dart';
 import 'prophet_content.dart';
 
 SourceReference _quranSource(String stableId, String locator) => SourceReference(
@@ -26,11 +27,16 @@ ProphetBiographyField _quranGeographyField({
 /// Adds two geography associations supported by Quranic cross-reference:
 /// Hud with the people of 'Ad in al-Ahqaf (46:21, with Hud explicitly named as
 /// the brother of 'Ad in 11:50), and Harun in the Pharaoh setting associated
-/// with Egypt (23:45-46; 43:46,51). These records deliberately avoid modern
+/// with Egypt (23:45-46; 43:51). These records deliberately avoid modern
 /// borders, coordinates, inferred routes, reign identification, and exact
 /// historical dates.
+///
+/// The twenty-ninth source-reviewed batch is composed here so the conservative
+/// Salih/Thamud settlement and Lut town/road geography evidence remains in the
+/// same fail-closed T0194 provenance chain.
 final t0194ProphetBiographySupplements28 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
+  ...t0194ProphetBiographySupplements29,
   'hud': <ProphetBiographySectionKey, ProphetBiographyField>{
     ProphetBiographySectionKey.geography: _quranGeographyField(
       text: const LocalizedReligiousText(
@@ -56,6 +62,7 @@ final t0194ProphetBiographySupplements28 =
 };
 
 final t0194ProphetSupplementReferences28 = <String, List<ProphetVerseReference>>{
+  ...t0194ProphetSupplementReferences29,
   'hud': const <ProphetVerseReference>[
     ProphetVerseReference(surah: 11, ayah: 50),
     ProphetVerseReference(surah: 46, ayah: 21),
