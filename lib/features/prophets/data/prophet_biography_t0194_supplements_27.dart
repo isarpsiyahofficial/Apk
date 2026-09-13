@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_supplements_28.dart';
 import 'prophet_content.dart';
 
 SourceReference _quranSource(String stableId, String locator) => SourceReference(
@@ -27,8 +28,13 @@ ProphetBiographyField _quranGeographyField({
 /// to rest on al-Judi (Quran 11:44). The record deliberately does not turn
 /// later geographic identification, voyage duration, route, or traditional
 /// calendar claims into Quran-backed facts.
+///
+/// The twenty-eighth source-reviewed geography batch is composed here so the
+/// Hud/Ahqaf and Harun/Egypt Quranic cross-reference evidence reaches the same
+/// canonical T0194 chain without bypassing provenance checks.
 final t0194ProphetBiographySupplements27 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
+  ...t0194ProphetBiographySupplements28,
   'nuh': <ProphetBiographySectionKey, ProphetBiographyField>{
     ProphetBiographySectionKey.geography: _quranGeographyField(
       text: const LocalizedReligiousText(
@@ -43,6 +49,7 @@ final t0194ProphetBiographySupplements27 =
 };
 
 final t0194ProphetSupplementReferences27 = <String, List<ProphetVerseReference>>{
+  ...t0194ProphetSupplementReferences28,
   'nuh': const <ProphetVerseReference>[
     ProphetVerseReference(surah: 11, ayah: 44),
   ],
