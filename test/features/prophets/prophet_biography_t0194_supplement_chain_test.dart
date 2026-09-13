@@ -6,6 +6,11 @@ import 'package:islami_hayat/features/prophets/data/prophet_biography_t0194_data
 void main() {
   test('T0194 nested supplement chain preserves reviewed geography for every owner', () {
     const expected = <String, ({String sourceId, String locator, String verse})>{
+      'nuh': (
+        sourceId: 'tanzil-uthmani-v1.1-nuh-q11-44-al-judi-geography',
+        locator: 'Quran 11:44',
+        verse: '11:44',
+      ),
       'ibrahim': (
         sourceId: 'tanzil-uthmani-v1.1-ibrahim-q2-127-kaaba-geography',
         locator: 'Quran 2:127',
