@@ -111,27 +111,45 @@ void main() {
     expect(gate, contains("run_gate T0297 'real launcher widget pin/render/tap smoke'"));
   });
 
-  test('T0319 matrix stops app before resize and confirms viewport override', () {
+  test('T0319 matrix cold-launch helper resizes, verifies, launches, and retries fail-closed', () {
     final script = File('scripts/android_device_matrix_t0319.sh')
         .readAsStringSync();
 
+    final launchFunction = script.indexOf('launch_viewport() {');
     final loopStart = script.indexOf(
       'for SIZE in 360x800 430x932 800x1280 1280x800 1920x1080 932x430',
     );
-    final forceStop = script.indexOf('adb shell am force-stop "\$PACKAGE"', loopStart);
-    final resize = script.indexOf('adb shell wm size "\$SIZE"', loopStart);
-    final sizeCheck = script.indexOf('wait_for_size "\$SIZE"', loopStart);
-    final launch = script.indexOf('adb shell am start -W -n "\$ACTIVITY"', loopStart);
+    final forceStop = script.indexOf(
+      'adb shell am force-stop "\$PACKAGE"',
+      launchFunction,
+    );
+    final resize = script.indexOf('adb shell wm size "\$SIZE"', launchFunction);
+    final sizeCheck = script.indexOf('wait_for_size "\$SIZE"', launchFunction);
+    final launch = script.indexOf(
+      'adb shell am start -W -n "\$ACTIVITY"',
+      launchFunction,
+    );
+    final fatalCheck = script.indexOf('fatal_or_oom_evidence', launch);
+    final loopCall = script.indexOf('launch_viewport "\$SIZE"', loopStart);
 
-    expect(loopStart, greaterThanOrEqualTo(0));
-    expect(forceStop, greaterThan(loopStart));
+    expect(launchFunction, greaterThanOrEqualTo(0));
+    expect(forceStop, greaterThan(launchFunction));
     expect(resize, greaterThan(forceStop));
     expect(sizeCheck, greaterThan(resize));
     expect(launch, greaterThan(sizeCheck));
+    expect(fatalCheck, greaterThan(launch));
+    expect(loopStart, greaterThan(fatalCheck));
+    expect(loopCall, greaterThan(loopStart));
     expect(
       script,
       contains("grep -F \"Override size: \$EXPECTED\""),
       reason: 'Each emulator viewport must be confirmed before launch.',
+    );
+    expect(script, contains('while [ "\$launch_attempt" -le 2 ]'));
+    expect(
+      script,
+      contains('fatal/OOM evidence found at \$SIZE; refusing retry'),
+      reason: 'A real fatal/OOM signal must never be hidden by the retry path.',
     );
     expect(script, contains('dump_failure_evidence'));
   });
