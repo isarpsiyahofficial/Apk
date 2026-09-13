@@ -104,4 +104,41 @@ void main() {
       }
     },
   );
+
+  test(
+    'T0336 contextual references cannot bypass dimension provenance or exact-date gates',
+    () {
+      const invalidHadithContext = ProphetSemanticClaim(
+        biographyProphetId: 'muhammad',
+        subjectProphetId: 'yusuf',
+        dimension: ProphetSemanticDimension.hadith,
+        claimKey: 'hadith:context:invalid_quran_source',
+        sourceIds: ['tanzil-uthmani-v1.1'],
+        sourceClasses: {ReligiousSourceClass.quran},
+        contextReference: true,
+      );
+      const invalidDateContext = ProphetSemanticClaim(
+        biographyProphetId: 'muhammad',
+        subjectProphetId: 'yusuf',
+        dimension: ProphetSemanticDimension.historicalDate,
+        claimKey: 'historicalDate:context:missing_exact_date_evidence',
+        sourceIds: ['context-modern-history-source'],
+        sourceClasses: {ReligiousSourceClass.modernHistoryArchaeology},
+        contextReference: true,
+      );
+
+      expect(
+        () => buildProphetSemanticGapManifestT0336(
+          claims: const [invalidHadithContext],
+        ),
+        throwsStateError,
+      );
+      expect(
+        () => buildProphetSemanticGapManifestT0336(
+          claims: const [invalidDateContext],
+        ),
+        throwsStateError,
+      );
+    },
+  );
 }
