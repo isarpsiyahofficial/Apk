@@ -62,10 +62,15 @@ void main() {
       expect(byId(id).hasPendingResearch, isTrue, reason: id);
     }
 
+    final shuaybGeography =
+        shuayb.sections[ProphetBiographySectionKey.geography]!;
     expect(
-      shuayb.sections[ProphetBiographySectionKey.geography]!.status,
-      ProphetBiographyFieldStatus.unknownPendingResearch,
+      shuaybGeography.status,
+      ProphetBiographyFieldStatus.sourceBacked,
     );
+    expect(shuaybGeography.sources, hasLength(1));
+    expect(shuaybGeography.sources.single.locator, 'Quran 11:84');
+    expect(shuaybGeography.sources.single.sourceClass, ReligiousSourceClass.quran);
     expect(
       musa.sections[ProphetBiographySectionKey.period]!.status,
       ProphetBiographyFieldStatus.unknownPendingResearch,
