@@ -21,6 +21,12 @@ void main() {
       'muhammad': 'tanzil-uthmani-v1.1-muhammad-q17-1-isra-geography',
     };
 
+    expect(
+      canonicalProphetGeographyEvidenceT0336.map((item) => item.biographyProphetId).toSet(),
+      expected.keys.toSet(),
+      reason: 'No unreviewed geography owner may silently enter verified T0336 coverage',
+    );
+
     for (final entry in expected.entries) {
       final draft = canonicalProphetBiographyT0194Dataset.singleWhere(
         (item) => item.identity.canonicalId == entry.key,
