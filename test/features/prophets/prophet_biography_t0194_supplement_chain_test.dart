@@ -6,6 +6,16 @@ import 'package:islami_hayat/features/prophets/data/prophet_biography_t0194_data
 void main() {
   test('T0194 nested supplement chain preserves reviewed geography for every owner', () {
     const expected = <String, ({String sourceId, String locator, String verse})>{
+      'salih': (
+        sourceId: 'tanzil-uthmani-v1.1-salih-q7-73-74-q89-9-thamud-settlement-geography',
+        locator: 'Quran 7:73-74; 89:9',
+        verse: '7:73',
+      ),
+      'lut': (
+        sourceId: 'tanzil-uthmani-v1.1-lut-q21-74-q15-76-town-road-geography',
+        locator: 'Quran 21:74; 15:76',
+        verse: '21:74',
+      ),
       'hud': (
         sourceId: 'tanzil-uthmani-v1.1-hud-q11-50-q46-21-ahqaf-geography',
         locator: 'Quran 11:50; 46:21',
@@ -77,6 +87,12 @@ void main() {
   });
 
   test('T0194 Quran cross-reference geography keeps every supporting verse', () {
+    final salih = canonicalProphetBiographyT0194Dataset.singleWhere(
+      (item) => item.identity.canonicalId == 'salih',
+    );
+    final lut = canonicalProphetBiographyT0194Dataset.singleWhere(
+      (item) => item.identity.canonicalId == 'lut',
+    );
     final hud = canonicalProphetBiographyT0194Dataset.singleWhere(
       (item) => item.identity.canonicalId == 'hud',
     );
@@ -84,6 +100,14 @@ void main() {
       (item) => item.identity.canonicalId == 'harun',
     );
 
+    expect(
+      salih.quranReferences.map((item) => item.stableId).toSet(),
+      containsAll(<String>['7:73', '7:74', '89:9']),
+    );
+    expect(
+      lut.quranReferences.map((item) => item.stableId).toSet(),
+      containsAll(<String>['21:74', '15:76']),
+    );
     expect(
       hud.quranReferences.map((item) => item.stableId).toSet(),
       containsAll(<String>['11:50', '46:21']),
