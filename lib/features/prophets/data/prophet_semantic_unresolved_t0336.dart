@@ -3,6 +3,7 @@ import 'prophet_hadith_evidence_t0336_batch32.dart';
 import 'prophet_hadith_evidence_t0336_batch33.dart';
 import 'prophet_hadith_evidence_t0336_batch34.dart';
 import 'prophet_hadith_evidence_t0336_batch35.dart';
+import 'prophet_hadith_evidence_t0336_batch36.dart';
 import 'prophet_semantic_evidence_t0336.dart';
 import 'prophet_semantic_ownership_qa.dart';
 
@@ -25,6 +26,7 @@ List<ProphetSemanticClaim> buildProphetSemanticEvidenceWithUnresolvedT0336({
       ...prophetHadithEvidenceT0336Batch33,
       ...prophetHadithEvidenceT0336Batch34,
       ...prophetHadithEvidenceT0336Batch35,
+      ...prophetHadithEvidenceT0336Batch36,
     ],
   );
   final output = <ProphetSemanticClaim>[...base];
