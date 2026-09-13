@@ -5,6 +5,7 @@ import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t033
 import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch33.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch34.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch35.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch36.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_evidence_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_gap_manifest_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_qa.dart';
@@ -22,30 +23,36 @@ void main() {
       final expectedUnresolved = {...canonicalIds}
         ..remove('adam')
         ..remove('ayyub')
+        ..remove('dawud')
+        ..remove('harun')
         ..remove('ibrahim')
         ..remove('nuh')
         ..remove('yusuf')
+        ..remove('yunus')
         ..remove('musa')
         ..remove('isa')
         ..remove('sulayman')
         ..remove('muhammad');
 
-      expect(hadith.verifiedCount, 9);
+      expect(hadith.verifiedCount, 12);
       expect(
         hadith.verifiedProphetIds.toSet(),
         {
           'adam',
           'ayyub',
+          'dawud',
+          'harun',
           'ibrahim',
           'nuh',
           'yusuf',
+          'yunus',
           'musa',
           'isa',
           'sulayman',
           'muhammad',
         },
       );
-      expect(hadith.unresolvedCount, 16);
+      expect(hadith.unresolvedCount, 13);
       expect(hadith.unresolvedProphetIds.toSet(), expectedUnresolved);
       expect(hadith.isComplete, isFalse);
 
@@ -69,16 +76,20 @@ void main() {
         ...prophetHadithEvidenceT0336Batch33,
         ...prophetHadithEvidenceT0336Batch34,
         ...prophetHadithEvidenceT0336Batch35,
+        ...prophetHadithEvidenceT0336Batch36,
       ];
-      expect(claims, hasLength(10));
+      expect(claims, hasLength(13));
       expect(
         claims.expand((claim) => claim.sourceIds).toSet(),
         {
           'sahih-muslim-854b-adam-friday',
           'sahih-bukhari-3391-ayyub-blessing',
+          'sahih-bukhari-2072-dawud-manual-labour',
+          'sahih-bukhari-3393-harun-night-journey',
           'sahih-bukhari-3356-ibrahim-circumcision',
           'sahih-bukhari-3339-nuh-message-witness',
           'sahih-bukhari-3390-yusuf-prophetic-lineage',
+          'sahih-bukhari-3412-yunus-no-superiority',
           'sahih-bukhari-3410-musa-community',
           'sahih-bukhari-3442-isa-prophetic-succession',
           'sahih-bukhari-3424-sulayman-inshaallah',
@@ -90,9 +101,12 @@ void main() {
       final expectedOwnerBySource = <String, String>{
         'sahih-muslim-854b-adam-friday': 'adam',
         'sahih-bukhari-3391-ayyub-blessing': 'ayyub',
+        'sahih-bukhari-2072-dawud-manual-labour': 'dawud',
+        'sahih-bukhari-3393-harun-night-journey': 'harun',
         'sahih-bukhari-3356-ibrahim-circumcision': 'ibrahim',
         'sahih-bukhari-3339-nuh-message-witness': 'nuh',
         'sahih-bukhari-3390-yusuf-prophetic-lineage': 'yusuf',
+        'sahih-bukhari-3412-yunus-no-superiority': 'yunus',
         'sahih-bukhari-3410-musa-community': 'musa',
         'sahih-bukhari-3442-isa-prophetic-succession': 'isa',
         'sahih-bukhari-3424-sulayman-inshaallah': 'sulayman',
@@ -145,6 +159,22 @@ void main() {
           ),
           ProphetSemanticClaim(
             biographyProphetId: 'muhammad',
+            subjectProphetId: 'dawud',
+            dimension: ProphetSemanticDimension.hadith,
+            claimKey: 'hadith:muhammad:borrowed-dawud-report',
+            sourceIds: ['sahih-bukhari-2072-dawud-manual-labour'],
+            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
+          ),
+          ProphetSemanticClaim(
+            biographyProphetId: 'muhammad',
+            subjectProphetId: 'harun',
+            dimension: ProphetSemanticDimension.hadith,
+            claimKey: 'hadith:muhammad:borrowed-harun-report',
+            sourceIds: ['sahih-bukhari-3393-harun-night-journey'],
+            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
+          ),
+          ProphetSemanticClaim(
+            biographyProphetId: 'muhammad',
             subjectProphetId: 'ibrahim',
             dimension: ProphetSemanticDimension.hadith,
             claimKey: 'hadith:muhammad:borrowed-ibrahim-report',
@@ -165,6 +195,14 @@ void main() {
             dimension: ProphetSemanticDimension.hadith,
             claimKey: 'hadith:muhammad:borrowed-yusuf-report',
             sourceIds: ['sahih-bukhari-3390-yusuf-prophetic-lineage'],
+            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
+          ),
+          ProphetSemanticClaim(
+            biographyProphetId: 'muhammad',
+            subjectProphetId: 'yunus',
+            dimension: ProphetSemanticDimension.hadith,
+            claimKey: 'hadith:muhammad:borrowed-yunus-report',
+            sourceIds: ['sahih-bukhari-3412-yunus-no-superiority'],
             sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
           ),
           ProphetSemanticClaim(
@@ -197,7 +235,7 @@ void main() {
       expect(result.isValid, isFalse);
     });
 
-    test('batch-34 and batch-35 builders reject owner/source tampering', () {
+    test('batch-34 to batch-36 builders reject owner/source tampering', () {
       expect(
         () => buildMusaHadithEvidenceT0336(biographyProphetId: 'harun'),
         throwsStateError,
@@ -215,49 +253,49 @@ void main() {
         throwsStateError,
       );
       expect(
-        () => buildMusaHadithEvidenceT0336(
+        () => buildHarunHadithEvidenceT0336(subjectProphetId: 'musa'),
+        throwsStateError,
+      );
+      expect(
+        () => buildYunusHadithEvidenceT0336(biographyProphetId: 'muhammad'),
+        throwsStateError,
+      );
+      expect(
+        () => buildDawudHadithEvidenceT0336(subjectProphetId: 'sulayman'),
+        throwsStateError,
+      );
+      expect(
+        () => buildHarunHadithEvidenceT0336(
           source: const SourceReference(
-            id: 'sahih-bukhari-3410-musa-community',
+            id: 'sahih-bukhari-3393-harun-night-journey',
             title: 'Sahih al-Bukhari',
             sourceClass: ReligiousSourceClass.sahihHasanHadith,
             licenseId: 'REFERENCE-ONLY',
-            locator: 'Sahih al-Bukhari 3411',
+            locator: 'Sahih al-Bukhari 3394',
           ),
         ),
         throwsStateError,
       );
       expect(
-        () => buildIsaHadithEvidenceT0336(
+        () => buildYunusHadithEvidenceT0336(
           source: const SourceReference(
-            id: 'sahih-bukhari-3442-isa-prophetic-succession',
+            id: 'sahih-bukhari-3412-yunus-no-superiority',
             title: 'Sahih al-Bukhari',
             sourceClass: ReligiousSourceClass.sahihHasanHadith,
             licenseId: 'REFERENCE-ONLY',
-            locator: 'Sahih al-Bukhari 3443',
+            locator: 'Sahih al-Bukhari 3413',
           ),
         ),
         throwsStateError,
       );
       expect(
-        () => buildAyyubHadithEvidenceT0336(
+        () => buildDawudHadithEvidenceT0336(
           source: const SourceReference(
-            id: 'sahih-bukhari-3391-ayyub-blessing',
+            id: 'sahih-bukhari-2072-dawud-manual-labour',
             title: 'Sahih al-Bukhari',
             sourceClass: ReligiousSourceClass.sahihHasanHadith,
             licenseId: 'REFERENCE-ONLY',
-            locator: 'Sahih al-Bukhari 3392',
-          ),
-        ),
-        throwsStateError,
-      );
-      expect(
-        () => buildSulaymanHadithEvidenceT0336(
-          source: const SourceReference(
-            id: 'sahih-bukhari-3424-sulayman-inshaallah',
-            title: 'Sahih al-Bukhari',
-            sourceClass: ReligiousSourceClass.sahihHasanHadith,
-            licenseId: 'REFERENCE-ONLY',
-            locator: 'Sahih al-Bukhari 3425',
+            locator: 'Sahih al-Bukhari 2073',
           ),
         ),
         throwsStateError,
