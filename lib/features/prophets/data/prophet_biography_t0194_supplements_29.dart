@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_supplements_30.dart';
 import 'prophet_content.dart';
 
 SourceReference _quranSource(String stableId, String locator) => SourceReference(
@@ -31,8 +32,12 @@ ProphetBiographyField _quranGeographyField({
 /// road-side trace described in 15:76; the field does not make a Quran-backed
 /// claim that the town's proper name, modern coordinates, or borders are given
 /// by those verses.
+///
+/// The thirtieth source-reviewed batch is composed here so its direct Quranic
+/// geography contexts remain in the same fail-closed T0194 provenance chain.
 final t0194ProphetBiographySupplements29 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
+  ...t0194ProphetBiographySupplements30,
   'salih': <ProphetBiographySectionKey, ProphetBiographyField>{
     ProphetBiographySectionKey.geography: _quranGeographyField(
       text: const LocalizedReligiousText(
@@ -58,6 +63,7 @@ final t0194ProphetBiographySupplements29 =
 };
 
 final t0194ProphetSupplementReferences29 = <String, List<ProphetVerseReference>>{
+  ...t0194ProphetSupplementReferences30,
   'salih': const <ProphetVerseReference>[
     ProphetVerseReference(surah: 7, ayah: 73),
     ProphetVerseReference(surah: 7, ayah: 74),
