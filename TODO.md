@@ -34,7 +34,7 @@
 
 - [ ] **T0020** — Kur’an Arapça ana metin kaynağını ve lisansını kesinleştir; exact sürüm ve attribution metnini kaydet. **Ref:** SPEC 148–151, 687, 797.
 - [ ] **T0021** — Türkçe meal kaynağını, sürümünü, lisansını ve gösterilecek attribution metnini kesinleştir. **Ref:** SPEC 168–171, 688, 798.
-- [ ] **T0022** — İngilizce meal kaynağını, sürümünü, lisansını ve attribution metnini kesinleştir. **Ref:** SPEC 168–171, 689, 798.
+- [ ] **T0022** — İngilizce meal kaynağını, sürümünü, lisansını ve gösterilecek attribution metnini kesinleştir. **Ref:** SPEC 168–171, 689, 798.
 - [ ] **T0023** — Arapça Kur’an metninin localization string değil kutsal kaynak metni olarak ayrı veri sınıfında tutulacağını veri sözleşmesine yaz. **Ref:** SPEC 103–121, 148–171.
 - [ ] **T0024** — Hadis/dua kaynak zincirini belirle; exact translation teliflerini, hadis derecelendirme kaynaklarını ve kullanım haklarını kaydet. **Ref:** SPEC 228–251, 528, 582, 690.
 - [ ] **T0025** — İslam tarihi için kullanılacak birincil/ikincil kaynak ailelerini ve akademik doğrulama politikasını belirle. **Ref:** SPEC 320–389, 583–584, 699.
@@ -223,7 +223,7 @@
 - [ ] **T0195** — Yahudilik/Hristiyanlık karşılaştırma alanlarını yalnız gerekli yerde, saygılı ve İslami anlatıdan ayrılmış biçimde oluştur. **Ref:** SPEC 861–863.
 - [ ] **T0196** — Her bilgi parçasına source class ata: Kur’an / Sahih-Hasen / Erken tarih-tefsir / İsrailiyat / Sonraki gelenek / Modern tarih-arkeoloji / Tartışmalı / Bilinmiyor. **Ref:** SPEC 864–869.
 - [ ] **T0197** — Vahiy Yolculuğu timeline’ını paralel dönem desteğiyle uygula. **Ref:** SPEC 870–877, 748.
-- [ ] **T0198** — Soy/aile ilişkileri şemasını yalnız doğrulanmış ilişkilerle oluştur. **Ref:** SPEC 873, 901.
+- [x] **T0198** — Soy/aile ilişkileri şemasını yalnız doğrulanmış ilişkilerle oluştur. **Ref:** SPEC 873, 901.
 - [ ] **T0199** — Peygamber coğrafya haritalarında exact/approximate pin ayrımı uygula. **Ref:** SPEC 874–875.
 - [ ] **T0200** — Hz. Nuh, Musa/Firavun, İbrahim tarihi, Âdem tarihi ve Hz. İsa tarihsel/İslami katman örneklerinde şartnamedeki ihtiyat kurallarını özel test et. **Ref:** SPEC 878–882.
 - [ ] **T0201** — Hz. Muhammed siyeri için ayrıntılı alt kronoloji ve olay bağlantıları oluştur. **Ref:** SPEC 883–884.

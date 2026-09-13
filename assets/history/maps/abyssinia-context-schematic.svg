@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" role="img" aria-label="Schematic Red Sea and Abyssinia historical context map; not to scale">
+  <rect width="720" height="480" fill="#FBF7ED"/>
+  <path d="M250 25 C280 100 285 180 305 250 C325 320 345 390 370 455" fill="none" stroke="#A7B8AA" stroke-width="72" stroke-linecap="round" opacity="0.6"/>
+  <path d="M40 35 H215 C230 115 240 190 260 260 C280 330 300 390 330 455 H40Z" fill="#E8E1D2" stroke="#365C49" stroke-width="3"/>
+  <path d="M405 35 H680 V455 H395 C380 390 360 320 345 250 C330 175 320 100 300 35Z" fill="#EEE7D8" stroke="#365C49" stroke-width="3"/>
+  <ellipse cx="470" cy="298" rx="86" ry="66" fill="none" stroke="#8C704A" stroke-width="4" stroke-dasharray="11 10"/>
+  <path d="M235 205 C300 220 350 250 406 282" fill="none" stroke="#8C704A" stroke-width="5" stroke-dasharray="10 12"/>
+  <circle cx="235" cy="205" r="11" fill="#365C49"/>
+</svg>
