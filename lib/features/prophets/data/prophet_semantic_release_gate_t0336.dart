@@ -26,8 +26,9 @@ final class ProphetSemanticReleaseGateResultT0336 {
 /// A release may never pass if these views disagree. In particular, filling all
 /// 200 semantic slots is insufficient when the separately reviewed family graph
 /// is invalid or a parent/ancestor relation contradicts the governed chronology.
-/// This keeps family/date claims fail-closed instead of allowing coverage counts
-/// to hide a semantic genealogy regression.
+/// Missing verified facts must also be explicit `unknown`/`pendingReview`
+/// records; a silent semantic hole is itself a release-gate error. This keeps
+/// uncertainty visible without promoting it to verified factual coverage.
 ProphetSemanticReleaseGateResultT0336 auditProphetSemanticReleaseGateT0336({
   ProphetSemanticCoverageReportT0336? coverage,
   ProphetSemanticGapManifestT0336? manifest,
@@ -127,15 +128,13 @@ ProphetSemanticReleaseGateResultT0336 auditProphetSemanticReleaseGateT0336({
         );
       }
 
-      // Exact historical dates are particularly high-risk. If exact verified
-      // evidence does not exist, the gap must be explicit rather than silently
-      // absent. This keeps uncertainty visible and prevents future code from
-      // filling a date from chronology/order/lineage inference.
-      if (dimension == ProphetSemanticDimension.historicalDate &&
-          !slot.isVerified &&
-          !slot.hasExplicitUnresolvedEvidence) {
+      // Every required dimension must be represented explicitly. A missing
+      // verified fact is acceptable only as visible editorial uncertainty; it
+      // must never disappear from the 25x8 review surface. This is deliberately
+      // stricter than manufacturing a fact to make the matrix look complete.
+      if (!slot.isVerified && !slot.hasExplicitUnresolvedEvidence) {
         errors.add(
-          '${row.prophetId}/historicalDate: missing exact-date evidence must be '
+          '${row.prophetId}/${dimension.name}: missing verified evidence must be '
           'explicitly unknown or pendingReview',
         );
       }
