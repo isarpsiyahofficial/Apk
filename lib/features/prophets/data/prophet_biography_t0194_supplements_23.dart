@@ -19,11 +19,13 @@ SourceReference _quranSource(String stableId, String locator) => SourceReference
 /// Night Journey: the field does not add a calendar date, route, transport
 /// mechanism, or details of the Ascension that are not stated in this verse.
 ///
-/// The twenty-fourth supplement is composed here to carry Muhammad's separately
-/// classified modern-historical period without turning that chronology into a
-/// Quranic or hadith claim.
+/// The twenty-fourth supplement chain is spread first so independently reviewed
+/// fields for every canonical prophet in batches 24+ remain reachable. Muhammad
+/// is then merged explicitly so this batch can add the Quranic Night Journey
+/// field without dropping his period/geography fields from the nested chain.
 final t0194ProphetBiographySupplements23 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
+  ...t0194ProphetBiographySupplements24,
   'muhammad': <ProphetBiographySectionKey, ProphetBiographyField>{
     ...t0194ProphetBiographySupplements24['muhammad']!,
     ProphetBiographySectionKey.miracles: ProphetBiographyField(
@@ -42,7 +44,9 @@ final t0194ProphetBiographySupplements23 =
 
 final t0194ProphetSupplementReferences23 = <String, List<ProphetVerseReference>>{
   ...t0194ProphetSupplementReferences24,
-  'muhammad': const <ProphetVerseReference>[
-    ProphetVerseReference(surah: 17, ayah: 1),
+  'muhammad': <ProphetVerseReference>[
+    ...t0194ProphetSupplementReferences24['muhammad'] ??
+        const <ProphetVerseReference>[],
+    const ProphetVerseReference(surah: 17, ayah: 1),
   ],
 };
