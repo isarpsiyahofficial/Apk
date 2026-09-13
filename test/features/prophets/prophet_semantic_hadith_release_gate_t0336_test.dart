@@ -4,6 +4,7 @@ import 'package:islami_hayat/features/prophets/data/canonical_prophets.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch32.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch33.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch34.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch35.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_evidence_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_gap_manifest_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_qa.dart';
@@ -20,19 +21,31 @@ void main() {
           .toSet();
       final expectedUnresolved = {...canonicalIds}
         ..remove('adam')
+        ..remove('ayyub')
         ..remove('ibrahim')
         ..remove('nuh')
         ..remove('yusuf')
         ..remove('musa')
         ..remove('isa')
+        ..remove('sulayman')
         ..remove('muhammad');
 
-      expect(hadith.verifiedCount, 7);
+      expect(hadith.verifiedCount, 9);
       expect(
         hadith.verifiedProphetIds.toSet(),
-        {'adam', 'ibrahim', 'nuh', 'yusuf', 'musa', 'isa', 'muhammad'},
+        {
+          'adam',
+          'ayyub',
+          'ibrahim',
+          'nuh',
+          'yusuf',
+          'musa',
+          'isa',
+          'sulayman',
+          'muhammad',
+        },
       );
-      expect(hadith.unresolvedCount, 18);
+      expect(hadith.unresolvedCount, 16);
       expect(hadith.unresolvedProphetIds.toSet(), expectedUnresolved);
       expect(hadith.isComplete, isFalse);
 
@@ -55,17 +68,20 @@ void main() {
         ...prophetHadithEvidenceT0336Batch32,
         ...prophetHadithEvidenceT0336Batch33,
         ...prophetHadithEvidenceT0336Batch34,
+        ...prophetHadithEvidenceT0336Batch35,
       ];
-      expect(claims, hasLength(8));
+      expect(claims, hasLength(10));
       expect(
         claims.expand((claim) => claim.sourceIds).toSet(),
         {
           'sahih-muslim-854b-adam-friday',
+          'sahih-bukhari-3391-ayyub-blessing',
           'sahih-bukhari-3356-ibrahim-circumcision',
           'sahih-bukhari-3339-nuh-message-witness',
           'sahih-bukhari-3390-yusuf-prophetic-lineage',
           'sahih-bukhari-3410-musa-community',
           'sahih-bukhari-3442-isa-prophetic-succession',
+          'sahih-bukhari-3424-sulayman-inshaallah',
           'sahih-muslim-1162e-muhammad-birth',
           'sahih-bukhari-4449-muhammad-death',
         },
@@ -73,11 +89,13 @@ void main() {
 
       final expectedOwnerBySource = <String, String>{
         'sahih-muslim-854b-adam-friday': 'adam',
+        'sahih-bukhari-3391-ayyub-blessing': 'ayyub',
         'sahih-bukhari-3356-ibrahim-circumcision': 'ibrahim',
         'sahih-bukhari-3339-nuh-message-witness': 'nuh',
         'sahih-bukhari-3390-yusuf-prophetic-lineage': 'yusuf',
         'sahih-bukhari-3410-musa-community': 'musa',
         'sahih-bukhari-3442-isa-prophetic-succession': 'isa',
+        'sahih-bukhari-3424-sulayman-inshaallah': 'sulayman',
         'sahih-muslim-1162e-muhammad-birth': 'muhammad',
         'sahih-bukhari-4449-muhammad-death': 'muhammad',
       };
@@ -115,6 +133,14 @@ void main() {
             dimension: ProphetSemanticDimension.hadith,
             claimKey: 'hadith:muhammad:borrowed-adam-report',
             sourceIds: ['sahih-muslim-854b-adam-friday'],
+            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
+          ),
+          ProphetSemanticClaim(
+            biographyProphetId: 'muhammad',
+            subjectProphetId: 'ayyub',
+            dimension: ProphetSemanticDimension.hadith,
+            claimKey: 'hadith:muhammad:borrowed-ayyub-report',
+            sourceIds: ['sahih-bukhari-3391-ayyub-blessing'],
             sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
           ),
           ProphetSemanticClaim(
@@ -157,19 +183,35 @@ void main() {
             sourceIds: ['sahih-bukhari-3442-isa-prophetic-succession'],
             sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
           ),
+          ProphetSemanticClaim(
+            biographyProphetId: 'muhammad',
+            subjectProphetId: 'sulayman',
+            dimension: ProphetSemanticDimension.hadith,
+            claimKey: 'hadith:muhammad:borrowed-sulayman-report',
+            sourceIds: ['sahih-bukhari-3424-sulayman-inshaallah'],
+            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
+          ),
         ],
       );
 
       expect(result.isValid, isFalse);
     });
 
-    test('batch-34 builders reject owner and source metadata tampering', () {
+    test('batch-34 and batch-35 builders reject owner/source tampering', () {
       expect(
         () => buildMusaHadithEvidenceT0336(biographyProphetId: 'harun'),
         throwsStateError,
       );
       expect(
         () => buildIsaHadithEvidenceT0336(subjectProphetId: 'muhammad'),
+        throwsStateError,
+      );
+      expect(
+        () => buildAyyubHadithEvidenceT0336(biographyProphetId: 'muhammad'),
+        throwsStateError,
+      );
+      expect(
+        () => buildSulaymanHadithEvidenceT0336(subjectProphetId: 'dawud'),
         throwsStateError,
       );
       expect(
@@ -192,6 +234,30 @@ void main() {
             sourceClass: ReligiousSourceClass.sahihHasanHadith,
             licenseId: 'REFERENCE-ONLY',
             locator: 'Sahih al-Bukhari 3443',
+          ),
+        ),
+        throwsStateError,
+      );
+      expect(
+        () => buildAyyubHadithEvidenceT0336(
+          source: const SourceReference(
+            id: 'sahih-bukhari-3391-ayyub-blessing',
+            title: 'Sahih al-Bukhari',
+            sourceClass: ReligiousSourceClass.sahihHasanHadith,
+            licenseId: 'REFERENCE-ONLY',
+            locator: 'Sahih al-Bukhari 3392',
+          ),
+        ),
+        throwsStateError,
+      );
+      expect(
+        () => buildSulaymanHadithEvidenceT0336(
+          source: const SourceReference(
+            id: 'sahih-bukhari-3424-sulayman-inshaallah',
+            title: 'Sahih al-Bukhari',
+            sourceClass: ReligiousSourceClass.sahihHasanHadith,
+            licenseId: 'REFERENCE-ONLY',
+            locator: 'Sahih al-Bukhari 3425',
           ),
         ),
         throwsStateError,
