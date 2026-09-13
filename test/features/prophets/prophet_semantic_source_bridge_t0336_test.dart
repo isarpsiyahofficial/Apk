@@ -18,11 +18,12 @@ void main() {
       'yusuf': 'tanzil-uthmani-v1.1-yusuf-q12-21-egypt-geography',
       'shuayb': 'tanzil-uthmani-v1.1-shuayb-q11-84-madyan-geography',
       'musa': 'tanzil-uthmani-v1.1-musa-q28-22-23-madyan-geography',
+      'isa': 'tanzil-uthmani-v1.1-isa-q23-50-geography',
       'muhammad': 'tanzil-uthmani-v1.1-muhammad-q17-1-isra-geography',
     };
 
-    expect(expected, hasLength(11));
-    expect(canonicalProphetGeographyEvidenceT0336, hasLength(11));
+    expect(expected, hasLength(12));
+    expect(canonicalProphetGeographyEvidenceT0336, hasLength(12));
     expect(
       canonicalProphetGeographyEvidenceT0336.map((item) => item.biographyProphetId).toSet(),
       expected.keys.toSet(),
