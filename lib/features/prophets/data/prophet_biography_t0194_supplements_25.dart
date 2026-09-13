@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_supplements_26.dart';
 import 'prophet_content.dart';
 
 SourceReference _quranSource(String stableId, String locator) => SourceReference(
@@ -26,8 +27,13 @@ ProphetBiographyField _quranGeographyField({
 /// This batch adds only geography that the Quran states explicitly. It does not
 /// infer chronology, modern borders, archaeological identification, route
 /// details, or exact historical dates from the place references.
+///
+/// The twenty-sixth Quran-reviewed geography batch is composed here so the
+/// additional Ibrahim/Ismail/Yusuf/Shuayb geography evidence enters the same
+/// canonical T0194 composition chain without bypassing provenance checks.
 final t0194ProphetBiographySupplements25 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
+  ...t0194ProphetBiographySupplements26,
   'musa': <ProphetBiographySectionKey, ProphetBiographyField>{
     ProphetBiographySectionKey.geography: _quranGeographyField(
       text: const LocalizedReligiousText(
@@ -53,6 +59,7 @@ final t0194ProphetBiographySupplements25 =
 };
 
 final t0194ProphetSupplementReferences25 = <String, List<ProphetVerseReference>>{
+  ...t0194ProphetSupplementReferences26,
   'musa': const <ProphetVerseReference>[
     ProphetVerseReference(surah: 28, ayah: 22),
     ProphetVerseReference(surah: 28, ayah: 23),
