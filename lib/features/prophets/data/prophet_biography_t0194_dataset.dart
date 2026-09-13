@@ -207,6 +207,10 @@ const _admittedHadithSources = <String, ({String title, String locator})>{
     title: 'Sahih al-Bukhari',
     locator: 'Sahih al-Bukhari 4449',
   ),
+  'sahih-muslim-854b-adam-friday': (
+    title: 'Sahih Muslim',
+    locator: 'Sahih Muslim 854b',
+  ),
 };
 
 bool _isAuditableHadithSource(SourceReference source) {
