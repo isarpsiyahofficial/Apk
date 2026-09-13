@@ -49,23 +49,26 @@ void main() {
     }
   });
 
-  test('hadith backlog locks the exact nine source-reviewed owners', () {
+  test('hadith backlog locks the exact twelve source-reviewed owners', () {
     final entry = canonicalProphetSemanticReleaseBacklogT0336.singleWhere(
       (item) => item.dimension == ProphetSemanticDimension.hadith,
     );
 
-    expect(entry.verifiedCount, 9);
-    expect(entry.unresolvedCount, 16);
+    expect(entry.verifiedCount, 12);
+    expect(entry.unresolvedCount, 13);
     expect(entry.isComplete, isFalse);
     expect(entry.verifiedProphetIds, <String>[
       'adam',
       'ayyub',
+      'dawud',
+      'harun',
       'ibrahim',
       'isa',
       'muhammad',
       'musa',
       'nuh',
       'sulayman',
+      'yunus',
       'yusuf',
     ]);
   });
@@ -105,7 +108,11 @@ void main() {
           prophetId,
           dimension,
         );
-        expect(slot.hasExplicitUnresolvedEvidence, isTrue, reason: '$prophetId/${dimension.name}');
+        expect(
+          slot.hasExplicitUnresolvedEvidence,
+          isTrue,
+          reason: '$prophetId/${dimension.name}',
+        );
       }
     }
   });
