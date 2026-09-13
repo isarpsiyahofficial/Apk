@@ -3,6 +3,7 @@ import 'canonical_prophet_biographies.dart';
 import 'canonical_prophets.dart';
 import 'prophet_biography_t0194_dataset.dart';
 import 'prophet_semantic_ownership_qa.dart';
+import 'prophet_timeline.dart';
 import 'verified_prophet_family_relations.dart';
 
 /// Canonical-data-backed slices of the v1.2 T0336 semantic release gate.
@@ -14,7 +15,8 @@ import 'verified_prophet_family_relations.dart';
 ///
 /// Other dimensions are admitted only by bridging independently reviewed data:
 /// the provenance-checked T0194 working biography dataset for
-/// event/period/geography/hadith and the verified genealogy graph for
+/// event/period/geography/hadith, the separately governed T0193 approximate
+/// timeline for chronology, and the verified genealogy graph for
 /// family-lineage. Unknown/pending biography fields are intentionally ignored
 /// for verified coverage, but may be carried as explicit unresolved evidence so
 /// editorial uncertainty remains machine-readable instead of being guessed.
@@ -365,6 +367,45 @@ final List<ProphetSemanticClaim> canonicalProphetChronologyEvidenceT0336 =
   dimension: ProphetSemanticDimension.chronology,
 );
 
+/// T0336 chronology coverage from the independently governed T0193 timeline.
+///
+/// The source timeline is approximate by design. Each canonical prophet gets a
+/// biography-owned chronology claim for its reviewed band, but these claims are
+/// never promoted to [ProphetSemanticDimension.historicalDate].
+final List<ProphetSemanticClaim> canonicalProphetTimelineChronologyEvidenceT0336 =
+    _buildTimelineChronologyEvidenceT0336();
+
+List<ProphetSemanticClaim> _buildTimelineChronologyEvidenceT0336() {
+  if (!mainApproximateProphetChronologyIsValid) {
+    throw StateError('T0336 received invalid T0193 approximate chronology');
+  }
+
+  final claims = <ProphetSemanticClaim>[];
+  for (final band in mainApproximateProphetChronology) {
+    final sourceIds = List<String>.unmodifiable(
+      band.sources.map((source) => source.id),
+    );
+    final sourceClasses = Set<ReligiousSourceClass>.unmodifiable(
+      band.sources.map((source) => source.sourceClass),
+    );
+
+    for (final prophetId in band.prophetIds) {
+      claims.add(
+        ProphetSemanticClaim(
+          biographyProphetId: prophetId,
+          subjectProphetId: prophetId,
+          dimension: ProphetSemanticDimension.chronology,
+          claimKey: 'chronology:$prophetId:approximate_band_${band.order}',
+          sourceIds: sourceIds,
+          sourceClasses: sourceClasses,
+        ),
+      );
+    }
+  }
+
+  return List<ProphetSemanticClaim>.unmodifiable(claims);
+}
+
 final List<ProphetSemanticClaim> canonicalProphetGeographyEvidenceT0336 =
     _sourceBackedSectionEvidence(
   section: ProphetBiographySectionKey.geography,
@@ -416,6 +457,7 @@ final List<ProphetSemanticClaim> canonicalProphetSemanticEvidenceT0336 =
   ...canonicalProphetFamilyLineageEvidenceT0336,
   ...canonicalProphetEventEvidenceT0336,
   ...canonicalProphetChronologyEvidenceT0336,
+  ...canonicalProphetTimelineChronologyEvidenceT0336,
   ...canonicalProphetGeographyEvidenceT0336,
   ...canonicalProphetHadithEvidenceT0336,
   ...canonicalProphetHistoricalDateUnknownT0336,
