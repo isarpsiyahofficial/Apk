@@ -6,8 +6,12 @@ import 'package:islami_hayat/features/prophets/data/prophet_semantic_evidence_t0
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_qa.dart';
 
 void main() {
-  test('Quran-reviewed Musa and Muhammad geography reaches T0336 with exact ownership', () {
+  test('Quran-reviewed geography reaches T0336 with exact ownership', () {
     const expected = <String, String>{
+      'ibrahim': 'tanzil-uthmani-v1.1-ibrahim-q2-127-kaaba-geography',
+      'ismail': 'tanzil-uthmani-v1.1-ismail-q2-127-kaaba-geography',
+      'yusuf': 'tanzil-uthmani-v1.1-yusuf-q12-21-egypt-geography',
+      'shuayb': 'tanzil-uthmani-v1.1-shuayb-q11-84-madyan-geography',
       'musa': 'tanzil-uthmani-v1.1-musa-q28-22-23-madyan-geography',
       'muhammad': 'tanzil-uthmani-v1.1-muhammad-q17-1-isra-geography',
     };
@@ -36,17 +40,17 @@ void main() {
     }
   });
 
-  test('geography evidence cannot migrate between Musa and Muhammad biographies', () {
+  test('geography evidence cannot migrate between prophet biographies', () {
     const qa = ProphetSemanticOwnershipQa();
     final result = qa.audit(
       requireFull25Coverage: false,
       claims: const [
         ProphetSemanticClaim(
           biographyProphetId: 'muhammad',
-          subjectProphetId: 'musa',
+          subjectProphetId: 'yusuf',
           dimension: ProphetSemanticDimension.geography,
-          claimKey: 'geography:muhammad:madyan',
-          sourceIds: ['tanzil-uthmani-v1.1-musa-q28-22-23-madyan-geography'],
+          claimKey: 'geography:muhammad:egypt',
+          sourceIds: ['tanzil-uthmani-v1.1-yusuf-q12-21-egypt-geography'],
           sourceClasses: {ReligiousSourceClass.quran},
         ),
       ],
