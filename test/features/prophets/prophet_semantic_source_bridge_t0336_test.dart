@@ -21,6 +21,8 @@ void main() {
       'muhammad': 'tanzil-uthmani-v1.1-muhammad-q17-1-isra-geography',
     };
 
+    expect(expected, hasLength(11));
+    expect(canonicalProphetGeographyEvidenceT0336, hasLength(11));
     expect(
       canonicalProphetGeographyEvidenceT0336.map((item) => item.biographyProphetId).toSet(),
       expected.keys.toSet(),
