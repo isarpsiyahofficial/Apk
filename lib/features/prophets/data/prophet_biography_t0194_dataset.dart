@@ -8,7 +8,17 @@ import 'prophet_biography_t0194_supplements_12.dart';
 import 'prophet_biography_t0194_supplements_13.dart';
 import 'prophet_biography_t0194_supplements_14.dart';
 import 'prophet_biography_t0194_supplements_15.dart';
+import 'prophet_biography_t0194_supplements_16.dart';
+import 'prophet_biography_t0194_supplements_17.dart';
+import 'prophet_biography_t0194_supplements_18.dart';
+import 'prophet_biography_t0194_supplements_19.dart';
 import 'prophet_biography_t0194_supplements_2.dart';
+import 'prophet_biography_t0194_supplements_20.dart';
+import 'prophet_biography_t0194_supplements_21.dart';
+import 'prophet_biography_t0194_supplements_22.dart';
+import 'prophet_biography_t0194_supplements_23.dart';
+import 'prophet_biography_t0194_supplements_24.dart';
+import 'prophet_biography_t0194_supplements_25.dart';
 import 'prophet_biography_t0194_supplements_3.dart';
 import 'prophet_biography_t0194_supplements_4.dart';
 import 'prophet_biography_t0194_supplements_5.dart';
@@ -51,6 +61,27 @@ CanonicalProphetBiographyDraft _applySupplement(
       t0194ProphetBiographySupplements14[draft.identity.canonicalId];
   final fifteenthSupplement =
       t0194ProphetBiographySupplements15[draft.identity.canonicalId];
+  final sixteenthSupplement =
+      t0194ProphetBiographySupplements16[draft.identity.canonicalId];
+  final seventeenthSupplement =
+      t0194ProphetBiographySupplements17[draft.identity.canonicalId];
+  final eighteenthSupplement =
+      t0194ProphetBiographySupplements18[draft.identity.canonicalId];
+  final nineteenthSupplement =
+      t0194ProphetBiographySupplements19[draft.identity.canonicalId];
+  final twentiethSupplement =
+      t0194ProphetBiographySupplements20[draft.identity.canonicalId];
+  final twentyFirstSupplement =
+      t0194ProphetBiographySupplements21[draft.identity.canonicalId];
+  final twentySecondSupplement =
+      t0194ProphetBiographySupplements22[draft.identity.canonicalId];
+  final twentyThirdSupplement =
+      t0194ProphetBiographySupplements23[draft.identity.canonicalId];
+  final twentyFourthSupplement =
+      t0194ProphetBiographySupplements24[draft.identity.canonicalId];
+  final twentyFifthSupplement =
+      t0194ProphetBiographySupplements25[draft.identity.canonicalId];
+
   final firstReferences =
       t0194ProphetSupplementReferences[draft.identity.canonicalId] ??
           const <ProphetVerseReference>[];
@@ -65,6 +96,9 @@ CanonicalProphetBiographyDraft _applySupplement(
           const <ProphetVerseReference>[];
   final fifthReferences =
       t0194ProphetSupplementReferences5[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
+  final sixthReferences =
+      t0194ProphetSupplementReferences6[draft.identity.canonicalId] ??
           const <ProphetVerseReference>[];
   final seventhReferences =
       t0194ProphetSupplementReferences7[draft.identity.canonicalId] ??
@@ -93,78 +127,114 @@ CanonicalProphetBiographyDraft _applySupplement(
   final fifteenthReferences =
       t0194ProphetSupplementReferences15[draft.identity.canonicalId] ??
           const <ProphetVerseReference>[];
+  final sixteenthReferences =
+      t0194ProphetSupplementReferences16[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
+  final seventeenthReferences =
+      t0194ProphetSupplementReferences17[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
+  final eighteenthReferences =
+      t0194ProphetSupplementReferences18[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
+  final nineteenthReferences =
+      t0194ProphetSupplementReferences19[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
+  final twentiethReferences =
+      t0194ProphetSupplementReferences20[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
+  final twentyFirstReferences =
+      t0194ProphetSupplementReferences21[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
+  final twentySecondReferences =
+      t0194ProphetSupplementReferences22[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
+  final twentyThirdReferences =
+      t0194ProphetSupplementReferences23[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
+  final twentyFourthReferences =
+      t0194ProphetSupplementReferences24[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
+  final twentyFifthReferences =
+      t0194ProphetSupplementReferences25[draft.identity.canonicalId] ??
+          const <ProphetVerseReference>[];
 
-  if (firstSupplement == null &&
-      secondSupplement == null &&
-      thirdSupplement == null &&
-      fourthSupplement == null &&
-      fifthSupplement == null &&
-      sixthSupplement == null &&
-      seventhSupplement == null &&
-      eighthSupplement == null &&
-      ninthSupplement == null &&
-      tenthSupplement == null &&
-      eleventhSupplement == null &&
-      twelfthSupplement == null &&
-      thirteenthSupplement == null &&
-      fourteenthSupplement == null &&
-      fifteenthSupplement == null &&
-      firstReferences.isEmpty &&
-      secondReferences.isEmpty &&
-      thirdReferences.isEmpty &&
-      fourthReferences.isEmpty &&
-      fifthReferences.isEmpty &&
-      seventhReferences.isEmpty &&
-      eighthReferences.isEmpty &&
-      ninthReferences.isEmpty &&
-      tenthReferences.isEmpty &&
-      eleventhReferences.isEmpty &&
-      twelfthReferences.isEmpty &&
-      thirteenthReferences.isEmpty &&
-      fourteenthReferences.isEmpty &&
-      fifteenthReferences.isEmpty) {
+  final supplements = <Map<ProphetBiographySectionKey, ProphetBiographyField>?>[
+    firstSupplement,
+    secondSupplement,
+    thirdSupplement,
+    fourthSupplement,
+    fifthSupplement,
+    sixthSupplement,
+    seventhSupplement,
+    eighthSupplement,
+    ninthSupplement,
+    tenthSupplement,
+    eleventhSupplement,
+    twelfthSupplement,
+    thirteenthSupplement,
+    fourteenthSupplement,
+    fifteenthSupplement,
+    sixteenthSupplement,
+    seventeenthSupplement,
+    eighteenthSupplement,
+    nineteenthSupplement,
+    twentiethSupplement,
+    twentyFirstSupplement,
+    twentySecondSupplement,
+    twentyThirdSupplement,
+    twentyFourthSupplement,
+    twentyFifthSupplement,
+  ];
+  final referenceGroups = <List<ProphetVerseReference>>[
+    firstReferences,
+    secondReferences,
+    thirdReferences,
+    fourthReferences,
+    fifthReferences,
+    sixthReferences,
+    seventhReferences,
+    eighthReferences,
+    ninthReferences,
+    tenthReferences,
+    eleventhReferences,
+    twelfthReferences,
+    thirteenthReferences,
+    fourteenthReferences,
+    fifteenthReferences,
+    sixteenthReferences,
+    seventeenthReferences,
+    eighteenthReferences,
+    nineteenthReferences,
+    twentiethReferences,
+    twentyFirstReferences,
+    twentySecondReferences,
+    twentyThirdReferences,
+    twentyFourthReferences,
+    twentyFifthReferences,
+  ];
+
+  if (supplements.every((supplement) => supplement == null) &&
+      referenceGroups.every((references) => references.isEmpty)) {
     return draft;
   }
 
   final referencesById = <String, ProphetVerseReference>{
     for (final reference in draft.quranReferences) reference.stableId: reference,
-    for (final reference in firstReferences) reference.stableId: reference,
-    for (final reference in secondReferences) reference.stableId: reference,
-    for (final reference in thirdReferences) reference.stableId: reference,
-    for (final reference in fourthReferences) reference.stableId: reference,
-    for (final reference in fifthReferences) reference.stableId: reference,
-    for (final reference in seventhReferences) reference.stableId: reference,
-    for (final reference in eighthReferences) reference.stableId: reference,
-    for (final reference in ninthReferences) reference.stableId: reference,
-    for (final reference in tenthReferences) reference.stableId: reference,
-    for (final reference in eleventhReferences) reference.stableId: reference,
-    for (final reference in twelfthReferences) reference.stableId: reference,
-    for (final reference in thirteenthReferences) reference.stableId: reference,
-    for (final reference in fourteenthReferences) reference.stableId: reference,
-    for (final reference in fifteenthReferences) reference.stableId: reference,
+    for (final references in referenceGroups)
+      for (final reference in references) reference.stableId: reference,
   };
+
+  final sections = <ProphetBiographySectionKey, ProphetBiographyField>{
+    ...draft.sections,
+  };
+  for (final supplement in supplements) {
+    if (supplement != null) sections.addAll(supplement);
+  }
 
   return CanonicalProphetBiographyDraft(
     identity: draft.identity,
     quranReferences: referencesById.values.toList(growable: false),
-    sections: <ProphetBiographySectionKey, ProphetBiographyField>{
-      ...draft.sections,
-      if (firstSupplement != null) ...firstSupplement,
-      if (secondSupplement != null) ...secondSupplement,
-      if (thirdSupplement != null) ...thirdSupplement,
-      if (fourthSupplement != null) ...fourthSupplement,
-      if (fifthSupplement != null) ...fifthSupplement,
-      if (sixthSupplement != null) ...sixthSupplement,
-      if (seventhSupplement != null) ...seventhSupplement,
-      if (eighthSupplement != null) ...eighthSupplement,
-      if (ninthSupplement != null) ...ninthSupplement,
-      if (tenthSupplement != null) ...tenthSupplement,
-      if (eleventhSupplement != null) ...eleventhSupplement,
-      if (twelfthSupplement != null) ...twelfthSupplement,
-      if (thirteenthSupplement != null) ...thirteenthSupplement,
-      if (fourteenthSupplement != null) ...fourteenthSupplement,
-      if (fifteenthSupplement != null) ...fifteenthSupplement,
-    },
+    sections: sections,
   );
 }
 
