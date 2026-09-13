@@ -33,7 +33,7 @@ void main() {
     }
   });
 
-  test('reviewed lineage preserves ten claims across nine unique coverage slots', () {
+  test('reviewed lineage preserves fourteen claims across eleven unique coverage slots', () {
     final report = canonicalProphetCoverageReportT0336;
     final lineageCovered = report.rows
         .where(
@@ -42,8 +42,8 @@ void main() {
         .map((row) => row.prophetId)
         .toSet();
 
-    expect(canonicalProphetFamilyLineageEvidenceT0336, hasLength(10));
-    expect(lineageCovered, hasLength(9));
+    expect(canonicalProphetFamilyLineageEvidenceT0336, hasLength(14));
+    expect(lineageCovered, hasLength(11));
     expect(lineageCovered, {
       'musa',
       'harun',
@@ -52,6 +52,8 @@ void main() {
       'ibrahim',
       'ismail',
       'ishaq',
+      'yakub',
+      'yusuf',
       'dawud',
       'sulayman',
     });
@@ -66,6 +68,24 @@ void main() {
         'familyLineage:ibrahim:ibrahim-ismail-parent-child-q14-39',
         'familyLineage:ibrahim:ibrahim-ishaq-parent-child-q14-39',
       },
+    );
+
+    final ishaqClaims = canonicalProphetFamilyLineageEvidenceT0336
+        .where((claim) => claim.biographyProphetId == 'ishaq')
+        .toList(growable: false);
+    expect(ishaqClaims, hasLength(2));
+    expect(
+      ishaqClaims.map((claim) => claim.claimKey).toSet(),
+      contains('familyLineage:ishaq:ishaq-yakub-parent-child-q21-72'),
+    );
+
+    final yakubClaims = canonicalProphetFamilyLineageEvidenceT0336
+        .where((claim) => claim.biographyProphetId == 'yakub')
+        .toList(growable: false);
+    expect(yakubClaims, hasLength(2));
+    expect(
+      yakubClaims.map((claim) => claim.claimKey).toSet(),
+      contains('familyLineage:yakub:yakub-yusuf-parent-child-q12-4-6'),
     );
   });
 
