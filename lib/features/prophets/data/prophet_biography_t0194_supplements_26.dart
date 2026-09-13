@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_supplements_27.dart';
 import 'prophet_content.dart';
 
 SourceReference _quranSource(String stableId, String locator) => SourceReference(
@@ -26,8 +27,12 @@ ProphetBiographyField _quranGeographyField({
 /// Adds only geography explicitly anchored by the Quran: Ibrahim and Ismail at
 /// the House/Kaaba, Yusuf in Egypt, and Shuayb with Midian. The fields avoid
 /// modern borders, coordinates, inferred routes and exact historical dates.
+///
+/// The twenty-seventh Quran-reviewed geography batch is composed here so Nuh's
+/// Quran 11:44 al-Judi evidence enters the same canonical T0194 chain.
 final t0194ProphetBiographySupplements26 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
+  ...t0194ProphetBiographySupplements27,
   'ibrahim': <ProphetBiographySectionKey, ProphetBiographyField>{
     ProphetBiographySectionKey.geography: _quranGeographyField(
       text: const LocalizedReligiousText(
@@ -75,6 +80,7 @@ final t0194ProphetBiographySupplements26 =
 };
 
 final t0194ProphetSupplementReferences26 = <String, List<ProphetVerseReference>>{
+  ...t0194ProphetSupplementReferences27,
   'ibrahim': const <ProphetVerseReference>[
     ProphetVerseReference(surah: 2, ayah: 127),
   ],
