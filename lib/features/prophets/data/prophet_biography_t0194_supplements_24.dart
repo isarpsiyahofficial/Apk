@@ -1,5 +1,6 @@
 import '../../../core/content/content_governance.dart';
 import 'canonical_prophet_biographies.dart';
+import 'prophet_biography_t0194_supplements_25.dart';
 import 'prophet_content.dart';
 
 final _oxfordPrincetonMuhammadPeriodSource = SourceReference(
@@ -15,16 +16,21 @@ final _oxfordPrincetonMuhammadPeriodSource = SourceReference(
 
 /// Twenty-fourth T0194 source-reviewed batch.
 ///
-/// This batch fills only Muhammad's broad historical period. The source is
-/// modern historical scholarship, not Quran or hadith evidence. It places his
-/// life approximately from ca. 570 to 632 CE, with the prophetic career in the
-/// first third of the seventh century and the familiar Mecca/Medina division.
-/// These dates are presented as historical periodization rather than dates
-/// supplied by the Quran, and the wording intentionally preserves the source's
-/// approximate chronology instead of turning ca. 570 into an exact birth year.
+/// This batch fills Muhammad's broad historical period. The source is modern
+/// historical scholarship, not Quran or hadith evidence. It places his life
+/// approximately from ca. 570 to 632 CE, with the prophetic career in the first
+/// third of the seventh century and the familiar Mecca/Medina division. These
+/// dates remain historical periodization rather than Quranic dates; ca. 570 is
+/// not turned into an exact birth year.
+///
+/// The twenty-fifth Quran-reviewed geography batch is composed here so its
+/// independently sourced Musa/Muhammad geography fields enter the canonical
+/// T0194 dataset without reclassifying the modern period source.
 final t0194ProphetBiographySupplements24 =
     <String, Map<ProphetBiographySectionKey, ProphetBiographyField>>{
+  ...t0194ProphetBiographySupplements25,
   'muhammad': <ProphetBiographySectionKey, ProphetBiographyField>{
+    ...t0194ProphetBiographySupplements25['muhammad']!,
     ProphetBiographySectionKey.period: ProphetBiographyField(
       text: const LocalizedReligiousText(
         tr: 'Modern tarih literatürü Hz. Muhammed’in hayatını yaklaşık miladî 570–632 dönemine, peygamberlik faaliyetini ise yedinci yüzyılın ilk üçte birlik bölümüne yerleştirir; Mekke dönemi yaklaşık 610–622, Medine dönemi 622–632 olarak ele alınır. Bu tarihler Kur’an’ın verdiği tarihler değildir; özellikle yaklaşık 570 tarihi kesin bir doğum yılı iddiası olarak sunulmaz.',
@@ -37,4 +43,6 @@ final t0194ProphetBiographySupplements24 =
   },
 };
 
-final t0194ProphetSupplementReferences24 = <String, List<ProphetVerseReference>>{};
+final t0194ProphetSupplementReferences24 = <String, List<ProphetVerseReference>>{
+  ...t0194ProphetSupplementReferences25,
+};
