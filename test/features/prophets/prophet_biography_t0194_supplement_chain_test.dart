@@ -6,6 +6,16 @@ import 'package:islami_hayat/features/prophets/data/prophet_biography_t0194_data
 void main() {
   test('T0194 nested supplement chain preserves reviewed geography for every owner', () {
     const expected = <String, ({String sourceId, String locator, String verse})>{
+      'hud': (
+        sourceId: 'tanzil-uthmani-v1.1-hud-q11-50-q46-21-ahqaf-geography',
+        locator: 'Quran 11:50; 46:21',
+        verse: '46:21',
+      ),
+      'harun': (
+        sourceId: 'tanzil-uthmani-v1.1-harun-q23-45-46-q43-51-egypt-geography',
+        locator: 'Quran 23:45-46; 43:51',
+        verse: '23:45',
+      ),
       'nuh': (
         sourceId: 'tanzil-uthmani-v1.1-nuh-q11-44-al-judi-geography',
         locator: 'Quran 11:44',
@@ -64,6 +74,24 @@ void main() {
         reason: '${entry.key} reviewed geography verse must remain auditable',
       );
     }
+  });
+
+  test('T0194 Quran cross-reference geography keeps every supporting verse', () {
+    final hud = canonicalProphetBiographyT0194Dataset.singleWhere(
+      (item) => item.identity.canonicalId == 'hud',
+    );
+    final harun = canonicalProphetBiographyT0194Dataset.singleWhere(
+      (item) => item.identity.canonicalId == 'harun',
+    );
+
+    expect(
+      hud.quranReferences.map((item) => item.stableId).toSet(),
+      containsAll(<String>['11:50', '46:21']),
+    );
+    expect(
+      harun.quranReferences.map((item) => item.stableId).toSet(),
+      containsAll(<String>['23:45', '23:46', '43:51']),
+    );
   });
 
   test('T0194 Muhammad merge keeps earlier reviewed 48:24 reference', () {
