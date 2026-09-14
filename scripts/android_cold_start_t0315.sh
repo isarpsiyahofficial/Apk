@@ -35,16 +35,26 @@ fi
 
 : > "$SAMPLES_FILE"
 
-# The performance gate must reflect the final release/AOT app rather than
-# Flutter debug/JIT or profile instrumentation overhead. CI passes the release
-# APK explicitly. Every sample force-stops the package and asks ActivityManager
-# for a new process, so all three timings are genuine cold launches while
-# retaining normal app data. A median keeps the <=3s product requirement strict
-# without allowing one noisy hosted-runner scheduling spike to decide the gate.
+# The performance gate measures the final release/AOT APK. Before every sample
+# the package is force-stopped and process absence is verified. Android 35 can
+# report LaunchState: UNKNOWN for an am start -W launch even when the package
+# had no process before launch, so UNKNOWN is accepted only with that explicit
+# process-lifecycle proof. HOT/WARM remains a hard failure.
+#
+# Android platform-tools can also emit WaitTime without TotalTime. Prefer
+# TotalTime when present; otherwise use WaitTime, which is the ActivityManager
+# wait duration returned by the same -W invocation. The <=3s threshold and
+# three-sample median remain unchanged.
 sample=1
 while [ "$sample" -le "$SAMPLE_COUNT" ]; do
   adb shell am force-stop "$PACKAGE"
   sleep 1
+
+  PRE_LAUNCH_PID="$(adb shell pidof "$PACKAGE" 2>/dev/null | tr -d '\r' || true)"
+  if [ -n "$PRE_LAUNCH_PID" ]; then
+    echo "T0315 cold-start gate: sample $sample still had a process after force-stop (pid=$PRE_LAUNCH_PID)" >&2
+    exit 1
+  fi
 
   START_OUTPUT="$(adb shell am start -W -S -n "$ACTIVITY" 2>&1 | tr -d '\r')"
   printf '%s\n' "$START_OUTPUT"
@@ -53,21 +63,45 @@ while [ "$sample" -le "$SAMPLE_COUNT" ]; do
     echo "T0315 cold-start gate: sample $sample did not report Status: ok" >&2
     exit 1
   fi
-  if ! printf '%s\n' "$START_OUTPUT" | grep -Fq 'LaunchState: COLD'; then
-    echo "T0315 cold-start gate: sample $sample was not a COLD launch" >&2
+
+  LAUNCH_STATE="$(printf '%s\n' "$START_OUTPUT" | awk -F': ' '/^LaunchState:/ {print $2; exit}')"
+  case "$LAUNCH_STATE" in
+    COLD)
+      ;;
+    UNKNOWN)
+      echo "T0315 cold-start sample $sample: Android reported LaunchState UNKNOWN; accepting only because pre-launch process absence was verified"
+      ;;
+    '')
+      echo "T0315 cold-start gate: sample $sample did not report LaunchState" >&2
+      exit 1
+      ;;
+    *)
+      echo "T0315 cold-start gate: sample $sample was not cold (LaunchState=$LAUNCH_STATE)" >&2
+      exit 1
+      ;;
+  esac
+
+  POST_LAUNCH_PID="$(adb shell pidof "$PACKAGE" 2>/dev/null | tr -d '\r' || true)"
+  if [ -z "$POST_LAUNCH_PID" ]; then
+    echo "T0315 cold-start gate: sample $sample did not create an app process" >&2
     exit 1
   fi
 
   TOTAL_TIME_MS="$(printf '%s\n' "$START_OUTPUT" | awk -F': ' '/^TotalTime:/ {print $2; exit}')"
+  METRIC_NAME='TotalTime'
+  if [ -z "$TOTAL_TIME_MS" ]; then
+    TOTAL_TIME_MS="$(printf '%s\n' "$START_OUTPUT" | awk -F': ' '/^WaitTime:/ {print $2; exit}')"
+    METRIC_NAME='WaitTime'
+  fi
   case "$TOTAL_TIME_MS" in
     ''|*[!0-9]*)
-      echo "T0315 cold-start gate: invalid/missing TotalTime in sample $sample: $TOTAL_TIME_MS" >&2
+      echo "T0315 cold-start gate: invalid/missing TotalTime and WaitTime in sample $sample: $TOTAL_TIME_MS" >&2
       exit 1
       ;;
   esac
 
   printf '%s\n' "$TOTAL_TIME_MS" >> "$SAMPLES_FILE"
-  echo "T0315 cold-start sample $sample/$SAMPLE_COUNT: ${TOTAL_TIME_MS}ms"
+  echo "T0315 cold-start sample $sample/$SAMPLE_COUNT: ${TOTAL_TIME_MS}ms ($METRIC_NAME, pid=$POST_LAUNCH_PID, LaunchState=$LAUNCH_STATE)"
   sample=$((sample + 1))
 done
 
