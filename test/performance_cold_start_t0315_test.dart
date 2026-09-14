@@ -57,13 +57,23 @@ void main() {
     );
     expect(
       script,
+      contains('RAW_LAUNCH_STATE="\$(printf'),
+      reason: 'The platform-reported launch state must be preserved for audit output.',
+    );
+    expect(
+      script,
+      contains('LAUNCH_STATE="\${RAW_LAUNCH_STATE%% *}"'),
+      reason: 'Android 35 variants such as UNKNOWN (0) must normalize to UNKNOWN without widening the allow-list.',
+    );
+    expect(
+      script,
       contains('UNKNOWN)'),
       reason: 'Android 35 UNKNOWN LaunchState needs an explicit guarded path.',
     );
     expect(
       script,
-      contains('sample \$sample was not cold (LaunchState=\$LAUNCH_STATE)'),
-      reason: 'HOT/WARM or any other non-cold state must remain fail-closed.',
+      contains('sample \$sample was not cold (LaunchState=\$RAW_LAUNCH_STATE)'),
+      reason: 'HOT/WARM or any other non-cold state must remain fail-closed and retain raw diagnostics.',
     );
     expect(
       script,
