@@ -84,11 +84,14 @@ class ReligiousDayContent {
   bool get hasCompleteRequiredReviewCoverage =>
       reviewedEvidenceKinds.containsAll(requiredReviewedEvidenceKinds);
 
-  bool get canEnterProductionDataset {
-    if (record.type != ContentType.religiousDay ||
-        !record.canEnterProductionDataset ||
-        (record.reviewer?.trim().isEmpty ?? true) ||
-        !title.isComplete ||
+  /// Semantic/source safety gate independent of publication state.
+  ///
+  /// Research records are intentionally not production-publishable, but their
+  /// evidence typing must still be safe. This lets the T0335 release audit catch
+  /// a disputed/traditional practice accidentally promoted to established
+  /// worship before editorial review status is changed to `published`.
+  bool get hasSafeEvidenceSemantics {
+    if (!title.isComplete ||
         !whatIsIt.isComplete ||
         !history.isComplete ||
         evidence.isEmpty ||
@@ -105,8 +108,16 @@ class ReligiousDayContent {
       return false;
     }
 
-    if (!_sourceClassesMatchEvidenceKinds()) return false;
-    if (!_specificWorshipClaimIsSafe()) return false;
+    return _sourceClassesMatchEvidenceKinds() && _specificWorshipClaimIsSafe();
+  }
+
+  bool get canEnterProductionDataset {
+    if (record.type != ContentType.religiousDay ||
+        !record.canEnterProductionDataset ||
+        (record.reviewer?.trim().isEmpty ?? true) ||
+        !hasSafeEvidenceSemantics) {
+      return false;
+    }
 
     return true;
   }
