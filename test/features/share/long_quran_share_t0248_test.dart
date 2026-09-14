@@ -118,6 +118,9 @@ void main() {
       const paginator = QuranLongTextPaginatorT0248();
       const canvasWidths = <double>[180, 270, 360, 720];
 
+      await tester.binding.setSurfaceSize(const Size(800, 1500));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
       for (final format in ShareCanvasFormatT0242.values) {
         final pages = paginator.paginate(
           content: longestAyah,
@@ -130,16 +133,14 @@ void main() {
             await tester.pumpWidget(
               Directionality(
                 textDirection: TextDirection.rtl,
-                child: SingleChildScrollView(
-                  child: Center(
-                    child: SizedBox(
-                      width: canvasWidth,
-                      child: QuranSharePageCardT0248(
-                        format: format,
-                        background: const SizedBox.expand(),
-                        content: longestAyah,
-                        page: page,
-                      ),
+                child: Center(
+                  child: SizedBox(
+                    width: canvasWidth,
+                    child: QuranSharePageCardT0248(
+                      format: format,
+                      background: const SizedBox.expand(),
+                      content: longestAyah,
+                      page: page,
                     ),
                   ),
                 ),
