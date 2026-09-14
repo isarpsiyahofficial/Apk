@@ -38,9 +38,35 @@ jobs:
           PY
           python3 /tmp/merge_spec_v12.py
 
+      - name: Normalize only newly-touched metadata whitespace
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              'SPECIFICATION.md': {
+                  '**Sürüm:** v1.2  ': '**Sürüm:** v1.2',
+                  '**Tarih:** 26 Ağustos 2026  ': '**Tarih:** 26 Ağustos 2026',
+                  '**v1.2 kontrollü birleşim:** 14 Eylül 2026  ': '**v1.2 kontrollü birleşim:** 14 Eylül 2026',
+              },
+              'TODO.md': {
+                  '**Kaynak:** `SPECIFICATION.md` v1.2 -> `TODO.md` -> `TEST_MATRIX.md`; `SPECIFICATION_V1_2_DELTA.md` birleşim provenance kaydı; `CANVA_VISUAL_CANDIDATES.md` yalnız aday liste  ': '**Kaynak:** `SPECIFICATION.md` v1.2 -> `TODO.md` -> `TEST_MATRIX.md`; `SPECIFICATION_V1_2_DELTA.md` birleşim provenance kaydı; `CANVA_VISUAL_CANDIDATES.md` yalnız aday liste',
+              },
+          }
+
+          for file_name, mapping in replacements.items():
+              path = Path(file_name)
+              text = path.read_text(encoding='utf-8')
+              for old, new in mapping.items():
+                  if text.count(old) != 1:
+                      raise SystemExit(f'{file_name}: expected one metadata whitespace target: {old!r}')
+                  text = text.replace(old, new, 1)
+              path.write_text(text, encoding='utf-8')
+          PY
+
       - name: Validate controlled diff
         run: |
-          git diff --check --ignore-space-at-eol
+          git diff --check
           git diff -- SPECIFICATION.md TODO.md TEST_MATRIX.md
 
       - name: Commit merged governance
