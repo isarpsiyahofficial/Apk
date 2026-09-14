@@ -58,12 +58,14 @@ void main() {
     expect(
       script,
       contains('RAW_LAUNCH_STATE="\$(printf'),
-      reason: 'The platform-reported launch state must be preserved for audit output.',
+      reason:
+          'The platform-reported launch state must be preserved for audit output.',
     );
     expect(
       script,
       contains('LAUNCH_STATE="\${RAW_LAUNCH_STATE%% *}"'),
-      reason: 'Android 35 variants such as UNKNOWN (0) must normalize to UNKNOWN without widening the allow-list.',
+      reason:
+          'Android 35 variants such as UNKNOWN (0) must normalize to UNKNOWN without widening the allow-list.',
     );
     expect(
       script,
@@ -73,7 +75,8 @@ void main() {
     expect(
       script,
       contains('sample \$sample was not cold (LaunchState=\$RAW_LAUNCH_STATE)'),
-      reason: 'HOT/WARM or any other non-cold state must remain fail-closed and retain raw diagnostics.',
+      reason:
+          'HOT/WARM or any other non-cold state must remain fail-closed and retain raw diagnostics.',
     );
     expect(
       script,
@@ -134,20 +137,30 @@ void main() {
     expect(widgetSmoke, greaterThan(matrixGate));
   });
 
-  test('named Android 35 wrapper preserves a failing child gate exit status', () {
+  test('named Android 35 wrapper preserves failure status and diagnostics', () {
+    final workflow = File('.github/workflows/android-emulator-smoke.yml')
+        .readAsStringSync();
     final gate =
         File('scripts/android_api35_release_gate.sh').readAsStringSync();
 
     expect(gate, startsWith('#!/bin/sh\nset -eu'));
-    expect(gate, contains('if "\$@"; then'));
+    expect(gate, contains('GATE_LOG_DIR="\${GATE_LOG_DIR:-.ci/android-api35-gates}"'));
+    expect(gate, contains('if "\$@" >"\$gate_log" 2>&1; then'));
     expect(gate, contains('status=\$?'));
     expect(gate, contains('return "\$status"'));
     expect(gate, isNot(contains('|| true')));
+    expect(gate, contains('diagnostic log: \${gate_log}'));
     expect(gate, contains("run_gate T0314 'functional app launch smoke'"));
     expect(gate, contains("run_gate T0251 'Android share-sheet smoke'"));
     expect(gate, contains("run_gate T0315 'release cold-start performance gate'"));
     expect(gate, contains("run_gate T0319 'phone/tablet/orientation viewport matrix'"));
     expect(gate, contains("run_gate T0297 'real launcher widget pin/render/tap smoke'"));
+
+    expect(workflow, contains('- name: Upload Android 35 gate diagnostics'));
+    expect(workflow, contains('if: failure()'));
+    expect(workflow, contains('uses: actions/upload-artifact@v4'));
+    expect(workflow, contains('path: .ci/android-api35-gates/*.log'));
+    expect(workflow, contains('if-no-files-found: error'));
   });
 
   test('T0319 matrix cold-launch helper resizes, verifies, launches, and retries fail-closed', () {
