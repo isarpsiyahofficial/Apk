@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import re
 import sys
 import xml.etree.ElementTree as ET
 
@@ -25,6 +26,22 @@ if app.get(A + "fullBackupContent") != "@xml/backup_rules":
     raise SystemExit("android:fullBackupContent must point to @xml/backup_rules")
 if app.get(A + "dataExtractionRules") != "@xml/data_extraction_rules":
     raise SystemExit("android:dataExtractionRules must point to @xml/data_extraction_rules")
+
+admob_app_id = None
+for node in app.findall("meta-data"):
+    if node.get(A + "name") == "com.google.android.gms.ads.APPLICATION_ID":
+        admob_app_id = (node.get(A + "value") or "").strip()
+        break
+if admob_app_id is None:
+    raise SystemExit(
+        "Missing com.google.android.gms.ads.APPLICATION_ID; google_mobile_ads "
+        "would crash during Android provider startup"
+    )
+if not re.fullmatch(r"ca-app-pub-\d{16}~\d{10}", admob_app_id):
+    raise SystemExit(
+        "Invalid AdMob application ID in AndroidManifest.xml; expected an app ID "
+        "like ca-app-pub-################~##########, not an ad-unit ID"
+    )
 
 forbidden_permissions = {
     "android.permission.ACCESS_FINE_LOCATION",
@@ -56,4 +73,7 @@ for domain in ("root", "file", "database", "sharedpref", "external"):
         )
 
 print("Android security audit PASS")
-print("allowBackup=false; cloud/device-transfer exclusions present; forbidden sensitive permissions absent")
+print(
+    "allowBackup=false; cloud/device-transfer exclusions present; forbidden sensitive "
+    "permissions absent; AdMob application metadata valid"
+)
