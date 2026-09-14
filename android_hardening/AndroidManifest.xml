@@ -10,6 +10,14 @@
         android:allowBackup="false"
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/data_extraction_rules">
+        <!--
+          Google-provided sample AdMob App ID for development/CI verification only.
+          Replace with the production AdMob App ID before the final store artifact.
+          Using Google's sample ID keeps emulator/device QA away from live ad traffic.
+        -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
