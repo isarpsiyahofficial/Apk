@@ -187,6 +187,7 @@ final class LocalizationReleaseManifestT0340 {
   }) {
     final required = {for (final cell in requiredCells) cell.key};
     final verifiedKeys = <String>{};
+    final verifiedProofIds = <String>{};
     final unresolvedKeys = <String>{};
 
     for (final evidence in verified) {
@@ -201,6 +202,9 @@ final class LocalizationReleaseManifestT0340 {
           'Cell=${evidence.cell.key} Proof=$proof '
           'ExpectedSuffix=$expectedLocaleSuffix',
         );
+      }
+      if (!verifiedProofIds.add(proof)) {
+        throw StateError('Duplicate localization proof ID: $proof');
       }
       final key = evidence.cell.key;
       if (!required.contains(key)) {
