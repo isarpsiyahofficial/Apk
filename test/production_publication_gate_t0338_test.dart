@@ -161,4 +161,81 @@ void main() {
       throwsA(isA<StateError>()),
     );
   });
+
+  test('expected IDs cannot collide after whitespace normalization', () {
+    expect(
+      () => gate.requirePublishedRecords(
+        records: [record(id: 'canonical')],
+        expectedIds: const {'canonical', ' canonical '},
+      ),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.toString(),
+          'message',
+          contains('normalization'),
+        ),
+      ),
+    );
+  });
+
+  test('production sources require unique inspectable provenance metadata', () {
+    const duplicateSource = SourceReference(
+      id: 'source:verified',
+      title: 'Second bibliography row',
+      sourceClass: ReligiousSourceClass.quran,
+      licenseId: 'license:verified',
+      locator: '1:2',
+    );
+    expect(
+      () => gate.requirePublishedRecords(
+        records: [record(id: 'duplicate-source', sources: const [source, duplicateSource])],
+        expectedIds: const {'duplicate-source'},
+      ),
+      throwsA(isA<StateError>()),
+    );
+
+    const blankLicense = SourceReference(
+      id: 'source:blank-license',
+      title: 'Verified source',
+      sourceClass: ReligiousSourceClass.quran,
+      licenseId: '   ',
+      locator: '1:1',
+    );
+    expect(
+      () => gate.requirePublishedRecords(
+        records: [record(id: 'blank-license', sources: const [blankLicense])],
+        expectedIds: const {'blank-license'},
+      ),
+      throwsA(isA<StateError>()),
+    );
+
+    const unknownClass = SourceReference(
+      id: 'source:unknown',
+      title: 'Unclassified source',
+      sourceClass: ReligiousSourceClass.unknown,
+      licenseId: 'license:verified',
+      locator: '1:1',
+    );
+    expect(
+      () => gate.requirePublishedRecords(
+        records: [record(id: 'unknown-class', sources: const [unknownClass])],
+        expectedIds: const {'unknown-class'},
+      ),
+      throwsA(isA<StateError>()),
+    );
+
+    const uninspectable = SourceReference(
+      id: 'source:no-locator',
+      title: 'Uninspectable source',
+      sourceClass: ReligiousSourceClass.quran,
+      licenseId: 'license:verified',
+    );
+    expect(
+      () => gate.requirePublishedRecords(
+        records: [record(id: 'uninspectable', sources: const [uninspectable])],
+        expectedIds: const {'uninspectable'},
+      ),
+      throwsA(isA<StateError>()),
+    );
+  });
 }
