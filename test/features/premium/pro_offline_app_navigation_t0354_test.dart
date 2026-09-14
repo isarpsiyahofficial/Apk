@@ -22,6 +22,16 @@ final class _OfflineProbeClientT0354 implements InternetProbeClient {
   }
 }
 
+Future<void> _pumpNavigationFrameT0354(WidgetTester tester) async {
+  // App surfaces may contain intentionally repeating animations. Waiting for
+  // the entire tree to settle would therefore make a navigation assertion
+  // depend on unrelated animation lifecycles. Pump the route transition
+  // deterministically instead; the assertions below still verify the mounted
+  // destination and surface any framework exception.
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
+}
+
 void main() {
   final probe = InternetProbe(uri: Uri.parse('https://probe.example/204'));
 
@@ -65,7 +75,7 @@ void main() {
 
         for (final destination in destinations) {
           await tester.tap(find.byKey(ValueKey('nav-${destination.$1}')));
-          await tester.pumpAndSettle();
+          await _pumpNavigationFrameT0354(tester);
 
           expect(
             find.byType(destination.$2),
