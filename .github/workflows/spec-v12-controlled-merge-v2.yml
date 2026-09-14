@@ -1,0 +1,52 @@
+name: Controlled SPEC v1.2 Merge v2
+
+on:
+  push:
+    branches:
+      - agent/islamic-life-implementation
+    paths:
+      - .github/workflows/spec-v12-controlled-merge-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  merge-spec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/islamic-life-implementation
+          fetch-depth: 0
+
+      - name: Reuse fail-closed v1.2 transformation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source = Path('.github/workflows/spec-v12-controlled-merge.yml').read_text(encoding='utf-8')
+          marker = "          python3 - <<'PY'\n"
+          start = source.index(marker) + len(marker)
+          end = source.index("\n          PY", start)
+          embedded = source[start:end]
+          lines = []
+          for line in embedded.splitlines():
+              if line.startswith('          '):
+                  line = line[10:]
+              lines.append(line)
+          Path('/tmp/merge_spec_v12.py').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          PY
+          python3 /tmp/merge_spec_v12.py
+
+      - name: Validate controlled diff
+        run: |
+          git diff --check --ignore-space-at-eol
+          git diff -- SPECIFICATION.md TODO.md TEST_MATRIX.md
+
+      - name: Commit merged governance
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add SPECIFICATION.md TODO.md TEST_MATRIX.md
+          git commit -m "docs: merge v1.2 decisions into master specification"
+          git push origin HEAD:agent/islamic-life-implementation
