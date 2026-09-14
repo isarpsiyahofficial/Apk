@@ -13,11 +13,12 @@ A record can enter a production religious dataset only when all of the following
 3. The record ID occurs exactly once in the release input.
 4. `reviewStatus == ContentReviewStatus.published`.
 5. The shared `ReligiousContentRecord.canEnterProductionDataset` contract also passes, including non-unknown record-level source classification, complete TR/EN/AR text, at least one source and a positive version.
-6. Every source ID in the record is non-empty and unique.
-7. Every source has a non-empty title and license ID.
-8. No source may use `ReligiousSourceClass.unknown`.
-9. Every source has an inspectable locator or URL; a bibliography label without a usable reference cannot satisfy production provenance.
-10. Every expected canonical ID is present; missing records fail closed rather than silently producing a partial dataset.
+6. Published records carry explicit non-blank reviewer attribution; review metadata cannot be anonymous at the final publication boundary.
+7. Every source ID in the record is non-empty and unique.
+8. Every source has a non-empty title and license ID.
+9. No source may use `ReligiousSourceClass.unknown`.
+10. Every source has an inspectable locator or URL; a bibliography label without a usable reference cannot satisfy production provenance.
+11. Every expected canonical ID is present; missing records fail closed rather than silently producing a partial dataset.
 
 The states `draft`, `research`, `religiousReview`, `languageReview`, `approved` and `withdrawn` are all non-production states. In particular, `approved` does not automatically mean `published`.
 
@@ -28,6 +29,7 @@ The states `draft`, `research`, `religiousReview`, `languageReview`, `approved` 
 - every non-published review state is rejected;
 - `approved` cannot masquerade as `published`;
 - a `published` label cannot bypass missing localization or unknown record-level source governance;
+- null, empty or whitespace-only reviewer attribution fails;
 - duplicate record IDs fail instead of shadowing another review state;
 - unexpected IDs fail;
 - missing canonical IDs fail;
