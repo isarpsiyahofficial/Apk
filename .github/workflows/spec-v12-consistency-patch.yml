@@ -1,4 +1,4 @@
-name: SPEC v1.2 Consistency Patch
+name: SPEC v1.2 Consistency Gate
 
 on:
   push:
@@ -6,81 +6,76 @@ on:
       - agent/islamic-life-implementation
     paths:
       - .github/workflows/spec-v12-consistency-patch.yml
+      - SPECIFICATION.md
+      - TODO.md
+      - TEST_MATRIX.md
+      - SPECIFICATION_V1_2_DELTA.md
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  patch-spec:
+  verify-spec:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: agent/islamic-life-implementation
-          fetch-depth: 0
 
-      - name: Patch residual v1.1 contradictions
+      - name: Verify v1.2 governance consistency
         run: |
           python3 - <<'PY'
           from pathlib import Path
 
-          path = Path('SPECIFICATION.md')
-          text = path.read_text(encoding='utf-8')
+          spec = Path('SPECIFICATION.md').read_text(encoding='utf-8')
+          todo = Path('TODO.md').read_text(encoding='utf-8')
+          matrix = Path('TEST_MATRIX.md').read_text(encoding='utf-8')
+          delta = Path('SPECIFICATION_V1_2_DELTA.md').read_text(encoding='utf-8')
 
-          required = [
+          required_spec = [
               '**Sürüm:** v1.2',
+              '404. Toplam **100 final Canva paylaşım görseli** olacaktır.',
+              '657. 97 Rewarded/PRO görselin gate davranışı test edilir.',
+              '666. Pro kullanıcının 100 görselde hiçbir reklam akışına düşmediği test edilir.',
               '944. Paylaşım havuzu tam olarak **100 Canva görselidir: 3 FREE + 97 Rewarded/PRO**.',
-              '949. Android Lifetime PRO canonical Play Billing product ID **`islami_hayat_lifetime_pro`**',
-              '950. Peygamber biyografileri için 25 peygamberin her birinde sekiz semantik boyut',
+              '`islami_hayat_lifetime_pro`',
+              '25 peygamberin her birinde sekiz semantik boyut',
+              '`SPECIFICATION.md -> TODO.md -> TEST_MATRIX.md`',
+              'v1.2 master şartnameyle `TODO.md` ve `TEST_MATRIX.md` arasındaki açık release kapılarını kronolojik olarak kapatmak.',
           ]
-          missing = [needle for needle in required if needle not in text]
+          missing = [needle for needle in required_spec if needle not in spec]
           if missing:
-              raise SystemExit(f'v1.2 governed state missing; refusing patch: {missing}')
+              raise SystemExit(f'missing governed v1.2 clauses: {missing}')
 
-          replacements = {
-              '657. 27 premium görselin gate davranışı test edilir.':
-                  '657. 97 Rewarded/PRO görselin gate davranışı test edilir.',
-              '666. Pro kullanıcının 30 görselde hiçbir reklam akışına düşmediği test edilir.':
-                  '666. Pro kullanıcının 100 görselde hiçbir reklam akışına düşmediği test edilir.',
-              '2. Şartnameyi görsel seçimlerinden sonra v1.2 olarak güncellemek.':
-                  '2. v1.2 master şartnameyle `TODO.md` ve `TEST_MATRIX.md` arasındaki açık release kapılarını kronolojik olarak kapatmak.',
-              '3. Bu şartnameden hiçbir maddeyi atlamadan kronolojik `TODO.md` üretmek.':
-                  '3. Her tamamlanan görevde gerçek davranış, failure-path, localization/RTL ve responsive kanıtını ilgili TODO/Test Matrix kaydına bağlamak.',
-              '4. Daha sonra uygulama geliştirmesine TODO sırasıyla başlamak.':
-                  '4. SPEC + TODO + TEST_MATRIX üzerinde kırmızı/açık release engeli kalmadan uygulamayı final kabul etmemek.',
-          }
-
-          for old, new in replacements.items():
-              count = text.count(old)
-              if count != 1:
-                  raise SystemExit(f'expected exactly one residual clause, found {count}: {old!r}')
-              text = text.replace(old, new, 1)
-
-          forbidden = [
+          forbidden_spec = [
               '27 premium görselin gate davranışı',
               'Pro kullanıcının 30 görselde',
               'Şartnameyi görsel seçimlerinden sonra v1.2 olarak güncellemek.',
               'Bu şartnameden hiçbir maddeyi atlamadan kronolojik `TODO.md` üretmek.',
               'Daha sonra uygulama geliştirmesine TODO sırasıyla başlamak.',
           ]
-          leftovers = [needle for needle in forbidden if needle in text]
+          leftovers = [needle for needle in forbidden_spec if needle in spec]
           if leftovers:
               raise SystemExit(f'residual v1.1 contradictions remain: {leftovers}')
 
-          path.write_text(text, encoding='utf-8')
+          for task in ('T0001', 'T0002', 'T0003', 'T0004', 'T0005'):
+              marker = f'- [x] **{task}**'
+              if marker not in todo:
+                  raise SystemExit(f'{task} is not closed in TODO')
+
+          chain = '`SPECIFICATION.md` -> `TODO.md` -> `TEST_MATRIX.md`'
+          if chain not in matrix:
+              raise SystemExit('TEST_MATRIX v1.2 source chain missing')
+
+          delta_required = [
+              '3 kalıcı FREE + 97 Rewarded/PRO',
+              '`islami_hayat_lifetime_pro`',
+              'isim/kimlik → olay → Kur’an ayeti → hadis → aile/soy → dönem/kronoloji → coğrafya → tarih',
+          ]
+          delta_missing = [needle for needle in delta_required if needle not in delta]
+          if delta_missing:
+              raise SystemExit(f'v1.2 delta provenance unexpectedly changed: {delta_missing}')
           PY
 
-      - name: Validate exact patch
-        run: |
-          git diff --check
-          git diff -- SPECIFICATION.md
-
-      - name: Commit consistency patch
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add SPECIFICATION.md
-          git commit -m "docs: remove residual v1.1 contradictions from v1.2 spec"
-          git push origin HEAD:agent/islamic-life-implementation
-
-# Triggered after the workflow exists on the branch.
+      - name: Verify documentation whitespace
+        run: git diff --check HEAD^
