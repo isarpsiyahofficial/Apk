@@ -21,6 +21,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: agent/islamic-life-implementation
+          fetch-depth: 2
 
       - name: Verify v1.2 governance consistency
         run: |
@@ -78,4 +79,4 @@ jobs:
           PY
 
       - name: Verify documentation whitespace
-        run: git diff --check HEAD^
+        run: git diff --check HEAD^ -- SPECIFICATION.md TODO.md TEST_MATRIX.md SPECIFICATION_V1_2_DELTA.md .github/workflows/spec-v12-consistency-patch.yml
