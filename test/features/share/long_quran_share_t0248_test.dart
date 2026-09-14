@@ -113,6 +113,51 @@ void main() {
   });
 
   testWidgets(
+    'T0248 canonical pages remain overflow-free across compact and tablet widths',
+    (tester) async {
+      const paginator = QuranLongTextPaginatorT0248();
+      const canvasWidths = <double>[180, 270, 360, 720];
+
+      for (final format in ShareCanvasFormatT0242.values) {
+        final pages = paginator.paginate(
+          content: longestAyah,
+          format: format,
+          textDirection: TextDirection.rtl,
+        );
+
+        for (final canvasWidth in canvasWidths) {
+          for (final page in pages) {
+            await tester.pumpWidget(
+              Directionality(
+                textDirection: TextDirection.rtl,
+                child: Center(
+                  child: SizedBox(
+                    width: canvasWidth,
+                    child: QuranSharePageCardT0248(
+                      format: format,
+                      background: const SizedBox.expand(),
+                      content: longestAyah,
+                      page: page,
+                    ),
+                  ),
+                ),
+              ),
+            );
+            await tester.pump();
+
+            expect(
+              tester.takeException(),
+              isNull,
+              reason:
+                  '${format.name} page ${page.pageIndex} at $canvasWidth px',
+            );
+          }
+        }
+      }
+    },
+  );
+
+  testWidgets(
     'T0248 rejects forged Quran text even with valid page coordinates/source',
     (tester) async {
       const paginator = QuranLongTextPaginatorT0248();
