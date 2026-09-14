@@ -25,6 +25,7 @@ class QuranLongTextPaginatorT0248 {
 
   static const double _normalizedCanvasWidth = 360;
   static const double _baseFontSize = 26;
+  static const double _sourceFontSize = 14;
   static const double _sourceReserveHeight = 52;
   static const double _sourceGap = 16;
 
@@ -310,32 +311,54 @@ class QuranSharePageCardT0248 extends StatelessWidget {
       page: page,
     );
 
-    return ShareLayoutRendererT0242(
-      format: format,
-      background: background,
-      readabilityDecision: readabilityDecision,
-      content: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            page.text,
-            key: ValueKey('t0248-quran-page-text-${page.pageIndex}'),
-            textAlign: page.textPreferences.textAlign,
-            textDirection: quranTextDirection,
-            style: TextStyle(
-              fontSize: page.textPreferences.fontSizeFor(
-                QuranLongTextPaginatorT0248._baseFontSize,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (!constraints.hasBoundedWidth ||
+            !constraints.maxWidth.isFinite ||
+            constraints.maxWidth <= 0) {
+          throw StateError(
+            'T0248 Quran share card requires a finite canvas width.',
+          );
+        }
+        final geometryScale =
+            constraints.maxWidth /
+            QuranLongTextPaginatorT0248._normalizedCanvasWidth;
+
+        return ShareLayoutRendererT0242(
+          format: format,
+          background: background,
+          readabilityDecision: readabilityDecision,
+          content: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                page.text,
+                key: ValueKey('t0248-quran-page-text-${page.pageIndex}'),
+                textAlign: page.textPreferences.textAlign,
+                textDirection: quranTextDirection,
+                style: TextStyle(
+                  fontSize: page.textPreferences.fontSizeFor(
+                        QuranLongTextPaginatorT0248._baseFontSize,
+                      ) *
+                      geometryScale,
+                ),
               ),
-            ),
+              SizedBox(
+                height: QuranLongTextPaginatorT0248._sourceGap * geometryScale,
+              ),
+              Text(
+                sourceLock.lockedSourceLabel,
+                key: ValueKey('t0248-locked-source-${page.pageIndex}'),
+                textAlign: page.textPreferences.textAlign,
+                style: TextStyle(
+                  fontSize:
+                      QuranLongTextPaginatorT0248._sourceFontSize * geometryScale,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: QuranLongTextPaginatorT0248._sourceGap),
-          Text(
-            sourceLock.lockedSourceLabel,
-            key: ValueKey('t0248-locked-source-${page.pageIndex}'),
-            textAlign: page.textPreferences.textAlign,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
