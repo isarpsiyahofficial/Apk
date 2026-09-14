@@ -90,13 +90,15 @@ void main() {
       await tester.pumpWidget(
         Directionality(
           textDirection: TextDirection.rtl,
-          child: SizedBox(
-            width: 360,
-            child: QuranSharePageCardT0248(
-              format: ShareCanvasFormatT0242.square11,
-              background: const SizedBox.expand(),
-              content: longestAyah,
-              page: page,
+          child: Center(
+            child: SizedBox(
+              width: 360,
+              child: QuranSharePageCardT0248(
+                format: ShareCanvasFormatT0242.square11,
+                background: const SizedBox.expand(),
+                content: longestAyah,
+                page: page,
+              ),
             ),
           ),
         ),
@@ -192,8 +194,9 @@ void main() {
         ),
       );
 
-      expect(tester.takeException(), isA<StateError>());
-      expect(find.text(forgedPage.text), findsNothing);
+      final error = tester.takeException();
+      expect(error, isA<StateError>());
+      expect(error.toString(), contains('canonical pagination'));
     },
   );
 
@@ -201,7 +204,7 @@ void main() {
     tester,
   ) async {
     const invalidPage = QuranSharePageT0248(
-      text: 'x',
+      text: 'invalid',
       textPreferences: ShareTextPreferencesT0246(),
       pageIndex: 1,
       pageCount: 1,
@@ -222,6 +225,8 @@ void main() {
       ),
     );
 
-    expect(tester.takeException(), isA<StateError>());
+    final error = tester.takeException();
+    expect(error, isA<StateError>());
+    expect(error.toString(), contains('coordinates'));
   });
 }
