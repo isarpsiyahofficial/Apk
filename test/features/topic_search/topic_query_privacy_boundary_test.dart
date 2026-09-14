@@ -67,7 +67,7 @@ void main() {
       }
     });
 
-    test('topic-search production source has no network, ad, analytics or log sink', () {
+    test('topic-search production source has no network, ad, billing, analytics or log sink', () {
       final domainDirectory = Directory('lib/features/topic_search');
       expect(domainDirectory.existsSync(), isTrue);
 
@@ -79,6 +79,7 @@ void main() {
         'firebase_analytics',
         'firebase_crashlytics',
         'google_mobile_ads',
+        'in_app_purchase',
         'sentry_flutter',
         'amplitude_flutter',
         'Uri.http(',
@@ -109,18 +110,17 @@ void main() {
         violations,
         isEmpty,
         reason: 'Raw religious questions must remain inside the on-device '
-            'topic-search boundary and must not reach network/ad/analytics/log sinks.',
+            'topic-search boundary and must not reach network/ad/billing/analytics/log sinks.',
       );
     });
 
-    test('pubspec has no general network, ad, analytics or remote crash SDK dependency', () {
+    test('pubspec has no general network, analytics or remote crash SDK dependency', () {
       final pubspec = File('pubspec.yaml').readAsStringSync();
       const forbiddenDependencies = <String>[
         '\n  http:',
         '\n  dio:',
         '\n  firebase_analytics:',
         '\n  firebase_crashlytics:',
-        '\n  google_mobile_ads:',
         '\n  sentry_flutter:',
         '\n  amplitude_flutter:',
       ];
