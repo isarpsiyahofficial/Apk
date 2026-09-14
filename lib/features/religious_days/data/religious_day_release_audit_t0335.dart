@@ -92,6 +92,7 @@ final class ReligiousDayReleaseAuditT0335 {
           '${content.record.id}',
         );
       }
+      _requireSourceClosure(content);
 
       final isPublished =
           content.record.reviewStatus == ContentReviewStatus.published;
@@ -106,6 +107,46 @@ final class ReligiousDayReleaseAuditT0335 {
           'T0335 non-published religious-day record entered production: '
           '${content.record.id}',
         );
+      }
+    }
+  }
+
+  /// Every evidence source must be declared at record level as well.
+  ///
+  /// This prevents a future edit from attaching a convincing-looking source to
+  /// one evidence section while leaving the governed record's source manifest
+  /// stale, incomplete, duplicated, or downgraded to an unknown source class.
+  static void _requireSourceClosure(ReligiousDayContent content) {
+    final recordSources = content.record.sources;
+    final recordSourceIds = recordSources.map((source) => source.id).toList();
+    if (recordSourceIds.length != recordSourceIds.toSet().length) {
+      throw StateError(
+        'T0335 duplicate record-level source ID: ${content.record.id}',
+      );
+    }
+
+    for (final source in recordSources) {
+      if (source.id.trim().isEmpty ||
+          source.title.trim().isEmpty ||
+          source.licenseId.trim().isEmpty ||
+          (source.locator?.trim().isEmpty ?? true) ||
+          source.sourceClass == ReligiousSourceClass.unknown) {
+        throw StateError(
+          'T0335 incomplete/unknown record-level source metadata: '
+          '${content.record.id}',
+        );
+      }
+    }
+
+    final governedIds = recordSourceIds.toSet();
+    for (final section in content.evidence) {
+      for (final source in section.sources) {
+        if (!governedIds.contains(source.id)) {
+          throw StateError(
+            'T0335 evidence source missing from record manifest: '
+            '${content.record.id} -> ${source.id}',
+          );
+        }
       }
     }
   }
