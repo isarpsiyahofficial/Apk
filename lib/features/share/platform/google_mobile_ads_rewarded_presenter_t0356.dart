@@ -5,38 +5,33 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../domain/rewarded_share_flow_t0281.dart';
 import '../domain/rewarded_share_unlock_t0269.dart';
 
-/// Real Google Mobile Ads rewarded adapter for share-design unlocks.
-///
-/// The adapter is deliberately narrow: it translates SDK terminal callbacks
-/// into the product-domain result and never grants an entitlement itself.
-/// [RewardedShareFlowT0281] remains the only layer allowed to turn a completed
-/// reward into one single-use share right.
-final class GoogleMobileAdsRewardedPresenterT0356
-    implements RewardedAdPresenterT0281 {
-  GoogleMobileAdsRewardedPresenterT0356({
-    required String adUnitId,
-    AdRequest request = const AdRequest(),
-  })  : adUnitId = adUnitId.trim(),
-        request = request {
-    if (this.adUnitId.isEmpty) {
-      throw ArgumentError.value(adUnitId, 'adUnitId', 'Must not be blank.');
-    }
-  }
+enum RewardedSdkTerminalT0356 {
+  earnedAndDismissed,
+  dismissedWithoutReward,
+  noFill,
+  failed,
+}
 
-  final String adUnitId;
-  final AdRequest request;
+abstract interface class RewardedAdDriverT0356 {
+  Future<RewardedSdkTerminalT0356> present({
+    required String adUnitId,
+    required AdRequest request,
+  });
+}
+
+/// Production Google Mobile Ads driver. It does not grant product access; it
+/// only reports the terminal SDK outcome to the product-domain presenter.
+final class GoogleMobileAdsRewardedDriverT0356 implements RewardedAdDriverT0356 {
+  const GoogleMobileAdsRewardedDriverT0356();
 
   @override
-  Future<RewardedAdResultT0269> showForShareUnlock({
-    required String designId,
+  Future<RewardedSdkTerminalT0356> present({
+    required String adUnitId,
+    required AdRequest request,
   }) {
-    // Validate the design identifier before any SDK/network activity. This
-    // keeps malformed or out-of-range IDs fail-closed and observable in QA.
-    RewardedShareUnlockT0269(designId: designId, isPro: false);
+    final result = Completer<RewardedSdkTerminalT0356>();
 
-    final result = Completer<RewardedAdResultT0269>();
-
-    void complete(RewardedAdResultT0269 value) {
+    void complete(RewardedSdkTerminalT0356 value) {
       if (!result.isCompleted) result.complete(value);
     }
 
@@ -52,13 +47,13 @@ final class GoogleMobileAdsRewardedPresenterT0356
               shownAd.dispose();
               complete(
                 earnedReward
-                    ? RewardedAdResultT0269.completed
-                    : RewardedAdResultT0269.cancelled,
+                    ? RewardedSdkTerminalT0356.earnedAndDismissed
+                    : RewardedSdkTerminalT0356.dismissedWithoutReward,
               );
             },
             onAdFailedToShowFullScreenContent: (shownAd, _) {
               shownAd.dispose();
-              complete(RewardedAdResultT0269.failed);
+              complete(RewardedSdkTerminalT0356.failed);
             },
           );
 
@@ -70,22 +65,69 @@ final class GoogleMobileAdsRewardedPresenterT0356
             );
           } on Object {
             ad.dispose();
-            complete(RewardedAdResultT0269.failed);
+            complete(RewardedSdkTerminalT0356.failed);
           }
         },
         onAdFailedToLoad: (error) {
-          // Google Mobile Ads uses code 3 for no-fill. Other load failures are
-          // kept distinct so telemetry/QA cannot silently relabel a real SDK
-          // integration error as an expected inventory miss.
+          // Google Mobile Ads error code 3 is the SDK's no-fill condition.
+          // Every other load failure remains an explicit integration failure.
           complete(
             error.code == 3
-                ? RewardedAdResultT0269.noFill
-                : RewardedAdResultT0269.failed,
+                ? RewardedSdkTerminalT0356.noFill
+                : RewardedSdkTerminalT0356.failed,
           );
         },
       ),
     );
 
     return result.future;
+  }
+}
+
+/// Real Google Mobile Ads rewarded adapter for share-design unlocks.
+///
+/// The adapter is deliberately narrow: it translates SDK terminal callbacks
+/// into the product-domain result and never grants an entitlement itself.
+/// [RewardedShareFlowT0281] remains the only layer allowed to turn a completed
+/// reward into one single-use share right.
+final class GoogleMobileAdsRewardedPresenterT0356
+    implements RewardedAdPresenterT0281 {
+  GoogleMobileAdsRewardedPresenterT0356({
+    required String adUnitId,
+    AdRequest request = const AdRequest(),
+    RewardedAdDriverT0356 driver = const GoogleMobileAdsRewardedDriverT0356(),
+  })  : adUnitId = adUnitId.trim(),
+        request = request,
+        _driver = driver {
+    if (this.adUnitId.isEmpty) {
+      throw ArgumentError.value(adUnitId, 'adUnitId', 'Must not be blank.');
+    }
+  }
+
+  final String adUnitId;
+  final AdRequest request;
+  final RewardedAdDriverT0356 _driver;
+
+  @override
+  Future<RewardedAdResultT0269> showForShareUnlock({
+    required String designId,
+  }) async {
+    // Validate the design identifier before any SDK/network activity. This
+    // keeps malformed or out-of-range IDs fail-closed and observable in QA.
+    RewardedShareUnlockT0269(designId: designId, isPro: false);
+
+    final terminal = await _driver.present(
+      adUnitId: adUnitId,
+      request: request,
+    );
+
+    return switch (terminal) {
+      RewardedSdkTerminalT0356.earnedAndDismissed =>
+        RewardedAdResultT0269.completed,
+      RewardedSdkTerminalT0356.dismissedWithoutReward =>
+        RewardedAdResultT0269.cancelled,
+      RewardedSdkTerminalT0356.noFill => RewardedAdResultT0269.noFill,
+      RewardedSdkTerminalT0356.failed => RewardedAdResultT0269.failed,
+    };
   }
 }
