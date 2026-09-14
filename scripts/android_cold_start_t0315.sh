@@ -37,9 +37,10 @@ fi
 
 # The performance gate measures the final release/AOT APK. Before every sample
 # the package is force-stopped and process absence is verified. Android 35 can
-# report LaunchState: UNKNOWN for an am start -W launch even when the package
-# had no process before launch, so UNKNOWN is accepted only with that explicit
-# process-lifecycle proof. HOT/WARM remains a hard failure.
+# report LaunchState: UNKNOWN (or UNKNOWN with a numeric suffix such as
+# "UNKNOWN (0)") for an am start -W launch even when the package had no process
+# before launch. Normalize only the optional suffix and accept UNKNOWN solely
+# with that explicit process-lifecycle proof. HOT/WARM remains a hard failure.
 #
 # Android platform-tools can also emit WaitTime without TotalTime. Prefer
 # TotalTime when present; otherwise use WaitTime, which is the ActivityManager
@@ -64,19 +65,20 @@ while [ "$sample" -le "$SAMPLE_COUNT" ]; do
     exit 1
   fi
 
-  LAUNCH_STATE="$(printf '%s\n' "$START_OUTPUT" | awk -F': ' '/^LaunchState:/ {print $2; exit}')"
+  RAW_LAUNCH_STATE="$(printf '%s\n' "$START_OUTPUT" | awk -F': ' '/^LaunchState:/ {print $2; exit}')"
+  LAUNCH_STATE="${RAW_LAUNCH_STATE%% *}"
   case "$LAUNCH_STATE" in
     COLD)
       ;;
     UNKNOWN)
-      echo "T0315 cold-start sample $sample: Android reported LaunchState UNKNOWN; accepting only because pre-launch process absence was verified"
+      echo "T0315 cold-start sample $sample: Android reported LaunchState $RAW_LAUNCH_STATE; accepting only because pre-launch process absence was verified"
       ;;
     '')
       echo "T0315 cold-start gate: sample $sample did not report LaunchState" >&2
       exit 1
       ;;
     *)
-      echo "T0315 cold-start gate: sample $sample was not cold (LaunchState=$LAUNCH_STATE)" >&2
+      echo "T0315 cold-start gate: sample $sample was not cold (LaunchState=$RAW_LAUNCH_STATE)" >&2
       exit 1
       ;;
   esac
@@ -101,7 +103,7 @@ while [ "$sample" -le "$SAMPLE_COUNT" ]; do
   esac
 
   printf '%s\n' "$TOTAL_TIME_MS" >> "$SAMPLES_FILE"
-  echo "T0315 cold-start sample $sample/$SAMPLE_COUNT: ${TOTAL_TIME_MS}ms ($METRIC_NAME, pid=$POST_LAUNCH_PID, LaunchState=$LAUNCH_STATE)"
+  echo "T0315 cold-start sample $sample/$SAMPLE_COUNT: ${TOTAL_TIME_MS}ms ($METRIC_NAME, pid=$POST_LAUNCH_PID, LaunchState=$RAW_LAUNCH_STATE)"
   sample=$((sample + 1))
 done
 
