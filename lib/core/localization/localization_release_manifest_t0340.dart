@@ -194,6 +194,14 @@ final class LocalizationReleaseManifestT0340 {
       if (proof.isEmpty) {
         throw StateError('Verified localization evidence requires a proof ID.');
       }
+      final expectedLocaleSuffix = '::${evidence.cell.locale.name}';
+      if (!proof.endsWith(expectedLocaleSuffix)) {
+        throw StateError(
+          'Verified localization evidence must be bound to the exact locale. '
+          'Cell=${evidence.cell.key} Proof=$proof '
+          'ExpectedSuffix=$expectedLocaleSuffix',
+        );
+      }
       final key = evidence.cell.key;
       if (!required.contains(key)) {
         throw StateError('Unexpected verified localization cell: $key');
