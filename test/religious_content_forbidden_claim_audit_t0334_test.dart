@@ -76,6 +76,26 @@ void main() {
     );
   });
 
+  test('T0334 dedupes only overlapping aliases, not distinct claims', () {
+    final root = Directory.systemTemp.createTempSync('t0334_claim_overlap_');
+    addTearDown(() => root.deleteSync(recursive: true));
+
+    final nested = Directory('${root.path}/data')..createSync(recursive: true);
+    File('${nested.path}/unsafe.dart').writeAsStringSync(
+      "const claim = 'Bu zikir kesin para getirir ve şifa garantisi verir.';\n",
+    );
+
+    final findings = ForbiddenReligiousClaimAuditT0334.auditDirectories(
+      <String>[nested.path],
+    );
+
+    expect(findings, hasLength(2));
+    expect(
+      findings.map((finding) => finding.matchedFragment).toSet(),
+      <String>{'kesin para getirir', 'şifa garantisi'},
+    );
+  });
+
   test('T0334 fails closed when a configured dataset directory disappears', () {
     expect(
       () => ForbiddenReligiousClaimAuditT0334.requireClean(
