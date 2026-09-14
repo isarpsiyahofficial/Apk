@@ -80,6 +80,48 @@ void main() {
       );
     });
 
+    test('evidence source absent from governed record manifest fails closed', () {
+      const undeclaredDisputedSource = SourceReference(
+        id: 'test-undeclared-disputed-source',
+        title: 'Test disputed source',
+        sourceClass: ReligiousSourceClass.disputed,
+        licenseId: 'test-reference-only',
+        locator: 'test locator',
+      );
+      final firstEvidence = beratResearchContent.evidence.first;
+      final tampered = ReligiousDayContent(
+        record: beratResearchContent.record,
+        title: beratResearchContent.title,
+        whatIsIt: beratResearchContent.whatIsIt,
+        history: beratResearchContent.history,
+        evidence: <ReligiousDayEvidenceSection>[
+          ReligiousDayEvidenceSection(
+            kind: firstEvidence.kind,
+            text: firstEvidence.text,
+            certainty: firstEvidence.certainty,
+            sources: const <SourceReference>[undeclaredDisputedSource],
+          ),
+          ...beratResearchContent.evidence.skip(1),
+        ],
+        specificWorshipStatus: beratResearchContent.specificWorshipStatus,
+        reviewedEvidenceKinds: beratResearchContent.reviewedEvidenceKinds,
+      );
+
+      expect(tampered.hasSafeEvidenceSemantics, isTrue);
+      final contents = <ReligiousDayContent>[
+        for (final content in ReligiousDayReleaseAuditT0335.canonicalContents)
+          if (content.record.id == tampered.record.id) tampered else content,
+      ];
+      expect(
+        () => ReligiousDayReleaseAuditT0335.requireContentsSafe(
+          contents,
+          expectedIds:
+              ReligiousDayReleaseAuditT0335.expectedCanonicalContentIds,
+        ),
+        throwsStateError,
+      );
+    });
+
     test('no unverified exact Gregorian date is present in canonical data', () {
       expect(
         ReligiousDayReleaseAuditT0335.canonicalDateObservations,
