@@ -66,12 +66,41 @@ void main() {
         verified: [
           LocalizationVerifiedEvidenceT0340(
             cell: target,
-            proofId: 'localization_dua_surface_t0344_test.dart::ar error',
+            proofId: 'localization_dua_surface_t0344_test.dart::error::ar',
           ),
         ],
         unresolved: unresolved,
       ),
       returnsNormally,
+    );
+  });
+
+  test('cross-locale proof binding fails closed', () {
+    final target = _cell(
+      LocalizationSurfaceT0340.dua,
+      LocalizationStateT0340.error,
+      LocalizationLocaleT0340.ar,
+    );
+    final unresolved = LocalizationReleaseManifestT0340.requiredCells
+        .where((cell) => cell.key != target.key)
+        .map(
+          (cell) => LocalizationUnresolvedEvidenceT0340(
+            cell: cell,
+            reason: 'Not yet proven.',
+          ),
+        );
+
+    expect(
+      () => LocalizationReleaseManifestT0340.validate(
+        verified: [
+          LocalizationVerifiedEvidenceT0340(
+            cell: target,
+            proofId: 'localization_dua_surface_t0344_test.dart::error::en',
+          ),
+        ],
+        unresolved: unresolved,
+      ),
+      throwsStateError,
     );
   });
 
@@ -110,7 +139,7 @@ void main() {
         verified: [
           LocalizationVerifiedEvidenceT0340(
             cell: target,
-            proofId: 'proof',
+            proofId: 'proof::${target.locale.name}',
           ),
         ],
         unresolved: [
@@ -140,8 +169,14 @@ void main() {
     expect(
       () => LocalizationReleaseManifestT0340.validate(
         verified: [
-          LocalizationVerifiedEvidenceT0340(cell: target, proofId: 'a'),
-          LocalizationVerifiedEvidenceT0340(cell: target, proofId: 'b'),
+          LocalizationVerifiedEvidenceT0340(
+            cell: target,
+            proofId: 'a::${target.locale.name}',
+          ),
+          LocalizationVerifiedEvidenceT0340(
+            cell: target,
+            proofId: 'b::${target.locale.name}',
+          ),
         ],
         unresolved: rest,
       ),
