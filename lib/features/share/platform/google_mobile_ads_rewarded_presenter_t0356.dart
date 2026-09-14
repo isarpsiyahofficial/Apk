@@ -94,10 +94,9 @@ final class GoogleMobileAdsRewardedPresenterT0356
     implements RewardedAdPresenterT0281 {
   GoogleMobileAdsRewardedPresenterT0356({
     required String adUnitId,
-    AdRequest request = const AdRequest(),
+    this.request = const AdRequest(),
     RewardedAdDriverT0356 driver = const GoogleMobileAdsRewardedDriverT0356(),
   })  : adUnitId = adUnitId.trim(),
-        request = request,
         _driver = driver {
     if (this.adUnitId.isEmpty) {
       throw ArgumentError.value(adUnitId, 'adUnitId', 'Must not be blank.');
