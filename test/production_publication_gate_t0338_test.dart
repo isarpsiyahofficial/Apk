@@ -17,6 +17,7 @@ void main() {
     ContentReviewStatus status = ContentReviewStatus.published,
     ReligiousSourceClass sourceStatus = ReligiousSourceClass.quran,
     List<SourceReference>? sources,
+    String? reviewer = 'reviewer:t0338',
     LocalizedReligiousText text = const LocalizedReligiousText(
       tr: 'Türkçe',
       en: 'English',
@@ -33,7 +34,7 @@ void main() {
         text: text,
         sources: sources ?? const [source],
         lastReviewedAt: DateTime.utc(2026, 9, 11),
-        reviewer: 'reviewer:t0338',
+        reviewer: reviewer,
       );
 
   test('exact published inventory is accepted and immutable', () {
@@ -109,6 +110,24 @@ void main() {
       ),
       throwsA(isA<StateError>()),
     );
+  });
+
+  test('published record requires explicit non-blank review attribution', () {
+    for (final reviewer in <String?>[null, '', '   ']) {
+      expect(
+        () => gate.requirePublishedRecords(
+          records: [record(id: 'missing-reviewer', reviewer: reviewer)],
+          expectedIds: const {'missing-reviewer'},
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.toString(),
+            'message',
+            contains('review attribution'),
+          ),
+        ),
+      );
+    }
   });
 
   test('duplicate records fail instead of shadowing publication state', () {
@@ -188,7 +207,12 @@ void main() {
     );
     expect(
       () => gate.requirePublishedRecords(
-        records: [record(id: 'duplicate-source', sources: const [source, duplicateSource])],
+        records: [
+          record(
+            id: 'duplicate-source',
+            sources: const [source, duplicateSource],
+          ),
+        ],
         expectedIds: const {'duplicate-source'},
       ),
       throwsA(isA<StateError>()),
