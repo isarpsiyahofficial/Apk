@@ -130,14 +130,16 @@ void main() {
             await tester.pumpWidget(
               Directionality(
                 textDirection: TextDirection.rtl,
-                child: Center(
-                  child: SizedBox(
-                    width: canvasWidth,
-                    child: QuranSharePageCardT0248(
-                      format: format,
-                      background: const SizedBox.expand(),
-                      content: longestAyah,
-                      page: page,
+                child: SingleChildScrollView(
+                  child: Center(
+                    child: SizedBox(
+                      width: canvasWidth,
+                      child: QuranSharePageCardT0248(
+                        format: format,
+                        background: const SizedBox.expand(),
+                        content: longestAyah,
+                        page: page,
+                      ),
                     ),
                   ),
                 ),
