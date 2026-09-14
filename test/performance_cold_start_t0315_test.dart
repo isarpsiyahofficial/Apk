@@ -40,7 +40,36 @@ void main() {
       contains('MAX_COLD_START_MS="\${MAX_COLD_START_MS:-3000}"'),
       reason: 'The <=3 second release requirement must stay strict.',
     );
-    expect(script, contains("grep -Fq 'LaunchState: COLD'"));
+    expect(
+      script,
+      contains('adb shell am force-stop "\$PACKAGE"'),
+      reason: 'Every timing sample must begin from a force-stopped package.',
+    );
+    expect(
+      script,
+      contains('PRE_LAUNCH_PID="\$(adb shell pidof "\$PACKAGE"'),
+      reason: 'Cold state must be proven by process absence before launch.',
+    );
+    expect(
+      script,
+      contains("START_OUTPUT=\"\$(adb shell am start -W -S -n \"\$ACTIVITY\""),
+      reason: 'Timing must come from an ActivityManager wait launch.',
+    );
+    expect(
+      script,
+      contains('UNKNOWN)'),
+      reason: 'Android 35 UNKNOWN LaunchState needs an explicit guarded path.',
+    );
+    expect(
+      script,
+      contains('sample \$sample was not cold (LaunchState=\$LAUNCH_STATE)'),
+      reason: 'HOT/WARM or any other non-cold state must remain fail-closed.',
+    );
+    expect(
+      script,
+      contains("'/^WaitTime:/ {print \$2; exit}'"),
+      reason: 'WaitTime may be used only as the same -W invocation fallback.',
+    );
     expect(script, contains('SAMPLE_COUNT=3'));
   });
 
