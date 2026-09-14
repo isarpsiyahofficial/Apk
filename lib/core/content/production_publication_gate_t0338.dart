@@ -56,6 +56,12 @@ final class ProductionPublicationGateT0338 {
           'T0338 published record failed production governance: $id',
         );
       }
+      final reviewer = record.reviewer?.trim();
+      if (reviewer == null || reviewer.isEmpty) {
+        throw StateError(
+          'T0338 published record requires explicit review attribution: $id',
+        );
+      }
 
       final seenSourceIds = <String>{};
       for (final source in record.sources) {
