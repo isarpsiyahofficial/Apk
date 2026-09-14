@@ -6,6 +6,7 @@ import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t033
 import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch34.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch35.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch36.dart';
+import 'package:islami_hayat/features/prophets/data/prophet_hadith_evidence_t0336_batch37.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_evidence_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_gap_manifest_t0336.dart';
 import 'package:islami_hayat/features/prophets/data/prophet_semantic_ownership_qa.dart';
@@ -20,39 +21,28 @@ void main() {
       final canonicalIds = canonicalQuranNamedProphets
           .map((identity) => identity.canonicalId)
           .toSet();
-      final expectedUnresolved = {...canonicalIds}
-        ..remove('adam')
-        ..remove('ayyub')
-        ..remove('dawud')
-        ..remove('harun')
-        ..remove('ibrahim')
-        ..remove('nuh')
-        ..remove('yusuf')
-        ..remove('yunus')
-        ..remove('musa')
-        ..remove('isa')
-        ..remove('sulayman')
-        ..remove('muhammad');
+      const expectedVerified = <String>{
+        'adam',
+        'ayyub',
+        'dawud',
+        'harun',
+        'ibrahim',
+        'idris',
+        'isa',
+        'lut',
+        'muhammad',
+        'musa',
+        'nuh',
+        'sulayman',
+        'yahya',
+        'yunus',
+        'yusuf',
+      };
+      final expectedUnresolved = {...canonicalIds}..removeAll(expectedVerified);
 
-      expect(hadith.verifiedCount, 12);
-      expect(
-        hadith.verifiedProphetIds.toSet(),
-        {
-          'adam',
-          'ayyub',
-          'dawud',
-          'harun',
-          'ibrahim',
-          'nuh',
-          'yusuf',
-          'yunus',
-          'musa',
-          'isa',
-          'sulayman',
-          'muhammad',
-        },
-      );
-      expect(hadith.unresolvedCount, 13);
+      expect(hadith.verifiedCount, 15);
+      expect(hadith.verifiedProphetIds.toSet(), expectedVerified);
+      expect(hadith.unresolvedCount, 10);
       expect(hadith.unresolvedProphetIds.toSet(), expectedUnresolved);
       expect(hadith.isComplete, isFalse);
 
@@ -69,7 +59,7 @@ void main() {
       }
     });
 
-    test('T0194 and batch hadith evidence stays exact and owner-bound', () {
+    test('all admitted hadith evidence stays exact and owner-bound', () {
       final claims = <ProphetSemanticClaim>[
         ...canonicalProphetHadithEvidenceT0336,
         ...prophetHadithEvidenceT0336Batch32,
@@ -77,43 +67,32 @@ void main() {
         ...prophetHadithEvidenceT0336Batch34,
         ...prophetHadithEvidenceT0336Batch35,
         ...prophetHadithEvidenceT0336Batch36,
+        ...prophetHadithEvidenceT0336Batch37,
       ];
-      expect(claims, hasLength(13));
-      expect(
-        claims.expand((claim) => claim.sourceIds).toSet(),
-        {
-          'sahih-muslim-854b-adam-friday',
-          'sahih-bukhari-3391-ayyub-blessing',
-          'sahih-bukhari-2072-dawud-manual-labour',
-          'sahih-bukhari-3393-harun-night-journey',
-          'sahih-bukhari-3356-ibrahim-circumcision',
-          'sahih-bukhari-3339-nuh-message-witness',
-          'sahih-bukhari-3390-yusuf-prophetic-lineage',
-          'sahih-bukhari-3412-yunus-no-superiority',
-          'sahih-bukhari-3410-musa-community',
-          'sahih-bukhari-3442-isa-prophetic-succession',
-          'sahih-bukhari-3424-sulayman-inshaallah',
-          'sahih-muslim-1162e-muhammad-birth',
-          'sahih-bukhari-4449-muhammad-death',
-        },
-      );
-
-      final expectedOwnerBySource = <String, String>{
+      const expectedOwnerBySource = <String, String>{
         'sahih-muslim-854b-adam-friday': 'adam',
         'sahih-bukhari-3391-ayyub-blessing': 'ayyub',
         'sahih-bukhari-2072-dawud-manual-labour': 'dawud',
         'sahih-bukhari-3393-harun-night-journey': 'harun',
         'sahih-bukhari-3356-ibrahim-circumcision': 'ibrahim',
-        'sahih-bukhari-3339-nuh-message-witness': 'nuh',
-        'sahih-bukhari-3390-yusuf-prophetic-lineage': 'yusuf',
-        'sahih-bukhari-3412-yunus-no-superiority': 'yunus',
-        'sahih-bukhari-3410-musa-community': 'musa',
+        'sahih-muslim-164a-idris-night-journey': 'idris',
         'sahih-bukhari-3442-isa-prophetic-succession': 'isa',
+        'sahih-bukhari-3375-lut-support': 'lut',
+        'sahih-bukhari-3410-musa-community': 'musa',
+        'sahih-bukhari-3339-nuh-message-witness': 'nuh',
         'sahih-bukhari-3424-sulayman-inshaallah': 'sulayman',
+        'sahih-muslim-164a-yahya-night-journey': 'yahya',
+        'sahih-bukhari-3412-yunus-no-superiority': 'yunus',
+        'sahih-bukhari-3390-yusuf-prophetic-lineage': 'yusuf',
         'sahih-muslim-1162e-muhammad-birth': 'muhammad',
         'sahih-bukhari-4449-muhammad-death': 'muhammad',
       };
 
+      expect(claims, hasLength(expectedOwnerBySource.length));
+      expect(
+        claims.expand((claim) => claim.sourceIds).toSet(),
+        expectedOwnerBySource.keys.toSet(),
+      );
       for (final claim in claims) {
         expect(claim.sourceIds, hasLength(1));
         expect(
@@ -134,6 +113,14 @@ void main() {
         requireFull25Coverage: false,
         claims: const [
           ProphetSemanticClaim(
+            biographyProphetId: 'muhammad',
+            subjectProphetId: 'idris',
+            dimension: ProphetSemanticDimension.hadith,
+            claimKey: 'hadith:muhammad:borrowed-idris-report',
+            sourceIds: ['sahih-muslim-164a-idris-night-journey'],
+            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
+          ),
+          ProphetSemanticClaim(
             biographyProphetId: 'yusuf',
             subjectProphetId: 'muhammad',
             dimension: ProphetSemanticDimension.hadith,
@@ -142,100 +129,27 @@ void main() {
             sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
           ),
           ProphetSemanticClaim(
-            biographyProphetId: 'muhammad',
-            subjectProphetId: 'adam',
+            biographyProphetId: 'isa',
+            subjectProphetId: 'yahya',
             dimension: ProphetSemanticDimension.hadith,
-            claimKey: 'hadith:muhammad:borrowed-adam-report',
-            sourceIds: ['sahih-muslim-854b-adam-friday'],
+            claimKey: 'hadith:isa:borrowed-yahya-report',
+            sourceIds: ['sahih-muslim-164a-yahya-night-journey'],
             sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
           ),
           ProphetSemanticClaim(
-            biographyProphetId: 'muhammad',
-            subjectProphetId: 'ayyub',
+            biographyProphetId: 'ibrahim',
+            subjectProphetId: 'lut',
             dimension: ProphetSemanticDimension.hadith,
-            claimKey: 'hadith:muhammad:borrowed-ayyub-report',
-            sourceIds: ['sahih-bukhari-3391-ayyub-blessing'],
-            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
-          ),
-          ProphetSemanticClaim(
-            biographyProphetId: 'muhammad',
-            subjectProphetId: 'dawud',
-            dimension: ProphetSemanticDimension.hadith,
-            claimKey: 'hadith:muhammad:borrowed-dawud-report',
-            sourceIds: ['sahih-bukhari-2072-dawud-manual-labour'],
-            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
-          ),
-          ProphetSemanticClaim(
-            biographyProphetId: 'muhammad',
-            subjectProphetId: 'harun',
-            dimension: ProphetSemanticDimension.hadith,
-            claimKey: 'hadith:muhammad:borrowed-harun-report',
-            sourceIds: ['sahih-bukhari-3393-harun-night-journey'],
-            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
-          ),
-          ProphetSemanticClaim(
-            biographyProphetId: 'muhammad',
-            subjectProphetId: 'ibrahim',
-            dimension: ProphetSemanticDimension.hadith,
-            claimKey: 'hadith:muhammad:borrowed-ibrahim-report',
-            sourceIds: ['sahih-bukhari-3356-ibrahim-circumcision'],
-            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
-          ),
-          ProphetSemanticClaim(
-            biographyProphetId: 'muhammad',
-            subjectProphetId: 'nuh',
-            dimension: ProphetSemanticDimension.hadith,
-            claimKey: 'hadith:muhammad:borrowed-nuh-report',
-            sourceIds: ['sahih-bukhari-3339-nuh-message-witness'],
-            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
-          ),
-          ProphetSemanticClaim(
-            biographyProphetId: 'muhammad',
-            subjectProphetId: 'yusuf',
-            dimension: ProphetSemanticDimension.hadith,
-            claimKey: 'hadith:muhammad:borrowed-yusuf-report',
-            sourceIds: ['sahih-bukhari-3390-yusuf-prophetic-lineage'],
-            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
-          ),
-          ProphetSemanticClaim(
-            biographyProphetId: 'muhammad',
-            subjectProphetId: 'yunus',
-            dimension: ProphetSemanticDimension.hadith,
-            claimKey: 'hadith:muhammad:borrowed-yunus-report',
-            sourceIds: ['sahih-bukhari-3412-yunus-no-superiority'],
-            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
-          ),
-          ProphetSemanticClaim(
-            biographyProphetId: 'muhammad',
-            subjectProphetId: 'musa',
-            dimension: ProphetSemanticDimension.hadith,
-            claimKey: 'hadith:muhammad:borrowed-musa-report',
-            sourceIds: ['sahih-bukhari-3410-musa-community'],
-            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
-          ),
-          ProphetSemanticClaim(
-            biographyProphetId: 'muhammad',
-            subjectProphetId: 'isa',
-            dimension: ProphetSemanticDimension.hadith,
-            claimKey: 'hadith:muhammad:borrowed-isa-report',
-            sourceIds: ['sahih-bukhari-3442-isa-prophetic-succession'],
-            sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
-          ),
-          ProphetSemanticClaim(
-            biographyProphetId: 'muhammad',
-            subjectProphetId: 'sulayman',
-            dimension: ProphetSemanticDimension.hadith,
-            claimKey: 'hadith:muhammad:borrowed-sulayman-report',
-            sourceIds: ['sahih-bukhari-3424-sulayman-inshaallah'],
+            claimKey: 'hadith:ibrahim:borrowed-lut-report',
+            sourceIds: ['sahih-bukhari-3375-lut-support'],
             sourceClasses: {ReligiousSourceClass.sahihHasanHadith},
           ),
         ],
       );
-
       expect(result.isValid, isFalse);
     });
 
-    test('batch-34 to batch-36 builders reject owner/source tampering', () {
+    test('batch-34 to batch-37 builders reject owner/source tampering', () {
       expect(
         () => buildMusaHadithEvidenceT0336(biographyProphetId: 'harun'),
         throwsStateError,
@@ -265,6 +179,18 @@ void main() {
         throwsStateError,
       );
       expect(
+        () => buildIdrisHadithEvidenceT0336(subjectProphetId: 'yahya'),
+        throwsStateError,
+      );
+      expect(
+        () => buildYahyaHadithEvidenceT0336(biographyProphetId: 'isa'),
+        throwsStateError,
+      );
+      expect(
+        () => buildLutHadithEvidenceT0336(subjectProphetId: 'ibrahim'),
+        throwsStateError,
+      );
+      expect(
         () => buildHarunHadithEvidenceT0336(
           source: const SourceReference(
             id: 'sahih-bukhari-3393-harun-night-journey',
@@ -277,25 +203,25 @@ void main() {
         throwsStateError,
       );
       expect(
-        () => buildYunusHadithEvidenceT0336(
+        () => buildIdrisHadithEvidenceT0336(
           source: const SourceReference(
-            id: 'sahih-bukhari-3412-yunus-no-superiority',
-            title: 'Sahih al-Bukhari',
+            id: 'sahih-muslim-164a-idris-night-journey',
+            title: 'Sahih Muslim',
             sourceClass: ReligiousSourceClass.sahihHasanHadith,
             licenseId: 'REFERENCE-ONLY',
-            locator: 'Sahih al-Bukhari 3413',
+            locator: 'Sahih Muslim 164b',
           ),
         ),
         throwsStateError,
       );
       expect(
-        () => buildDawudHadithEvidenceT0336(
+        () => buildLutHadithEvidenceT0336(
           source: const SourceReference(
-            id: 'sahih-bukhari-2072-dawud-manual-labour',
+            id: 'sahih-bukhari-3375-lut-support',
             title: 'Sahih al-Bukhari',
             sourceClass: ReligiousSourceClass.sahihHasanHadith,
-            licenseId: 'REFERENCE-ONLY',
-            locator: 'Sahih al-Bukhari 2073',
+            licenseId: 'UNKNOWN',
+            locator: 'Sahih al-Bukhari 3375',
           ),
         ),
         throwsStateError,
