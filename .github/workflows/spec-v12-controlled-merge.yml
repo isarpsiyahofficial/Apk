@@ -1,0 +1,153 @@
+name: Controlled SPEC v1.2 Merge
+
+on:
+  push:
+    branches:
+      - agent/islamic-life-implementation
+    paths:
+      - .github/workflows/spec-v12-controlled-merge.yml
+
+permissions:
+  contents: write
+
+jobs:
+  merge-spec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/islamic-life-implementation
+          fetch-depth: 0
+
+      - name: Merge v1.2 delta into master specification
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          spec_path = Path('SPECIFICATION.md')
+          todo_path = Path('TODO.md')
+          matrix_path = Path('TEST_MATRIX.md')
+
+          spec = spec_path.read_text(encoding='utf-8')
+          todo = todo_path.read_text(encoding='utf-8')
+          matrix = matrix_path.read_text(encoding='utf-8')
+
+          def replace_once(text, old, new, label):
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected exactly one occurrence, found {count}: {old!r}')
+              return text.replace(old, new, 1)
+
+          # Master metadata: preserve the v1.1 body while making v1.2 the governed master.
+          spec = replace_once(spec, '**Sürüm:** v1.1  ', '**Sürüm:** v1.2  ', 'spec version')
+          spec = replace_once(
+              spec,
+              '**Tarih:** 26 Ağustos 2026  ',
+              '**Tarih:** 26 Ağustos 2026  \n**v1.2 kontrollü birleşim:** 14 Eylül 2026  ',
+              'merge date',
+          )
+
+          # Exact legacy visual clauses superseded by the signed-off v1.2 100-asset decision.
+          replacements = [
+              ('404. Toplam **30 final paylaşım görseli** olacaktır.', '404. Toplam **100 final Canva paylaşım görseli** olacaktır.'),
+              ('406. Kalan 27 tasarım kilitli olacaktır.', '406. Kalan 97 tasarım Rewarded/PRO kilitli olacaktır.'),
+              ('408. Premium kullanıcı 30 tasarımın tamamını sınırsız kullanacaktır.', '408. Premium kullanıcı 100 tasarımın tamamını sınırsız kullanacaktır.'),
+              ('425. Final 30 assetin her birinde kaynak, lisans, lisans tarihi, kanıt ve dosya hash tutulacaktır.', '425. Final 100 assetin her birinde kaynak, lisans, lisans tarihi, kanıt ve dosya hash tutulacaktır.'),
+              ('487. Premium şu değerleri verecektir: tüm reklamların kaldırılması, offline kullanım, 30 paylaşım tasarımının tamamı, rewarded reklamsız sınırsız paylaşım, gelişmiş tema seçenekleri, gelişmiş widget görünümleri, daha fazla görsel özelleştirme ve bazı kişisel kullanım kolaylıkları.', '487. Premium şu değerleri verecektir: tüm reklamların kaldırılması, offline kullanım, 100 paylaşım tasarımının tamamı, rewarded reklamsız sınırsız paylaşım, gelişmiş tema seçenekleri, gelişmiş widget görünümleri, daha fazla görsel özelleştirme ve bazı kişisel kullanım kolaylıkları.'),
+              ('563. 30 görsel uygun sıkıştırmayla saklanacaktır.', '563. 100 Canva görseli uygun sıkıştırmayla saklanacaktır.'),
+              ('758. 30 final lisanslı arka plan.', '758. 100 final lisanslı Canva arka planı.'),
+              ('## AI. 30 PAYLAŞIM GÖRSELİ — SEÇİM ÖNCESİ KİLİTLİ TASARIM GÖREVİ', '## AI. 100 CANVA PAYLAŞIM GÖRSELİ — SEÇİM ÖNCESİ KİLİTLİ TASARIM GÖREVİ'),
+              ('904. Bu şartname kaydedildiği anda 30 final paylaşım görseli **henüz seçilmiş kabul edilmeyecektir**.', '904. Bu şartname v1.2 olarak birleştirildiğinde 100 final Canva paylaşım görseli **henüz seçilmiş kabul edilmeyecektir**.'),
+              ('906. 30 görsel tek tonda olmayacaktır.', '906. 100 görsel tek tonda olmayacaktır.'),
+              ('908. 30 görsel en az birkaç ayrı görsel aileye ayrılacaktır; örneğin sıcak minimal, doğal doku, gece/gökyüzü, mimari soyut, tipografik, soft geometrik, sakin ışık gibi.', '908. 100 görsel en az birkaç ayrı görsel aileye ayrılacaktır; örneğin sıcak minimal, doğal doku, gece/gökyüzü, mimari soyut, tipografik, soft geometrik, sakin ışık gibi.'),
+              ('921. 30 görsel kullanıcıyla ayrıca incelenip seçim tamamlandıktan sonra bu bölümde asset kimlikleri sabitlenecektir.', '921. 100 görsel lisans/provenance ve export-yeniden dağıtım uygunluğu tek tek doğrulandıktan sonra bu bölümde asset kimlikleri sabitlenecektir.'),
+              ('922. 3 ücretsiz görsel ve 27 kilitli görsel tasarım kalitesi bakımından yapay biçimde “kötü/iyi” ayrımı taşımayacaktır; ücretsiz üçlü de uygulamayı iyi temsil etmelidir.', '922. 3 ücretsiz görsel ve 97 Rewarded/PRO görsel tasarım kalitesi bakımından yapay biçimde “kötü/iyi” ayrımı taşımayacaktır; ücretsiz üçlü de uygulamayı iyi temsil etmelidir.'),
+              ('- Beğendiği ayeti veya duayı 30 estetik tasarımdan biriyle Story/Post/Status formatında paylaşır.', '- Beğendiği ayeti veya duayı 100 lisans-doğrulanmış Canva tasarımından biriyle Story/Post/Status formatında paylaşır.'),
+              ('1. **30 paylaşım görselini seçmek ve lisans durumlarını netleştirmek.**', '1. **100 Canva paylaşım görselini tek tek lisans/provenance/export hakkıyla doğrulayıp final asset havuzunu sabitlemek.**'),
+          ]
+          for old, new in replacements:
+              spec = replace_once(spec, old, new, f'visual clause {old[:24]}')
+
+          spec = replace_once(
+              spec,
+              '478. Ürün ID baştan doğru seçilecektir.',
+              '478. Ürün ID baştan doğru seçilecektir; Android Lifetime PRO için canonical Play Billing product ID **`islami_hayat_lifetime_pro`** olacaktır.',
+              'billing product id',
+          )
+
+          # Append v1.2 governance only once. This is authoritative over any accidentally retained legacy numeric wording.
+          marker = '## AK. v1.2 KONTROLLÜ BİRLEŞİM — BAĞLAYICI DELTA KARARLARI'
+          if marker in spec:
+              raise SystemExit('v1.2 governance marker already exists; refusing duplicate merge')
+
+          spec += '''\n\n---\n\n## AK. v1.2 KONTROLLÜ BİRLEŞİM — BAĞLAYICI DELTA KARARLARI\n\n943. Bu `SPECIFICATION.md` dosyası v1.2 itibarıyla ürünün tek ana şartname kaynağıdır; yürütme zinciri **`SPECIFICATION.md -> TODO.md -> TEST_MATRIX.md`** şeklindedir. `SPECIFICATION_V1_2_DELTA.md` birleşimin provenance kaydı olarak korunur; çelişki halinde bu master dosyanın v1.2 hükümleri bağlayıcıdır.\n944. Paylaşım havuzu tam olarak **100 Canva görselidir: 3 FREE + 97 Rewarded/PRO**. FREE üçlü sürekli açıktır; diğer 97 görsel FREE kullanıcı için başarılı Rewarded tamamlanınca yalnız ilgili paylaşım hakkı kapsamında açılır, PRO için sınırsızdır. Rewarded failure/cancel ödül vermez.\n945. Final 100 görsel **AI ile üretilmeyecektir**; Canva kataloğundan seçilecektir. `CANVA_VISUAL_CANDIDATES.md` yalnız aday/araştırma listesidir ve final asset veya lisans kanıtı değildir.\n946. Her final Canva asseti sabitlenmeden önce Free/Pro içerik statüsü, AI-generated olmadığı, uygulamada export/yeniden dağıtım hakkı, kaynak kimliği, lisans/provenance kanıtı ve SHA-256 ayrı ayrı doğrulanacaktır. Canva Pro veya hakları belirsiz içerik final reusable asset havuzuna alınmayacaktır.\n947. Responsive tamamlanma kapısı telefon + tablet, portrait + landscape, farklı ekran oranları, sistem büyük font/text scale ve BlueStacks/emülatör benzeri Android ortamlarını kapsar. Taşma/kesilme, erişilemez kontrol, bozuk safe-area veya RTL yerleşim hatası varsa ilgili yüzey tamamlanmış sayılmaz.\n948. UI/UX **light-first**, sıcak/doğal ve editorial kalacaktır; dağınık veya jenerik AI-dashboard görünümü final engelidir.\n949. Android Lifetime PRO canonical Play Billing product ID **`islami_hayat_lifetime_pro`** olarak kilitlidir. Satın alma, pending/cancel/failure, restore, reinstall, cached entitlement, refund/revoke ve PRO sonrası sıfır reklam gerçek davranış testleri olmadan Billing/PRO tamamlanmış sayılmaz.\n950. Peygamber biyografileri için 25 peygamberin her birinde sekiz semantik boyut ayrı ayrı doğrulanacaktır: **kimlik/isim -> olay -> ayet -> hadis -> aile/soy -> dönem/kronoloji -> coğrafya -> tarih**. Bu 25x8 kapı kapanmadan Peygamberler/Vahiy Tarihi final değildir.\n951. Semantik QA başka peygambere ait olay veya biyografi cümlesinin yanlış sahipliğini fail-closed yakalayacaktır; örneğin Yusuf içeriğinin Muhammed biyografisine veya Muhammed'e ait Hicret/Medine olaylarının Yusuf biyografisine kayması FAIL olmalıdır. Bir peygamber adının başka bir peygamberin hayatında doğal bağlamda geçmesi tek başına hata değildir; özne, olay sahipliği ve bağlam doğrulanır.\n952. Soy ilişkileri ve tarihsel tarihler kronolojiyle çapraz kontrol edilir; güvenilir kaynak yoksa boşluk tahmin/popüler anlatı ile doldurulmaz ve `bilinmiyor/tartışmalı/yaklaşık` statüsü korunur.\n953. Bir özellik yalnız görünür olduğu için tamamlanmış sayılmaz. FREE/PRO, offline gate, reklam/rewarded, Billing, Story 9:16, WhatsApp Status 9:16, 4:5, 1:1, localization/RTL ve dini içerik ana yollarında gerçek happy-path ile failure/cancel/empty/offline/restore gibi uygulanabilir negatif yollar kanıtlanır.\n954. TR/EN/AR tam yüzey taraması ve Arabic RTL davranışı; telefon/tablet/orientation/büyük-font kapsamıyla birlikte release kapısıdır. Dil dosyasının bulunması tek başına PASS değildir.\n955. `Final` yalnız master şartname, TODO ve TEST_MATRIX arasında kırmızı/açık release engeli kalmadığında kullanılacaktır.\n'''
+
+          # TODO source/version + Sprint-0 governance decisions are now actually merged.
+          todo = replace_once(
+              todo,
+              '**Kaynak:** `SPECIFICATION.md` v1.1 + son kullanıcı kararları + `CANVA_VISUAL_CANDIDATES.md`  ',
+              '**Kaynak:** `SPECIFICATION.md` v1.2 -> `TODO.md` -> `TEST_MATRIX.md`; `SPECIFICATION_V1_2_DELTA.md` birleşim provenance kaydı; `CANVA_VISUAL_CANDIDATES.md` yalnız aday liste  ',
+              'todo source chain',
+          )
+          for task in ('T0001', 'T0002', 'T0003', 'T0004', 'T0005'):
+              old = f'- [ ] **{task}**'
+              new = f'- [x] **{task}**'
+              todo = replace_once(todo, old, new, f'{task} completion')
+
+          # TEST_MATRIX gets an explicit governance chain without altering individual PASS/TODO evidence.
+          chain = '> **v1.2 kaynak zinciri:** `SPECIFICATION.md` -> `TODO.md` -> `TEST_MATRIX.md`. `SPECIFICATION_V1_2_DELTA.md` birleşim provenance kaydıdır; `CANVA_VISUAL_CANDIDATES.md` final asset/lisans kanıtı değildir.\n'
+          if chain not in matrix:
+              first_sep = matrix.find('\n\n')
+              if first_sep < 0:
+                  raise SystemExit('TEST_MATRIX heading separator not found')
+              matrix = matrix[:first_sep+2] + chain + matrix[first_sep+2:]
+
+          # Fail closed if known legacy numeric visual clauses survived.
+          forbidden = [
+              '30 final paylaşım görseli',
+              'Kalan 27 tasarım',
+              'Premium kullanıcı 30 tasarımın',
+              'Final 30 assetin',
+              '30 paylaşım tasarımının tamamı',
+              '563. 30 görsel',
+              '758. 30 final lisanslı',
+              'AI. 30 PAYLAŞIM',
+              '906. 30 görsel',
+              '908. 30 görsel',
+              '921. 30 görsel',
+              '3 ücretsiz görsel ve 27 kilitli',
+              '30 estetik tasarımdan',
+              '30 paylaşım görselini seçmek',
+          ]
+          leftovers = [needle for needle in forbidden if needle in spec]
+          if leftovers:
+              raise SystemExit(f'legacy visual clauses remain: {leftovers}')
+
+          required = [
+              '**Sürüm:** v1.2',
+              '100 final Canva paylaşım görseli',
+              '3 FREE + 97 Rewarded/PRO',
+              '`islami_hayat_lifetime_pro`',
+              '25x8 kapı',
+              'telefon + tablet',
+              '`SPECIFICATION.md -> TODO.md -> TEST_MATRIX.md`',
+          ]
+          missing = [needle for needle in required if needle not in spec]
+          if missing:
+              raise SystemExit(f'v1.2 required clauses missing: {missing}')
+
+          spec_path.write_text(spec, encoding='utf-8')
+          todo_path.write_text(todo, encoding='utf-8')
+          matrix_path.write_text(matrix, encoding='utf-8')
+          PY
+
+      - name: Show controlled diff
+        run: git diff --check && git diff -- SPECIFICATION.md TODO.md TEST_MATRIX.md
+
+      - name: Commit merged governance
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add SPECIFICATION.md TODO.md TEST_MATRIX.md
+          git commit -m "docs: merge v1.2 decisions into master specification"
+          git push origin HEAD:agent/islamic-life-implementation
