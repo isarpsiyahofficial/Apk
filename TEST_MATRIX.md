@@ -1,5 +1,6 @@
 # İSLAMİ HAYAT — TEST MATRIX
 
+> **v1.2 kaynak zinciri:** `SPECIFICATION.md` -> `TODO.md` -> `TEST_MATRIX.md`. `SPECIFICATION_V1_2_DELTA.md` birleşim provenance kaydıdır; `CANVA_VISUAL_CANDIDATES.md` final asset/lisans kanıtı değildir.
 Bu matris `SPECIFICATION.md` + `SPECIFICATION_V1_2_DELTA.md` + `TODO.md` ile birlikte final kapısıdır. `PASS` kanıtı olmayan kritik satır finalde açık kabul edilir.
 
 ## Durum anahtarı

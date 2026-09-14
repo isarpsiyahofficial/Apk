@@ -1,18 +1,18 @@
 # İSLAMİ HAYAT — EKSİKSİZ KRONOLOJİK YAPILACAKLAR LİSTESİ
 
 **Durum:** Uygulama geliştirme ana yürütme listesi  
-**Kaynak:** `SPECIFICATION.md` v1.1 + son kullanıcı kararları + `CANVA_VISUAL_CANDIDATES.md`  
+**Kaynak:** `SPECIFICATION.md` v1.2 -> `TODO.md` -> `TEST_MATRIX.md`; `SPECIFICATION_V1_2_DELTA.md` birleşim provenance kaydı; `CANVA_VISUAL_CANDIDATES.md` yalnız aday liste
 **Tarih:** 26 Ağustos 2026  
 
 > Bu dosya sırayla yürütülecektir. Bir fazın bağımlılıkları tamamlanmadan ona bağlı ileri görev tamamlandı sayılmaz. Her tamamlanan iş için mümkün olduğunda test, ekran görüntüsü, log, hash, lisans kanıtı veya gerçek cihaz davranış kanıtı tutulur.
 
 ## SON KARARLAR — ŞARTNAME v1.2'YE AKTARILACAK DELTA
 
-- [ ] **T0001** — `SPECIFICATION.md` sürümünü v1.2'ye çıkar; paylaşım görseli sayısını 30'dan **100'e** güncelle. **Ref:** SPEC 402–426, 487, 563, 655–666, 758–761, 904–923.
-- [ ] **T0002** — 100 final paylaşım assetinin **AI ile üretilmeyeceğini**, Canva kataloğundan seçileceğini şartnameye işle. **Ref:** SPEC 77–91, 402–426, 904–923 + son kullanıcı kararı.
-- [ ] **T0003** — `CANVA_VISUAL_CANDIDATES.md` içindeki 100 adayın final asset olmadığını; her birinin Free/Pro/AI-generated/yeniden dağıtım-export hakkı kontrolünden sonra sabitleneceğini şartnameye işle. **Ref:** SPEC 423–426, 811, 919–923.
-- [ ] **T0004** — Görsel monetizasyon dağılımını kodlamadan önce sabitle: ücretsiz sürekli açık görsel sayısı, rewarded ile tek kullanımlık açılanlar ve PRO sınırsız görseller. Mevcut taban kural 3 ücretsiz + kalan kilitli modelidir; 100 görsele uyarlanmış nihai sayı yazılı karara bağlanmadan implementasyona geçme. **Ref:** SPEC 405–408, 465–468, 487, 655–666, 922.
-- [ ] **T0005** — v1.2 şartname ile bu TODO arasında çift yönlü referans kontrolü yap ve bundan sonra tek kaynak zincirini `SPECIFICATION.md -> TODO.md -> TEST_MATRIX.md` olarak kilitle. **Ref:** SPEC 924–942.
+- [x] **T0001** — `SPECIFICATION.md` sürümünü v1.2'ye çıkar; paylaşım görseli sayısını 30'dan **100'e** güncelle. **Ref:** SPEC 402–426, 487, 563, 655–666, 758–761, 904–923.
+- [x] **T0002** — 100 final paylaşım assetinin **AI ile üretilmeyeceğini**, Canva kataloğundan seçileceğini şartnameye işle. **Ref:** SPEC 77–91, 402–426, 904–923 + son kullanıcı kararı.
+- [x] **T0003** — `CANVA_VISUAL_CANDIDATES.md` içindeki 100 adayın final asset olmadığını; her birinin Free/Pro/AI-generated/yeniden dağıtım-export hakkı kontrolünden sonra sabitleneceğini şartnameye işle. **Ref:** SPEC 423–426, 811, 919–923.
+- [x] **T0004** — Görsel monetizasyon dağılımını kodlamadan önce sabitle: ücretsiz sürekli açık görsel sayısı, rewarded ile tek kullanımlık açılanlar ve PRO sınırsız görseller. Mevcut taban kural 3 ücretsiz + kalan kilitli modelidir; 100 görsele uyarlanmış nihai sayı yazılı karara bağlanmadan implementasyona geçme. **Ref:** SPEC 405–408, 465–468, 487, 655–666, 922.
+- [x] **T0005** — v1.2 şartname ile bu TODO arasında çift yönlü referans kontrolü yap ve bundan sonra tek kaynak zincirini `SPECIFICATION.md -> TODO.md -> TEST_MATRIX.md` olarak kilitle. **Ref:** SPEC 924–942.
 
 ---
 
