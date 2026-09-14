@@ -64,6 +64,31 @@ void main() {
     expect(suggestion(rationale).canEnterProductionDataset, isFalse);
   });
 
+  test('personal divine-answer language also fails closed', () {
+    const samples = <LocalizedReligiousText>[
+      LocalizedReligiousText(
+        tr: 'Allah sana bunu söyledi.',
+        en: 'Meaning connection only.',
+        ar: 'صلة معنى فقط.',
+      ),
+      LocalizedReligiousText(
+        tr: 'Yalnız anlam bağlantısı.',
+        en: 'This verse is your definite answer.',
+        ar: 'صلة معنى فقط.',
+      ),
+      LocalizedReligiousText(
+        tr: 'Yalnız anlam bağlantısı.',
+        en: 'Meaning connection only.',
+        ar: 'هذا جواب الله لك.',
+      ),
+    ];
+
+    for (final rationale in samples) {
+      expect(DhikrOutcomeClaimPolicy.allows(rationale), isFalse);
+      expect(suggestion(rationale).canEnterProductionDataset, isFalse);
+    }
+  });
+
   test('one unsafe locale blocks the whole three-language record', () {
     const rationale = LocalizedReligiousText(
       tr: 'Yalnız anlam bağlantısı.',
