@@ -40,7 +40,19 @@ jobs:
         run: flutter gen-l10n
 
       - name: Analyze
-        run: flutter analyze --fatal-infos --fatal-warnings
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter analyze --fatal-infos --fatal-warnings 2>&1 | tee flutter-analyze.log
+
+      - name: Upload Flutter analyzer diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-analyze-${{ github.run_id }}
+          path: flutter-analyze.log
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Test localization contract failure paths
         working-directory: scripts
