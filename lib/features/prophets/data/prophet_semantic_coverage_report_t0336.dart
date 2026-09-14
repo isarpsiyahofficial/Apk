@@ -9,6 +9,7 @@ import 'prophet_hadith_evidence_t0336_batch35.dart';
 import 'prophet_hadith_evidence_t0336_batch36.dart';
 import 'prophet_hadith_evidence_t0336_batch37.dart';
 import 'prophet_hadith_evidence_t0336_batch38.dart';
+import 'prophet_hadith_evidence_t0336_batch39.dart';
 import 'prophet_semantic_evidence_t0336.dart';
 import 'prophet_semantic_ownership_qa.dart';
 
@@ -91,6 +92,7 @@ ProphetSemanticCoverageReportT0336 buildCanonicalProphetCoverageReportT0336({
       ...prophetHadithEvidenceT0336Batch36,
       ...prophetHadithEvidenceT0336Batch37,
       ...prophetHadithEvidenceT0336Batch38,
+      ...prophetHadithEvidenceT0336Batch39,
     ],
   );
   final semanticAudit = const ProphetSemanticOwnershipQa().audit(
