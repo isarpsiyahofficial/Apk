@@ -813,7 +813,7 @@
 654. Refund/revoked purchase online olduğunda kontrol edilmelidir.
 655. Premium görsel kilitleri test edilir.
 656. 3 free görselin sürekli açık olması test edilir.
-657. 27 premium görselin gate davranışı test edilir.
+657. 97 Rewarded/PRO görselin gate davranışı test edilir.
 658. Instagram Story 9:16 export birebir test edilir.
 659. WhatsApp Status 9:16 export birebir test edilir.
 660. Instagram Post 4:5 export birebir test edilir.
@@ -822,7 +822,7 @@
 663. Arapça RTL paylaşım render’ı test edilir.
 664. Kaynak satırının exportta silinemediği test edilir.
 665. Rewarded ile açılan tasarımın yalnız tanımlanan kullanım hakkını verdiği test edilir.
-666. Pro kullanıcının 30 görselde hiçbir reklam akışına düşmediği test edilir.
+666. Pro kullanıcının 100 görselde hiçbir reklam akışına düşmediği test edilir.
 
 ---
 
@@ -1159,9 +1159,9 @@ Uygulamanın ana üstünlüğü **özellik sayısı değil; doğruluk + kaynak �
 ## SONRAKİ PLANLI ADIMLAR
 
 1. **100 Canva paylaşım görselini tek tek lisans/provenance/export hakkıyla doğrulayıp final asset havuzunu sabitlemek.**
-2. Şartnameyi görsel seçimlerinden sonra v1.2 olarak güncellemek.
-3. Bu şartnameden hiçbir maddeyi atlamadan kronolojik `TODO.md` üretmek.
-4. Daha sonra uygulama geliştirmesine TODO sırasıyla başlamak.
+2. v1.2 master şartnameyle `TODO.md` ve `TEST_MATRIX.md` arasındaki açık release kapılarını kronolojik olarak kapatmak.
+3. Her tamamlanan görevde gerçek davranış, failure-path, localization/RTL ve responsive kanıtını ilgili TODO/Test Matrix kaydına bağlamak.
+4. SPEC + TODO + TEST_MATRIX üzerinde kırmızı/açık release engeli kalmadan uygulamayı final kabul etmemek.
 
 
 ---
