@@ -101,16 +101,14 @@ final class ForbiddenReligiousClaimAuditT0334 {
         for (var index = 0; index < lines.length; index += 1) {
           final line = lines[index];
           final normalizedLine = _normalize(line);
-          for (final fragment in _blockedFragments) {
-            if (normalizedLine.contains(fragment)) {
-              findings.add(
-                ForbiddenReligiousClaimFinding(
-                  path: normalizedPath,
-                  line: index + 1,
-                  matchedFragment: fragment,
-                ),
-              );
-            }
+          for (final fragment in _maximalMatchedFragments(normalizedLine)) {
+            findings.add(
+              ForbiddenReligiousClaimFinding(
+                path: normalizedPath,
+                line: index + 1,
+                matchedFragment: fragment,
+              ),
+            );
           }
         }
       }
@@ -136,6 +134,29 @@ final class ForbiddenReligiousClaimAuditT0334 {
         )
         .join(', ');
     throw StateError('T0334 prohibited religious claim(s) found: $detail');
+  }
+
+  /// Returns every distinct prohibited claim on a line while suppressing only
+  /// shorter aliases that are fully contained by a longer matched fragment.
+  ///
+  /// Example: `kesin para getirir` also contains `para getirir`; reporting both
+  /// would double-count one claim. A separate `şifa garantisi` on the same line
+  /// remains an independent finding and is not suppressed.
+  static List<String> _maximalMatchedFragments(String normalizedLine) {
+    final matches = _blockedFragments
+        .where(normalizedLine.contains)
+        .toSet()
+        .toList(growable: false);
+
+    return matches
+        .where(
+          (fragment) => !matches.any(
+            (other) => other != fragment &&
+                other.length > fragment.length &&
+                other.contains(fragment),
+          ),
+        )
+        .toList(growable: false);
   }
 
   static String _normalize(String value) {
