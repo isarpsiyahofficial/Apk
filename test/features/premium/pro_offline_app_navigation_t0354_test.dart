@@ -5,6 +5,7 @@ import 'package:islami_hayat/core/network/internet_reachability.dart';
 import 'package:islami_hayat/features/dhikr/presentation/dhikr_hub_page.dart';
 import 'package:islami_hayat/features/premium/domain/entitlement_state_machine.dart';
 import 'package:islami_hayat/features/profile/presentation/profile_page.dart';
+import 'package:islami_hayat/features/prophets/presentation/revelation_journey_page.dart';
 import 'package:islami_hayat/features/quran/presentation/quran_hub_page.dart';
 import 'package:islami_hayat/features/shared/presentation/discover_page.dart';
 import 'package:islami_hayat/features/today/presentation/today_page.dart';
@@ -41,7 +42,7 @@ void main() {
     _LocaleCaseT0354(Locale('ar'), TextDirection.rtl),
   ]) {
     testWidgets(
-      'T0354 cached PRO ${localeCase.locale.languageCode} keeps all five core tabs usable offline without reachability requests',
+      'T0354 cached PRO ${localeCase.locale.languageCode} keeps core and nested prophet surfaces usable offline without reachability requests',
       (tester) async {
         final client = _OfflineProbeClientT0354();
         final verifier = InternetReachabilityVerifier(
@@ -88,6 +89,31 @@ void main() {
             reason: 'cached PRO navigation must never probe the network',
           );
           expect(tester.takeException(), isNull);
+
+          if (destination.$1 == 'discover') {
+            await tester.tap(
+              find.byKey(const ValueKey('discover-revelation-journey')),
+            );
+            await _pumpNavigationFrameT0354(tester);
+
+            expect(
+              find.byType(RevelationJourneyPage),
+              findsOneWidget,
+              reason: 'nested prophet core surface must remain reachable for cached PRO offline',
+            );
+            expect(
+              client.calls,
+              0,
+              reason: 'nested cached PRO content must never probe the network',
+            );
+            expect(tester.takeException(), isNull);
+
+            Navigator.of(
+              tester.element(find.byType(RevelationJourneyPage)),
+            ).pop();
+            await _pumpNavigationFrameT0354(tester);
+            expect(find.byType(DiscoverPage), findsOneWidget);
+          }
         }
       },
     );
