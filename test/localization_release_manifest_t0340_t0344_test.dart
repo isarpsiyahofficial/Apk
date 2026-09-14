@@ -104,6 +104,39 @@ void main() {
     );
   });
 
+  test('same proof ID cannot verify multiple localization cells', () {
+    final targets = LocalizationReleaseManifestT0340.requiredCells
+        .where((cell) => cell.locale == LocalizationLocaleT0340.tr)
+        .take(2)
+        .toList();
+    final targetKeys = targets.map((cell) => cell.key).toSet();
+    final unresolved = LocalizationReleaseManifestT0340.requiredCells
+        .where((cell) => !targetKeys.contains(cell.key))
+        .map(
+          (cell) => LocalizationUnresolvedEvidenceT0340(
+            cell: cell,
+            reason: 'Pending.',
+          ),
+        );
+
+    expect(
+      () => LocalizationReleaseManifestT0340.validate(
+        verified: [
+          LocalizationVerifiedEvidenceT0340(
+            cell: targets[0],
+            proofId: 'shared-proof::tr',
+          ),
+          LocalizationVerifiedEvidenceT0340(
+            cell: targets[1],
+            proofId: 'shared-proof::tr',
+          ),
+        ],
+        unresolved: unresolved,
+      ),
+      throwsStateError,
+    );
+  });
+
   test('silent missing cell fails closed', () {
     final unresolved = LocalizationReleaseManifestT0340.requiredCells
         .skip(1)
