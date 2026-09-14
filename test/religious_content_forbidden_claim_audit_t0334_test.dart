@@ -58,7 +58,7 @@ void main() {
     addTearDown(() => root.deleteSync(recursive: true));
 
     final nested = Directory('${root.path}/data')..createSync(recursive: true);
-    final unsafeFile = File('${nested.path}/unsafe.dart')
+    File('${nested.path}/unsafe.dart')
       ..writeAsStringSync("const claim = 'Bu zikir kesin para getirir.';\n");
 
     final findings = ForbiddenReligiousClaimAuditT0334.auditDirectories(
