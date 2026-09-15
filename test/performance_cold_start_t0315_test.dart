@@ -52,8 +52,15 @@ void main() {
     );
     expect(
       script,
-      contains("START_OUTPUT=\"\$(adb shell am start -W -S -n \"\$ACTIVITY\""),
-      reason: 'Timing must come from an ActivityManager wait launch.',
+      contains("START_OUTPUT=\"\$(adb shell am start -W -n \"\$ACTIVITY\""),
+      reason:
+          'Timing must come from ActivityManager -W after the explicit force-stop/process-absence proof.',
+    );
+    expect(
+      script,
+      isNot(contains('am start -W -S -n')),
+      reason:
+          'Do not double-force-stop with -S; Android 35 can return before the replacement process is observable.',
     );
     expect(
       script,
@@ -96,9 +103,6 @@ void main() {
     final releaseBuild = workflow.indexOf('flutter build apk --release');
     final namedGate = workflow.indexOf('scripts/android_api35_release_gate.sh');
 
-    // Order must be measured from the actual run_gate invocations, not helper
-    // function bodies. Helper definitions can mention the same script names
-    // before execution starts and would make an indexOf-based contract lie.
     final functionalSmoke = gate.indexOf(
       "run_gate T0314 'functional app launch smoke'",
     );
