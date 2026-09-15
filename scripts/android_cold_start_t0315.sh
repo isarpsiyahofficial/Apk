@@ -36,16 +36,22 @@ fi
 : > "$SAMPLES_FILE"
 
 # The performance gate measures the final release/AOT APK. Before every sample
-# the package is force-stopped and process absence is verified. Android 35 can
-# report LaunchState: UNKNOWN (or UNKNOWN with a numeric suffix such as
-# "UNKNOWN (0)") for an am start -W launch even when the package had no process
-# before launch. Normalize only the optional suffix and accept UNKNOWN solely
-# with that explicit process-lifecycle proof. HOT/WARM remains a hard failure.
+# the package is force-stopped and process absence is verified. Do not also pass
+# `am start -S`: -S performs another force-stop inside ActivityManager and on
+# Android 35 emulator builds can return from `-W` before the newly started app
+# process is observable. The explicit force-stop + pid absence proof below is
+# the cold-state authority and avoids that second stop/start race.
 #
-# Android platform-tools can also emit WaitTime without TotalTime. Prefer
-# TotalTime when present; otherwise use WaitTime, which is the ActivityManager
-# wait duration returned by the same -W invocation. The <=3s threshold and
-# three-sample median remain unchanged.
+# Android 35 can report LaunchState: UNKNOWN (or UNKNOWN with a numeric suffix
+# such as "UNKNOWN (0)") for an am start -W launch even when the package had no
+# process before launch. Normalize only the optional suffix and accept UNKNOWN
+# solely with that explicit process-lifecycle proof. HOT/WARM remains a hard
+# failure.
+#
+# Platform-tools can also emit WaitTime without TotalTime. Prefer TotalTime when
+# present; otherwise use WaitTime, which is the ActivityManager wait duration
+# returned by the same -W invocation. The <=3s threshold and three-sample median
+# remain unchanged.
 sample=1
 while [ "$sample" -le "$SAMPLE_COUNT" ]; do
   adb shell am force-stop "$PACKAGE"
@@ -57,7 +63,7 @@ while [ "$sample" -le "$SAMPLE_COUNT" ]; do
     exit 1
   fi
 
-  START_OUTPUT="$(adb shell am start -W -S -n "$ACTIVITY" 2>&1 | tr -d '\r')"
+  START_OUTPUT="$(adb shell am start -W -n "$ACTIVITY" 2>&1 | tr -d '\r')"
   printf '%s\n' "$START_OUTPUT"
 
   if ! printf '%s\n' "$START_OUTPUT" | grep -Fq 'Status: ok'; then
