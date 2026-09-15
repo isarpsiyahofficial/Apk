@@ -1,0 +1,77 @@
+name: Materialize Pinned Quran Assets
+
+on:
+  push:
+    branches:
+      - agent/islamic-life-implementation
+    paths:
+      - '.github/workflows/materialize-quran-assets.yml'
+      - 'scripts/fetch_quranenc_meals.py'
+      - 'scripts/prepare_quranenc_meal_assets.py'
+      - 'scripts/fetch_tanzil_uthmani.py'
+      - 'scripts/prepare_quran_asset.py'
+      - 'assets/quran/source/quran-uthmani.manifest.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-quran-assets-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    if: github.ref == 'refs/heads/agent/islamic-life-implementation'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout implementation branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/islamic-life-implementation
+          fetch-depth: 0
+
+      - name: Prepare pinned Tanzil canonical source
+        run: python3 scripts/prepare_quran_asset.py
+
+      - name: Fetch pinned QuranEnc TR/EN datasets
+        working-directory: scripts
+        run: python3 fetch_quranenc_meals.py --output-dir ../build/quranenc-meals --locale all
+
+      - name: Materialize verified QuranEnc Flutter assets
+        run: >-
+          python3 scripts/prepare_quranenc_meal_assets.py
+          --input-dir build/quranenc-meals
+          --output-dir assets/quran/meals
+
+      - name: Verify exact pinned hashes before commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' \
+            'bf4f57b968d03f4131c070b1e285da9be0e0a108a21c910e872801ca273312c8' \
+            'assets/quran/source/quran-uthmani.txt' | sha256sum -c -
+          printf '%s  %s\n' \
+            'a0c001b1e690cc022351d55b9951a7410fde4a6266638766c553fa91f401b1b7' \
+            'assets/quran/meals/turkish_rwwad.json' | sha256sum -c -
+          printf '%s  %s\n' \
+            '24c81ccfa5818e417b96f3b457955d34308a95d006a65c894ac69eaba580a3c0' \
+            'assets/quran/meals/english_rwwad.json' | sha256sum -c -
+
+      - name: Commit only verified source assets when changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add \
+            assets/quran/source/quran-uthmani.txt \
+            assets/quran/meals/turkish_rwwad.json \
+            assets/quran/meals/english_rwwad.json
+          if git diff --cached --quiet; then
+            echo 'Pinned Quran assets already materialized; no commit needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Materialize verified Quran source and meal assets'
+          git push origin HEAD:agent/islamic-life-implementation
