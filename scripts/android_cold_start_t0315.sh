@@ -27,7 +27,9 @@ fi
 # stop/start race on Android 35. Some Android 35 emulator builds also return
 # from `am start -W` before pidof observes the newly spawned process. That is
 # not treated as success: process visibility is polled for a bounded 5 seconds
-# and the gate still fails closed if the app never becomes alive.
+# and the gate still fails closed if the app never becomes alive. Logcat is
+# cleared immediately before each measured launch so a failure records only
+# launch-local crash/process evidence instead of stale output from prior gates.
 sample=1
 while [ "$sample" -le "$SAMPLE_COUNT" ]; do
   adb shell am force-stop "$PACKAGE"
@@ -39,6 +41,7 @@ while [ "$sample" -le "$SAMPLE_COUNT" ]; do
     exit 1
   fi
 
+  adb logcat -c >/dev/null 2>&1 || true
   START_OUTPUT="$(adb shell am start -W -n "$ACTIVITY" 2>&1 | tr -d '\r')"
   printf '%s\n' "$START_OUTPUT"
   if ! printf '%s\n' "$START_OUTPUT" | grep -Fq 'Status: ok'; then echo "T0315 cold-start gate: sample $sample did not report Status: ok" >&2; exit 1; fi
@@ -63,6 +66,8 @@ while [ "$sample" -le "$SAMPLE_COUNT" ]; do
   if [ -z "$POST_LAUNCH_PID" ]; then
     echo "T0315 cold-start gate: sample $sample did not create an app process within 5 seconds" >&2
     adb shell dumpsys activity activities 2>/dev/null | grep -E -m 3 "${PACKAGE}|topResumedActivity|mResumedActivity" >&2 || true
+    echo 'T0315 launch-local logcat diagnostics:' >&2
+    adb logcat -d -v brief 2>/dev/null | grep -E -i -m 120 "${PACKAGE}|AndroidRuntime|FATAL EXCEPTION|Process:|ActivityManager|am_crash|am_proc_died" >&2 || true
     exit 1
   fi
 
