@@ -1,7 +1,8 @@
 # İSLAMİ HAYAT — GLOBAL ÜRÜN VE GELİŞTİRME ANA ŞARTNAMESİ
 
-**Sürüm:** v1.1  
-**Tarih:** 26 Ağustos 2026  
+**Sürüm:** v1.2
+**Tarih:** 26 Ağustos 2026
+**v1.2 kontrollü birleşim:** 14 Eylül 2026
 **Durum:** Master şartname / geliştirme öncesi ana referans  
 **Repo:** `isarpsiyahofficial/Apk`
 
@@ -499,11 +500,11 @@
 
 402. Uygulamanın viral/görsel yönü güçlü olacaktır.
 403. Kullanıcı aynı ayet veya duayı farklı arka planlarda önizleyebilecektir.
-404. Toplam **30 final paylaşım görseli** olacaktır.
+404. Toplam **100 final Canva paylaşım görseli** olacaktır.
 405. 3 tasarım ücretsiz ve sınırsız olacaktır.
-406. Kalan 27 tasarım kilitli olacaktır.
+406. Kalan 97 tasarım Rewarded/PRO kilitli olacaktır.
 407. Kilitli tasarım kullanıcının isteğiyle rewarded reklam izlenerek o paylaşım için açılabilecektir.
-408. Premium kullanıcı 30 tasarımın tamamını sınırsız kullanacaktır.
+408. Premium kullanıcı 100 tasarımın tamamını sınırsız kullanacaktır.
 409. Paylaşım formatları: **Instagram Story 9:16 / WhatsApp Durum 9:16 / Instagram Post 4:5 / kare 1:1** olacaktır.
 410. Reels için kısa motion kart desteği sonraki sürümde tamamen cihaz üzerinde üretilebilir.
 411. Reels çıktısında telifli müzik gömülmeyecektir.
@@ -520,7 +521,7 @@
 422. Tasarım export öncesi okunabilirlik testi uygulanacaktır.
 423. Canva yalnız stil araştırma kaynağı olabilir.
 424. Canva Pro içeriklerinin yeniden kullanılabilir/export edilebilir uygulama arka planı olarak gömülmesi yazılı lisans olmadan yapılmayacaktır.
-425. Final 30 assetin her birinde kaynak, lisans, lisans tarihi, kanıt ve dosya hash tutulacaktır.
+425. Final 100 assetin her birinde kaynak, lisans, lisans tarihi, kanıt ve dosya hash tutulacaktır.
 426. En güvenli seçenek özgün veya açık yeniden dağıtım lisanslı asset kullanmaktır.
 
 ---
@@ -583,7 +584,7 @@
 475. Kullanıcı Premium’a geçtiğinde reklam consent tercihi artık ürün içi reklam göstermek için kullanılmayacaktır.
 476. Premium temel öneri **tek seferlik Lifetime PRO** olabilir.
 477. Android’de dijital Premium açılımı Google Play Billing non-consumable one-time product olarak yapılandırılabilir.
-478. Ürün ID baştan doğru seçilecektir.
+478. Ürün ID baştan doğru seçilecektir; Android Lifetime PRO için canonical Play Billing product ID **`islami_hayat_lifetime_pro`** olacaktır.
 479. Satın alma geri yükleme olacaktır.
 480. Pro satın alma internete bağlıyken Google Play’den doğrulanacaktır.
 481. Doğrulanmış Pro durumu cihazda güvenli biçimde cache edilecektir ki kullanıcı daha sonra offline kullanabilsin.
@@ -597,7 +598,7 @@
 ## U. PREMIUM DEĞER ÖNERİSİ
 
 486. Premium dini doğruluğu satın alma konusu yapmayacaktır.
-487. Premium şu değerleri verecektir: tüm reklamların kaldırılması, offline kullanım, 30 paylaşım tasarımının tamamı, rewarded reklamsız sınırsız paylaşım, gelişmiş tema seçenekleri, gelişmiş widget görünümleri, daha fazla görsel özelleştirme ve bazı kişisel kullanım kolaylıkları.
+487. Premium şu değerleri verecektir: tüm reklamların kaldırılması, offline kullanım, 100 paylaşım tasarımının tamamı, rewarded reklamsız sınırsız paylaşım, gelişmiş tema seçenekleri, gelişmiş widget görünümleri, daha fazla görsel özelleştirme ve bazı kişisel kullanım kolaylıkları.
 488. Kur’an’ın temel metni Premium’a kilitlenmeyecektir.
 489. Dini günlerde “doğru bilgi görmek için ödeme yap” modeli kullanılmayacaktır.
 490. Dua kaynak bilgisi Premium’a kilitlenmeyecektir.
@@ -698,7 +699,7 @@
 560. Ana ekran mümkün olduğunca 1–2 saniye içinde kullanılabilir hale gelmelidir.
 561. Büyük history verisi lazy load edilecektir.
 562. Arama indeksleri cihazda hazırlanacaktır.
-563. 30 görsel uygun sıkıştırmayla saklanacaktır.
+563. 100 Canva görseli uygun sıkıştırmayla saklanacaktır.
 564. Kutsal metin görsel sıkıştırmadan etkilenmeyecek; metin runtime render edilecektir.
 565. Ana uygulama boyutu kontrol altında tutulacaktır.
 566. Tam ses kütüphanesi V1 paketine gömülmeyecektir.
@@ -812,7 +813,7 @@
 654. Refund/revoked purchase online olduğunda kontrol edilmelidir.
 655. Premium görsel kilitleri test edilir.
 656. 3 free görselin sürekli açık olması test edilir.
-657. 27 premium görselin gate davranışı test edilir.
+657. 97 Rewarded/PRO görselin gate davranışı test edilir.
 658. Instagram Story 9:16 export birebir test edilir.
 659. WhatsApp Status 9:16 export birebir test edilir.
 660. Instagram Post 4:5 export birebir test edilir.
@@ -821,7 +822,7 @@
 663. Arapça RTL paylaşım render’ı test edilir.
 664. Kaynak satırının exportta silinemediği test edilir.
 665. Rewarded ile açılan tasarımın yalnız tanımlanan kullanım hakkını verdiği test edilir.
-666. Pro kullanıcının 30 görselde hiçbir reklam akışına düşmediği test edilir.
+666. Pro kullanıcının 100 görselde hiçbir reklam akışına düşmediği test edilir.
 
 ---
 
@@ -923,7 +924,7 @@
 755. Local notifications.
 756. Widget.
 757. Share renderer.
-758. 30 final lisanslı arka plan.
+758. 100 final lisanslı Canva arka planı.
 759. Story export.
 760. Post export.
 761. WhatsApp Status export.
@@ -1082,13 +1083,13 @@
 
 ---
 
-## AI. 30 PAYLAŞIM GÖRSELİ — SEÇİM ÖNCESİ KİLİTLİ TASARIM GÖREVİ
+## AI. 100 CANVA PAYLAŞIM GÖRSELİ — SEÇİM ÖNCESİ KİLİTLİ TASARIM GÖREVİ
 
-904. Bu şartname kaydedildiği anda 30 final paylaşım görseli **henüz seçilmiş kabul edilmeyecektir**.
+904. Bu şartname v1.2 olarak birleştirildiğinde 100 final Canva paylaşım görseli **henüz seçilmiş kabul edilmeyecektir**.
 905. Görsel seçimi geliştirmeden önce ayrı bir tasarım aşaması olarak yapılacaktır.
-906. 30 görsel tek tonda olmayacaktır.
+906. 100 görsel tek tonda olmayacaktır.
 907. Koyu petrol yeşili ağırlıklı tekrar eden AI mockup dili yasaktır.
-908. 30 görsel en az birkaç ayrı görsel aileye ayrılacaktır; örneğin sıcak minimal, doğal doku, gece/gökyüzü, mimari soyut, tipografik, soft geometrik, sakin ışık gibi.
+908. 100 görsel en az birkaç ayrı görsel aileye ayrılacaktır; örneğin sıcak minimal, doğal doku, gece/gökyüzü, mimari soyut, tipografik, soft geometrik, sakin ışık gibi.
 909. Tarot, astroloji, chakra, kristal, yoga veya dini kimliği bulanıklaştıran görseller kullanılmayacaktır.
 910. Cami/minare görselleri her tasarımda tekrar edilmeyecektir.
 911. Ayet ve dua için yeterli temiz metin alanı zorunludur.
@@ -1101,8 +1102,8 @@
 918. WhatsApp Status güvenli alanı test edilecektir.
 919. Her asset için uygulamada yeniden dağıtım/export hakkı kanıtlanmadan seçime alınmayacaktır.
 920. Her asset için source/license manifest tutulacaktır.
-921. 30 görsel kullanıcıyla ayrıca incelenip seçim tamamlandıktan sonra bu bölümde asset kimlikleri sabitlenecektir.
-922. 3 ücretsiz görsel ve 27 kilitli görsel tasarım kalitesi bakımından yapay biçimde “kötü/iyi” ayrımı taşımayacaktır; ücretsiz üçlü de uygulamayı iyi temsil etmelidir.
+921. 100 görsel lisans/provenance ve export-yeniden dağıtım uygunluğu tek tek doğrulandıktan sonra bu bölümde asset kimlikleri sabitlenecektir.
+922. 3 ücretsiz görsel ve 97 Rewarded/PRO görsel tasarım kalitesi bakımından yapay biçimde “kötü/iyi” ayrımı taşımayacaktır; ücretsiz üçlü de uygulamayı iyi temsil etmelidir.
 923. Final görseller seçilmeden paylaşım sistemi görsel anlamda final kabul edilmeyecektir.
 
 ---
@@ -1146,7 +1147,7 @@ Kullanıcı uygulamayı açtığında:
 - Dini günlerde internetteki yanlış bilgiler yerine kaynaklı bilgi görür.
 - Hz. Âdem’den Hz. Muhammed’e kadar Kur’an’da adı geçen peygamberlerin hayatlarını kaynak seviyeleriyle ve mümkün olan en güvenilir kronolojiyle keşfeder.
 - İslam’ın ortaya çıktığı dünyadan bugüne kadar ayrıntılı tarihini keşfeder.
-- Beğendiği ayeti veya duayı 30 estetik tasarımdan biriyle Story/Post/Status formatında paylaşır.
+- Beğendiği ayeti veya duayı 100 lisans-doğrulanmış Canva tasarımından biriyle Story/Post/Status formatında paylaşır.
 - Üç dilde doğal bir uygulama kullanır.
 - Soruları cihazından çıkmaz.
 - Premium ise reklam görmez ve internet olmadan kullanabilir.
@@ -1157,7 +1158,26 @@ Uygulamanın ana üstünlüğü **özellik sayısı değil; doğruluk + kaynak �
 
 ## SONRAKİ PLANLI ADIMLAR
 
-1. **30 paylaşım görselini seçmek ve lisans durumlarını netleştirmek.**
-2. Şartnameyi görsel seçimlerinden sonra v1.2 olarak güncellemek.
-3. Bu şartnameden hiçbir maddeyi atlamadan kronolojik `TODO.md` üretmek.
-4. Daha sonra uygulama geliştirmesine TODO sırasıyla başlamak.
+1. **100 Canva paylaşım görselini tek tek lisans/provenance/export hakkıyla doğrulayıp final asset havuzunu sabitlemek.**
+2. v1.2 master şartnameyle `TODO.md` ve `TEST_MATRIX.md` arasındaki açık release kapılarını kronolojik olarak kapatmak.
+3. Her tamamlanan görevde gerçek davranış, failure-path, localization/RTL ve responsive kanıtını ilgili TODO/Test Matrix kaydına bağlamak.
+4. SPEC + TODO + TEST_MATRIX üzerinde kırmızı/açık release engeli kalmadan uygulamayı final kabul etmemek.
+
+
+---
+
+## AK. v1.2 KONTROLLÜ BİRLEŞİM — BAĞLAYICI DELTA KARARLARI
+
+943. Bu `SPECIFICATION.md` dosyası v1.2 itibarıyla ürünün tek ana şartname kaynağıdır; yürütme zinciri **`SPECIFICATION.md -> TODO.md -> TEST_MATRIX.md`** şeklindedir. `SPECIFICATION_V1_2_DELTA.md` birleşimin provenance kaydı olarak korunur; çelişki halinde bu master dosyanın v1.2 hükümleri bağlayıcıdır.
+944. Paylaşım havuzu tam olarak **100 Canva görselidir: 3 FREE + 97 Rewarded/PRO**. FREE üçlü sürekli açıktır; diğer 97 görsel FREE kullanıcı için başarılı Rewarded tamamlanınca yalnız ilgili paylaşım hakkı kapsamında açılır, PRO için sınırsızdır. Rewarded failure/cancel ödül vermez.
+945. Final 100 görsel **AI ile üretilmeyecektir**; Canva kataloğundan seçilecektir. `CANVA_VISUAL_CANDIDATES.md` yalnız aday/araştırma listesidir ve final asset veya lisans kanıtı değildir.
+946. Her final Canva asseti sabitlenmeden önce Free/Pro içerik statüsü, AI-generated olmadığı, uygulamada export/yeniden dağıtım hakkı, kaynak kimliği, lisans/provenance kanıtı ve SHA-256 ayrı ayrı doğrulanacaktır. Canva Pro veya hakları belirsiz içerik final reusable asset havuzuna alınmayacaktır.
+947. Responsive tamamlanma kapısı telefon + tablet, portrait + landscape, farklı ekran oranları, sistem büyük font/text scale ve BlueStacks/emülatör benzeri Android ortamlarını kapsar. Taşma/kesilme, erişilemez kontrol, bozuk safe-area veya RTL yerleşim hatası varsa ilgili yüzey tamamlanmış sayılmaz.
+948. UI/UX **light-first**, sıcak/doğal ve editorial kalacaktır; dağınık veya jenerik AI-dashboard görünümü final engelidir.
+949. Android Lifetime PRO canonical Play Billing product ID **`islami_hayat_lifetime_pro`** olarak kilitlidir. Satın alma, pending/cancel/failure, restore, reinstall, cached entitlement, refund/revoke ve PRO sonrası sıfır reklam gerçek davranış testleri olmadan Billing/PRO tamamlanmış sayılmaz.
+950. Peygamber biyografileri için 25 peygamberin her birinde sekiz semantik boyut ayrı ayrı doğrulanacaktır: **kimlik/isim -> olay -> ayet -> hadis -> aile/soy -> dönem/kronoloji -> coğrafya -> tarih**. Bu 25x8 kapı kapanmadan Peygamberler/Vahiy Tarihi final değildir.
+951. Semantik QA başka peygambere ait olay veya biyografi cümlesinin yanlış sahipliğini fail-closed yakalayacaktır; örneğin Yusuf içeriğinin Muhammed biyografisine veya Muhammed'e ait Hicret/Medine olaylarının Yusuf biyografisine kayması FAIL olmalıdır. Bir peygamber adının başka bir peygamberin hayatında doğal bağlamda geçmesi tek başına hata değildir; özne, olay sahipliği ve bağlam doğrulanır.
+952. Soy ilişkileri ve tarihsel tarihler kronolojiyle çapraz kontrol edilir; güvenilir kaynak yoksa boşluk tahmin/popüler anlatı ile doldurulmaz ve `bilinmiyor/tartışmalı/yaklaşık` statüsü korunur.
+953. Bir özellik yalnız görünür olduğu için tamamlanmış sayılmaz. FREE/PRO, offline gate, reklam/rewarded, Billing, Story 9:16, WhatsApp Status 9:16, 4:5, 1:1, localization/RTL ve dini içerik ana yollarında gerçek happy-path ile failure/cancel/empty/offline/restore gibi uygulanabilir negatif yollar kanıtlanır.
+954. TR/EN/AR tam yüzey taraması ve Arabic RTL davranışı; telefon/tablet/orientation/büyük-font kapsamıyla birlikte release kapısıdır. Dil dosyasının bulunması tek başına PASS değildir.
+955. `Final` yalnız master şartname, TODO ve TEST_MATRIX arasında kırmızı/açık release engeli kalmadığında kullanılacaktır.

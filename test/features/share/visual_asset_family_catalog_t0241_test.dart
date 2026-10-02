@@ -1,0 +1,198 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:islami_hayat/core/content/source_manifest.dart';
+import 'package:islami_hayat/features/share/domain/visual_asset_catalog_t0240.dart';
+import 'package:islami_hayat/features/share/domain/visual_asset_family_catalog_t0241.dart';
+
+void main() {
+  String assetId(int index) =>
+      'Canva-${(index + 1).toString().padLeft(3, '0')}';
+
+  VisualAssetManifestEntry licensedEntry(int index) {
+    final padded = (index + 1).toString().padLeft(3, '0');
+    return VisualAssetManifestEntry(
+      id: assetId(index),
+      title: 'Verified visual ${index + 1}',
+      sourceUrl: Uri.parse('https://www.canva.com/design/DAF$padded'),
+      licenseId: 'CC0-1.0',
+      retrievedAt: DateTime.utc(2026, 9, 8),
+      sha256: (index + 1).toRadixString(16).padLeft(64, '0'),
+      attribution: 'Exact underlying source recorded',
+      licenseEvidenceUrl: Uri.parse(
+        'https://creativecommons.org/publicdomain/zero/1.0/',
+      ),
+      canRedistributeInApp: true,
+      canExportRepeatedly: true,
+      isAiGenerated: false,
+      isCanvaProContent: false,
+      hasIndependentReusableLicense: true,
+      localAssetPath: 'assets/share/backgrounds/canva-$padded.webp',
+    );
+  }
+
+  VisualAssetCatalogT0240 assets() {
+    return VisualAssetCatalogT0240.finalCatalog(
+      List.generate(100, licensedEntry),
+    );
+  }
+
+  List<VisualAssetFamilyTagT0241> validTags() {
+    const families = <VisualAssetFamilyT0241>[
+      VisualAssetFamilyT0241.warmMinimal,
+      VisualAssetFamilyT0241.naturalTexture,
+      VisualAssetFamilyT0241.nightSky,
+      VisualAssetFamilyT0241.abstractArchitecture,
+      VisualAssetFamilyT0241.typography,
+      VisualAssetFamilyT0241.softGeometric,
+      VisualAssetFamilyT0241.calmLight,
+      VisualAssetFamilyT0241.watercolorBotanical,
+    ];
+    return List.generate(
+      100,
+      (index) => VisualAssetFamilyTagT0241(
+        assetId: assetId(index),
+        family: families[index % families.length],
+      ),
+    );
+  }
+
+  List<VisualAssetFamilyTagT0241> distribution({
+    required int warmMinimal,
+    required int naturalTexture,
+  }) {
+    return List.generate(100, (index) {
+      final family = index < warmMinimal
+          ? VisualAssetFamilyT0241.warmMinimal
+          : index < warmMinimal + naturalTexture
+          ? VisualAssetFamilyT0241.naturalTexture
+          : VisualAssetFamilyT0241.calmLight;
+      return VisualAssetFamilyTagT0241(
+        assetId: assetId(index),
+        family: family,
+      );
+    });
+  }
+
+  test('T0241 tags every final asset exactly once across several families', () {
+    final catalog = VisualAssetFamilyCatalogT0241.forFinalAssets(
+      assets: assets(),
+      tags: validTags(),
+    );
+
+    expect(catalog.byAssetId, hasLength(100));
+    expect(
+      catalog.countByFamily.length,
+      greaterThanOrEqualTo(
+        VisualAssetFamilyCatalogT0241.minimumDistinctFamilyCount,
+      ),
+    );
+  });
+
+  test('missing family tag fails closed', () {
+    final tags = validTags()..removeLast();
+
+    expect(
+      () => VisualAssetFamilyCatalogT0241.forFinalAssets(
+        assets: assets(),
+        tags: tags,
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('unknown asset family tag fails closed', () {
+    final tags = validTags();
+    tags[99] = const VisualAssetFamilyTagT0241(
+      assetId: 'Canva-unknown',
+      family: VisualAssetFamilyT0241.calmLight,
+    );
+
+    expect(
+      () => VisualAssetFamilyCatalogT0241.forFinalAssets(
+        assets: assets(),
+        tags: tags,
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('duplicate family tag for one asset fails closed', () {
+    final tags = validTags()
+      ..add(
+        VisualAssetFamilyTagT0241(
+          assetId: assetId(0),
+          family: VisualAssetFamilyT0241.calmLight,
+        ),
+      );
+
+    expect(
+      () => VisualAssetFamilyCatalogT0241.forFinalAssets(
+        assets: assets(),
+        tags: tags,
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('single-tone and two-family catalogs cannot pass T0241', () {
+    final singleTone = List.generate(
+      100,
+      (index) => VisualAssetFamilyTagT0241(
+        assetId: assetId(index),
+        family: VisualAssetFamilyT0241.warmMinimal,
+      ),
+    );
+    final twoFamilies = List.generate(
+      100,
+      (index) => VisualAssetFamilyTagT0241(
+        assetId: assetId(index),
+        family: index.isEven
+            ? VisualAssetFamilyT0241.warmMinimal
+            : VisualAssetFamilyT0241.naturalTexture,
+      ),
+    );
+
+    expect(
+      () => VisualAssetFamilyCatalogT0241.forFinalAssets(
+        assets: assets(),
+        tags: singleTone,
+      ),
+      throwsStateError,
+    );
+    expect(
+      () => VisualAssetFamilyCatalogT0241.forFinalAssets(
+        assets: assets(),
+        tags: twoFamilies,
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('formally three-family but 98/1/1 catalog still fails closed', () {
+    expect(
+      () => VisualAssetFamilyCatalogT0241.forFinalAssets(
+        assets: assets(),
+        tags: distribution(warmMinimal: 98, naturalTexture: 1),
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('dominant-family boundary is deterministic at 60 percent', () {
+    final accepted = VisualAssetFamilyCatalogT0241.forFinalAssets(
+      assets: assets(),
+      tags: distribution(warmMinimal: 60, naturalTexture: 20),
+    );
+
+    expect(
+      accepted.countByFamily[VisualAssetFamilyT0241.warmMinimal],
+      60,
+    );
+    expect(
+      () => VisualAssetFamilyCatalogT0241.forFinalAssets(
+        assets: assets(),
+        tags: distribution(warmMinimal: 61, naturalTexture: 20),
+      ),
+      throwsStateError,
+    );
+  });
+}
