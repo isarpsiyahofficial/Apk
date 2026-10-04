@@ -32,7 +32,7 @@
 
 # FAZ 1 — HUKUK, KAYNAK, LİSANS VE İÇERİK YÖNETİŞİMİ
 
-- [ ] **T0020** — Kur’an Arapça ana metin kaynağını ve lisansını kesinleştir; exact sürüm ve attribution metnini kaydet. **Ref:** SPEC 148–151, 687, 797.
+- [x] **T0020** — Kur’an Arapça ana metin kaynağı **Tanzil Project Uthmani v1.1 (Şubat 2021), CC BY 3.0** olarak kesinleştirildi. Canonical asset manifesti exact source bytes SHA-256 `bf4f57b968d03f4131c070b1e285da9be0e0a108a21c910e872801ca273312c8`, 114 sure/6236 ayet ve attribution footer’ını kilitler. Attribution: **“Tanzil Quran Text — Copyright (C) 2007-2021 Tanzil Project — License: Creative Commons Attribution 3.0”**; uygulamada kaynak **Tanzil Project** açıkça gösterilecek ve `tanzil.net` bağlantısı korunacaktır. Metin değiştirilmeyecek; Tanzil lisansındaki verbatim-copy/copyright-notice şartları korunacaktır. **Ref:** SPEC 148–151, 687, 797; `assets/quran/source/quran-uthmani.manifest.json`; Tanzil Text License.
 - [ ] **T0021** — Türkçe meal kaynağını, sürümünü, lisansını ve gösterilecek attribution metnini kesinleştir. **Ref:** SPEC 168–171, 688, 798.
 - [ ] **T0022** — İngilizce meal kaynağını, sürümünü, lisansını ve gösterilecek attribution metnini kesinleştir. **Ref:** SPEC 168–171, 689, 798.
 - [ ] **T0023** — Arapça Kur’an metninin localization string değil kutsal kaynak metni olarak ayrı veri sınıfında tutulacağını veri sözleşmesine yaz. **Ref:** SPEC 103–121, 148–171.
