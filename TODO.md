@@ -18,7 +18,7 @@
 
 # FAZ 0 — ÜRÜN ANAYASASI, KAPSAM VE KIRMIZI ÇİZGİLER
 
-- [ ] **T0010** — Ürün adını ve mağaza görünen adını kesinleştir; geçici isim ile production package kimliğini ayır. **Ref:** SPEC 1–20, 684.
+- [x] **T0010** — Ürün adı ve mağaza görünen adı **İslami Hayat** olarak kilitlidir. `islami_hayat` yalnız Flutter/teknik proje adıdır; production Android package/application kimliği değildir ve production kimliği T0071 kapsamında ayrıca sabitlenecektir. **Ref:** SPEC 1–20, 684.
 - [x] **T0011** — Uygulamanın Kur’an merkezli İslami yaşam/bilgi ürünü olduğunu ürün dokümanında kilitle; genel spiritual/astroloji/tarot motivasyon çizgisini kapsam dışı bırak. **Ref:** SPEC 1–4, 12.
 - [x] **T0012** — “Fetva değildir”, “Allah’ın kişisel cevabı değildir”, “rastgele ayet kehaneti değildir” ürün sınırlarını yazılı metodolojiye dönüştür. **Ref:** SPEC 5–8, 192–227, 519.
 - [x] **T0013** — Mezhepsel ihtilaf, zayıf rivayet, gelenek, ebced/havas ve editoryal dua ayrım ilkelerini kilitle. **Ref:** SPEC 9–17, 228–251, 287–303.
