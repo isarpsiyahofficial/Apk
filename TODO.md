@@ -19,12 +19,12 @@
 # FAZ 0 — ÜRÜN ANAYASASI, KAPSAM VE KIRMIZI ÇİZGİLER
 
 - [ ] **T0010** — Ürün adını ve mağaza görünen adını kesinleştir; geçici isim ile production package kimliğini ayır. **Ref:** SPEC 1–20, 684.
-- [ ] **T0011** — Uygulamanın Kur’an merkezli İslami yaşam/bilgi ürünü olduğunu ürün dokümanında kilitle; genel spiritual/astroloji/tarot motivasyon çizgisini kapsam dışı bırak. **Ref:** SPEC 1–4, 12.
-- [ ] **T0012** — “Fetva değildir”, “Allah’ın kişisel cevabı değildir”, “rastgele ayet kehaneti değildir” ürün sınırlarını yazılı metodolojiye dönüştür. **Ref:** SPEC 5–8, 192–227, 519.
-- [ ] **T0013** — Mezhepsel ihtilaf, zayıf rivayet, gelenek, ebced/havas ve editoryal dua ayrım ilkelerini kilitle. **Ref:** SPEC 9–17, 228–251, 287–303.
+- [x] **T0011** — Uygulamanın Kur’an merkezli İslami yaşam/bilgi ürünü olduğunu ürün dokümanında kilitle; genel spiritual/astroloji/tarot motivasyon çizgisini kapsam dışı bırak. **Ref:** SPEC 1–4, 12.
+- [x] **T0012** — “Fetva değildir”, “Allah’ın kişisel cevabı değildir”, “rastgele ayet kehaneti değildir” ürün sınırlarını yazılı metodolojiye dönüştür. **Ref:** SPEC 5–8, 192–227, 519.
+- [x] **T0013** — Mezhepsel ihtilaf, zayıf rivayet, gelenek, ebced/havas ve editoryal dua ayrım ilkelerini kilitle. **Ref:** SPEC 9–17, 228–251, 287–303.
 - [ ] **T0014** — V1 kapsam dışı listesini geliştirme koruması haline getir: namaz vakti, ezan, imsak/iftar hesaplama, canlı fetva, kullanıcı mesajlaşması/feed, AI chatbot, recitation AI, cami/helal bulucu, tılsım/vefk üretici yok. **Ref:** SPEC 21–35.
-- [ ] **T0015** — “Kesin para getirir / kesin şifa verir / kesin âşık eder / kişiyi bağlar” gibi sonuç vaatlerini yasak içerik sözlüğüne ekle. **Ref:** SPEC 34–35, 280–284, 299–303, 605, 803.
-- [ ] **T0016** — Final engelleyici kırmızı çizgilerin tamamını release gate olarak dokümante et. **Ref:** SPEC 797–819.
+- [x] **T0015** — “Kesin para getirir / kesin şifa verir / kesin âşık eder / kişiyi bağlar” gibi sonuç vaatlerini yasak içerik sözlüğüne ekle. **Ref:** SPEC 34–35, 280–284, 299–303, 605, 803.
+- [x] **T0016** — Final engelleyici kırmızı çizgilerin tamamını release gate olarak dokümante et. **Ref:** SPEC 797–819.
 
 **Faz 0 çıkış kriteri:** Ürün kapsamı ve yasakları yazılı, çelişkisiz, herkesin referans alacağı biçimde sabit.
 
