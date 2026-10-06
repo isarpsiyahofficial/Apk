@@ -61,10 +61,7 @@ wait_for_prefs() {
 # General share must open Android's real chooser and expose only a content:// URI.
 adb shell am force-stop "$PACKAGE"
 adb shell am start -n "$SMOKE_ACTIVITY" --es destination general --es format square11 >/tmp/t0251-general-start.txt
-sleep 2
-PREFS_TEXT="$(read_prefs)"
-printf '%s\n' "$PREFS_TEXT" | grep -F '>launched<'
-printf '%s\n' "$PREFS_TEXT" | grep -F '>general<'
+wait_for_prefs launched general >/dev/null
 
 # Hosted Android images can occasionally surface a transient launcher/Quickstep
 # ANR dialog over the chooser immediately after boot. Keep the real chooser test,
