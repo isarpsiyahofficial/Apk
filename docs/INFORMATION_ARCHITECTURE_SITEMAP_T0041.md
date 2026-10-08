@@ -53,6 +53,27 @@ Uygulama
     └── Kaynaklar ve Lisanslar [mevcut]
 ```
 
+## Global arama sonuç kategorileri — T0042 bilgi mimarisi sözleşmesi
+
+**Giriş ve kapsam:** Tek global arama girişi **Keşfet üst alanıdır**. Kur’an sekmesindeki ayet araması okuyucuya özel kalır; ikinci bir global arama servisi, yeni alt sekme veya ayrı içerik kopyası oluşturulmaz. Aşağıdaki sekiz kategori, sonuç gruplarının **sabit sırasıdır**; kullanıcı sorgusuna göre boş gruplar gizlenebilir fakat kategori kimlikleri karıştırılamaz. Bu bölüm yalnız ürün/IA kararıdır; canlı arama motoru veya indeks uygulandığı iddia edilmez.
+
+| Sıra | TR kategori (sabit) | İçerik kapsamı / sahip kayıt | Açılacak hedef | Yayın güvenlik kapısı |
+|---|---|---|---|---|
+| 1 | **Ayetler** | Canonical sure:ayet ve onaylı meal; sure/ayet kimliği korunur | Kur’an > ilgili ayet | Tanzil pinned metin ve QuranEnc meal bütünlüğü doğrulanmadan gösterme |
+| 2 | **Dualar** | Kaynaklı Kur’an/hadis duaları veya açıkça etiketlenmiş Genel Dua | Keşfet > Dualar > detay | Dua kimliği, kaynak ve TR/EN/AR review; editoryal metne hadis/ayet rozeti verme |
+| 3 | **Zikirler** | Rehber zikir kaydı; sayı ve sayı kaynağı ayrı | Zikir > rehber > detay/sayaç | Sünnet sayısını kişisel/preset/ebced sayısından ayır; doğrulanmamış sayı önerme |
+| 4 | **Esmâ** | Esmâü’l-Hüsnâ adı, anlamı ve dayanak bilgisi | Zikir > Esmâ > detay | Kaynak/rozet doğrulaması; ebced/havas geleneğini sahih sünnet gibi sunma |
+| 5 | **Peygamberler** | Kimlik sahibi 25 peygamber biyografisi ve bağlamlı olayları | Keşfet > Peygamberler > biyografi | Kimlik→olay→ayet→hadis→soy→kronoloji→coğrafya→tarih çapraz eşleşmesi; yanlış özne fail-closed |
+| 6 | **Tarih** | Kaynaklı dönem/olay kayıtları, kesinlik etiketiyle | Keşfet > İslam Tarihi > olay | Tarihsel provenance, ihtilaf ve yaklaşık/bilinmiyor statüsü korunur |
+| 7 | **Kişiler** | Tarihsel şahsiyet kayıtları (peygamber biyografisi kopyası değil) | Keşfet > İslam Tarihi > kişi | Kimlik/olay ve tarihsel kaynak eşleşmesi; tartışmalı aidiyeti kesinleştirme |
+| 8 | **Dini Günler** | Gün/gece kayıtları ve doğrulanmış tarih belirsizliği | Keşfet > Dini Günler > detay | Hadis derecesi, özel ibadet iddiası ve ülke/rasat kaynakları ayrı doğrulanır |
+
+**Sonuç ve hata sözleşmesi:** Sonuç başlığı + ayırt edici kaynak/kimlik + güven/inceleme etiketi, ilgili detay sayfasına bağlanmalıdır; başka kategorinin kaydına yönlendirme yasaktır. Doğrulanmamış, taslak, lisanssız veya bütünlüğü bozuk içerik arama sonucuna düşmez (**fail-closed**). Sıfır sonuçta uydurma öneri üretme; veri paketi bozuksa boş sonuç gibi gizleme, ayrı hata göster. Arama çalışmıyorsa sonuç varmış gibi placeholder sunma. Dini iddialarda sonuç sıralaması ücret/etkileşim puanına göre kaynak doğruluğunu bastıramaz.
+
+**Yerelleştirme ve QA:** TR/EN/AR kategori etiketleri ana dilde onaylanmalı, AR RTL'de kategori sırası/odak/geri yönü ve uzun metin davranışı gerçek UI testleriyle doğrulanmalıdır. Buradaki TR adlar localization key eklemez veya üç dilin hazır olduğu anlamına gelmez. Dar telefon, tablet, landscape, büyük font, offline FREE/PRO, empty/loading/error, source-integrity failure ve doğru detail navigation ayrı test edilmeden **global arama PASS değildir**.
+
+**Mevcut durum (HEAD `8d81dfd430c6b0d2904428cfd0344aa52ce5bb54`):** `DiscoverPage` yalnız başlık/alt başlık ve peygamber girişini render ediyor; global arama UI/index ve sekiz kategorili gerçek sonuç akışı **HEDEF**. T0042 yalnız sabit taksonomi/IA kararını tamamlar; T0050, uygulama kodu, TEST_MATRIX L01–L10 ve dinî kaynak release kapıları açık kalır.
+
 ## Çapraz bağlantı, görünürlük ve release sınırları
 
 1. **Bugün vitrin, kütüphane değil:** 10–15 ikon veya Keşfet modüllerinin kopyası yasak. Dört hızlı erişim sınırı sabittir. Bugün'den açılan hedef kendi sahip sekmesinde yaşar; aynı içeriğin ikinci bağımsız kopyası oluşturulmaz.
