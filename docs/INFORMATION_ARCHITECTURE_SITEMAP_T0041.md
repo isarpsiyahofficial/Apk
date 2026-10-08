@@ -95,6 +95,32 @@ Uygulama
 
 **Kod kanıtı:** `lib/features/today/presentation/today_page.dart` (`_Header`, `_DailyVerseBlock`, `_EditorialBlock`, `_QuickActions`, `_ContinueQuranBlock`); `lib/shell/app_shell.dart` (sekme ve guarded navigation). Bu bölüm kod değişikliği veya yeni exact-head davranış testi değildir.
 
+## Light-first tasarım token planı — T0044
+
+**Kapsam:** Bu bölüm mevcut `lib/core/theme/app_theme.dart` içindeki renk kararlarını adlandırır; Flutter theme, widget, route, storage, font asseti veya localization key'i değiştirmez. Bu bir **design-token/ürün sözleşmesidir**, cihaz QA veya her ekranda tamamlanmış görsel uygulama iddiası değildir. Kaynak: SPEC 77–102, 704–705, 815; exact-head `5e5f865fb97bbbcd6cd95fbdefcb90f8da4111f6`.
+
+| Semantik token | Mevcut `AppTheme.light()` karşılığı | HEX | Kullanım sınırı |
+|---|---|---|---|
+| `canvas.warmIvory` | `_ivory`, `scaffoldBackgroundColor` | `#F8F5EE` | Varsayılan ekran zemini; sıcak, açık, editorial; tam ekran koyu forest yerine. |
+| `surface.paper` | `_surface`, `ColorScheme.surface` | `#FFFDF8` | Okuma yüzeyi ve sınırlı içerik blokları; her paragrafı kart içine alma. |
+| `accent.forest` | `_forest`, `ColorScheme.primary` | `#183D32` | Seçili eylem, navigasyon odağı, az sayıdaki güçlü vurgu; büyük koyu panel yığınları yasak. |
+| `accent.sage` | `_sage`, `ColorScheme.secondary` | `#708A78` | Yardımcı ikon/indikator ve düşük yoğunluklu seçili arka plan; varsayılan küçük metin rengi değil. |
+| `detail.sand` | `_sand`, `dividerColor` | `#D8C8A8` | İnce divider/border; metin ve bilgi taşıyan tek gösterge değil. |
+| `text.ink` | `_ink`, `ColorScheme.onSurface` | `#20231F` | Başlık ve ana metin. |
+| `text.muted` | `_muted`, `bodyMedium` | `#666A63` | İkincil metin; gizli/disabled bilgiyi yalnız düşük kontrastla iletme. |
+| `feedback.error` | `ColorScheme.error` | `#B3261E` | Hata mesajı; yalnız renge değil açıklayıcı metne de dayanır. |
+| `detail.gold` | **Henüz production token yok** | **TBD** | Minimal altın yalnız doğrulanmış ince çizgi/ikon vurgusu; `_sand` otomatik gold sayılmaz. Yeni renk T0045+ kontrast incelemesi olmadan eklenmez. |
+
+**Gözden geçirilebilir kontrast hesabı (sRGB/WCAG relative luminance, mevcut HEX çiftleri):** forest `#183D32` / paper `#FFFDF8` **11.79:1**; ink `#20231F` / ivory `#F8F5EE` **14.59:1**; muted `#666A63` / paper **5.43:1**; error `#B3261E` / paper **6.43:1**. Buna karşılık sage `#708A78` / paper **3.69:1**, white `#FFFFFF` / sage **3.75:1**, sand `#D8C8A8` / paper **1.62:1**. Bu sayılar yalnız belirtilen düz renk çiftlerine aittir; composited alpha, opacity, durum, gerçek ekran veya erişilebilirlik PASS kanıtı değildir.
+
+**Kontrast koruması:** Normal metin için en az 4.5:1, büyük metin için en az 3:1 hedeflenir; anlam taşıyan UI bileşenlerinin grafik/sınır kontrastı ayrıca en az 3:1 olarak test edilir. Mevcut `ColorScheme.onSecondary = Colors.white` / sage çifti **3.75:1** olduğundan **normal boyutlu metinde kullanımı engellenmelidir**; bu plan sorunu giderilmiş saymaz. Sage ve sand tek başına kaynak güvenilirliği, seçili durum veya hata anlamı taşıyamaz. Kontrastı bozuk yüzey T0045+ düzeltme ve test kanıtı bekler; testi yeşil yapmak için eşiği düşürme.
+
+**Anti-dashboard tasarım kapısı:** Koyu petrol yeşili ekran zemini veya birden fazla yoğun koyu panel, 10–15 eşdeğer modül kartı, her öğeye 20–24 px aynı radius, dekoratif glow, yoğun gradient, cam efekti ve rastgele cami/minare görselleri varsayılan ürün dili olamaz. Bugün'de tek güçlü ayet odağı + sakin dikey editorial sıra; Kur’an'da sayfa/okuma hissi; Dua'da metin önceliği; Zikir'de dikkat dağıtmayan kontrol; Tarih'te gerçek timeline; Peygamberler'de dönem/bağlam geçişleri tercih edilir. Altın küçük dekoratif aksan olarak kalır, ücretli/dini doğruluk işareti değildir.
+
+**Dark mode sınırı:** `AppTheme.dark()` mevcut alternatif temadır; light-first marka varsayılanını değiştirmez, FREE kullanıcıdan saklanamaz. `light().copyWith(...)` yaklaşımında inherited navigation/input/text alt temalarının dark kontrastı ve durumları otomatik PASS kabul edilmez. T0045/T0046 ve gerçek widget/cihaz testlerinde light/dark, TR/EN/AR, AR RTL, 320–360 px, tablet/landscape/BlueStacks, 1.6x+ font, focus/disabled/error ve offline FREE/PRO ayrı incelenir. Renk token planı dinî içerik kaynak doğruluğu veya Billing/rewarded davranışını kanıtlamaz.
+
+**T0044 tamamlanma sınırı:** Yukarıdaki palet, semantik roller, kontrast riskleri ve yasak tasarım kalıpları **planlandı**. Uygulama genelinde tutarlılık, gold seçimi, kart/radius/spacing/elevation (T0045), Latin/Arapça/mushaf typography (T0046), 5 saniye anlaşılabilirlik (T0048), RTL wireframe (T0061) ve release matrisi **açıktır**.
+
 ## Çapraz bağlantı, görünürlük ve release sınırları
 
 1. **Bugün vitrin, kütüphane değil:** 10–15 ikon veya Keşfet modüllerinin kopyası yasak. Dört hızlı erişim sınırı sabittir. Bugün'den açılan hedef kendi sahip sekmesinde yaşar; aynı içeriğin ikinci bağımsız kopyası oluşturulmaz.
