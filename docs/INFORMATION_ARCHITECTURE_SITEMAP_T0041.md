@@ -74,6 +74,27 @@ Uygulama
 
 **Mevcut durum (HEAD `8d81dfd430c6b0d2904428cfd0344aa52ce5bb54`):** `DiscoverPage` yalnız başlık/alt başlık ve peygamber girişini render ediyor; global arama UI/index ve sekiz kategorili gerçek sonuç akışı **HEDEF**. T0042 yalnız sabit taksonomi/IA kararını tamamlar; T0050, uygulama kodu, TEST_MATRIX L01–L10 ve dinî kaynak release kapıları açık kalır.
 
+## Bugün ana ekran bilgi hiyerarşisi — T0043 IA sözleşmesi
+
+**Kapsam:** Bu bölüm varsayılan içerik önceliğini ve durum sınırlarını sabitler; yeni widget, route, kaynak kaydı veya çalışma zamanı testi değildir. **İlk açılış akışı:** sakin selamlama + gün bilgisi (başlık), ardından **1. Günün Ayeti → 2. Bugünün Duası → 3. Bugün İslam Tarihinde → 4. dört hızlı erişim → 5. koşullu Devam Et**. Altıncı ana modül, çoklu mini-kart panosu veya ikinci arama girişi eklenmez. Kullanıcının daha sonra yapabileceği kişiselleştirme, varsayılan sıralamayı değiştirmez.
+
+| Öncelik | Görünür içerik ve etkileşim sözleşmesi | Veri güvenliği / boş-hata yolu | Mevcut HEAD durumu |
+|---|---|---|---|
+| Başlık | Selamlama ve yerel gün bilgisi; tarih kesinliği iddiası yok | Dil/RTL ve büyük fontta okunabilir, görsel yükü düşük | **KISMİ:** selamlama/alt başlık var; gün bilgisinin gösterimi ayrıca doğrulanmalı |
+| 1 — Günün Ayeti | Doğrulanmış deterministik günlük ayet; Arapça metin, onaylı meal, sure:ayet ve kaynak; favori, detay ve paylaş eylemleri | Aynı yerel gün yeniden açıldığında aynı ayet; integrity/translation failure durumunda yanlış veya kısmi dinî metin gösterme, ayrı açıklanabilir hata durumu; share source-lock | **KISMİ:** daily verse, kaynak, favori, okuyucu bağlantısı var; paylaş ve loading/error ayrımı tamamlanmış değil |
+| 2 — Bugünün Duası | Uzunsa doğal kısa önizleme; **Tam Duayı Oku** doğrulanmış dua detayına gider | Kaynak/dua türü ve review eksikse sahih dua gibi sunma; yayınlanabilir kayıt yoksa uydurma dua üretme | **HEDEF:** şu an yalnız `contentPending` placeholder; gerçek dua/detail navigation yok |
+| 3 — Bugün İslam Tarihinde | Yalnız gün/ay eşleşmesi güvenilir kaynakla kanıtlı tarih olayı; detayda kaynak ve belirsizlik etiketi | Yaklaşık yıl veya tarihi bilinmeyen olayı kesin günün olayı olarak atama; o gün onaylı olay yoksa sahte olay doldurma | **HEDEF:** şu an yalnız `contentPending` placeholder |
+| 4 — Hızlı erişimler | Tam **dört** giriş: **Konu Ara → Dualar → Zikir → Keşfet**; her biri sahip sekme/alt ekrana gider | FREE offline geçişi `AppShell` guard ile korunur; başarısız route sessizce başarılı sayılmaz; PRO reklam teklifi almaz | **KISMİ:** dört etiket çiziliyor fakat `_QuickAction.onTap: () {}` olduğundan hedefe gitmiyor |
+| 5 — Devam Et | Yalnız geçerli kayıtlı Kur’an okuma konumu varsa, sure/ayetle devam et | Konum yoksa kart gizlenir; bozuk/veri okunamıyor durumda yanlış konuma götürme; yeni içerik geçişinde FREE guard | **KISMİ:** kayıtlı konum ve Kur’an sekmesi callback'i var; hatada kart gizleniyor, ayrı hata geri bildirimi henüz kanıtlanmadı |
+
+**İkincil öğrenim:** `DailyProphetLearningCard` mevcut günlük ayet/tarih bölgesinde isteğe bağlı öneridir; ana beş basamağın yerini alamaz, hızlı erişim sayısını artıramaz ve doğrulanmamış peygamber olayını öneremez. Tarihsel özne/olay aidiyeti ve sekiz boyutlu 25 peygamber QA kapısı ayrıca geçilmelidir.
+
+**Sunum sınırı:** Light-first editorial dikey akış, tek baskın ayet odağı, sakin boşluklar ve okunabilir satır genişliği; 10–15 özellik kutusu veya AI-dashboard paneli yok. 320–360px, 390–430px, 600–839px, 840–1199px, 1200+px, landscape 16:9/16:10, tablet 4:3, 1.6x+ yazı, TR/EN LTR ve AR RTL'de sıra, taşma, klavye inset, dokunma hedefleri ve odak sırası test edilmeden ekran PASS değildir. Dar ekranda ilk görünüm 5 saniyede amaç/ilk eylemi anlatmalıdır; bu kullanıcı/cihaz testi henüz yapılmadı.
+
+**Eylem ve durum test kapısı:** Her gerçek bağlantı için başarı, offline FREE engeli, PRO geçişi, boş veri, bozuk integrity, yükleniyor/hata, geri navigasyonu ve paylaşım kaynak kilidi ayrı doğrulanır. Placeholder görünmesi gerçek içerik PASS sayılmaz. T0043 yalnız **bilgi hiyerarşisi kararını** tamamlar; T0048 wireframe/5 saniye anlaşılırlık, günlük dua/tarih içeriği, paylaşım ve TEST_MATRIX UI/monetizasyon/dinî QA maddeleri açık kalır.
+
+**Kod kanıtı:** `lib/features/today/presentation/today_page.dart` (`_Header`, `_DailyVerseBlock`, `_EditorialBlock`, `_QuickActions`, `_ContinueQuranBlock`); `lib/shell/app_shell.dart` (sekme ve guarded navigation). Bu bölüm kod değişikliği veya yeni exact-head davranış testi değildir.
+
 ## Çapraz bağlantı, görünürlük ve release sınırları
 
 1. **Bugün vitrin, kütüphane değil:** 10–15 ikon veya Keşfet modüllerinin kopyası yasak. Dört hızlı erişim sınırı sabittir. Bugün'den açılan hedef kendi sahip sekmesinde yaşar; aynı içeriğin ikinci bağımsız kopyası oluşturulmaz.
