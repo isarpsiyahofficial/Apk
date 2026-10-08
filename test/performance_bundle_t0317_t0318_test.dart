@@ -14,6 +14,7 @@ void main() {
       title: 'Verified $padded',
       sourceUrl: Uri.parse('https://www.canva.com/design/DAF$padded'),
       licenseId: 'CC0-1.0',
+      version: 'test-fixture-v1',
       retrievedAt: DateTime.utc(2026, 9, 10),
       sha256: ordinal.toRadixString(16).padLeft(64, '0'),
       attribution: 'Exact source recorded',
