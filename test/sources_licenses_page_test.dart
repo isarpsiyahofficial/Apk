@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:islami_hayat/app.dart';
+import 'package:islami_hayat/features/profile/presentation/sources_licenses_page.dart';
+import 'package:islami_hayat/features/quran/data/verified_meal_sources.dart';
+import 'package:islami_hayat/l10n/app_localizations.dart';
 
 Future<void> _openSources(
   WidgetTester tester, {
@@ -76,6 +79,59 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining('CC BY 3.0'), findsOneWidget);
+  });
+
+  testWidgets('verified meal source exposes exact official source and license', (tester) async {
+    await _openSources(
+      tester,
+      locale: const Locale('tr'),
+      profileLabel: 'Ben',
+      sourcesLabel: 'Kaynaklar ve Lisanslar',
+    );
+    final sourceUrl = find.text(
+      'https://quranenc.com/tr/browse/turkish_rwwad',
+    );
+    await tester.scrollUntilVisible(
+      sourceUrl,
+      180,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(sourceUrl, findsOneWidget);
+  });
+
+  testWidgets('tampered meal provenance is hidden instead of attributed', (tester) async {
+    const tampered = VerifiedMealSource(
+      locale: 'tr',
+      translationKey: 'turkish_rwwad',
+      publisher: 'Unverified publisher',
+      version: '1.0.4',
+      canonicalSha256: 'a0c001b1e690cc022351d55b9951a7410fde4a6266638766c553fa91f401b1b7',
+      surahCount: 114,
+      ayahCount: 6236,
+    );
+    await tester.pumpWidget(
+      const MaterialApp(
+        locale: Locale('tr'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: SourcesLicensesPage(turkishMealSource: tampered),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final error = find.textContaining(
+      'Bu dini içerik bütünlük kontrolünü geçemedi',
+    );
+    await tester.scrollUntilVisible(
+      error,
+      180,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(error, findsOneWidget);
+    expect(find.text('Unverified publisher'), findsNothing);
+    expect(
+      find.text('https://quranenc.com/tr/browse/turkish_rwwad'),
+      findsNothing,
+    );
   });
 
   testWidgets('sources screen does not overflow on a narrow phone', (tester) async {

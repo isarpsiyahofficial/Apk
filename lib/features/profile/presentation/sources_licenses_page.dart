@@ -1,9 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:islami_hayat/core/content/source_manifest.dart';
 import 'package:islami_hayat/features/quran/data/verified_meal_sources.dart';
 import 'package:islami_hayat/l10n/app_localizations.dart';
 
+// Display-only metadata gate. This does not prove live license reachability or
+// grant any redistribution/export right; those remain separate release checks.
+SourceManifestEntry? _verifiedMealManifest(VerifiedMealSource source) {
+  final pinned = switch (source.locale) {
+    'tr' => VerifiedMealSources.turkish,
+    'en' => VerifiedMealSources.english,
+    _ => null,
+  };
+  if (pinned == null ||
+      source.translationKey != pinned.translationKey ||
+      source.publisher != pinned.publisher ||
+      source.version != pinned.version ||
+      source.canonicalSha256 != pinned.canonicalSha256 ||
+      source.surahCount != pinned.surahCount ||
+      source.ayahCount != pinned.ayahCount) {
+    return null;
+  }
+  final manifest = SourceManifestEntry(
+    id: source.translationKey,
+    title: source.publisher,
+    sourceUrl: Uri.https(
+      'quranenc.com',
+      '/${source.locale}/browse/${source.translationKey}',
+    ),
+    licenseId: 'QuranEnc Terms and Policies',
+    licenseEvidenceUrl: Uri.parse(
+      'https://quranenc.com/en/home/about/terms-and-conditions',
+    ),
+    retrievedAt: DateTime.utc(2026, 8, 27),
+    sha256: source.canonicalSha256,
+    attribution: '${source.publisher} — QuranEnc.com',
+    version: source.version,
+  );
+  return manifest.isComplete ? manifest : null;
+}
+
 class SourcesLicensesPage extends StatelessWidget {
-  const SourcesLicensesPage({super.key});
+  const SourcesLicensesPage({
+    super.key,
+    this.turkishMealSource = VerifiedMealSources.turkish,
+    this.englishMealSource = VerifiedMealSources.english,
+  });
+
+  final VerifiedMealSource turkishMealSource;
+  final VerifiedMealSource englishMealSource;
 
   @override
   Widget build(BuildContext context) {
@@ -44,12 +88,12 @@ class SourcesLicensesPage extends StatelessWidget {
                 const SizedBox(height: 18),
                 _MealSourceDetails(
                   title: l10n.mealTurkishTitle,
-                  source: VerifiedMealSources.turkish,
+                  source: turkishMealSource,
                 ),
                 const SizedBox(height: 16),
                 _MealSourceDetails(
                   title: l10n.mealEnglishTitle,
-                  source: VerifiedMealSources.english,
+                  source: englishMealSource,
                 ),
                 const SizedBox(height: 14),
                 const SelectableText('https://quranenc.com/'),
@@ -81,6 +125,10 @@ class _MealSourceDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final manifest = _verifiedMealManifest(source);
+    if (manifest == null) {
+      return Text(l10n.trustedContentErrorBody);
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -102,6 +150,16 @@ class _MealSourceDetails extends StatelessWidget {
           style: theme.textTheme.bodySmall?.copyWith(
             fontFamily: 'monospace',
           ),
+        ),
+        const SizedBox(height: 6),
+        SelectableText(
+          manifest.sourceUrl.toString(),
+          style: theme.textTheme.bodySmall,
+        ),
+        const SizedBox(height: 6),
+        SelectableText(
+          manifest.licenseEvidenceUrl!.toString(),
+          style: theme.textTheme.bodySmall,
         ),
       ],
     );
