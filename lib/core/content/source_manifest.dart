@@ -21,12 +21,25 @@ class SourceManifestEntry {
   final String? version;
   final Uri? licenseEvidenceUrl;
 
+  /// Structural provenance only: license reachability, asset bytes, and
+  /// intended redistribution/export rights still require separate review.
   bool get isComplete =>
       id.trim().isNotEmpty &&
       title.trim().isNotEmpty &&
+      _isHttpsUrl(sourceUrl) &&
+      (version?.trim().isNotEmpty ?? false) &&
       licenseId.trim().isNotEmpty &&
+      licenseEvidenceUrl != null &&
+      _isHttpsUrl(licenseEvidenceUrl!) &&
+      retrievedAt.millisecondsSinceEpoch > 0 &&
       attribution.trim().isNotEmpty &&
       _isSha256(sha256);
+
+  static bool _isHttpsUrl(Uri value) =>
+      value.scheme == 'https' &&
+      value.hasAuthority &&
+      value.host.isNotEmpty &&
+      value.userInfo.isEmpty;
 
   static bool _isSha256(String value) =>
       RegExp(r'^[a-fA-F0-9]{64}$').hasMatch(value);
