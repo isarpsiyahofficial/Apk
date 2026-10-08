@@ -34,6 +34,30 @@
 6. **Operasyon:** Pazar bazlı sorumlu, inceleme tarihi, kaynak URL/versiyon, yazılı izin veya hukuk görüşü, karar veren, store availability ayarı, final APK/AAB hash ve imzalı karar kaydı olmadan GREEN yok.
 7. **Fail-closed:** Belirsiz mevzuat, lisans, dinî içerik, locale, mağaza veya entitlement durumunda pazarı HOLD'a indir; mevcut çalışan route/storage/asset mimarisini bunun için değiştirme.
 
+## T0039 — Store hedef kitle ve çocuklara yönelmeme planı (2026-10-08)
+
+**Planlanan V1 hedef kitlesi:** Yetişkin kullanıcılar, **18 yaş ve üzeri**. Google Play Console `Target audience and content` için önerilen ilk seçim yalnız **`18 and over`** yaş grubudur. Bu bir **ürün/mağaza beyanı taslağıdır**: Play Console'da seçim yapıldığı, mağaza tarafından kabul edildiği, uygulamada yaş doğrulaması bulunduğu veya 18 yaş altının teknik olarak engellendiği iddia edilmez. Dinî içeriğin ailelerce kullanılabilmesi, tek başına uygulamanın çocuklara yöneldiği veya yönelmediği konusunda hukuki sonuç üretmez.
+
+**Ürün ve pazarlama sınırı:** V1 çocuk uygulaması, Kids Mode, çocuklara yönelik oyunlaştırma, çizgi film karakterli çocuk promosyonu, okul öncesi/çocuk öğrenim vaadi veya çocuklara hedefli reklam kampanyası olarak tasarlanmaz. TR/EN/AR mağaza açıklaması, ekran görüntüleri, reklam kreatifleri, uygulama içi görseller, kullanıcı yolculukları ve hedefleme kanalları bu niyetle tutarlı olmak zorundadır. `Everyone`/tüm yaşlara uygun içerik derecelendirmesi, **hedef kitle beyanıyla aynı şey değildir**; IARC içerik derecelendirmesi ayrıca doğru doldurulur.
+
+**Google Play Families kontrolü:** Play Console'da çocukları kapsayan herhangi bir yaş grubu seçilirse Families Policy gereklilikleri ayrıca tetiklenebilir; yalnız bir yaş kutusunu yetişkin seçmek, çocuklara fiilen yönelen ürün/mağaza kreatiflerini muaf tutmaz. 13–17 yaş grubunu veya Kids Mode'u eklemek ayrı ürün ve hukuk kararıdır; mevcut V1 için sessizce eklenmez. Çocuklara veya yaşı bilinmeyen kişilere reklam/SDK sunumu gerekecek bir karma kitle modeli değerlendirilirse, çocuklara uygun SDK, veri tanımlayıcıları, yaş doğrulama/neutral age screen, rıza, reklam formatı ve ülke hukuku **önce** yeniden denetlenir; sonuç alınmadan rollout **HOLD**.
+
+**ABD COPPA sınırı:** FTC çocuklara yönelme değerlendirmesinde konu, görseller, karakterler, etkinlikler, reklamlar, pazarlama ve fiilî hedef kitleyi birlikte değerlendirir. Genel kitle uygulaması da 13 yaş altı kullanıcının kişisel verisinin toplandığına dair **actual knowledge** elde ederse yükümlülük doğabilir. Yalnız kullanım koşuluna “çocuklar için değildir” yazmak veya Play Console'da `18+` seçmek COPPA muafiyeti sağlamaz. `Mixed audience` genel kitleyle eş anlamlı değildir. Hukuk/SDK değerlendirmesi yapılmadan otomatik yaş kapısı veya kişiselleştirilmiş reklam çözümü varsayılmaz.
+
+**Release öncesi zorunlu ve hâlen AÇIK kanıtlar:**
+1. Gerçek TR/EN/AR store listing, görseller, ASO/ads kampanyaları ve ürün içi içerik için çocuklara yönelme incelemesi; inceleyen ve tarih kaydı.
+2. Play Console `Target audience and content`, `Contains ads`, IARC ve Data safety beyanlarının final APK/AAB, kullanılan SDK sürümleri ve reklam/billing network akışlarıyla birebir eşleşmesi.
+3. Türkiye, EEA, UK, ABD/California ve hedeflenen diğer ülkelerde yaş/çocuk-verisi/tüketici kuralları için yerel değerlendirme; hiçbir pazar bu bölümle GREEN olmaz.
+4. Gelecekte çocuk/ergen hedefleme, Kids Mode, çocuk odaklı kreatif, yaş bilgisi toplama veya üçüncü taraf SDK değişikliği olursa yeniden Families/COPPA/privacy review ve yeni release kararı.
+5. Store sahibi/yasal sorumlu tarafından tarihli onay ve Play Console ekran kanıtı; bu kayıt olmadan T0400/T0410 release gate kapatılamaz.
+
+**Resmî kaynaklar (8 Ekim 2026'da incelendi; hukuk görüşü değildir):**
+- Google Play Console, Target audience and content: https://support.google.com/googleplay/android-developer/answer/9867159?hl=en
+- Google Play Developer Program Policy / Families Policy Requirements: https://support.google.com/googleplay/android-developer/answer/18258653?hl=en
+- U.S. FTC, Complying with COPPA — Frequently Asked Questions: https://www.ftc.gov/business-guidance/resources/complying-coppa-frequently-asked-questions
+
+**Kapanış sınırı:** T0039 yalnız **hedef yaş ve çocuk politikası planını** tamamlar. Gerçek store declaration, Families/COPPA uyumu, ülke izni, reklamlarda çocuk veri akışı ve mağaza yayını bu belgeyle PASS olmaz.
+
 ## Resmî başlangıç kaynakları (uyum/izin belgesi değil)
 
 - Avrupa Komisyonu, GDPR kapsamı: https://commission.europa.eu/law/law-topic/data-protection/information-business-and-organisations/application-gdpr_en
