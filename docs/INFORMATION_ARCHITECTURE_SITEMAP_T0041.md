@@ -143,6 +143,40 @@ Uygulama
 
 **T0045 kabul sınırı:** Kart/radius/spacing/typography/icon/divider/elevation **kuralları yazıldı** ve mevcut tema ile eşlendi. Bu doküman üretim UI'sının kurallara tamamen uyduğunu, 100 Canva assetinin lisanslı olduğunu, üç dilde native review'u, gerçek cihazı veya TEST_MATRIX satırlarının PASS olduğunu **kanıtlamaz**. T0046 fontlar, T0048–T0062 wireframe/RTL ve T0074 tema kodu, erişilebilirlik düzeltmeleri ve cihaz QA açık kalır.
 
+
+## Latin UI, Arabic UI ve Kur’an metni typography scale — T0046
+
+**Kapsam:** SPEC 98–100 ve 549–558 için üç bağımsız tipografi sistemi tasarım sözleşmesidir. Bu bölüm **font binary, Flutter theme, pubspec, route, asset veya localization key değiştirmez**. Aday fontlar henüz APK'ya eklenmedi; hiçbir font lisansı/mushaf uyumu üretim için onaylanmış değildir.
+
+### Mevcut kod ve hedef roller
+
+- Mevcut lib/core/theme/app_theme.dart TextTheme fontFamily belirtmez. Latin rollerinin mevcut değerleri: displaySmall 36sp/1.10/600; headlineMedium 27sp/1.15/600; titleLarge 20sp/1.25/600; bodyLarge 17sp/1.55/400; bodyMedium 15sp/1.50/400; labelLarge 14sp/1.20/600.
+- pubspec.yaml içinde flutter/fonts bildirimi yoktur. Özel Latin, Arabic UI ve mushaf fontunun paketlendiği iddia edilemez.
+- lib/features/quran/presentation/quran_reader_page.dart ayeti Directionality.rtl + SelectableText ile gösterir. Arapça stil headlineSmall (yoksa 24sp) × bağımsız kullanıcı ölçeği, height 1.9; mevcut aralık **0.8–1.6**, adım **0.1** ve tercih saklanır. Font ailesi sabitlenmemiştir.
+
+| Rol | Latin UI TR/EN: sp / line-height / weight | Arabic UI AR: önerilen sp / line-height / weight | Kur’an ayrı rolü |
+|---|---|---|---|
+| Sayfa başlığı | 36 / 1.10 / 600 | 34 / 1.45 / 600 | Mushaf ayeti sayfa başlığı değildir. |
+| Bölüm başlığı | 27 / 1.15 / 600 | 28 / 1.50 / 600 | Sure başlığı UI; ayet fontu ayrı. |
+| İçerik başlığı | 20 / 1.25 / 600 | 22 / 1.50 / 600 | Ayet referansı UI etiketi olarak kalır. |
+| Uzun okuma | 17 / 1.55 / 400 | 18 / 1.75 / 400 | Ayet başlangıç hedefi 24sp / 1.9 / 400; gerçek font ve baseline test edilmeden production onayı yok. |
+| İkincil metin | 15 / 1.50 / 400 | 16 / 1.70 / 400 | Meal/tefsir UI/meal track; kutsal Arapça asıl yerine geçmez. |
+| Kontrol/etiket | 14 / 1.20 / 600 | 15 / 1.55 / 600 | Ayet numarası, kaynak ve eylem etiketleri UI track. |
+
+**Aday aileler:** Latin için Noto Sans; Arabic UI için Noto Naskh Arabic UI; Kur’an için Noto Naskh Arabic veya ayrı mushaf fontu **yalnız aday**. Google Fonts genel açık kaynak lisans açıklaması: https://developers.google.com/fonts ; Arabic UI metadata (license: OFL): https://github.com/google/fonts/blob/main/ofl/notonaskharabicui/METADATA.pb . Açık lisans beyanı tek başına belirli indirilen dosyanın sürümünü, yeniden dağıtım şartlarının yerine getirildiğini veya Uthmani mushaf işaretlerinin doğru çizildiğini kanıtlamaz. Her final font için source URL, tam binary sürümü, SHA-256, lisans dosyası, varsa Reserved Font Name koşulları, paketleme kaydı ve reviewer onayı gereklidir. Quran metni ve UI fontu birbirine otomatik eşitlenmez.
+
+### Doğrulama / fail-closed sözleşmesi — açık QA
+
+1. **Latin:** TR İ/ı/ğ/ş/ç/ö/ü, EN uzun metin ve locale rakam/noktalama; 320–430px telefon, tablet, landscape/BlueStacks ve 1.6x–2.0x sistem font ölçeği. Uzun dinî metin ellipsis ile kesilemez; scroll/wrap gerekir.
+2. **Arabic UI:** Native RTL, bağlanan harf/ligatür/hareke, uzun buton, rakam, karışık LTR URL/ayet referansı, ikon yönü, focus, screen reader ve 1.6x–2.0x font. Latin ölçüsünü Arapçaya zorlayıp clipping yaratmak FAIL.
+3. **Kur’an:** Exact-byte Uthmani source korunur; kaynak ayete normalizasyon/otomatik düzeltme uygulanmaz. Şedde, med, hareke, vakıf işaretleri, ligatür, uzun ayet, ayet numarası, satır kırılması, seçim/kopyalama, 0.8/1.0/1.6 reader ölçeği + sistem text scale ve TR/EN/AR bağlamı screenshot/gerçek render ile kontrol edilir. Font coverage + onaylı mushaf örneklemi karşılaştırılmadan glyph PASS yok.
+4. **Failure path:** Eksik/bozuk font, tofu/missing glyph, yanlış hareke konumu, clipping, lisans/manifest uyuşmazlığı, karışık yönlü referans ve yanlış font fallback QA FAIL. Kutsal metin bozuksa sessizce farklı karakter üretmek yerine güvenli hata/geri çekme davranışı gerekir.
+5. **Paylaşım:** 9:16, 4:5, 1:1 ve uzun ayette AR satır kırılımı, kaynak kilidi ve font/RTL ayrıca test edilir; font lisansı Canva asset lisansının yerini almaz.
+6. **Erişilebilirlik:** Light/dark, 48dp tap, ekran okuyucu, 1.6x+, seçili/hata/disabled durumları, minimum normal metin 4.5:1 ve büyük metin 3:1. Beyaz/sage **3.75:1** kontrast engeli açık kalır; font boyutuyla saklanmaz.
+
+**T0046 kabul sınırı:** Üç typography track ve test sözleşmesi **belgelendi**. Gerçek font ekleme, font lisans/sha, mushaf doğruluğu, native AR font QA, gerçek cihaz/render ve TEST_MATRIX L/R/D release satırları **tamamlanmadı**. T0074 ve ilgili implementation/release işleri açık; dokümantasyon runtime PASS değildir.
+
+
 ## Çapraz bağlantı, görünürlük ve release sınırları
 
 1. **Bugün vitrin, kütüphane değil:** 10–15 ikon veya Keşfet modüllerinin kopyası yasak. Dört hızlı erişim sınırı sabittir. Bugün'den açılan hedef kendi sahip sekmesinde yaşar; aynı içeriğin ikinci bağımsız kopyası oluşturulmaz.
